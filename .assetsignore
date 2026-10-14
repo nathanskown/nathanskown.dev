@@ -15,3 +15,4 @@ data/finance/earnings_cache.json
 data/finance/ipo_cache.json
 .git/
 data/sports/model/_games_*
+data/sports/track/_picks_*

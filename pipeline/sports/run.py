@@ -8,13 +8,15 @@ import os
 import sys
 import time
 
-from . import espn, model
+from . import espn, model, track
 from .common import STATUS, attempt, now_iso, read, write
 
 JOBS = {
-    "live": [("standings", espn.job_standings), ("injuries", espn.job_injuries), ("model", model.job_model)],
+    "live": [("standings", espn.job_standings), ("injuries", espn.job_injuries), ("model", model.job_model),
+             ("track", track.job_track)],
     "daily": [("standings", espn.job_standings), ("teams", espn.teams_index), ("leaders", espn.job_leaders),
-              ("injuries", espn.job_injuries), ("model", model.job_model)],
+              ("injuries", espn.job_injuries), ("model", model.job_model), ("track", track.job_track),
+              ("backtest", track.job_backtest)],
 }
 
 
