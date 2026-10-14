@@ -32,7 +32,7 @@ const KEEP = new Set(("events week season byeWeek team id date endDate name shor
   "abbreviation shortDisplayName location color alternateColor recordSummary standingSummary athlete position thru order").split(" "));
 const TRIM = [/\/scoreboard$/, /\/teams\/[a-z0-9]+\/schedule$/];
 const TRIM_MAX = 1500000; // bytes: above this, pass through untrimmed (CPU limit)
-const TRIM_VERSION = 1;   // bump when KEEP changes: new edge-cache namespace
+const TRIM_VERSION = 1;    // bump when KEEP changes: new edge-cache namespace
 
 export function prune(o) {
   if (Array.isArray(o)) return o.map(prune);
