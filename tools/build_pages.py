@@ -45,6 +45,7 @@ SECTIONS = {
         "theme": "#050403",
         "pages": [
             ("", "Dashboard.dc.html", {}, "Market dashboard"),
+            ("digest", "Digest.dc.html", {}, "Market digest"),
             ("headlines", "News.dc.html", {}, "Live headlines"),
             ("quote", "Main.dc.html", {}, "Stock quote"),
             ("ownership", "Ownership.dc.html", {}, "13F ownership tracker"),
@@ -53,7 +54,7 @@ SECTIONS = {
             ("ipo", "IPO.dc.html", {}, "IPO tracker"),
         ],
         "routes": {
-            "Dashboard.dc.html": "/finance/", "News.dc.html": "/finance/headlines/", "Main.dc.html": "/finance/quote/",
+            "Dashboard.dc.html": "/finance/", "Digest.dc.html": "/finance/digest/", "News.dc.html": "/finance/headlines/", "Main.dc.html": "/finance/quote/",
             "Ownership.dc.html": "/finance/ownership/", "Earnings.dc.html": "/finance/earnings/",
             "Macro.dc.html": "/finance/macro/", "IPO.dc.html": "/finance/ipo/",
         },
