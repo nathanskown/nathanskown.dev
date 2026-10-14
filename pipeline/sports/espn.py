@@ -170,9 +170,11 @@ def teams_index():
         for t in raw:
             if not t.get("isActive", True):
                 continue
-            if lg.startswith("ncaa") and member and t["id"] not in member:
+            # FBS / D-I basketball: keep the standings members. ESPN's college hockey standings miss
+            # some D-I programs, so hockey keeps the whole list and groups the rest as "Other".
+            if lg in ("ncaaf", "ncaab") and member and t["id"] not in member:
                 continue
-            grp, parent = member.get(t["id"], (None, None))
+            grp, parent = member.get(t["id"], ("Other" if lg == "ncaah" and member else None, None))
             logo = (t.get("logos") or [{}])[0].get("href")
             rows.append({k: v for k, v in {
                 "id": t["id"], "abbr": t.get("abbreviation"), "name": t.get("displayName"), "short": t.get("shortDisplayName"),

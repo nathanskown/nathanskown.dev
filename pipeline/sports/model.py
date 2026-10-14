@@ -36,6 +36,7 @@ PARAMS = {
     "ncaab": dict(hfa=3.0, sigma=11.0, k=6, cap=40, minGp=3, unit="points"),
     "ncaah": dict(hfa=0.25, sigma=2.4, k=6, cap=None, minGp=3, unit="goals"),
 }
+CACHE_VERSION = 2          # bump to force a full rescan after a scan fix
 POOL = "_other"            # opponents outside the covered division (FCS, non-D-I) share one rating
 RNG = np.random.default_rng()
 
@@ -86,7 +87,7 @@ def _scan_espn(lg, si, cache):
                 key = f"w{wk['value']}"
                 if key in done_keys:
                     continue
-                d = get(ESPN + path(lg) + "/scoreboard", dict(base, week=wk["value"], seasontype="2", dates=str(si["year"])))
+                d = get(ESPN + path(lg) + "/scoreboard", dict(base, week=wk["value"], seasontype="2"))
                 calls += 1
                 rows = [_event(e) for e in d.get("events", [])]
                 for e, r in zip(d.get("events", []), rows):
@@ -137,8 +138,8 @@ def _scan_cfbd(year, cache):
 def games(lg, si):
     rel = f"model/_games_{lg}.json"
     cache = read(rel) or {}
-    if cache.get("season") != si["year"]:
-        cache = {"season": si["year"], "events": {}, "final": []}
+    if cache.get("season") != si["year"] or cache.get("v") != CACHE_VERSION:
+        cache = {"v": CACHE_VERSION, "season": si["year"], "events": {}, "final": []}
     source = "ESPN scoreboard"
     if lg == "ncaaf" and os.environ.get("CFBD_KEY"):
         try:
