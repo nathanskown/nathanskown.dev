@@ -4,10 +4,6 @@ name: Sports history and tuning
 # fit the house model's settings and checks the result on a held-out season (see pipeline/sports/tune.py).
 # Re-run it whenever you want the settings refit, for example at the start of a new season.
 on:
-  # Preview only: pushing a change to this marker file on the tuning branch starts a run there.
-  push:
-    branches: [sports-model-tuning]
-    paths: [".github/run-history.txt"]
   workflow_dispatch:
     inputs:
       leagues:
