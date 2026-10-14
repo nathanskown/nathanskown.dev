@@ -1,0 +1,48 @@
+# Rebuilds the Guess the Artist catalog from Last.fm and MusicBrainz.
+#
+# It only runs when you click "Run workflow" (Actions tab). Once a manual run works and you are happy
+# with the data, delete the two "#" at the start of the schedule lines below to refresh it every Monday.
+#
+# When you click "Run workflow" it asks which branch to build into. Use the branch that has your music/ folder
+# (default: music) so nothing touches your live site until you merge that branch.
+#
+# Before the first run, add in your GitHub repo (Settings > Secrets and variables > Actions):
+#   Secret:    LASTFM_API_KEY   your Last.fm API key
+#   Variable:  MB_CONTACT       your email or website (MusicBrainz asks apps to identify themselves)
+name: Refresh artist catalog
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build into (the one that has the music/ folder)"
+        default: "music"
+        required: true
+  # schedule:
+  #   - cron: "17 6 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build catalog
+        run: node tools/build-artist-catalog.mjs
+        env:
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          MB_CONTACT: ${{ vars.MB_CONTACT }}
+      - name: Commit if anything changed
+        run: |
+          git config user.name "music-catalog-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add music/data tools/.cache
+          if git diff --cached --quiet; then echo "No changes."; else git commit -m "Refresh artist catalog" && git push; fi
