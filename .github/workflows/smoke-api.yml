@@ -49,12 +49,21 @@ jobs:
           }
           check "price AAPL" "$base?part=price&sym=AAPL"
           check "fin PLTR" "$base?part=fin&cik=1321655"
-          check "filings PLTR" "$base?part=filings&cik=1321655"
-          check "fin AAPL" "$base?part=fin&cik=320193"
           check "filings AAPL" "$base?part=filings&cik=320193"
-          check "fin ABT" "$base?part=fin&cik=1800"
-          check "fin AMKR" "$base?part=fin&cik=1047127"
-          check "fin ACHC" "$base?part=fin&cik=1520697"
+          site() {  # status, size, time and cache header for a page or file on the live site
+            local path=$1
+            local out=$(curl -s -o /tmp/s.bin -D /tmp/h.txt -w '%{http_code} %{size_download}B %{time_total}s' "https://nathanskown.dev$path")
+            local cc=$(grep -i '^cache-control' /tmp/h.txt | tr -d '\r' | cut -c16-60)
+            local enc=$(grep -i '^content-encoding' /tmp/h.txt | tr -d '\r' | cut -c19-30)
+            echo "::notice title=site $path::$out cache=[$cc] enc=[$enc] $(head -c 120 /tmp/s.bin | tr -d '\n\r' | cut -c1-80)"
+          }
+          site /
+          site /finance/
+          site /sports/
+          site "/api/espn/site/v2/sports/football/nfl/scoreboard"
+          site /data/finance/tickers.json
+          site /data/finance/dashboard.json
+          site /no-such-page/
       - name: Check the sports proxy
         run: |
           for path in "site/v2/sports/football/nfl/scoreboard" "site/v2/sports/football/college-football/scoreboard?groups=80&limit=300" \
