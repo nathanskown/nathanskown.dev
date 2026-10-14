@@ -13,15 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - uses: actions/checkout@v4
       - name: Wait for the deploy, then call each part
         run: |
           base=https://nathanskown.dev/api/quote
-          for i in $(seq 1 40); do
-            code=$(curl -s -o /tmp/p.json -w '%{http_code}' "$base?part=price&sym=AAPL&t=$i")
-            if grep -q '"quote"' /tmp/p.json 2>/dev/null || grep -q '"error"' /tmp/p.json 2>/dev/null; then break; fi
+          want=$(grep -oP 'const API_VERSION = \K\d+' worker/quote.js)
+          for i in $(seq 1 45); do
+            curl -s -o /tmp/p.json "$base?part=price&sym=AAPL"
+            if grep -q "\"api\":$want" /tmp/p.json 2>/dev/null; then echo "version $want live"; break; fi
             sleep 20
           done
-          sleep 30
           check() {
             local label=$1 url=$2
             local t0=$(date +%s%N)

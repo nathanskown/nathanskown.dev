@@ -9,6 +9,7 @@
 const SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
 const YAHOO = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
+const API_VERSION = 2; // bump when the output changes: new cache namespace, and the deploy check waits for it
 const TTL = { price: 900, fin: 43200, filings: 3600 };
 
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
@@ -328,12 +329,13 @@ export async function handleQuote(request, ctx) {
   if (part !== "price" && !/^\d{1,10}$/.test(cik)) return json({ error: "bad cik" }, 400);
 
   // one canonical cache key per part + symbol, so ?v= busters and param order don't fragment it
-  const key = new Request(`${url.origin}/api/quote?part=${part}&${part === "price" ? "sym=" + sym : "cik=" + +cik}`);
+  const key = new Request(`${url.origin}/api/quote?v=${API_VERSION}&part=${part}&${part === "price" ? "sym=" + sym : "cik=" + +cik}`);
   const cache = caches.default;
   const hit = await cache.match(key);
   if (hit) return hit;
   try {
     const body = part === "price" ? await partPrice(sym) : part === "fin" ? await partFin(+cik) : await partFilings(+cik);
+    body.api = API_VERSION;
     const res = json(body, 200, TTL[part]);
     ctx.waitUntil(cache.put(key, res.clone()));
     return res;
