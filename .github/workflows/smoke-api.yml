@@ -54,3 +54,12 @@ jobs:
           check "fin AAPL" "$base?part=fin&cik=320193"
           check "filings AAPL" "$base?part=filings&cik=320193"
           check "price PLTR (cached)" "$base?part=price&sym=PLTR"
+          check "fin ABT" "$base?part=fin&cik=1800"
+          check "fin AMKR" "$base?part=fin&cik=1047127"
+          check "fin ACHC" "$base?part=fin&cik=1520697"
+          for c in 1800 1047127; do
+            for tag in dei/EntityCommonStockSharesOutstanding us-gaap/CommonStockSharesOutstanding us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -A "nathanskown.dev finance data bot skownclaude@agentmail.to" "https://data.sec.gov/api/xbrl/companyconcept/CIK$(printf %010d $c)/$tag.json")
+              echo "::notice title=SEC concept $c $tag::$code"
+            done
+          done

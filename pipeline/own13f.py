@@ -27,7 +27,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 8          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 9          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -144,11 +144,13 @@ def _figi(cusips):
     return cache
 
 
-def _shares_history(cik):
+def _shares_history(cik, skip_cover=False):
     """[(end, shares)]: the cover-page share count (largest class when several are reported); companies that
     only report it by share class fall back to balance-sheet or weighted-average share counts."""
     by_end = {}
     try:
+        if skip_cover:
+            raise RuntimeError("HTTP 404 (skipped)")
         j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/dei/EntityCommonStockSharesOutstanding.json")
         for f in (j.get("units") or {}).get("shares", []):
             by_end[f["end"]] = max(by_end.get(f["end"], 0), f["val"])
@@ -156,7 +158,7 @@ def _shares_history(cik):
         if "HTTP 404" not in str(e):
             raise
     # fallbacks, best first: balance-sheet shares outstanding, then quarterly weighted-average shares
-    for tag, quarterly in (("CommonStockSharesOutstanding", False), ("WeightedAverageNumberOfDilutedSharesOutstanding", True),
+    for tag, quarterly in ((("CommonStockSharesOutstanding", False),) if not skip_cover else ()) + (("WeightedAverageNumberOfDilutedSharesOutstanding", True),
                            ("WeightedAverageNumberOfSharesOutstandingBasic", True),
                            ("WeightedAverageNumberOfShareOutstandingBasicAndDiluted", True)):
         if by_end:
@@ -238,6 +240,22 @@ def build(max_sets=9, force=False):
         for s in retry:
             hist[s] = fetch(ciks[s])
             time.sleep(0.2)
+    # multi-class filers: the cover page may list only the smaller class, making 13F holdings look
+    # like 150%+ of shares. Use the all-class weighted-average count for those instead.
+    tot_latest = dict(zip(latest["cusip"], latest["shares"]))
+    swapped = []
+    for s, h in list(hist.items()):
+        so = _at(h or [], L)
+        if so and tot_latest.get(best[s], 0) > 1.5 * so:
+            h2 = None
+            try:
+                h2 = _shares_history(ciks[s], skip_cover=True)
+            except Exception as e:  # noqa: BLE001
+                errs[str(e)[:60]] += 1
+            if h2 and tot_latest.get(best[s], 0) <= 1.5 * (_at(h2, L) or 0):
+                hist[s] = h2
+                swapped.append(s)
+    record("13F share count swapped to all-class", True, n=len(swapped), note=str(swapped[:20]))
     record("13F shares outstanding", True, n=sum(1 for h in hist.values() if h),
            note=f"{len(ciks)} companies queried, {len(retry)} retried; errors: {dict(errs.most_common(4))}")
 
