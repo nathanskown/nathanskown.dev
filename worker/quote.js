@@ -9,7 +9,7 @@
 const SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
 const YAHOO = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
-const API_VERSION = 2; // bump when the output changes: new cache namespace, and the deploy check waits for it
+const API_VERSION = 3; // bump when the output changes: new cache namespace, and the deploy check waits for it
 const TTL = { price: 900, fin: 43200, filings: 3600 };
 
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
@@ -169,9 +169,14 @@ const REV = ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", 
   "RevenuesNetOfInterestExpense", "RevenueFromContractWithCustomerIncludingAssessedTax"];
 const days = (a, b) => (Date.parse(b) - Date.parse(a)) / 86400000;
 
-function quarters(units) {
+const ODD = [];
+function quarters(units, label = "") {
   const q = {}, fy = {}, ytd9 = {};
-  for (const f of units || []) {
+  if (!Array.isArray(units)) {  // SEC sometimes returns an unexpected shape; skip it rather than fail
+    if (units) ODD.push(`${label}:${typeof units}:${JSON.stringify(units).slice(0, 80)}`);
+    return q;
+  }
+  for (const f of units) {
     if (!f.start || !["10-Q", "10-K", "10-Q/A", "10-K/A"].includes(f.form)) continue;
     const n = days(f.start, f.end);
     if (n >= 80 && n <= 100) q[f.end] = f.val;
@@ -198,6 +203,7 @@ async function concept(cik, ns, tag) {
 }
 
 async function partFin(cik) {
+  ODD.length = 0;
   // primary tags in parallel; fall back to older revenue tags only when needed
   const [rev1, rev2, gp, op, ni, eps, shares, dil] = await Promise.all([
     concept(cik, "us-gaap", REV[0]), concept(cik, "us-gaap", REV[1]), concept(cik, "us-gaap", "GrossProfit"),
@@ -237,13 +243,14 @@ async function partFin(cik) {
   const ni4 = qs.slice(-4).map((x) => x.ni).filter((x) => x !== null);
   // shares: largest cover-page count on the latest date (multi-class filers report one line per class)
   let so = null, soEnd = null;
-  for (const f of (shares && shares.shares) || []) {
+  for (const f of Array.isArray(shares && shares.shares) ? shares.shares : []) {
     if (!soEnd || f.end > soEnd) { soEnd = f.end; so = f.val; } else if (f.end === soEnd) so = Math.max(so, f.val);
   }
   const dq = quarters((dil && dil.shares) || []);
   const dEnd = Object.keys(dq).sort().pop();
   return { cik, updated: nowIso(), fin, epsTTM: eps4.length === 4 ? r(eps4.reduce((a, x) => a + x, 0), 3) : null,
-    niTTM: ni4.length === 4 ? ni4.reduce((a, x) => a + x, 0) : null, shares: so, sharesAsOf: soEnd, diluted: dEnd ? dq[dEnd] : null };
+    niTTM: ni4.length === 4 ? ni4.reduce((a, x) => a + x, 0) : null, shares: so, sharesAsOf: soEnd, diluted: dEnd ? dq[dEnd] : null,
+    errors: ODD.slice(0, 5) };
 }
 
 // ---------------------------------------------------------------- filings (SEC)

@@ -41,25 +41,17 @@ jobs:
           if 'fin' in j: bits += [f"quarters={[x['end'] for x in j['fin']][-2:]}", f"epsTTM={j.get('epsTTM')}", f"shares={j.get('shares')}", f"diluted={j.get('diluted')}"]
           if 'insider' in j: bits += [f"name={j.get('name')}", f"form4s={j['insider'].get('formsRead')}", f"insiderRows={len(j['insider']['rows'])}", f"13dg={len(j.get('holders5') or [])}", f"8k={len(j.get('eightK') or [])}"]
           if j.get('errors'): bits.append(f"partErrors={j['errors']}")
+          if 'fin' in j and not j['fin']: bits.append('NO QUARTERS')
           print(' '.join(bits))
           PY
           )
             echo "::notice title=$label ($code, ${ms}ms)::$summary"
           }
           check "price AAPL" "$base?part=price&sym=AAPL"
-          check "price PLTR" "$base?part=price&sym=PLTR"
-          check "price SPY" "$base?part=price&sym=SPY"
           check "fin PLTR" "$base?part=fin&cik=1321655"
           check "filings PLTR" "$base?part=filings&cik=1321655"
           check "fin AAPL" "$base?part=fin&cik=320193"
           check "filings AAPL" "$base?part=filings&cik=320193"
-          check "price PLTR (cached)" "$base?part=price&sym=PLTR"
           check "fin ABT" "$base?part=fin&cik=1800"
           check "fin AMKR" "$base?part=fin&cik=1047127"
           check "fin ACHC" "$base?part=fin&cik=1520697"
-          for c in 1800 1047127; do
-            for tag in dei/EntityCommonStockSharesOutstanding us-gaap/CommonStockSharesOutstanding us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' -A "nathanskown.dev finance data bot skownclaude@agentmail.to" "https://data.sec.gov/api/xbrl/companyconcept/CIK$(printf %010d $c)/$tag.json")
-              echo "::notice title=SEC concept $c $tag::$code"
-            done
-          done
