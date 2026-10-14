@@ -27,7 +27,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 6          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 7          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -146,7 +146,7 @@ def _figi(cusips):
 
 def _shares_history(cik):
     """[(end, shares)]: the cover-page share count (largest class when several are reported); companies that
-    only report it by share class fall back to quarterly weighted-average diluted shares (all classes)."""
+    only report it by share class fall back to balance-sheet or weighted-average share counts."""
     by_end = {}
     try:
         j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/dei/EntityCommonStockSharesOutstanding.json")
@@ -155,15 +155,22 @@ def _shares_history(cik):
     except RuntimeError as e:  # 404: tag not reported without a class dimension; anything else is retried
         if "HTTP 404" not in str(e):
             raise
-    if not by_end:
+    # fallbacks, best first: balance-sheet shares outstanding, then quarterly weighted-average shares
+    for tag, quarterly in (("CommonStockSharesOutstanding", False), ("WeightedAverageNumberOfDilutedSharesOutstanding", True),
+                           ("WeightedAverageNumberOfSharesOutstandingBasic", True),
+                           ("WeightedAverageNumberOfShareOutstandingBasicAndDiluted", True)):
+        if by_end:
+            break
         try:
-            j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding.json")
+            j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/{tag}.json")
         except RuntimeError as e:
             if "HTTP 404" in str(e):
-                return []
+                continue
             raise
         for f in (j.get("units") or {}).get("shares", []):
-            if f.get("start") and 80 <= (date.fromisoformat(f["end"]) - date.fromisoformat(f["start"])).days <= 100:
+            if not quarterly:
+                by_end[f["end"]] = f["val"]
+            elif f.get("start") and 80 <= (date.fromisoformat(f["end"]) - date.fromisoformat(f["start"])).days <= 100:
                 by_end[f["end"]] = f["val"]
     return sorted(by_end.items())
 
