@@ -182,8 +182,10 @@
     DES: '/finance/quote/', QUOTE: '/finance/quote/', NWND: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
     ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
     SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
-    GAME: '/sports/game/football/', NFL: '/sports/game/football/', MLB: '/sports/game/baseball/', NBA: '/sports/game/basketball/', NHL: '/sports/game/hockey/',
-    TEAM: '/sports/team/lions/', LIONS: '/sports/team/lions/', TIGERS: '/sports/team/tigers/', PISTONS: '/sports/team/pistons/',
+    TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
+    NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',
+    NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
+    LIONS: '/sports/team/lions/', TIGERS: '/sports/team/tigers/', PISTONS: '/sports/team/pistons/',
     REDWINGS: '/sports/team/red-wings/', WINGS: '/sports/team/red-wings/', MSU: '/sports/team/msu-football/', MSUFB: '/sports/team/msu-football/',
     MSUBB: '/sports/team/msu-basketball/', MSUHKY: '/sports/team/msu-hockey/',
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', SPOT: '/sports/spots/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
@@ -223,14 +225,20 @@
     var q = parts.join(' ');
     var go = function (sym) { location.href = (FN[fn] || FN.DES) + encodeURIComponent(sym); };
     var symLike = /^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(q), sym = q.replace(/\./g, '-');
-    tickers().then(function (T) {
+    /* pages can register their own lookup (the Sports pages resolve team names first) */
+    var page = !fn && window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
+    page.then(function (href) {
+      if (href) { location.href = href; return; }
+      tickerLookup();
+    }, tickerLookup);
+    function tickerLookup() { tickers().then(function (T) {
       if (T.bySym[sym]) { go(sym); return; }                 // exact US ticker
       var m = q.length > 2 ? matches(T, q, 1)[0] : null;      // company name
       if (m && (m[0] === sym || m[1].toUpperCase().indexOf(q) >= 0)) { go(m[0]); return; }
       if (symLike) { go(sym); return; }                      // index, ETF or other symbol Yahoo may know
       input.value = '';
       input.placeholder = '"' + q + '" NOT FOUND · TRY A TICKER OR HELP';
-    });
+    }); }
   }
   /* type-ahead: suggestions from the SEC list in a native datalist */
   document.addEventListener('input', function (e) {
@@ -244,6 +252,15 @@
       el.setAttribute('list', dl.id);
     }
     if (/\s/.test(v.trim()) && FN[v.trim().split(/\s+/).pop().toUpperCase()]) return;
+    if (window.DC_SUGGEST) {
+      window.DC_SUGGEST(v).then(function (opts) {
+        if (el.value !== v) return;
+        var dl = document.getElementById(el.getAttribute('list'));
+        dl.innerHTML = '';
+        opts.forEach(function (x) { var o = document.createElement('option'); o.value = x.value; o.label = x.label; dl.appendChild(o); });
+      });
+      return;
+    }
     tickers().then(function (T) {
       if (el.value !== v) return;
       var dl = document.getElementById(el.getAttribute('list'));

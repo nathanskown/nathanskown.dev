@@ -96,3 +96,51 @@ position:relative;min-height:100vh;background:#020607;color:var(--a);font-family
 .t .t-chipl.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 @media (max-width:760px){.t-sub2{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.t-sub2::-webkit-scrollbar{display:none}.t .t-chipl{min-height:40px;white-space:nowrap}}
 .t .t-card > h2:first-child{justify-content:flex-start}
+
+/* live sports pages: shared pieces */
+.s-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 56px;display:flex;flex-direction:column;gap:18px}
+.s-cols{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.s-cols > *{flex:1 1 400px;min-width:0}
+.s-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.s-stat{background:#000;border:1px solid var(--line);padding:10px 12px;min-width:0}
+.s-stat .k{font-size:11.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.s-stat .v{font-family:'VT323',ui-monospace,monospace;font-size:30px;line-height:1.05;color:var(--hi)}
+.s-stat .s{font-size:12px;color:var(--dim2)}
+.s-tbl{width:100%;font-size:13px}
+.s-tbl th,.s-tbl td{padding:7px 6px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap}
+.s-tbl th:first-child,.s-tbl td:first-child,.s-tbl .l{text-align:left}
+.s-tbl thead th{color:var(--dim);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.s-tbl tr.me td,.s-tbl tr.me th{background:var(--band);color:var(--wh)}
+.s-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.s-team{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.s-logo{width:22px;height:22px;object-fit:contain;flex:none}
+.s-res{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;font-weight:600;font-size:12px;flex:none;text-shadow:none}
+.s-res.W{background:#12301f;color:var(--up)}.s-res.L{background:#3a1715;color:var(--dn)}.s-res.T,.s-res.x{background:var(--hover);color:var(--dim)}
+.s-game{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2);min-height:44px}
+.s-game .d{width:54px;flex:none;color:var(--dim2);font-size:12px}
+.s-game .o{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-game .n{display:block;font-size:11.5px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-game .r{flex:none;text-align:right;color:var(--hi)}
+.t .s-go{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--band);border:1px solid var(--line);color:var(--wh)}
+.t .s-go:hover{border-color:var(--a)}
+.s-note{font-size:12.5px;color:var(--dim2);line-height:1.55}
+.s-empty{padding:18px;border:1px dashed var(--line);color:var(--dim);text-align:center;font-size:13px}
+.s-bar{height:6px;background:var(--hover);overflow:hidden}.s-bar > i{display:block;height:100%;background:var(--a)}
+.s-band{border-bottom:1px solid var(--line)}
+.s-hero{max-width:1280px;margin:0 auto;padding:22px 16px;display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;justify-content:space-between}
+.s-hero-logo{width:84px;height:84px;object-fit:contain;flex:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.6))}
+.s-next{flex:0 1 360px;min-width:260px;padding:12px 14px;background:rgba(0,0,0,.55);border:1px solid var(--line)}
+.t .s-btn{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;background:var(--a);color:#000;text-shadow:none;font-weight:600}
+.t .s-btn:hover{background:var(--hi);color:#000}
+.s-tabs{display:flex;flex-wrap:wrap;gap:4px}
+.t .s-tab{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font:inherit;font-size:12.5px;letter-spacing:.06em}
+.t .s-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .s-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.s-input{width:100%;height:44px;padding:0 12px;border:1px solid var(--line);background:#000;color:var(--hi);font:inherit;font-size:15px}
+.s-input:focus{border-color:var(--a);outline:0}
+.s-card{background:#000;border:1px solid var(--line);padding:10px 12px;min-width:0}
+.t a.s-card{display:block;color:var(--a)}
+.t a.s-card:hover{border-color:var(--a)}
+.s-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center}
+.s-live{color:var(--dn);font-weight:600}
+@media (max-width:760px){.s-hero-logo{width:60px;height:60px}.s-stat .v{font-size:26px}}

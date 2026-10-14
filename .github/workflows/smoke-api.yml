@@ -55,3 +55,11 @@ jobs:
           check "fin ABT" "$base?part=fin&cik=1800"
           check "fin AMKR" "$base?part=fin&cik=1047127"
           check "fin ACHC" "$base?part=fin&cik=1520697"
+      - name: Check the sports proxy
+        run: |
+          for path in "site/v2/sports/football/nfl/scoreboard" "site/v2/sports/football/college-football/scoreboard?groups=80&limit=300" \
+                      "site/v2/sports/hockey/nhl/teams/5/schedule?seasontype=2" "site/v2/sports/basketball/nba/scoreboard"; do
+            code=$(curl -s -o /tmp/s.json -w '%{http_code}' "https://nathanskown.dev/api/espn/$path")
+            n=$(python3 -c "import json;j=json.load(open('/tmp/s.json'));print(len(j.get('events',[])),'events')" 2>/dev/null || echo "not json")
+            echo "::notice title=espn $path ($code)::$n"
+          done

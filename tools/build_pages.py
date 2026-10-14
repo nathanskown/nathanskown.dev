@@ -28,15 +28,15 @@ TOOL_TITLES = {
     "Simulator": "Matchup simulator", "Odds": "Playoff odds", "Spots": "Situational spots", "Injuries": "Injuries",
     "LuckWatch": "Luck watch", "Schedule": "Schedule strength", "TrackRecord": "Track record", "Methodology": "Methodology",
 }
-TEAMS = {
-    "Team": ("lions", "Detroit Lions"), "TeamTigers": ("tigers", "Detroit Tigers"),
-    "TeamPistons": ("pistons", "Detroit Pistons"), "TeamRedWings": ("redwings", "Detroit Red Wings"),
-    "TeamMSUFootball": ("msufb", "Michigan State Football"), "TeamMSUBasketball": ("msubb", "Michigan State Basketball"),
-    "TeamMSUHockey": ("msuhky", "Michigan State Hockey"),
+# Every team and game page is the generic Team/Game design reading ?lg=&id= (ESPN ids).
+# These older short URLs stay as presets so existing links keep working.
+TEAM_PRESETS = {
+    "lions": ("nfl", "8", "Detroit Lions"), "tigers": ("mlb", "6", "Detroit Tigers"),
+    "pistons": ("nba", "8", "Detroit Pistons"), "red-wings": ("nhl", "5", "Detroit Red Wings"),
+    "msu-football": ("ncaaf", "127", "Michigan State Football"), "msu-basketball": ("ncaab", "127", "Michigan State Basketball"),
+    "msu-hockey": ("ncaah", "127", "Michigan State Hockey"),
 }
-TEAM_SLUGS = {"lions": "lions", "tigers": "tigers", "pistons": "pistons", "redwings": "red-wings",
-              "msufb": "msu-football", "msubb": "msu-basketball", "msuhky": "msu-hockey"}
-GAMES = {"Game": "football", "GameBaseball": "baseball", "GameBasketball": "basketball", "GameHockey": "hockey"}
+GAME_PRESETS = {"football": "nfl", "baseball": "mlb", "basketball": "nba", "hockey": "nhl"}
 
 # section -> css, theme color, and pages: (route, source file, props, title)
 SECTIONS = {
@@ -61,13 +61,16 @@ SECTIONS = {
     "sports": {
         "css": "assets/sports.css",
         "theme": "#020607",
-        "pages": [("", "Main.dc.html", {}, "Scores & schedule")]
-        + [(f"game/{sport}", "Game.dc.html", {"sport": sport}, f"Game center · {sport.title()}") for sport in GAMES.values()]
-        + [(f"team/{TEAM_SLUGS[tid]}", "Team.dc.html", {"teamId": tid}, name) for tid, name in TEAMS.values()]
+        "scripts": ["/assets/sports-data.js"],
+        "pages": [("", "Main.dc.html", {}, "Scores & schedule"),
+                  ("teams", "Teams.dc.html", {}, "All teams"),
+                  ("team", "Team.dc.html", {}, "Team"),
+                  ("game", "Game.dc.html", {}, "Game center")]
+        + [(f"team/{slug}", "Team.dc.html", {"lg": lg, "id": tid}, name) for slug, (lg, tid, name) in TEAM_PRESETS.items()]
+        + [(f"game/{sport}", "Game.dc.html", {"lg": lg}, f"Game center · {lg.upper()}") for sport, lg in GAME_PRESETS.items()]
         + [(slug, "Tool.dc.html", {"tool": key}, TOOL_TITLES[key]) for key, slug in TOOLS.items()],
-        "routes": {"Main.dc.html": "/sports/"}
-        | {f"{k}.dc.html": f"/sports/game/{v}/" for k, v in GAMES.items()}
-        | {f"{k}.dc.html": f"/sports/team/{TEAM_SLUGS[v[0]]}/" for k, v in TEAMS.items()}
+        "routes": {"Main.dc.html": "/sports/", "Teams.dc.html": "/sports/teams/", "Team.dc.html": "/sports/team/",
+                   "Game.dc.html": "/sports/game/"}
         | {f"{k}.dc.html": f"/sports/{v}/" for k, v in TOOLS.items()},
     },
 }
@@ -118,6 +121,7 @@ def build_page(path, cfg, props, title):
     tb.feed(body)
     tree = json.dumps(tb.root["c"], separators=(",", ":")).replace("</", "<\\/")
     routes = json.dumps(cfg["routes"], separators=(",", ":"))
+    scripts = "".join(f'<script src="{src}"></script>\n' for src in cfg.get("scripts", []))
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -135,7 +139,7 @@ def build_page(path, cfg, props, title):
 <noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
 <script>window.DC_ROUTES={routes};window.DC_TREE={tree};</script>
 <script src="/assets/dc-runtime.js"></script>
-<script>
+{scripts}<script>
 {m.group(2).strip()}
 DC.mount(Component, {json.dumps(defaults)});
 </script>

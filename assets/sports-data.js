@@ -1,0 +1,320 @@
+/* Sports data layer for the NSKN Sports pages.
+   Live data comes from ESPN's public site API through the site's own cached proxy (/api/espn/...),
+   and slower data (standings, injuries, leaders, house ratings and odds) from JSON files the
+   refresh-sports workflow commits under /data/sports/. Everything here turns those payloads into
+   small, predictable records the page templates can render. Betting odds, ESPN win probabilities
+   and pick'em data in the feeds are deliberately ignored. */
+(function () {
+  'use strict';
+
+  var LEAGUES = {
+    nfl:   { sport: 'football',   slug: 'nfl',                     label: 'NFL',           short: 'NFL',  teams: true, model: true, unit: 'pts' },
+    mlb:   { sport: 'baseball',   slug: 'mlb',                     label: 'MLB',           short: 'MLB',  teams: true, model: true, unit: 'runs' },
+    nhl:   { sport: 'hockey',     slug: 'nhl',                     label: 'NHL',           short: 'NHL',  teams: true, model: true, unit: 'goals' },
+    nba:   { sport: 'basketball', slug: 'nba',                     label: 'NBA',           short: 'NBA',  teams: true, model: true, unit: 'pts' },
+    ncaaf: { sport: 'football',   slug: 'college-football',        label: 'College football', short: 'NCAAF', teams: true, model: true, unit: 'pts', groups: '80' },
+    ncaab: { sport: 'basketball', slug: 'mens-college-basketball', label: 'College basketball', short: 'NCAAB', teams: true, model: true, unit: 'pts', groups: '50' },
+    ncaah: { sport: 'hockey',     slug: 'mens-college-hockey',     label: 'College hockey', short: 'NCAAH', teams: true, model: true, unit: 'goals' },
+    epl:   { sport: 'soccer',     slug: 'eng.1',                   label: 'Premier League', short: 'EPL' },
+    ucl:   { sport: 'soccer',     slug: 'uefa.champions',          label: 'Champions League', short: 'UCL' },
+    mls:   { sport: 'soccer',     slug: 'usa.1',                   label: 'MLS',           short: 'MLS' },
+    pga:   { sport: 'golf',       slug: 'pga',                     label: 'PGA Tour',      short: 'PGA',  kind: 'golf' },
+    atp:   { sport: 'tennis',     slug: 'atp',                     label: 'ATP',           short: 'ATP',  kind: 'tennis' },
+    wta:   { sport: 'tennis',     slug: 'wta',                     label: 'WTA',           short: 'WTA',  kind: 'tennis' }
+  };
+  var ORDER = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah', 'epl', 'ucl', 'mls', 'pga', 'atp', 'wta'];
+
+  function api(lg, kind, params) {
+    var L = LEAGUES[lg];
+    var base = kind === 'standings' ? '/api/espn/v2/sports/' : '/api/espn/site/v2/sports/';
+    var q = [];
+    for (var k in (params || {})) if (params[k] !== undefined && params[k] !== null && params[k] !== '') q.push(k + '=' + encodeURIComponent(params[k]));
+    return base + L.sport + '/' + L.slug + '/' + kind + (q.length ? '?' + q.join('&') : '');
+  }
+  function get(url) {
+    return fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); });
+  }
+  function data(path) { return window.DC ? DC.load('/data/sports/' + path) : get('/data/sports/' + path); }
+
+  function num(v) { if (v === null || v === undefined || v === '') return null; var n = typeof v === 'object' ? Number(v.value) : Number(v); return isNaN(n) ? null : n; }
+  function rec(c) {
+    var r = (c.records || c.record || []);
+    if (!r.length) return '';
+    var t = r.filter(function (x) { return x.type === 'total' || x.name === 'overall' || x.name === 'All Splits'; })[0] || r[0];
+    return t.summary || t.displayValue || '';
+  }
+  function hex(c, fb) { return c ? '#' + String(c).replace('#', '') : fb; }
+
+  function teamOf(c, lg) {
+    var t = c.team || {};
+    return {
+      id: String(t.id || c.id || ''), abbr: t.abbreviation || '', name: t.displayName || t.name || '', short: t.shortDisplayName || t.name || t.abbreviation || '',
+      loc: t.location || '', color: hex(t.color, '#12363B'), alt: hex(t.alternateColor, '#C8F7FC'),
+      score: c.score && typeof c.score === 'object' ? c.score.displayValue : (c.score === undefined ? '' : String(c.score)),
+      home: c.homeAway === 'home', winner: c.winner === true, record: rec(c),
+      rank: c.curatedRank && c.curatedRank.current && c.curatedRank.current < 99 ? c.curatedRank.current : null,
+      lines: (c.linescores || []).map(function (l) { return l.displayValue !== undefined ? l.displayValue : (l.value === undefined ? '' : String(l.value)); }),
+      href: LEAGUES[lg] && LEAGUES[lg].teams && t.id ? teamHref(lg, t.id) : ''
+    };
+  }
+
+  function status(s) {
+    s = s || {}; var t = s.type || {};
+    return { state: t.state || 'pre', done: !!t.completed, detail: t.shortDetail || t.detail || t.description || '', name: t.name || '', period: s.period || 0, clock: s.displayClock || '' };
+  }
+
+  /* one scoreboard event -> card record (team sports) */
+  function normEvent(e, lg) {
+    var L = LEAGUES[lg] || {};
+    var c = (e.competitions || [])[0] || {};
+    var st = status(c.status || e.status);
+    var teams = (c.competitors || []).map(function (x) { return teamOf(x, lg); });
+    teams.sort(function (a, b) { return (a.home ? 1 : 0) - (b.home ? 1 : 0); }); // away first, home second
+    var tv = (c.broadcasts || []).map(function (b) { return (b.names || []).join('/'); }).filter(Boolean).join(', ') || (c.broadcast || '');
+    var note = ((c.notes || [])[0] || {}).headline || '';
+    var series = c.series && c.series.summary ? c.series.summary : '';
+    return {
+      lg: lg, id: String(e.id), start: e.date, name: e.name || '', short: e.shortName || '', week: e.week ? e.week.number : null,
+      state: st.state, done: st.done, detail: st.detail, period: st.period, clock: st.clock,
+      neutral: !!c.neutralSite, venue: (c.venue || {}).fullName || '', city: ((c.venue || {}).address || {}).city || '',
+      tv: tv, note: note || series, away: teams[0] || null, home: teams[1] || null,
+      href: L.teams ? gameHref(lg, e.id) : ''
+    };
+  }
+
+  /* golf: one tournament with its top of the leaderboard */
+  function normGolf(e) {
+    var c = (e.competitions || [])[0] || {};
+    var st = status(c.status || e.status);
+    var players = (c.competitors || []).slice(0, 10).map(function (p) {
+      var a = p.athlete || {};
+      return { pos: (p.status && p.status.position && p.status.position.displayName) || p.order || '', name: a.displayName || a.shortName || '', score: p.score && p.score.displayValue ? p.score.displayValue : (p.score || ''), thru: p.status && p.status.thru ? 'thru ' + p.status.thru : '' };
+    });
+    return { lg: 'pga', kind: 'golf', id: String(e.id), name: e.name, start: e.date, end: e.endDate, state: st.state, detail: st.detail, players: players };
+  }
+
+  /* tennis: a tournament's singles matches, newest and live first */
+  function normTennis(e, lg) {
+    var out = [];
+    (e.groupings || []).forEach(function (g) {
+      var gname = (g.grouping || {}).displayName || '';
+      if (!/singles/i.test(gname)) return;
+      (g.competitions || []).forEach(function (m) {
+        var st = status(m.status);
+        var ps = (m.competitors || []).map(function (p) {
+          var a = p.athlete || {};
+          return { name: a.shortName || a.displayName || 'TBD', winner: p.winner === true, sets: (p.linescores || []).map(function (l) { return String(l.value === undefined ? '' : l.value) + (l.tiebreak !== undefined ? '(' + l.tiebreak + ')' : ''); }).join(' ') };
+        });
+        out.push({ id: String(m.id), round: (m.round || {}).displayName || '', state: st.state, detail: st.detail, start: m.date, players: ps, draw: gname });
+      });
+    });
+    var rank = { 'in': 0, post: 1, pre: 2 };
+    out.sort(function (a, b) { return (rank[a.state] - rank[b.state]) || (a.state === 'post' ? (b.start > a.start ? 1 : -1) : (a.start > b.start ? 1 : -1)); });
+    return { lg: lg, kind: 'tennis', id: String(e.id), name: e.name, start: e.date, end: e.endDate, matches: out };
+  }
+
+  function scores(lg, params) {
+    var L = LEAGUES[lg];
+    var p = Object.assign({}, params || {});
+    if (L.groups && !p.groups) p.groups = L.groups;
+    if (L.kind === undefined && (lg === 'ncaaf' || lg === 'ncaab' || lg === 'ncaah') && !p.limit) p.limit = 300;
+    return get(api(lg, 'scoreboard', p)).then(function (j) {
+      var evs = j.events || [];
+      if (L.kind === 'golf') return { lg: lg, events: evs.map(normGolf) };
+      if (L.kind === 'tennis') return { lg: lg, events: evs.map(function (e) { return normTennis(e, lg); }) };
+      return { lg: lg, events: evs.map(function (e) { return normEvent(e, lg); }), week: j.week ? j.week.number : null, season: j.season || null };
+    });
+  }
+
+  /* a team's season schedule (results and upcoming) */
+  function schedule(lg, id, params) {
+    return get(api(lg, 'teams/' + id + '/schedule', params || {})).then(function (j) {
+      var me = String((j.team || {}).id || id);
+      var games = (j.events || []).map(function (e) {
+        var c = (e.competitions || [])[0] || {};
+        var st = status(c.status);
+        var cs = c.competitors || [];
+        var mine = cs.filter(function (x) { return String((x.team || {}).id) === me; })[0] || cs[0] || {};
+        var opp = cs.filter(function (x) { return x !== mine; })[0] || {};
+        var my = teamOf(mine, lg), op = teamOf(opp, lg);
+        var res = '';
+        if (st.done && my.score !== '' && op.score !== '') res = mine.winner ? 'W' : (opp.winner ? 'L' : 'T');
+        return { id: String(e.id), start: e.date, week: e.week ? e.week.text || e.week.number : '', season: (e.seasonType || {}).name || '', home: mine.homeAway === 'home', neutral: !!c.neutralSite,
+          opp: op, me: my, state: st.state, done: st.done, detail: st.detail, result: res, score: my.score && op.score ? my.score + '–' + op.score : '',
+          tv: (c.broadcasts || []).map(function (b) { return (b.media || {}).shortName || (b.names || []).join('/'); }).filter(Boolean).join(', '), href: gameHref(lg, e.id) };
+      });
+      var t = j.team || {};
+      return { lg: lg, id: me, team: { id: me, abbr: t.abbreviation, name: t.displayName, loc: t.location, color: hex(t.color, '#12363B'), alt: hex(t.alternateColor, '#C8F7FC'),
+        record: t.recordSummary || '', standing: t.standingSummary || '' }, season: j.season || {}, bye: j.byeWeek || null, games: games };
+    });
+  }
+
+  /* team detail: record splits and next event */
+  function team(lg, id) {
+    return get(api(lg, 'teams/' + id)).then(function (j) {
+      var t = j.team || {};
+      var items = ((t.record || {}).items || []);
+      var stat = {};
+      var tot = items.filter(function (x) { return x.type === 'total'; })[0] || items[0] || {};
+      (tot.stats || []).forEach(function (s) { stat[s.name] = s.value; });
+      var splits = items.map(function (x) { return { type: x.type, label: x.description || x.type, summary: x.summary }; });
+      return { lg: lg, id: String(t.id), abbr: t.abbreviation, name: t.displayName, short: t.shortDisplayName, loc: t.location, nick: t.nickname || t.name,
+        color: hex(t.color, '#12363B'), alt: hex(t.alternateColor, '#C8F7FC'), record: tot.summary || '', standing: t.standingSummary || '', stats: stat, splits: splits,
+        next: (t.nextEvent || []).map(function (e) { return normEvent(e, lg); })[0] || null };
+    });
+  }
+
+  /* game summary -> page record. Odds, pick'em, ESPN predictor and win probability are dropped. */
+  function summary(lg, id) {
+    return get(api(lg, 'summary', { event: id })).then(function (j) {
+      var h = j.header || {}; var c = (h.competitions || [])[0] || {};
+      var st = status(c.status);
+      var teams = (c.competitors || []).map(function (x) { return teamOf(x, lg); });
+      teams.sort(function (a, b) { return (a.home ? 1 : 0) - (b.home ? 1 : 0); });
+      var gi = j.gameInfo || {};
+      var stats = {};
+      ((j.boxscore || {}).teams || []).forEach(function (t) {
+        var tid = String((t.team || {}).id);
+        var add = function (k, v) { if (!k || v === undefined) return; if (!stats[k]) stats[k] = { label: k, v: {} }; stats[k].v[tid] = v; };
+        (t.statistics || []).forEach(function (s) {
+          if (s.stats) { // baseball: grouped batting / pitching / fielding stats
+            var keep = BASEBALL_BOX[s.name] || {};
+            (s.stats || []).forEach(function (x) { if (keep[x.name]) add(keep[x.name], x.displayValue); });
+            return;
+          }
+          add(s.label || s.displayName || s.name, s.displayValue);
+        });
+      });
+      var statRows = Object.keys(stats).map(function (k) { return stats[k]; });
+      var leaders = (j.leaders || []).map(function (L) {
+        return { team: String((L.team || {}).id), abbr: (L.team || {}).abbreviation, cats: (L.leaders || []).map(function (x) {
+          var top = (x.leaders || [])[0] || {}; var a = top.athlete || {};
+          return { cat: x.displayName || x.name, name: a.shortName || a.displayName || '', line: top.displayValue || '' };
+        }).filter(function (x) { return x.name; }) };
+      });
+      var abbrOf = {}; teams.forEach(function (t) { abbrOf[t.id] = t.abbr; });
+      var sp = (j.scoringPlays && j.scoringPlays.length) ? j.scoringPlays : (j.plays || []).filter(function (p) { return p.scoringPlay; });
+      var scoring = sp.map(function (p) {
+        var tid = String((p.team || {}).id || ''); return { period: (p.period || {}).displayValue || (p.period || {}).number || '', clock: (p.clock || {}).displayValue || '', team: tid, abbr: (p.team || {}).abbreviation || abbrOf[tid] || '', text: p.text || '', away: p.awayScore, home: p.homeScore };
+      });
+      var injuries = (j.injuries || []).map(function (t) {
+        return { team: String((t.team || {}).id || ''), abbr: (t.team || {}).abbreviation || '', list: (t.injuries || []).map(function (x) {
+          var a = x.athlete || {}; return { name: a.displayName || '', pos: ((a.position || {}).abbreviation) || '', status: x.status || ((x.type || {}).description) || '', detail: (x.details && x.details.type) || '' };
+        }) };
+      });
+      var last5 = (j.lastFiveGames || []).map(function (t) {
+        return { team: String((t.team || {}).id || ''), abbr: (t.team || {}).abbreviation || '', games: (t.events || []).map(function (g) {
+          return { date: g.gameDate, opp: (g.opponent || {}).abbreviation || '', at: g.atVs || '', result: g.gameResult || '', score: g.score || '' };
+        }) };
+      });
+      var series = (j.seasonseries || []).map(function (s) { return s.summary || s.description || ''; }).filter(Boolean);
+      var standings = [];
+      ((j.standings || {}).groups || []).forEach(function (g) {
+        var rows = (((g.standings || {}).entries) || []).map(function (e) {
+          var s = {}; (e.stats || []).forEach(function (x) { s[x.type || x.name] = x.summary || x.displayValue; });
+          return { team: e.team, id: String(e.id || ''), wl: s.total || s.overall || '', s: s };
+        });
+        standings.push({ name: g.header || '', rows: rows });
+      });
+      return {
+        lg: lg, id: String(id), start: c.date, state: st.state, done: st.done, detail: st.detail, neutral: !!c.neutralSite,
+        away: teams[0] || null, home: teams[1] || null, note: ((c.notes || [])[0] || {}).headline || '',
+        venue: (gi.venue || {}).fullName || '', city: [((gi.venue || {}).address || {}).city, ((gi.venue || {}).address || {}).state].filter(Boolean).join(', '),
+        attendance: gi.attendance || null, weather: gi.weather ? (gi.weather.displayValue || '') + (gi.weather.temperature ? ' · ' + gi.weather.temperature + '°' : '') : '',
+        officials: (gi.officials || []).map(function (o) { return o.displayName + (o.position && o.position.displayName ? ' (' + o.position.displayName + ')' : ''); }),
+        tv: (j.broadcasts || []).map(function (b) { return (b.media || {}).shortName || ''; }).filter(Boolean).join(', '),
+        stats: statRows, leaders: leaders, scoring: scoring, injuries: injuries, last5: last5, series: series, standings: standings,
+        linescoreHeads: (teams[0] && teams[0].lines.length ? teams[0].lines.map(function (_, i) { return periodLabel(lg, i); }) : [])
+      };
+    });
+  }
+  var BASEBALL_BOX = {
+    batting: { hits: 'Hits', homeRuns: 'Home runs', walks: 'Walks', strikeouts: 'Strikeouts', runnersLeftOnBase: 'Left on base', stolenBases: 'Stolen bases' },
+    pitching: { pitches: 'Pitches thrown' },
+    fielding: { errors: 'Errors' }
+  };
+  function periodLabel(lg, i) {
+    var sp = (LEAGUES[lg] || {}).sport;
+    if (sp === 'baseball') return String(i + 1);
+    if (sp === 'hockey') return i < 3 ? String(i + 1) : (i === 3 ? 'OT' : 'SO');
+    if (sp === 'soccer') return i === 0 ? '1H' : i === 1 ? '2H' : 'ET';
+    if (lg === 'ncaab') return i < 2 ? (i === 0 ? '1H' : '2H') : 'OT' + (i > 2 ? i - 1 : '');
+    return i < 4 ? 'Q' + (i + 1) : 'OT' + (i > 4 ? i - 3 : '');
+  }
+
+  /* standings straight from ESPN (pages prefer the slimmer /data/sports/standings files) */
+  function standingsLive(lg, params) {
+    return get(api(lg, 'standings', params || {})).then(function (j) { return slimStandings(j); });
+  }
+  function slimStandings(j) {
+    var groups = [];
+    (function walk(n, parent) {
+      if (n.standings && n.standings.entries) {
+        groups.push({ name: n.name || n.abbreviation || parent || '', abbr: n.abbreviation || '', rows: n.standings.entries.map(function (e) {
+          var s = {}; (e.stats || []).forEach(function (x) { s[x.name] = x.displayValue !== undefined ? x.displayValue : x.value; if (x.type === 'total' || x.name === 'overall') s.overall = x.displayValue || x.summary; });
+          var t = e.team || {};
+          return { id: String(t.id), abbr: t.abbreviation, name: t.displayName, short: t.shortDisplayName, s: s };
+        }) });
+      }
+      (n.children || []).forEach(function (c) { walk(c, n.name); });
+    })(j, '');
+    return { groups: groups };
+  }
+
+  /* links */
+  function teamHref(lg, id) { return 'Team.dc.html?lg=' + lg + '&id=' + encodeURIComponent(id); }
+  function gameHref(lg, id) { return 'Game.dc.html?lg=' + lg + '&id=' + encodeURIComponent(id); }
+
+  /* house model: projected margin and win probability from /data/sports/model/<lg>.json */
+  function Phi(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)); var d = 0.3989423 * Math.exp(-z * z / 2); var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+  function project(model, awayId, homeId, neutral) {
+    if (!model || !model.teams) return null;
+    var A = model.teams[String(awayId)], H = model.teams[String(homeId)];
+    if (!A || !H || A.rating === null || H.rating === null || A.rating === undefined || H.rating === undefined) return null;
+    var hfa = neutral ? 0 : (model.hfa || 0);
+    if (model.divHfa !== undefined && A.group && A.group === H.group && !neutral) hfa = model.divHfa;
+    var m = H.rating - A.rating + hfa;
+    var p = Phi(m / (model.sigma || 13.5));
+    return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, coverage: model.coverage || null, basis: model.basis || '' };
+  }
+
+  /* team search for the command line on every Sports page: "lions", "gonzaga", "Michigan State Spartans (NCAAB)" */
+  var teamsP = null, LG_PRI = { nfl: 0, mlb: 1, nba: 2, nhl: 3, ncaaf: 4, ncaab: 5, ncaah: 6 };
+  function teamList() {
+    if (!teamsP) teamsP = data('teams.json').then(function (j) {
+      var out = [];
+      Object.keys(j.leagues || {}).forEach(function (lg) { j.leagues[lg].forEach(function (t) { out.push({ lg: lg, t: t }); }); });
+      return out;
+    }, function () { teamsP = null; return []; });
+    return teamsP;
+  }
+  function findTeams(list, q, n) {
+    var m = /\(([A-Z]{3,5})\)\s*$/i.exec(q), want = null;
+    if (m) { var s = m[1].toUpperCase(); ORDER.forEach(function (k) { if (LEAGUES[k].short === s) want = k; }); q = q.slice(0, m.index); }
+    q = q.trim().toLowerCase();
+    if (!q) return [];
+    var hits = [];
+    list.forEach(function (x) {
+      if (want && x.lg !== want) return;
+      var t = x.t, names = [t.name, t.nick, t.loc, t.short, t.abbr].filter(Boolean).map(function (v) { return v.toLowerCase(); });
+      var score = names.indexOf(q) >= 0 ? 0 : names.some(function (v) { return v.indexOf(q) === 0; }) ? 1 : (q.length >= 3 && names.some(function (v) { return v.indexOf(q) >= 0; }) ? 2 : -1);
+      if (score >= 0) hits.push({ lg: x.lg, t: t, score: score });
+    });
+    hits.sort(function (a, b) { return a.score - b.score || LG_PRI[a.lg] - LG_PRI[b.lg] || (a.t.name < b.t.name ? -1 : 1); });
+    return hits.slice(0, n || 12);
+  }
+  window.DC_LOOKUP = function (q) {
+    return teamList().then(function (list) {
+      var h = findTeams(list, q, 1)[0];
+      return h && h.score <= 1 ? '/sports/team/?lg=' + h.lg + '&id=' + encodeURIComponent(h.t.id) : null;
+    });
+  };
+  window.DC_SUGGEST = function (q) {
+    return teamList().then(function (list) {
+      return findTeams(list, q, 12).map(function (h) { return { value: h.t.name + ' (' + LEAGUES[h.lg].short + ')', label: LEAGUES[h.lg].label + (h.t.group ? ' · ' + h.t.group : '') }; });
+    });
+  };
+
+  window.SD = { LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
+    standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
+})();

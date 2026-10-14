@@ -202,6 +202,8 @@ def injuries(lg):
     for t in d.get("injuries", []):
         rows = []
         for i in t.get("injuries", []):
+            if (i.get("status") or "").lower() == "active":     # cleared players stay in ESPN's list
+                continue
             a = i.get("athlete") or {}
             det = i.get("details") or {}
             rows.append({k: v for k, v in {
