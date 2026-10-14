@@ -9,7 +9,7 @@
 const SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
 const YAHOO = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
-const API_VERSION = 3; // bump when the output changes: new cache namespace, and the deploy check waits for it
+const API_VERSION = 4; // bump when the output changes: new cache namespace, and the deploy check waits for it
 const TTL = { price: 900, fin: 43200, filings: 3600 };
 
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
@@ -228,7 +228,11 @@ async function partFin(cik) {
     epsU = alt && alt["USD/shares"];
   }
   const series = { rev: revQ, gp: merge(gp && gp.USD), op: merge(op && op.USD), ni: merge(ni && ni.USD), eps: merge(epsU) };
-  const ends = [...new Set([...Object.keys(series.rev), ...Object.keys(series.ni)])].sort().slice(-8);
+  // only recent quarters: some filers stopped using the standard tags years ago, and old numbers shown
+  // as "latest" would mislead
+  const cutoff = new Date(Date.now() - 548 * 86400000).toISOString().slice(0, 10);
+  const allEnds = [...new Set([...Object.keys(series.rev), ...Object.keys(series.ni)])].sort();
+  const ends = allEnds[allEnds.length - 1] >= cutoff ? allEnds.slice(-8) : [];
   const qs = ends.map((e) => ({ end: e, rev: series.rev[e] ?? null, gp: series.gp[e] ?? null, op: series.op[e] ?? null, ni: series.ni[e] ?? null, eps: series.eps[e] ?? null }));
   const byEnd = Object.fromEntries(qs.map((x) => [x.end, x]));
   const fin = qs.slice(-5).map((x) => {
@@ -246,11 +250,13 @@ async function partFin(cik) {
   for (const f of Array.isArray(shares && shares.shares) ? shares.shares : []) {
     if (!soEnd || f.end > soEnd) { soEnd = f.end; so = f.val; } else if (f.end === soEnd) so = Math.max(so, f.val);
   }
+  if (soEnd && soEnd < cutoff) { so = null; soEnd = null; }
   const dq = quarters((dil && dil.shares) || []);
-  const dEnd = Object.keys(dq).sort().pop();
+  let dEnd = Object.keys(dq).sort().pop();
+  if (dEnd && dEnd < cutoff) dEnd = null;
   return { cik, updated: nowIso(), fin, epsTTM: eps4.length === 4 ? r(eps4.reduce((a, x) => a + x, 0), 3) : null,
     niTTM: ni4.length === 4 ? ni4.reduce((a, x) => a + x, 0) : null, shares: so, sharesAsOf: soEnd, diluted: dEnd ? dq[dEnd] : null,
-    errors: ODD.slice(0, 5) };
+    staleTags: allEnds.length > 0 && !ends.length, oddShapes: ODD.length };
 }
 
 // ---------------------------------------------------------------- filings (SEC)

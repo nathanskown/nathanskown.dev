@@ -17,7 +17,7 @@ import pathlib
 import tempfile
 import time
 import zipfile
-from datetime import date
+from datetime import date, timedelta
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
@@ -27,7 +27,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 9          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 10          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -264,6 +264,7 @@ def build(max_sets=9, force=False):
     prv_all = det[det["period"] == P].groupby("cusip")
     empty = pd.DataFrame(columns=["cik", "sh"])
     diag = {"over150": [], "noShares": []}
+    stale_before = (date.fromisoformat(L) - timedelta(days=548)).isoformat()
     done_core, all_syms, n_ok = [], [], 0
     for sym, cu in sorted(best.items()):
         if not held.get(cu):
@@ -272,6 +273,8 @@ def build(max_sets=9, force=False):
             q = read(f"quotes/{sym}.json") or {}
             class_so = (q.get("stats") or {}).get("shares") if universe.get(sym, {}).get("shareClass") else None
             h = hist.get(sym) or []
+            if h and h[-1][0] < stale_before:  # filer stopped using the standard tag: don't trust an old count
+                h = []
 
             def so_at(p):
                 return class_so or _at(h, p)
