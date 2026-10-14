@@ -43,6 +43,7 @@ const normArtist = s => norm(s).replace(/^the /, "");
 function originOk(origin) {
   if (!origin) return true;                         // address-bar tests and curl send no Origin
   if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https:\/\/[a-z0-9-]+-nathanskown-dev\.[a-z0-9-]+\.workers\.dev$/.test(origin)) return true;   // branch previews of this site on Cloudflare Workers
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);   // local testing
 }
 
