@@ -1,8 +1,53 @@
 name: Refresh finance data
+
 on:
+  schedule:
+    - cron: "7 13-21 * * 1-5"   # market + headlines: hourly through the US trading day (UTC)
+    - cron: "7 14,22 * * 0,6"   # headlines on weekends
+    - cron: "17 11 * * *"       # daily: quotes, earnings, IPOs, macro (6:17 AM CT in summer)
+    - cron: "23 9 3 * *"        # monthly: check for new SEC 13F data sets
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "data/finance/config.json"
+      - ".github/workflows/refresh-finance.yml"
   workflow_dispatch:
+    inputs:
+      run_13f:
+        description: "Also rebuild 13F ownership (slow, ~20 min)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finance-data
+  cancel-in-progress: false
+
 jobs:
-  noop:
+  refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
-      - run: echo ok
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3
+      - name: Fetch data
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          CRON: ${{ github.event.schedule }}
+          RUN_13F: ${{ inputs.run_13f && '1' || '0' }}
+        run: python -m pipeline.run auto
+      - name: Commit data
+        run: |
+          git config user.name "finance-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/finance
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "data: refresh finance data"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; sleep 5; done
+          exit 1

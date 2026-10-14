@@ -1,0 +1,55 @@
+{
+  "_about": "Edit this file to change what the finance pages track. Tickers use Yahoo symbols (BRK-B, not BRK.B). Quote and 13F pages cover the 'universe' list; add a ticker to track it (with its CUSIP for the 13F page).",
+  "watchlist": ["AAPL", "NVDA", "JPM", "F", "GM"],
+  "universe": {
+    "AAPL": {"cusip": "037833100", "peers": ["MSFT", "GOOGL", "AMZN", "META"], "aliases": ["Apple"]},
+    "MSFT": {"cusip": "594918104", "peers": ["AAPL", "GOOGL", "AMZN", "META"], "aliases": ["Microsoft"]},
+    "NVDA": {"cusip": "67066G104", "peers": ["AMD", "MSFT", "AAPL", "GOOGL"], "aliases": ["Nvidia"]},
+    "AMZN": {"cusip": "023135106", "peers": ["WMT", "COST", "GOOGL", "MSFT"], "aliases": ["Amazon"]},
+    "GOOGL": {"cusip": "02079K305", "peers": ["META", "MSFT", "AMZN", "NFLX"], "aliases": ["Alphabet", "Google"]},
+    "META": {"cusip": "30303M102", "peers": ["GOOGL", "NFLX", "DIS", "MSFT"], "aliases": ["Meta Platforms"]},
+    "TSLA": {"cusip": "88160R101", "peers": ["F", "GM", "NVDA"], "aliases": ["Tesla"]},
+    "JPM": {"cusip": "46625H100", "peers": ["BAC", "BRK-B", "V"], "aliases": ["JPMorgan"]},
+    "BRK-B": {"cusip": "084670702", "peers": ["JPM", "BAC"], "aliases": ["Berkshire Hathaway"]},
+    "V": {"cusip": "92826C839", "peers": ["JPM", "BAC"], "aliases": ["Visa"]},
+    "UNH": {"cusip": "91324P102", "peers": ["JNJ"], "aliases": ["UnitedHealth"]},
+    "XOM": {"cusip": "30231G102", "peers": ["CAT", "GE"], "aliases": ["Exxon"]},
+    "JNJ": {"cusip": "478160104", "peers": ["UNH", "PG"], "aliases": ["Johnson & Johnson"]},
+    "PG": {"cusip": "742718109", "peers": ["KO", "PEP", "COST"], "aliases": ["Procter & Gamble"]},
+    "HD": {"cusip": "437076102", "peers": ["WMT", "COST"], "aliases": ["Home Depot"]},
+    "COST": {"cusip": "22160K105", "peers": ["WMT", "AMZN", "HD"], "aliases": ["Costco"]},
+    "NFLX": {"cusip": "64110L106", "peers": ["DIS", "META"], "aliases": ["Netflix"]},
+    "AMD": {"cusip": "007903107", "peers": ["NVDA"], "aliases": ["Advanced Micro Devices"]},
+    "BA": {"cusip": "097023105", "peers": ["GE", "CAT"], "aliases": ["Boeing"]},
+    "CAT": {"cusip": "149123101", "peers": ["GE", "BA"], "aliases": ["Caterpillar"]},
+    "DIS": {"cusip": "254687106", "peers": ["NFLX"], "aliases": ["Disney"]},
+    "KO": {"cusip": "191216100", "peers": ["PEP", "PG"], "aliases": ["Coca-Cola"]},
+    "PEP": {"cusip": "713448108", "peers": ["KO", "PG"], "aliases": ["PepsiCo"]},
+    "WMT": {"cusip": "931142103", "peers": ["COST", "AMZN", "HD"], "aliases": ["Walmart"]},
+    "F": {"cusip": "345370860", "peers": ["GM", "TSLA"], "aliases": ["Ford"]},
+    "GM": {"cusip": "37045V100", "peers": ["F", "TSLA"], "aliases": ["General Motors"]},
+    "GE": {"cusip": "369604301", "peers": ["BA", "CAT"], "aliases": ["GE Aerospace"]},
+    "NKE": {"cusip": "654106103", "peers": ["SBUX", "DIS"], "aliases": ["Nike"]},
+    "SBUX": {"cusip": "855244109", "peers": ["NKE", "COST"], "aliases": ["Starbucks"]},
+    "BAC": {"cusip": "060505104", "peers": ["JPM", "V"], "aliases": ["Bank of America"]}
+  },
+  "index_managers": ["VANGUARD", "BLACKROCK", "STATE STREET", "GEODE"],
+  "fomc_2026": ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"],
+  "feeds": {
+    "Publication": {
+      "CNBC": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114",
+      "MarketWatch": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
+      "Yahoo Finance": "https://finance.yahoo.com/news/rssindex",
+      "Federal Reserve": "https://www.federalreserve.gov/feeds/press_all.xml"
+    },
+    "Press release": {
+      "Business Wire": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeGVtRWA==",
+      "PR Newswire": "https://www.prnewswire.com/rss/news-releases-list.rss",
+      "GlobeNewswire": "https://www.globenewswire.com/RssFeed/orgclass/1/feedTitle/GlobeNewswire%20-%20News%20about%20Public%20Companies"
+    },
+    "SEC filing": {
+      "SEC EDGAR 8-K": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&start=0&count=60&output=atom",
+      "SEC EDGAR 13D": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=SC%2013D&company=&dateb=&owner=include&start=0&count=40&output=atom"
+    }
+  }
+}
