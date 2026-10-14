@@ -27,7 +27,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 7          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 8          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -245,6 +245,7 @@ def build(max_sets=9, force=False):
     cur_all = det[det["period"] == L].groupby("cusip")
     prv_all = det[det["period"] == P].groupby("cusip")
     empty = pd.DataFrame(columns=["cik", "sh"])
+    diag = {"over150": [], "noShares": []}
     done_core, all_syms, n_ok = [], [], 0
     for sym, cu in sorted(best.items()):
         if not held.get(cu):
@@ -262,10 +263,13 @@ def build(max_sets=9, force=False):
                 tot, n = (float(row["shares"]), int(row["holders"])) if row is not None else (0.0, 0)
                 so = so_at(p)
                 trend.append({"p": p, "inst": r(tot / so * 100, 1) if so else None, "holders": n, "shares": tot, "so": so})
-            # a share count that makes ownership look impossible is the wrong class or unit: don't show %
-            if any((t["inst"] or 0) > 150 for t in trend):
-                for t in trend:
+            # a share count that makes ownership look impossible is the wrong class or unit: don't show that %
+            for t in trend:
+                if (t["inst"] or 0) > 150:
+                    diag["over150"].append(f"{sym}:{t['p'][:7]}:{t['so']:.0f}:{t['shares']:.0f}")
                     t["inst"], t["so"] = None, None
+            if not h and not class_so:
+                diag["noShares"].append(sym if sym in ciks else f"{sym}(no CIK)")
             so = trend[-1]["so"]
             cur_df = cur_all.get_group(cu) if cu in cur_all.groups else empty
             prv_df = prv_all.get_group(cu) if cu in prv_all.groups else empty
@@ -276,6 +280,9 @@ def build(max_sets=9, force=False):
                 prv = {c: v for c, v in prv.items() if v <= 0.3 * so}
             # latest two quarters: use the screened per-manager positions so the trend matches the tables
             for t, pos in ((trend[-1], cur), (trend[-2], prv)):
+                if t["so"] is None:
+                    t["shares"], t["holders"] = float(sum(pos.values())), len(pos)
+                    continue
                 t["shares"], t["holders"] = float(sum(pos.values())), len(pos)
                 t["inst"] = r(t["shares"] / t["so"] * 100, 1) if t["so"] else None
             fl, fp = filers.get(L, set()), filers.get(P, set())
@@ -322,6 +329,10 @@ def build(max_sets=9, force=False):
         except Exception as e:  # noqa: BLE001
             record(f"13F {sym}", False, error=f"{type(e).__name__}: {str(e)[:200]}")
     record("13F pages written", True, n=n_ok)
+    with_cik = [x for x in diag["noShares"] if "(no CIK)" not in x]
+    record("13F no share count", True, n=len(diag["noShares"]),
+           note=f"{len(with_cik)} with an SEC CIK, e.g. {with_cik[:15]}")
+    record("13F implausible share count", True, n=len(diag["over150"]), note=str(diag["over150"][:15]))
     index = {"updated": now_iso(), "v": VERSION, "latestSet": newest, "periods": periods,
              "tickers": sorted(done_core, key=lambda x: list(universe).index(x["sym"])), "all": sorted(all_syms)}
     write("ownership/index.json", index)
