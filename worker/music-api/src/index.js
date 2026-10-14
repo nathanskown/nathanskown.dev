@@ -26,6 +26,7 @@ const DEEZER = "https://api.deezer.com/search";
 const UPSTREAM_CACHE_SECONDS = 300;   // Deezer answers are reused for 5 minutes at Cloudflare's edge
 const MAX_FIELD = 120;
 
+const VERSION_WORDS = /\b(live|remix|acoustic|demo|unplugged|session|sessions|radio edit|mono)\b/i;
 const BAD_WORDS = /\b(karaoke|tribute|cover|instrumental|originally performed|made famous|in the style of|8-bit|lullaby)\b/i;
 
 function norm(s) {
@@ -43,7 +44,6 @@ const normArtist = s => norm(s).replace(/^the /, "");
 function originOk(origin) {
   if (!origin) return true;                         // address-bar tests and curl send no Origin
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (/^https:\/\/[a-z0-9-]+-nathanskown-dev\.[a-z0-9-]+\.workers\.dev$/.test(origin)) return true;   // branch previews of this site on Cloudflare Workers
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);   // local testing
 }
 
@@ -86,6 +86,9 @@ function pickBest(results, artist, title) {
     if (BAD_WORDS.test(t.title || "") || BAD_WORDS.test((t.album && t.album.title) || "")) continue;
     let score = 10 + Math.log10((t.rank || 0) + 1);
     if (gotA === wantA) score += 5;
+    // prefer the original recording over live / remix / acoustic cuts that share the same short title
+    const ver = (t.title_version || "") + " " + ((t.album && t.album.title) || "");
+    if (VERSION_WORDS.test(ver) && !VERSION_WORDS.test(title)) score -= 3;
     if (score > bestScore) { best = t; bestScore = score; }
   }
   return best;
