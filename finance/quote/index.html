@@ -73,7 +73,7 @@ class Component extends DCLogic {
             shares: so, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
           index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }],
-          next: up, own: own, peerRows: [], onDemand: true, staleTags: !!(Fn && Fn.staleTags), partial: [!Fn && cik ? 'financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
+          next: up, own: own, peerRows: [], onDemand: true, staleTags: !!(Fn && Fn.staleTags), secBusy: !!(Fn && Fn.rateLimited && !(Fn.fin || []).length) || (!Fn && !!cik), partial: [(!Fn || Fn.rateLimited) && cik ? 'some SEC financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
         } });
       });
     }).catch(function () { self.setState({ loading: null, notTracked: sym, notFoundWhy: 'error' }); });
@@ -180,7 +180,7 @@ class Component extends DCLogic {
       rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' CT · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
       ranges: ranges, linePath: line, areaPath: line + ' L800,260 L0,260 Z', xLabels: xLabels,
       yMax: F.n(mx, 2), yMid: F.n((mx + mn) / 2, 2), yMin: F.n(mn, 2), stats: stats,
-      finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, noFinText: Q.staleTags ? 'This company\'s recent filings use XBRL tags the SEC\'s standardized data API does not return, so there are no current quarterly figures to show.' : 'No quarterly XBRL financials on file (common for ETFs, funds and foreign filers).', peers: peers, hasPeers: peers.length > 1,
+      finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, noFinText: Q.secBusy ? 'The SEC\'s data service is rate-limiting requests right now. Reload in a couple of minutes.' : Q.staleTags ? 'This company\'s recent filings use XBRL tags the SEC\'s standardized data API does not return, so there are no current quarterly figures to show.' : 'No quarterly XBRL financials on file (common for ETFs, funds and foreign filers).', peers: peers, hasPeers: peers.length > 1,
       activist: !!act, activistText: act ? (act.filer || 'A holder') + ' filed a ' + act.form + ' on ' + F.day(act.date) + '. A 13D means the holder owns 5%+ and may seek to influence the company.' : '',
       insTiles: insTiles, insiders: insiders, noInsiders: !insiders.length, bigHolders: bigs, noBig: !bigs.length,
       indexes: idxRows, passiveText: O && O.passive !== undefined ? F.n(O.passive, 1) + '%' : '—',

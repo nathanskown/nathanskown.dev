@@ -9,7 +9,7 @@
 const SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
 const YAHOO = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
-const API_VERSION = 4; // bump when the output changes: new cache namespace, and the deploy check waits for it
+const API_VERSION = 5; // bump when the output changes: new cache namespace, and the deploy check waits for it
 const TTL = { price: 900, fin: 43200, filings: 3600 };
 
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
@@ -24,7 +24,7 @@ const json = (obj, status = 200, ttl = 0) =>
     },
   });
 
-async function getUp(url, { kind = "json", sec = false, cacheTtl = 0, timeout = 12000 } = {}) {
+async function getUp(url, { kind = "json", sec = false, cacheTtl = 0, timeout = 15000 } = {}) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeout);
   try {
@@ -35,7 +35,11 @@ async function getUp(url, { kind = "json", sec = false, cacheTtl = 0, timeout = 
       signal: ctl.signal,
     };
     if (cacheTtl) init.cf = { cacheTtl, cacheEverything: true };
-    const res = await fetch(url, init);
+    let res = await fetch(url, init);
+    for (let k = 0; sec && (res.status === 403 || res.status === 429) && k < 2; k++) {
+      await new Promise((ok) => setTimeout(ok, 1200 * (k + 1)));  // SEC rate limit: back off and retry
+      res = await fetch(url, init);
+    }
     if (!res.ok) {
       const err = new Error(`HTTP ${res.status} ${url.slice(0, 100)}`);
       err.status = res.status;
@@ -198,19 +202,20 @@ async function concept(cik, ns, tag) {
     return j.units || {};
   } catch (e) {
     if (e.status === 404) return null; // company never reported this tag: normal
+    if (e.status === 403 || e.status === 429) { LIMITED.n++; return null; }
     throw e;
   }
 }
+const LIMITED = { n: 0 };
 
 async function partFin(cik) {
   ODD.length = 0;
   // primary tags in parallel; fall back to older revenue tags only when needed
-  const [rev1, rev2, gp, op, ni, eps, shares, dil] = await Promise.all([
-    concept(cik, "us-gaap", REV[0]), concept(cik, "us-gaap", REV[1]), concept(cik, "us-gaap", "GrossProfit"),
-    concept(cik, "us-gaap", "OperatingIncomeLoss"), concept(cik, "us-gaap", "NetIncomeLoss"),
-    concept(cik, "us-gaap", "EarningsPerShareDiluted"), concept(cik, "dei", "EntityCommonStockSharesOutstanding"),
-    concept(cik, "us-gaap", "WeightedAverageNumberOfDilutedSharesOutstanding"),
-  ]);
+  LIMITED.n = 0;
+  const tags = [["us-gaap", REV[0]], ["us-gaap", REV[1]], ["us-gaap", "GrossProfit"], ["us-gaap", "OperatingIncomeLoss"],
+    ["us-gaap", "NetIncomeLoss"], ["us-gaap", "EarningsPerShareDiluted"], ["dei", "EntityCommonStockSharesOutstanding"],
+    ["us-gaap", "WeightedAverageNumberOfDilutedSharesOutstanding"]];
+  const [rev1, rev2, gp, op, ni, eps, shares, dil] = await pool(tags, 3, ([ns, tag]) => concept(cik, ns, tag));
   const merge = (...unitsList) => {
     const out = {};
     for (const u of unitsList) if (u) for (const [e, v] of Object.entries(quarters(u))) if (!(e in out)) out[e] = v;
@@ -256,7 +261,7 @@ async function partFin(cik) {
   if (dEnd && dEnd < cutoff) dEnd = null;
   return { cik, updated: nowIso(), fin, epsTTM: eps4.length === 4 ? r(eps4.reduce((a, x) => a + x, 0), 3) : null,
     niTTM: ni4.length === 4 ? ni4.reduce((a, x) => a + x, 0) : null, shares: so, sharesAsOf: soEnd, diluted: dEnd ? dq[dEnd] : null,
-    staleTags: allEnds.length > 0 && !ends.length, oddShapes: ODD.length };
+    staleTags: allEnds.length > 0 && !ends.length && !LIMITED.n, oddShapes: ODD.length, rateLimited: LIMITED.n };
 }
 
 // ---------------------------------------------------------------- filings (SEC)
@@ -349,7 +354,8 @@ export async function handleQuote(request, ctx) {
   try {
     const body = part === "price" ? await partPrice(sym) : part === "fin" ? await partFin(+cik) : await partFilings(+cik);
     body.api = API_VERSION;
-    const res = json(body, 200, TTL[part]);
+    const ttl = body.rateLimited || (body.insider && body.insider.rateLimited) ? 120 : TTL[part];  // partial: retry soon
+    const res = json(body, 200, ttl);
     ctx.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
