@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Macro dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">ECO &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Switch series to redraw the history chart</span>
+</div>
+<div class="t-cmd">
+<label for="macroSearch" class="t-prompt">NSKN ›</label>
+<input id="macroSearch" class="t-input" type="search" placeholder="FRED SERIES OR INDICATOR" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey" href="News.dc.html">2) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">3) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">4) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
+<a class="t-fkey is-on" href="#" aria-current="page">6) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>Macro Monitor · FRED (ECO)</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">Sample values · layout built around FRED series IDs</span>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Overview" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
+<div style="flex: 1 1 560px; min-width: 0">
+<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">The economy, in numbers</h1>
+<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 780px">Inflation is drifting lower but stuck above the Fed's 2% target. The labor market is cooling faster than it is breaking: hiring has slowed sharply while layoffs stay low. Not a recession, but the cushion is thinner than it was a year ago.</div>
+</div>
+<span style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13.5px">Last updated Oct 13, 2026 · 7:30 AM CT</span>
+</section>
+
+<section aria-label="Headline indicators">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="12">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline">
+<span style="color: #C99442; font-size: 12.5px">{{t.label}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #A87933">{{t.id}}</span>
+</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: #FFD89D; margin-top: 2px">{{t.value}}</div>
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px">
+<span style="color: #A87933">{{t.period}}</span>
+<span style="color: {{t.color}}">{{t.chg}}</span>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch">
+
+<section class="t-card" aria-label="Series history" style="flex: 999 1 600px; min-width: 0; background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px 18px 14px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px">
+<div>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">{{selName}}</h2>
+<div style="color: #A87933; font-size: 12.5px">FRED series <span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7">{{selId}}</span> · monthly, 2016 to today · shaded band = recession (NBER)</div>
+</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #FFD89D">{{selLast}}</div>
+</div>
+<div role="group" aria-label="Choose series" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px; margin-bottom: 12px">
+<sc-for list="{{seriesTabs}}" as="s" hint-placeholder-count="6">
+<button type="button" onClick="{{s.pick}}" aria-pressed="{{s.pressed}}" style="{{s.btnStyle}}">{{s.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 10px">
+<div style="flex: 1 1 auto; min-width: 0">
+<svg viewBox="0 0 800 260" preserveAspectRatio="none" role="img" aria-label="Line chart of the selected economic series since 2016, sample values" style="display: block; width: 100%; height: 300px">
+<rect x="{{recX}}" y="0" width="{{recW}}" height="260" fill="#2A1F0E"></rect>
+<line x1="0" y1="20" x2="800" y2="20" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="93" x2="800" y2="93" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="167" x2="800" y2="167" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="240" x2="800" y2="240" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="{{zeroY}}" x2="800" y2="{{zeroY}}" stroke="{{zeroStroke}}" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"></line>
+<path d="{{selLine}}" fill="none" stroke="#FFB84D" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
+</svg>
+<div style="display: flex; justify-content: space-between; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
+<span>2016</span><span>2018</span><span>2020</span><span>2022</span><span>2024</span><span>2026</span>
+</div>
+</div>
+<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 300px; padding: 10px 0 14px; box-sizing: border-box; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; text-align: right; width: 56px">
+<span>{{yMax}}</span><span>{{yMid}}</span><span>{{yMin}}</span>
+</div>
+</div>
+<p style="margin: 12px 0 0; font-size: 13.5px; color: #FFB84D">{{selNote}}</p>
+</section>
+
+<section class="t-card" aria-label="Recession watch" style="flex: 1 1 340px; min-width: 0; background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Recession watch</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">Signals that historically lead downturns</div>
+<sc-for list="{{signals}}" as="g" hint-placeholder-count="5">
+<div style="padding: 10px 0; border-bottom: 1px solid #221909">
+<div style="display: flex; justify-content: space-between; gap: 8px; align-items: baseline">
+<span style="font-size: 14px; color: #FFD89D">{{g.n}}</span>
+<span style="{{g.badgeStyle}}">{{g.status}}</span>
+</div>
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; margin-top: 2px">
+<span style="color: #C99442">{{g.detail}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; color: #A87933">{{g.id}}</span>
+</div>
+</div>
+</sc-for>
+<div style="margin-top: 14px; padding: 12px 14px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326; font-size: 13.5px">
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-bottom: 4px">BOTTOM LINE</div>
+Two of five signals are flashing caution, both from the labor market. Credit markets and the curve say no recession yet.
+</div>
+</section>
+
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
+
+<section class="t-card" aria-label="Inflation breakdown" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">What's driving inflation</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 14px">CPI components, % change from a year ago · bright tick = Fed's 2% target</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{infl}}" as="c" hint-placeholder-count="6">
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; align-items: center; gap: 12px; font-size: 13.5px">
+<span>{{c.n}}</span>
+<span aria-hidden="true" style="position: relative; display: block; height: 14px; background: #1A1309; border-radius: 0">
+<span style="{{c.barStyle}}"></span>
+<span style="position: absolute; top: -3px; bottom: -3px; width: 2px; background: #FFD89D; left: calc(60% - 1px)"></span>
+<span style="position: absolute; top: 0; bottom: 0; width: 1px; background: #664A1F; left: 50%"></span>
+</span>
+<span style="font-family: 'IBM Plex Mono', monospace; text-align: right; color: #FFD89D">{{c.v}}</span>
+</div>
+</sc-for>
+</div>
+<p style="margin: 14px 0 0; font-size: 13.5px">Core goods prices have turned positive as tariffs pass through, which is offsetting cooling shelter. That's why core inflation isn't falling faster.</p>
+</section>
+
+<section class="t-card" aria-label="Labor market" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Labor market detail</h2>
+<table style="width: 100%; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Measure</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Latest</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Year ago</th>
+<th scope="col" style="font-weight: 500; padding: 6px 0 6px 8px; border-bottom: 1px solid #3D2C13">Series</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{labor}}" as="l" hint-placeholder-count="6">
+<tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
+<th scope="row" style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; padding: 9px 8px 9px 0; border-bottom: 1px solid #221909">{{l.n}}</th>
+<td style="padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{l.now}}</td>
+<td style="padding: 9px 8px; border-bottom: 1px solid #221909; color: #C99442">{{l.prev}}</td>
+<td style="padding: 9px 0 9px 8px; border-bottom: 1px solid #221909; font-size: 12px; color: #FFE9C7">{{l.id}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<p style="margin: 14px 0 0; font-size: 13.5px">Openings and quits are back below pre-pandemic levels. Workers aren't job-hopping, which keeps wage growth in check but signals less confidence.</p>
+</section>
+
+</div>
+
+<section class="t-card" aria-label="Release calendar" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming releases</h2>
+<span style="color: #A87933; font-size: 12.5px">Times CT · FRED updates shortly after each release</span>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 640px; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: left">
+<th scope="col" style="font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Date</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Release</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Period</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; text-align: right">Consensus</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13; text-align: right">Series</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{calendar}}" as="r" hint-placeholder-count="8">
+<tr>
+<td style="padding: 10px 10px 10px 0; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; white-space: nowrap">{{r.d}}</td>
+<th scope="row" style="text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909; color: #FFD89D">{{r.n}}</th>
+<td style="padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{r.p}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; text-align: right; font-family: 'IBM Plex Mono', monospace">{{r.c}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #FFE9C7">{{r.id}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<span>Source: FRED, Federal Reserve Bank of St. Louis · Consensus via [DATA PROVIDER]</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var UP = '#4ADE80', DN = '#FF5F56', NEU = '#C99442';
+    var st = this.state || {};
+    var sel = st.sel || 'UNRATE';
+    var self = this;
+    var T0 = 2016, T1 = 2026.75;
+    var defs = {
+      UNRATE: { label: 'Unemployment', name: 'Unemployment rate', unit: '%', dec: 1,
+        k: [[2016, 4.9], [2017, 4.5], [2018, 4.0], [2019, 3.6], [2020.08, 3.5], [2020.25, 14.8], [2020.6, 8.4], [2021, 6.4], [2022, 4.0], [2023, 3.5], [2024, 3.8], [2025, 4.1], [2025.7, 4.3], [2026.75, 4.4]],
+        note: 'Unemployment has crept up about a point from its 2023 low. Slow and steady so far, but that is how cycles usually turn.' },
+      CPI: { id: 'CPIAUCSL', label: 'CPI inflation', name: 'CPI inflation, % change YoY', unit: '%', dec: 1,
+        k: [[2016, 1.3], [2017, 2.1], [2018, 2.5], [2019, 1.8], [2020.3, 0.3], [2021, 1.4], [2021.5, 5.4], [2022.45, 9.0], [2023, 6.4], [2023.5, 3.1], [2024, 3.1], [2024.7, 2.4], [2025.4, 2.6], [2026, 3.0], [2026.75, 2.9]],
+        note: 'Inflation is well off the 2022 peak but has been stuck between roughly 2.5% and 3% for two years.' },
+      FEDFUNDS: { label: 'Fed funds', name: 'Effective federal funds rate', unit: '%', dec: 2,
+        k: [[2016, 0.38], [2017, 0.66], [2018, 1.41], [2019, 2.40], [2019.75, 1.90], [2020.25, 0.05], [2022.15, 0.08], [2022.5, 1.68], [2023, 4.33], [2023.6, 5.33], [2024.7, 5.33], [2024.95, 4.48], [2025.75, 4.10], [2026.75, 3.88]],
+        note: 'The Fed has cut gradually since late 2024. Markets expect another cut at the October meeting.' },
+      DGS10: { label: '10Y yield', name: '10-year Treasury yield', unit: '%', dec: 2,
+        k: [[2016, 2.09], [2016.5, 1.50], [2018.8, 3.15], [2019.7, 1.60], [2020.5, 0.62], [2021, 1.08], [2022, 1.76], [2022.8, 4.00], [2023.8, 4.88], [2024, 3.95], [2025, 4.57], [2025.8, 4.10], [2026.75, 4.08]],
+        note: 'Long rates have barely moved despite Fed cuts, which keeps mortgage and corporate borrowing costs elevated.' },
+      T10Y2Y: { label: '2s10s spread', name: '10-year minus 2-year Treasury spread', unit: '', dec: 2,
+        k: [[2016, 1.21], [2018, 0.52], [2019.6, -0.04], [2020.5, 0.50], [2021.25, 1.58], [2022.5, -0.20], [2023.5, -1.06], [2024.7, 0.05], [2025.5, 0.52], [2026.75, 0.47]],
+        note: 'The curve un-inverted in late 2024 after its longest inversion on record. Historically, recessions often start after the curve re-steepens.' },
+      HY: { id: 'BAMLH0A0HYM2', label: 'HY spread', name: 'High-yield credit spread (OAS)', unit: '%', dec: 2,
+        k: [[2016, 7.9], [2016.5, 5.6], [2018, 3.4], [2018.95, 5.3], [2019.5, 4.0], [2020.22, 10.9], [2021, 3.9], [2021.5, 3.0], [2022.5, 5.8], [2023, 4.6], [2024, 3.3], [2025.3, 4.5], [2025.6, 2.9], [2026.75, 3.12]],
+        note: 'Credit spreads are near historic tights. Lenders are not pricing in much default risk, which argues against a near-term recession.' }
+    };
+    var order = ['UNRATE', 'CPI', 'FEDFUNDS', 'DGS10', 'T10Y2Y', 'HY'];
+    var d = defs[sel];
+    var n = 130, pts = [];
+    var s = 12345 + order.indexOf(sel) * 977;
+    var rnd = function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+    var interp = function (t) {
+      var k = d.k;
+      for (var i = 0; i < k.length - 1; i++) {
+        if (t >= k[i][0] && t <= k[i + 1][0]) { var f = (t - k[i][0]) / (k[i + 1][0] - k[i][0]); return k[i][1] + f * (k[i + 1][1] - k[i][1]); }
+      }
+      return k[k.length - 1][1];
+    };
+    var vals = [];
+    for (var i = 0; i < n; i++) {
+      var t = T0 + (T1 - T0) * i / (n - 1);
+      var v = interp(t);
+      var amp = Math.max(Math.abs(v) * 0.02, 0.03);
+      vals.push(i === n - 1 ? v : v + (rnd() - 0.5) * amp * 2);
+    }
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+    var pad = (mx - mn) * 0.08; mn -= pad; mx += pad;
+    var toY = function (v) { return 20 + (1 - (v - mn) / (mx - mn)) * 220; };
+    var line = 'M' + vals.map(function (v, k) { return ((k / (n - 1)) * 800).toFixed(1) + ',' + toY(v).toFixed(1); }).join(' L');
+    var toX = function (t) { return (t - T0) / (T1 - T0) * 800; };
+    var f = function (v) { return v.toFixed(d.dec) + d.unit; };
+    var seriesTabs = order.map(function (id) {
+      var on = id === sel;
+      return {
+        label: defs[id].label, pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: id }); },
+        btnStyle: 'height: 36px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;')
+      };
+    });
+    var tile = function (label, id, value, period, chg, tone) {
+      return { label: label, id: id, value: value, period: period, chg: chg, color: tone === 'good' ? UP : (tone === 'bad' ? DN : NEU) };
+    };
+    var badge = function (kind) {
+      var c = kind === 'ok' ? ['#0D2616', '#1F6B3A', UP] : (kind === 'warn' ? ['#2A0F0D', '#7A2A24', DN] : ['#1A1309', '#4A3517', '#FFB84D']);
+      return 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
+    };
+    var sig = function (n2, id, detail, status, kind) { return { n: n2, id: id, detail: detail, status: status, badgeStyle: badge(kind) }; };
+    var infl = [['Shelter', 3.6], ['Services ex-shelter', 3.2], ['Food', 2.7], ['Core goods', 1.4], ['All items', 2.9], ['Energy', -1.2]].map(function (c) {
+      var w = Math.min(Math.abs(c[1]) / 10 * 100, 50);
+      var pos = c[1] >= 0;
+      return {
+        n: c[0], v: (pos ? '+' : '−') + Math.abs(c[1]).toFixed(1) + '%',
+        barStyle: 'position: absolute; top: 0; bottom: 0; border-radius: 0; background: ' + (pos ? '#FFB84D' : '#B8423A') + '; width: ' + w + '%; ' + (pos ? 'left: 50%;' : 'right: 50%;')
+      };
+    });
+    return {
+      tiles: [
+        tile('CPI inflation (YoY)', 'CPIAUCSL', '2.9%', 'Sep · prior 3.0%', '▼ 0.1 pt', 'good'),
+        tile('Core PCE (YoY)', 'PCEPILFE', '2.8%', 'Aug · prior 2.9%', '▼ 0.1 pt', 'good'),
+        tile('Unemployment rate', 'UNRATE', '4.4%', 'Sep · prior 4.3%', '▲ 0.1 pt', 'bad'),
+        tile('Nonfarm payrolls', 'PAYEMS', '+94K', 'Sep · prior +71K', '3-mo avg +78K', 'neutral'),
+        tile('Real GDP (q/q ann.)', 'GDPC1', '+2.1%', 'Q2 · prior +1.4%', '▲ 0.7 pt', 'good'),
+        tile('Fed funds (effective)', 'DFF', '3.88%', 'Target 3.75–4.00%', '−100 bp in 12 mo', 'neutral'),
+        tile('10-year Treasury', 'DGS10', '4.08%', 'Oct 13', '▼ 3 bp', 'neutral'),
+        tile('10Y – 2Y spread', 'T10Y2Y', '+0.47', 'Oct 13', 'Positive since Sep 2024', 'neutral'),
+        tile('High-yield spread', 'BAMLH0A0HYM2', '3.12%', 'Oct 10', 'Near historic tights', 'good'),
+        tile('Initial jobless claims', 'ICSA', '231K', 'Week of Oct 3', '4-wk avg 228K', 'neutral'),
+        tile('Retail sales (MoM)', 'RSAFS', '+0.4%', 'Aug · prior +0.2%', '▲ 0.2 pt', 'good'),
+        tile('Consumer sentiment', 'UMCSENT', '57.8', 'Sep · prior 58.4', 'Near record lows', 'bad')
+      ],
+      seriesTabs: seriesTabs,
+      selName: d.name,
+      selId: d.id || sel,
+      selLast: f(vals[n - 1]),
+      selNote: d.note,
+      selLine: line,
+      recX: toX(2020.08).toFixed(1),
+      recW: (toX(2020.33) - toX(2020.08)).toFixed(1),
+      zeroStroke: (mn < 0 && mx > 0) ? '#A87933' : 'transparent',
+      zeroY: (mn < 0 && mx > 0) ? toY(0).toFixed(1) : '0',
+      yMax: f(mx), yMid: f((mx + mn) / 2), yMin: f(mn),
+      signals: [
+        sig('Sahm rule', 'SAHMREALTIME', 'Reading 0.37 · triggers at 0.50', 'Watch', 'warn'),
+        sig('Payroll momentum', 'PAYEMS', '3-month avg below 100K', 'Weak', 'warn'),
+        sig('Yield curve', 'T10Y2Y', 'Positive and stable', 'OK', 'ok'),
+        sig('Credit spreads', 'BAMLH0A0HYM2', 'HY spread well below 5%', 'OK', 'ok'),
+        sig('Jobless claims', 'ICSA', '4-wk avg under 250K', 'OK', 'ok')
+      ],
+      infl: infl,
+      labor: [
+        { n: 'Job openings', now: '7.1M', prev: '7.7M', id: 'JTSJOL' },
+        { n: 'Quits rate', now: '1.9%', prev: '2.0%', id: 'JTSQUR' },
+        { n: 'Avg. hourly earnings (YoY)', now: '+3.7%', prev: '+3.9%', id: 'CES0500000003' },
+        { n: 'Labor force participation', now: '62.3%', prev: '62.5%', id: 'CIVPART' },
+        { n: 'Continuing claims', now: '1.94M', prev: '1.86M', id: 'CCSA' },
+        { n: 'Prime-age employment ratio', now: '80.4%', prev: '80.7%', id: 'LNS12300060' }
+      ],
+      calendar: [
+        { d: 'Wed Oct 14 · 7:30', n: 'Producer Price Index', p: 'Sep', c: '+0.2% MoM', id: 'PPIFIS' },
+        { d: 'Thu Oct 15 · 7:30', n: 'Retail sales', p: 'Sep', c: '+0.3% MoM', id: 'RSAFS' },
+        { d: 'Thu Oct 15 · 7:30', n: 'Initial jobless claims', p: 'Week of Oct 10', c: '233K', id: 'ICSA' },
+        { d: 'Fri Oct 16 · 8:15', n: 'Industrial production', p: 'Sep', c: '+0.1% MoM', id: 'INDPRO' },
+        { d: 'Fri Oct 16 · 9:00', n: 'UMich consumer sentiment (prelim)', p: 'Oct', c: '58.2', id: 'UMCSENT' },
+        { d: 'Thu Oct 29 · 7:30', n: 'GDP (advance)', p: 'Q3', c: '+1.8% ann.', id: 'GDPC1' },
+        { d: 'Fri Oct 30 · 7:30', n: 'PCE price index', p: 'Sep', c: '+2.7% YoY', id: 'PCEPI' },
+        { d: 'Fri Nov 6 · 7:30', n: 'Employment situation', p: 'Oct', c: '+85K', id: 'PAYEMS' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

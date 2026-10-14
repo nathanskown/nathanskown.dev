@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>13F ownership tracker</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">HDS &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Enter a ticker below or tap a quick pick</span>
+</div>
+<div class="t-cmd">
+<label for="ownSearch" class="t-prompt">NSKN ›</label>
+<input id="ownSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey" href="News.dc.html">2) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">3) Quotes</a>
+<a class="t-fkey is-on" href="#" aria-current="page">4) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">6) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>13F Ownership Tracker (HDS)</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">Sample data: illustrative numbers and fictional companies</span>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Look up a stock" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 18px">
+<div style="flex: 1 1 480px; min-width: 0">
+<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">13F ownership tracker</h1>
+<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 720px">Who owns a stock, who's buying, and who's leaving, from institutional 13F filings. Enter a ticker to look it up.</div>
+</div>
+<div style="flex: 1 1 420px; min-width: 0">
+<form onSubmit="{{onSubmit}}" style="display: flex; gap: 8px">
+<label for="ownTicker" class="sr">Ticker</label>
+<input id="ownTicker" type="text" value="{{draft}}" onChange="{{onDraft}}" placeholder="Enter a ticker, e.g. NWND" autocomplete="off" style="flex: 1 1 auto; min-width: 0; box-sizing: border-box; height: 48px; padding: 0 16px; border-radius: 0; border: 1px solid #8A6326; background: #0E0A05; color: #FFD89D; font-family: 'IBM Plex Mono', monospace; font-size: 16px; text-transform: uppercase">
+<button type="submit" style="height: 48px; padding: 0 20px; border-radius: 0; border: 1px solid #FFB84D; background: #FFB84D; color: #000000; text-shadow: none; font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer">Look up</button>
+</form>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px">
+<span style="font-size: 12.5px; color: #A87933; margin-right: 4px">Try:</span>
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
+<button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.chipStyle}}">{{c.t}}</button>
+</sc-for>
+</div>
+</div>
+</section>
+
+<sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
+<section class="t-card" aria-label="No data" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 28px; text-align: center">
+<div style="font-size: 18px; color: #FFD89D; font-weight: 600">No sample data for {{ticker}}</div>
+<div style="color: #C99442; font-size: 14px; margin-top: 6px">This mockup includes NWND, PRSM, HLWY, ODEN and KTRA. The live version would pull any ticker's 13F holders from SEC EDGAR.</div>
+</section>
+</sc-if>
+
+<sc-if value="{{found}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Company and filing period" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; background: #0A0704; border: 1px solid #382811; border-radius: 0">
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{ticker}}</span>
+<span style="font-size: 18px; font-weight: 600; color: #FFD89D">{{d.name}}</span>
+<span style="color: #C99442; font-size: 13.5px">{{d.so}} shares outstanding</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<span style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13px">Holdings as of Jun 30, 2026 (Q2)</span>
+<span style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326; font-size: 13px; color: #FFFFFF">Q3 filings due Nov 16</span>
+</div>
+</section>
+
+<section aria-label="Ownership summary">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px">
+<sc-for list="{{d.tiles}}" as="t" hint-placeholder-count="6">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div style="color: #C99442; font-size: 12.5px">{{t.label}}</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{t.color}}; margin-top: 2px">{{t.value}}</div>
+<div style="color: #A87933; font-size: 12.5px">{{t.sub}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="padding: 14px 16px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326; font-size: 14px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-right: 10px">THE READ</span>{{d.read}}
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px">
+
+<section class="t-card" aria-label="Institutional ownership trend" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership, last 8 quarters</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 14px">% of shares outstanding held by 13F filers · number of holders below each bar</div>
+<div style="display: flex; align-items: flex-end; gap: 8px; height: 210px" role="img" aria-label="Bar chart of institutional ownership percentage over eight quarters, sample data">
+<sc-for list="{{d.trend}}" as="q" hint-placeholder-count="8">
+<div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 210px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #FFD89D">{{q.v}}</span>
+<div style="{{q.barStyle}}"></div>
+<span style="font-size: 11.5px; color: #C99442; font-family: 'IBM Plex Mono', monospace">{{q.l}}</span>
+<span style="font-size: 11px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{q.c}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-card" aria-label="Ownership by investor style" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Ownership by investor style</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 14px">% of shares outstanding · change vs. prior quarter</div>
+<div aria-hidden="true" style="display: flex; height: 14px; border-radius: 0; overflow: hidden; gap: 2px; margin-bottom: 14px">
+<sc-for list="{{d.mix}}" as="m" hint-placeholder-count="6"><div style="{{m.segStyle}}"></div></sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<sc-for list="{{d.mix}}" as="m" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #221909; font-size: 14px">
+<span aria-hidden="true" style="{{m.dotStyle}}"></span>
+<span style="flex: 1 1 auto">{{m.n}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D; width: 60px; text-align: right">{{m.v}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; width: 84px; text-align: right; color: {{m.color}}">{{m.chg}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+
+<section class="t-card" aria-label="Top holders" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Top 10 institutional holders</h2>
+<span style="color: #A87933; font-size: 12.5px">Value at Jun 30 close of {{d.px}}</span>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 760px; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">#</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Holder</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Style</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Shares</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">% out</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Value</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">QoQ change</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{d.top}}" as="h" hint-placeholder-count="10">
+<tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
+<td style="text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909; color: #A87933">{{h.rank}}</td>
+<th scope="row" style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909; color: #FFD89D">{{h.n}}</th>
+<td style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{h.style}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{h.sh}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; color: #FFD89D">{{h.pct}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{h.val}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; color: {{h.color}}">{{h.chg}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
+
+<section class="t-card" aria-label="Top buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top buyers</h2>
+<sc-for list="{{d.buyers}}" as="b" hint-placeholder-count="5">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{b.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{b.note}}</span></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #4ADE80; flex: none">{{b.chg}}</span>
+</div>
+</sc-for>
+</section>
+
+<section class="t-card" aria-label="Top sellers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top sellers</h2>
+<sc-for list="{{d.sellers}}" as="s" hint-placeholder-count="5">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{s.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{s.note}}</span></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FF5F56; flex: none">{{s.chg}}</span>
+</div>
+</sc-for>
+</section>
+
+</div>
+
+<section aria-label="About this data" style="font-size: 13px; color: #A87933; line-height: 1.6; max-width: 900px">
+13F filings show long US equity positions for managers with $100M+ in assets, filed within 45 days of quarter end. They miss short positions, non-US holders, retail and most changes since quarter end, so treat them as a lagged snapshot. A 13D or 13G filing can reveal a big move sooner.
+</section>
+
+</div>
+</sc-if>
+
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<span>Source: SEC EDGAR Form 13F filings · Investor style classifications via [DATA PROVIDER]</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var UP = '#4ADE80', DN = '#FF5F56';
+    var st = this.state || {};
+    var ticker = st.ticker || 'NWND';
+    var draft = st.draft === undefined ? '' : st.draft;
+    var self = this;
+    var go = function (t) { self.setState({ ticker: String(t || '').trim().toUpperCase() || 'NWND', draft: '' }); };
+    var mixColors = { 'Value': '#FFE2B0', 'Index': '#FFB84D', 'Hedge fund': '#D9892A', 'GARP': '#A8661A', 'Growth': '#7A4A12', 'Other': '#4A3517' };
+    var fmtM = function (v) { return Math.abs(v) >= 1 ? v.toFixed(2) + 'M' : Math.round(v * 1000) + 'K'; };
+    var fmtVal = function (v) { return v >= 1000 ? '$' + (v / 1000).toFixed(2) + 'B' : '$' + v.toFixed(0) + 'M'; };
+    var sgn = function (v, f) { return (v >= 0 ? '+' : '−') + f(Math.abs(v)); };
+    var build = function (raw) {
+      var top = raw.top.map(function (h, k) {
+        var sh = h[2] / 100 * raw.so;
+        var isNew = h[3] === 'New';
+        return {
+          rank: k + 1, n: h[0], style: h[1], sh: fmtM(sh), pct: h[2].toFixed(1) + '%',
+          val: fmtVal(sh * raw.px),
+          chg: isNew ? 'New position' : sgn(h[3], function (x) { return x.toFixed(1) + '%'; }),
+          color: isNew || h[3] >= 0 ? UP : DN
+        };
+      });
+      var mix = raw.mix.map(function (m) {
+        var c = mixColors[m[0]];
+        return {
+          n: m[0], v: m[1].toFixed(1) + '%',
+          chg: sgn(m[2], function (x) { return x.toFixed(1) + ' pts'; }), color: m[2] >= 0 ? UP : DN,
+          segStyle: 'flex: ' + m[1] + '; background: ' + c + ';',
+          dotStyle: 'width: 10px; height: 10px; border-radius: 0; flex: none; background: ' + c + ';'
+        };
+      });
+      var lo = Math.floor(Math.min.apply(null, raw.trend) - 6), hi = Math.ceil(Math.max.apply(null, raw.trend));
+      var qs = ["Q3'24", "Q4'24", "Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26", "Q2'26"];
+      var trend = raw.trend.map(function (v, k) {
+        return { l: qs[k], v: v.toFixed(1) + '%', c: raw.counts[k],
+          barStyle: 'width: 100%; border-radius: 0 0 0; height: ' + Math.round((v - lo) / (hi - lo) * 140) + 'px; background: ' + (k === 7 ? '#FFE9C7' : '#6B4E22') + ';' };
+      });
+      var instChg = raw.trend[7] - raw.trend[6];
+      var holdChg = raw.counts[7] - raw.counts[6];
+      var net = instChg / 100 * raw.so;
+      var top10 = raw.top.reduce(function (a, h) { return a + h[2]; }, 0);
+      var idx = raw.mix.filter(function (m) { return m[0] === 'Index'; })[0];
+      return {
+        name: raw.name, so: raw.so.toFixed(1) + 'M', px: '$' + raw.px.toFixed(2), read: raw.read,
+        tiles: [
+          { label: 'Institutional ownership', value: raw.trend[7].toFixed(1) + '%', sub: sgn(instChg, function (x) { return x.toFixed(1); }) + ' pts vs. Q1', color: '#FFD89D' },
+          { label: '13F holders', value: String(raw.counts[7]), sub: sgn(holdChg, String) + ' vs. Q1', color: '#FFD89D' },
+          { label: 'Net institutional flow', value: sgn(net, fmtM), sub: 'shares, Q2 vs. Q1', color: net >= 0 ? UP : DN },
+          { label: 'New / closed positions', value: raw.newClosed[0] + ' / ' + raw.newClosed[1], sub: 'filers this quarter', color: '#FFD89D' },
+          { label: 'Top 10 concentration', value: top10.toFixed(1) + '%', sub: 'of shares outstanding', color: '#FFD89D' },
+          { label: 'Index fund share', value: idx[1].toFixed(1) + '%', sub: 'passive ownership', color: '#FFD89D' }
+        ],
+        trend: trend, mix: mix, top: top,
+        buyers: raw.buyers.map(function (b) { return { n: b[0], note: b[2], chg: '+' + fmtM(b[1]) + ' sh' }; }),
+        sellers: raw.sellers.map(function (s) { return { n: s[0], note: s[2], chg: '−' + fmtM(s[1]) + ' sh' }; })
+      };
+    };
+    var nwnd = {
+      name: 'Northwind Industrial Corp.', so: 80.4, px: 76.10,
+      trend: [72.1, 73.0, 72.6, 74.4, 75.0, 76.2, 76.9, 78.4], counts: [412, 418, 421, 430, 437, 441, 452, 468], newClosed: [38, 22],
+      mix: [['Index', 31.2, 0.6], ['Value', 18.4, 2.0], ['GARP', 9.6, -0.8], ['Growth', 7.1, -1.4], ['Hedge fund', 6.8, 1.9], ['Other', 5.3, -0.8]],
+      top: [['Vanguard Group', 'Index', 10.8, 1.2], ['BlackRock', 'Index', 8.9, 0.6], ['Ridgeway Partners', 'Value', 4.8, 62.0], ['State Street', 'Index', 4.6, -0.4], ['Dimensional Fund Advisors', 'Value', 3.2, 4.1], ['Halcyon Point Capital', 'Hedge fund', 3.1, 'New'], ['Wellmont Capital Management', 'GARP', 2.9, -18.5], ['Geode Capital Management', 'Index', 2.2, 1.9], ['Brightline Investors', 'Growth', 2.0, -34.0], ['Carrow and Finch Asset Mgmt', 'Value', 1.8, 11.0]],
+      buyers: [['Halcyon Point Capital', 2.49, 'New position · activist; 13D at 5.4% on Sep 22'], ['Ridgeway Partners', 1.49, 'Added 62% · value'], ['Lakeshore Advisors', 0.96, 'New position · value'], ['Tamarack Global', 0.41, 'Added 38% · GARP'], ['Carrow and Finch Asset Mgmt', 0.14, 'Added 11% · value']],
+      sellers: [['Brightline Investors', 0.83, 'Cut 34% · growth'], ['Ostrander Capital', 0.71, 'Sold out · growth'], ['Wellmont Capital Management', 0.53, 'Cut 18% · GARP'], ['Summit Peak Partners', 0.44, 'Sold out · hedge fund'], ['Clearpoint Growth Fund', 0.29, 'Cut 41% · growth']],
+      read: 'Value and activist money is coming in while growth holders leave. The shareholder base is shifting toward investors who want a catalyst, which fits Halcyon Point pushing a breakup. Expect more pressure on the board, not less.'
+    };
+    var pool = [['Wellmont Capital Management', 'GARP'], ['Brightline Investors', 'Growth'], ['Carrow and Finch Asset Mgmt', 'Value'], ['Lakeshore Advisors', 'Value'], ['Ostrander Capital', 'Growth'], ['Summit Peak Partners', 'Hedge fund'], ['Tamarack Global', 'GARP'], ['Harborview Investment Co.', 'Value'], ['Kestrel Ridge Capital', 'Hedge fund'], ['Morrow Street Advisors', 'Growth'], ['Ironwood Value Partners', 'Value'], ['Clearpoint Growth Fund', 'Growth']];
+    var names = { PRSM: 'Prism Semiconductor Inc.', HLWY: 'Halloway Machine Works', ODEN: 'Oden Power and Motion', KTRA: 'Kestrel Aerospace' };
+    var gen = function (t) {
+      var s = 0; for (var i = 0; i < t.length; i++) s = s * 31 + t.charCodeAt(i);
+      s = s % 4294967296;
+      var r = function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+      var so = 40 + r() * 160, px = 30 + r() * 170;
+      var trend = [62 + r() * 18];
+      for (var k = 1; k < 8; k++) trend.push(Math.min(95, Math.max(45, trend[k - 1] + (r() - 0.45) * 2.6)));
+      var counts = [Math.round(300 + r() * 800)];
+      for (var k2 = 1; k2 < 8; k2++) counts.push(counts[k2 - 1] + Math.round((r() - 0.35) * 24));
+      var inst = trend[7], prev = trend[6];
+      var w = [0.40, 0.22, 0.12, 0.11, 0.09, 0.06];
+      var styles = ['Index', 'Value', 'GARP', 'Growth', 'Hedge fund', 'Other'];
+      if (t === 'PRSM' || t === 'KTRA') { w = [0.38, 0.08, 0.16, 0.26, 0.07, 0.05]; }
+      var mix = styles.map(function (n, k3) { return [n, inst * w[k3], (inst - prev) * w[k3] + (r() - 0.5) * 1.2]; });
+      var picks = pool.slice().sort(function () { return r() - 0.5; });
+      var active = picks.slice(0, 6).map(function (p) { return [p[0], p[1], 1.4 + r() * 2.8, r() < 0.15 ? 'New' : (r() - 0.45) * 60]; });
+      var top = [['Vanguard Group', 'Index', 8.5 + r() * 3, (r() - 0.3) * 4], ['BlackRock', 'Index', 6.5 + r() * 2.5, (r() - 0.3) * 4], ['State Street', 'Index', 3.4 + r() * 1.6, (r() - 0.4) * 4], ['Geode Capital Management', 'Index', 1.8 + r() * 0.8, (r() - 0.3) * 4]].concat(active);
+      top.sort(function (a, b) { return b[2] - a[2]; });
+      var movers = top.filter(function (h) { return h[3] !== 'New'; });
+      var buyers = picks.slice(6, 8).map(function (p) { return [p[0], 0.3 + r() * 1.2, 'New position · ' + p[1].toLowerCase()]; })
+        .concat(movers.filter(function (h) { return h[3] > 0; }).slice(0, 3).map(function (h) { return [h[0], h[2] / 100 * so * h[3] / (100 + h[3]), 'Added ' + Math.round(h[3]) + '% · ' + h[1].toLowerCase()]; }));
+      buyers.sort(function (a, b) { return b[1] - a[1]; });
+      var sellers = picks.slice(8, 10).map(function (p) { return [p[0], 0.2 + r() * 0.9, 'Sold out · ' + p[1].toLowerCase()]; })
+        .concat(movers.filter(function (h) { return h[3] < 0; }).slice(0, 3).map(function (h) { return [h[0], h[2] / 100 * so * -h[3] / (100 + h[3]), 'Cut ' + Math.round(-h[3]) + '% · ' + h[1].toLowerCase()]; }));
+      sellers.sort(function (a, b) { return b[1] - a[1]; });
+      var up = inst >= prev;
+      return {
+        name: names[t], so: so, px: px, trend: trend, counts: counts, newClosed: [Math.round(15 + r() * 40), Math.round(10 + r() * 30)],
+        mix: mix, top: top, buyers: buyers.slice(0, 5), sellers: sellers.slice(0, 5),
+        read: up ? 'Institutions added to their positions last quarter, led by active managers rather than index funds. Watch whether that buying holds up once Q3 filings land.' : 'Institutions trimmed exposure last quarter. Active managers did most of the selling while index funds held steady, so the stock is leaning more on passive ownership.'
+      };
+    };
+    var known = ['NWND', 'PRSM', 'HLWY', 'ODEN', 'KTRA'];
+    var found = known.indexOf(ticker) >= 0;
+    var data = found ? build(ticker === 'NWND' ? nwnd : gen(ticker)) : null;
+    var chips = known.map(function (t) {
+      var on = t === ticker;
+      return { t: t, pressed: on ? 'true' : 'false', pick: function () { go(t); },
+        chipStyle: 'height: 32px; min-width: 56px; padding: 0 12px; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 13px; ' + (on ? 'background: #FFB84D; border: 1px solid #FFB84D; color: #000000; text-shadow: none;' : 'background: #0E0A05; border: 1px solid #3D2C13; color: #C99442;') };
+    });
+    return {
+      ticker: ticker,
+      draft: draft,
+      onDraft: function (e) { self.setState({ draft: e.target.value }); },
+      onSubmit: function (e) { if (e && e.preventDefault) e.preventDefault(); go(draft || ticker); },
+      chips: chips,
+      found: found,
+      missing: !found,
+      d: data || { tiles: [], trend: [], mix: [], top: [], buyers: [], sellers: [] }
+    };
+  }
+}
+</script>
+</body>
+</html>

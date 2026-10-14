@@ -64,7 +64,7 @@
   try { setBind('tz', Intl.DateTimeFormat().resolvedOptions().timeZone || '—'); } catch (e) { setBind('tz', '—'); }
 
   /* ---------- system log tape ---------- */
-  var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · COMING SOON', 'SPORTS · COMING SOON', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
+  var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · 7 PAGES', 'SPORTS · COMING SOON', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
   (function buildTape() {
     var track = $('tape');
     [0, 1].forEach(function (copy) {
@@ -119,6 +119,7 @@
 
   /* ---------- command line ---------- */
   var FIN = { WEI: 'Market dashboard', TOP: 'Live headlines', DES: 'Stock quote & company page', HDS: '13F ownership tracker', ERN: 'Earnings dashboard', ECO: 'Macro monitor (FRED)', IPO: 'IPO tracker' };
+  var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/' };
   var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages' };
   function helpLines() {
     var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
@@ -145,9 +146,9 @@
     var out = [L('NSKN › ' + c + ' <GO>', 'echo')];
     var active = null;
     if (c === 'HELP' || c === 'H' || c === '?') helpLines().forEach(function (t) { out.push(L(t)); });
-    else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '2'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · COMING SOON')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
+    else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '2'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · 7 PAGES')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
     else if (['SPRT', 'SPORT', 'SPORTS', '3'].indexOf(c) > -1) { flash('secSprt'); out.push(L('SPORTS · COMING SOON')); out.push(LINK('▸ OPEN SPORTS', '/sports/')); }
-    else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(L('LIVES IN MARKET ANALYSIS · COMING SOON', 'dim')); }
+    else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, FIN_URL[c])); }
     else if (SPRT[c]) { flash('secSprt'); out.push(L(c + ' · ' + SPRT[c].toUpperCase())); out.push(L('LIVES IN SPORTS · COMING SOON', 'dim')); }
     else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '4'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
     else if (['ABOUT', 'WHOAMI', 'BIO', '5'].indexOf(c) > -1) { active = 'about'; out.push(L('NATHAN SKOWN · CHICAGO, IL · MARKETS + SPORTS')); }

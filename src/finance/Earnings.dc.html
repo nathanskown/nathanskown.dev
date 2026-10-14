@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Earnings dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">ERN &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Toggle EPS or revenue beats · filter recent reports</span>
+</div>
+<div class="t-cmd">
+<label for="earnSearch" class="t-prompt">NSKN ›</label>
+<input id="earnSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey" href="News.dc.html">2) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">3) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">4) Ownership</a>
+<a class="t-fkey is-on" href="#" aria-current="page">5) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">6) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>Q3 2026 Earnings Season (ERN)</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">Sample data: illustrative numbers and fictional companies</span>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Season overview" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+<div style="flex: 1 1 520px; min-width: 0">
+<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">Q3 2026 earnings season</h1>
+<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 760px">Week 2 of 6. Early reporters are beating on EPS at roughly the usual rate, but revenue beats are running well below average, and guidance is mixed. Margins are doing the work, not demand.</div>
+</div>
+<div style="flex: 0 1 360px; min-width: 260px">
+<div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px"><span>S&amp;P 500 reported</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">41 of 500 · 8%</span></div>
+<div aria-hidden="true" style="height: 8px; border-radius: 0; background: #241A0B; overflow: hidden"><div style="width: 8%; height: 8px; background: #FFB84D"></div></div>
+<div style="display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 14px" aria-label="Reports per week, sample" role="img">
+<sc-for list="{{weeks}}" as="wk" hint-placeholder-count="6">
+<div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 64px; justify-content: flex-end">
+<div style="{{wk.barStyle}}"></div>
+<span style="font-size: 11px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{wk.label}}</span>
+</div>
+</sc-for>
+</div>
+<div style="font-size: 12px; color: #A87933; margin-top: 4px">Reports per week · current week highlighted</div>
+</div>
+</section>
+
+<section aria-label="Scorecard">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
+<sc-for list="{{score}}" as="sc" hint-placeholder-count="6">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div style="color: #C99442; font-size: 12.5px">{{sc.label}}</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{sc.color}}; margin-top: 2px">{{sc.value}}</div>
+<div style="color: #A87933; font-size: 12.5px">{{sc.sub}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px">
+
+<section class="t-card" aria-label="Beat rate by sector" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 4px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Beat rate by sector</h2>
+<div role="group" aria-label="Beat metric" style="display: flex; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
+<sc-for list="{{metricTabs}}" as="mt" hint-placeholder-count="2">
+<button type="button" onClick="{{mt.pick}}" aria-pressed="{{mt.pressed}}" style="{{mt.btnStyle}}">{{mt.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">Share of reporters beating consensus {{metricWord}} · bright tick = 5-year average · small samples this early</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{sectorRows}}" as="r" hint-placeholder-count="11">
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 96px; align-items: center; gap: 12px; font-size: 13.5px">
+<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.n}}</span>
+<span aria-hidden="true" style="position: relative; display: block; height: 14px; border-radius: 0; background: #1A1309">
+<span style="{{r.fillStyle}}"></span>
+<span style="{{r.avgStyle}}"></span>
+</span>
+<span style="font-family: 'IBM Plex Mono', monospace; text-align: right; color: {{r.color}}">{{r.label}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-card" aria-label="Q3 2026 sentiment" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Q3 2026 sentiment</h2>
+<span style="color: #A87933; font-size: 12.5px">Share of earnings calls citing each factor · change vs. Q2</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 14px 0 16px; padding: 12px 14px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326">
+<div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D">NET SENTIMENT</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; color: #FFD89D">+12 <span style="font-size: 14px; color: #4ADE80">▲ from +4</span></div>
+</div>
+<div style="flex: 1 1 220px; font-size: 13.5px; color: #FFB84D">Tariffs still dominate calls, but mentions are fading. The new worry is the lower-income consumer, cited by 37% of calls, up 6 points.</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px">
+<div>
+<h3 style="margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80">TAILWINDS</h3>
+<sc-for list="{{tail}}" as="t" hint-placeholder-count="5">
+<div style="padding: 7px 0">
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px"><span>{{t.n}}</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{t.pct}}</span></div>
+<div aria-hidden="true" style="height: 6px; border-radius: 0; background: #1A1309; margin-top: 4px"><div style="{{t.bar}}"></div></div>
+<div style="font-size: 12px; color: #A87933; margin-top: 2px">{{t.delta}} vs. Q2</div>
+</div>
+</sc-for>
+</div>
+<div>
+<h3 style="margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56">HEADWINDS</h3>
+<sc-for list="{{head}}" as="h" hint-placeholder-count="5">
+<div style="padding: 7px 0">
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px"><span>{{h.n}}</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{h.pct}}</span></div>
+<div aria-hidden="true" style="height: 6px; border-radius: 0; background: #1A1309; margin-top: 4px"><div style="{{h.bar}}"></div></div>
+<div style="font-size: 12px; color: #A87933; margin-top: 2px">{{h.delta}} vs. Q2</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px">
+<sc-for list="{{words}}" as="w" hint-placeholder-count="3">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 10px 12px">
+<div style="font-size: 12.5px; color: #C99442">Calls saying “{{w.w}}”</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFD89D">{{w.now}}</div>
+<div style="font-size: 12px; color: #A87933">Q2: {{w.prev}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+
+<section aria-label="Recently reported">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFD89D">Recently reported</h2>
+<div role="group" aria-label="Filter reports" style="display: flex; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
+<sc-for list="{{filterTabs}}" as="ft" hint-placeholder-count="3">
+<button type="button" onClick="{{ft.pick}}" aria-pressed="{{ft.pressed}}" style="{{ft.btnStyle}}">{{ft.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 12px">
+<sc-for list="{{reports}}" as="rp" hint-placeholder-count="8">
+<article style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+<div style="min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; padding: 2px 8px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{rp.t}}</span>
+<h3 style="margin: 0; font-size: 15.5px; font-weight: 600; color: #FFD89D">{{rp.n}}</h3>
+</div>
+<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{rp.sector}} · {{rp.date}}</div>
+</div>
+<div style="text-align: right; flex: none">
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: {{rp.moveColor}}">{{rp.move}}</div>
+<div style="font-size: 12px; color: #A87933">next-day move</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
+<div style="font-size: 12px; color: #C99442">EPS</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div>
+<div style="font-size: 12px; color: {{rp.epsColor}}">{{rp.epsTag}}</div>
+</div>
+<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
+<div style="font-size: 12px; color: #C99442">Revenue</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.rev}}</div>
+<div style="font-size: 12px; color: {{rp.revColor}}">{{rp.revTag}}</div>
+</div>
+<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
+<div style="font-size: 12px; color: #C99442">Guidance</div>
+<div style="font-size: 14px; font-weight: 600; color: {{rp.guideColor}}">{{rp.guide}}</div>
+<div style="font-size: 12px; color: #A87933">vs. prior outlook</div>
+</div>
+</div>
+<ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.45">
+<sc-for list="{{rp.bullets}}" as="b" hint-placeholder-count="3"><li>{{b}}</li></sc-for>
+</ul>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming earnings</h2>
+<span style="color: #A87933; font-size: 12.5px">Implied move = options-priced one-day move · BMO before open · AMC after close</span>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 720px; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Date</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Sector</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Time</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">EPS est.</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Rev. est.</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">Implied move</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="9">
+<tr style="{{u.rowStyle}}">
+<td style="text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; white-space: nowrap">{{u.date}}</td>
+<th scope="row" style="text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909"><span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; margin-right: 8px">{{u.t}}</span>{{u.n}}</th>
+<td style="text-align: left; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{u.sector}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.when}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.eps}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.rev}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{u.move}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<span>Estimates and results via [DATA PROVIDER] · Call themes via [TRANSCRIPT SOURCE]</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var UP = '#4ADE80', DN = '#FF5F56', NEU = '#FFB84D';
+    var st = this.state || {};
+    var metric = st.metric || 'eps';
+    var filt = st.filt || 'all';
+    var self = this;
+    var tabStyle = function (on) {
+      return 'height: 34px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;');
+    };
+    var weekData = [['10/5', 12], ['10/12', 44], ['10/19', 112], ['10/26', 168], ['11/2', 118], ['11/9', 46]];
+    var weeks = weekData.map(function (w, k) {
+      return { label: w[0], barStyle: 'width: 100%; border-radius: 0 0 0; height: ' + Math.round(w[1] / 168 * 44) + 'px; background: ' + (k === 1 ? '#FFE9C7' : '#4A3517') + ';' };
+    });
+    var sectors = [
+      { n: 'Technology', eps: [4, 4], rev: [4, 4], avg: 82 },
+      { n: 'Financials', eps: [9, 11], rev: [7, 11], avg: 78 },
+      { n: 'Consumer Staples', eps: [4, 5], rev: [3, 5], avg: 76 },
+      { n: 'Industrials', eps: [6, 8], rev: [5, 8], avg: 77 },
+      { n: 'Health Care', eps: [2, 3], rev: [2, 3], avg: 81 },
+      { n: 'Materials', eps: [2, 3], rev: [1, 3], avg: 71 },
+      { n: 'Consumer Discretionary', eps: [3, 5], rev: [2, 5], avg: 75 },
+      { n: 'Communication Svcs.', eps: [1, 1], rev: [1, 1], avg: 77 },
+      { n: 'Energy', eps: [0, 1], rev: [0, 1], avg: 69 },
+      { n: 'Real Estate', eps: [0, 0], rev: [0, 0], avg: 74 },
+      { n: 'Utilities', eps: [0, 0], rev: [0, 0], avg: 66 }
+    ];
+    var sectorRows = sectors.map(function (s) {
+      var v = s[metric], avg = metric === 'eps' ? s.avg : s.avg - 9;
+      var none = v[1] === 0;
+      var pct = none ? 0 : Math.round(v[0] / v[1] * 100);
+      return {
+        n: s.n,
+        label: none ? 'none yet' : pct + '% · ' + v[0] + '/' + v[1],
+        color: none ? '#A87933' : (pct >= avg ? UP : DN),
+        fillStyle: 'position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0; width: ' + pct + '%; background: ' + (pct >= avg ? '#2F9E5A' : '#B8423A') + ';',
+        avgStyle: 'position: absolute; top: -3px; bottom: -3px; width: 2px; background: #FFD89D; left: calc(' + avg + '% - 1px);'
+      };
+    });
+    var metricTabs = [{ id: 'eps', label: 'EPS' }, { id: 'rev', label: 'Revenue' }].map(function (t) {
+      return { label: t.label, pressed: t.id === metric ? 'true' : 'false', pick: function () { self.setState({ metric: t.id }); }, btnStyle: tabStyle(t.id === metric) };
+    });
+    var bar = function (p, c) { return 'height: 6px; border-radius: 0; background: ' + c + '; width: ' + Math.round(p / 70 * 100) + '%;'; };
+    var dl = function (d) { return (d > 0 ? '▲ +' : (d < 0 ? '▼ −' : '')) + Math.abs(d) + ' pts'; };
+    var tail = [['AI and data center demand', 46, 7], ['Pricing actions', 39, 2], ['Easing input costs', 27, 5], ['Lower rates and financing', 22, 9], ['Resilient high-income consumer', 20, -1]].map(function (x) {
+      return { n: x[0], pct: x[1] + '%', bar: bar(x[1], '#2F9E5A'), delta: dl(x[2]) };
+    });
+    var head = [['Tariffs and trade costs', 61, -8], ['Lower-income consumer softness', 37, 6], ['Labor and wage costs', 24, 1], ['FX translation', 18, -4], ['Customer destocking', 15, -3]].map(function (x) {
+      return { n: x[0], pct: x[1] + '%', bar: bar(x[1], '#B8423A'), delta: dl(x[2]) };
+    });
+    var filterTabs = [{ id: 'all', label: 'All' }, { id: 'beat', label: 'Beat EPS' }, { id: 'miss', label: 'Missed EPS' }].map(function (t) {
+      return { label: t.label, pressed: t.id === filt ? 'true' : 'false', pick: function () { self.setState({ filt: t.id }); }, btnStyle: tabStyle(t.id === filt) };
+    });
+    var raw = [
+      { t: 'TRVS', n: 'Travis Regional Bancorp', sector: 'Financials', date: 'Oct 13 · BMO', ea: 0.94, ee: 1.06, rev: '$412M vs. $405M', rb: true, mv: -9.3, guide: 'Lowered',
+        b: ['Credit loss provisions jumped 48% YoY on commercial real estate, driving the EPS miss.', 'Net interest income rose 3% YoY, but the full-year NII outlook was trimmed for expected rate cuts.', 'Deposits grew 2% QoQ; management expects CRE stress to peak in 1H27.'] },
+      { t: 'MDLN', n: 'Meridian Apparel', sector: 'Consumer Discretionary', date: 'Oct 13 · BMO', ea: 0.27, ee: 0.31, rev: '$1.21B vs. $1.26B', rb: false, mv: -12.6, guide: 'Lowered',
+        b: ['Comparable sales fell 4% as lower-income shoppers pulled back on discretionary purchases.', 'Gross margin contracted 180 bp on tariff costs and heavier promotions.', 'Holiday-quarter revenue outlook cut about 5%; inventory up 11% YoY heading into Q4.'] },
+      { t: 'GRLN', n: 'Greenline Rail', sector: 'Industrials', date: 'Oct 12 · AMC', ea: 1.19, ee: 1.12, rev: '$2.38B vs. $2.31B', rb: true, mv: 3.4, guide: 'Raised',
+        b: ['Carloads rose 5% on intermodal and agricultural volumes.', 'Operating ratio improved 150 bp to 61.8% as the cost program ran ahead of plan.', 'Full-year EPS guidance raised; capex held flat.'] },
+      { t: 'FSTN', n: 'Fairstone Packaging', sector: 'Materials', date: 'Oct 12 · AMC', ea: 0.88, ee: 0.84, rev: '$1.64B vs. $1.67B', rb: false, mv: 2.1, guide: 'Maintained',
+        b: ['Volumes fell 2%, but price and mix added 4%, so EPS beat while revenue missed.', 'Resin cost relief lifted adjusted EBITDA margin 120 bp.', 'Reiterated full-year outlook; no recovery in industrial demand assumed.'] },
+      { t: 'SNTL', n: 'Sentinel Asset Management', sector: 'Financials', date: 'Oct 9 · BMO', ea: 11.85, ee: 11.20, rev: '$5.10B vs. $4.98B', rb: true, mv: 2.6, guide: 'N/A',
+        b: ['AUM hit a record $1.4T on $28B of net inflows, led by fixed income ETFs.', 'Performance fees rose 35% YoY on strong private credit returns.', 'Private markets fundraising tracking ahead of full-year target.'] },
+      { t: 'PCRF', n: 'Pinecrest Foods', sector: 'Consumer Staples', date: 'Oct 8 · BMO', ea: 0.72, ee: 0.70, rev: '$3.05B vs. $3.08B', rb: false, mv: -1.4, guide: 'Maintained',
+        b: ['Organic sales rose just 1%, all from price; volumes fell 2% as private label gained share.', 'Ingredient cost deflation helped gross margin expand 60 bp.', 'Kept guidance but flagged a more value-seeking shopper into the holidays.'] },
+      { t: 'ALDR', n: 'Aldridge Airlines', sector: 'Industrials', date: 'Oct 8 · BMO', ea: 1.52, ee: 1.38, rev: '$15.2B vs. $15.0B', rb: true, mv: 5.8, guide: 'Raised',
+        b: ['Premium cabin revenue grew 9% while main cabin was flat, extending the high-end versus low-end split.', 'Fuel cost per gallon fell 11% YoY, the main driver of the margin beat.', 'Q4 EPS outlook set above consensus on firm corporate travel bookings.'] },
+      { t: 'CRBL', n: 'Corbel Beverage', sector: 'Consumer Staples', date: 'Oct 7 · BMO', ea: 2.61, ee: 2.48, rev: '$2.42B vs. $2.45B', rb: false, mv: -3.0, guide: 'Lowered',
+        b: ['Depletions fell 3%; management blamed softer spending by lower-income consumers.', 'Aluminum cost relief and price increases protected margins and drove the EPS beat.', 'Cut full-year volume outlook but kept its $500M buyback pace.'] }
+    ];
+    var reports = raw.filter(function (r) {
+      return filt === 'all' || (filt === 'beat' ? r.ea >= r.ee : r.ea < r.ee);
+    }).map(function (r) {
+      var eb = r.ea >= r.ee;
+      var surprise = ((r.ea - r.ee) / r.ee * 100);
+      return {
+        t: r.t, n: r.n, sector: r.sector, date: r.date,
+        eps: '$' + r.ea.toFixed(2) + ' vs. $' + r.ee.toFixed(2),
+        epsTag: (eb ? 'Beat ' : 'Missed ') + (surprise >= 0 ? '+' : '−') + Math.abs(surprise).toFixed(1) + '%',
+        epsColor: eb ? UP : DN,
+        rev: r.rev, revTag: r.rb ? 'Beat' : 'Missed', revColor: r.rb ? UP : DN,
+        guide: r.guide, guideColor: r.guide === 'Raised' ? UP : (r.guide === 'Lowered' ? DN : NEU),
+        move: (r.mv >= 0 ? '▲ +' : '▼ −') + Math.abs(r.mv).toFixed(1) + '%', moveColor: r.mv >= 0 ? UP : DN,
+        bullets: r.b
+      };
+    });
+    var up = [
+      { date: 'Oct 13', t: 'HRBR', n: 'Harbor Logistics', sector: 'Industrials', when: 'AMC', eps: '$0.97', rev: '$1.88B', move: '±6.4%', today: true },
+      { date: 'Oct 14', t: 'CRSN', n: 'Carsten Fluid Systems', sector: 'Industrials', when: 'BMO', eps: '$0.66', rev: '$742M', move: '±5.1%' },
+      { date: 'Oct 14', t: 'PRSM', n: 'Prism Semiconductor', sector: 'Technology', when: 'AMC', eps: '$2.41', rev: '$6.12B', move: '±8.8%' },
+      { date: 'Oct 15', t: 'ODEN', n: 'Oden Power and Motion', sector: 'Industrials', when: 'BMO', eps: '$3.05', rev: '$4.40B', move: '±4.3%' },
+      { date: 'Oct 15', t: 'QNTL', n: 'Quintal Software', sector: 'Technology', when: 'AMC', eps: '$0.52', rev: '$968M', move: '±9.6%' },
+      { date: 'Oct 15', t: 'SLTE', n: 'Slate Media', sector: 'Communication Svcs.', when: 'AMC', eps: '$0.18', rev: '$1.05B', move: '±11.2%' },
+      { date: 'Oct 16', t: 'HLWY', n: 'Halloway Machine Works', sector: 'Industrials', when: 'BMO', eps: '$1.47', rev: '$2.21B', move: '±4.9%' },
+      { date: 'Oct 16', t: 'ARCO', n: 'Arcos Homebuilders', sector: 'Consumer Discretionary', when: 'BMO', eps: '$1.93', rev: '$3.36B', move: '±6.0%' },
+      { date: 'Oct 29', t: 'NWND', n: 'Northwind Industrial', sector: 'Industrials', when: 'BMO', eps: '$1.24', rev: '$1.13B', move: '±5.5%' }
+    ].map(function (u) {
+      return Object.assign({}, u, { date: u.today ? u.date + ' · Today' : u.date, rowStyle: 'text-align: right;' + (u.today ? ' background: #261C0C;' : '') });
+    });
+    return {
+      weeks: weeks,
+      score: [
+        { label: 'Beat EPS estimates', value: '76%', sub: '5-yr avg 77%', color: '#FFD89D' },
+        { label: 'Beat revenue estimates', value: '61%', sub: '5-yr avg 69%', color: DN },
+        { label: 'Blended EPS growth', value: '+8.7%', sub: 'YoY · expected +7.9% on Sep 30', color: UP },
+        { label: 'Avg. EPS surprise', value: '+5.9%', sub: '5-yr avg +7.1%', color: '#FFD89D' },
+        { label: 'Guidance raised / cut', value: '9 / 6', sub: '18 maintained · 8 none given', color: '#FFD89D' },
+        { label: 'Avg. next-day move', value: '+0.9% / −3.1%', sub: 'on beats / on misses', color: '#FFD89D' }
+      ],
+      metricTabs: metricTabs,
+      metricWord: metric === 'eps' ? 'on EPS' : 'on revenue',
+      sectorRows: sectorRows,
+      tail: tail,
+      head: head,
+      words: [{ w: 'tariff', now: '61%', prev: '69%' }, { w: 'AI', now: '58%', prev: '51%' }, { w: 'recession', now: '9%', prev: '14%' }],
+      filterTabs: filterTabs,
+      reports: reports,
+      upcoming: up
+    };
+  }
+}
+</script>
+</body>
+</html>

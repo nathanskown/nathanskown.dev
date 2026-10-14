@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live headlines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">TOP &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Feed updates live · filter by source, watchlist or notable</span>
+</div>
+<div class="t-cmd">
+<label for="newsSearch" class="t-prompt">NSKN ›</label>
+<input id="newsSearch" class="t-input" type="search" placeholder="SEARCH HEADLINES OR TICKER" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey is-on" href="#" aria-current="page">2) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">3) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">4) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">6) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>Live Headlines (TOP)</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">Sample data</span>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+
+<section aria-label="Feed controls" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px">
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+<h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 600; color: #FFD89D">Live headlines</h1>
+<span style="{{statusStyle}}"><span aria-hidden="true" style="{{dotStyle}}"></span>{{statusText}}</span>
+<span style="font-size: 12.5px; color: #A87933">Sample feed · new items arrive every few seconds in this mockup</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<button type="button" onClick="{{toggleWatch}}" aria-pressed="{{watchPressed}}" style="{{watchStyle}}">Watchlist only</button>
+<button type="button" onClick="{{toggleNotable}}" aria-pressed="{{notablePressed}}" style="{{notableStyle}}">Notable only</button>
+<button type="button" onClick="{{togglePause}}" style="height: 40px; padding: 0 16px; border-radius: 0; border: 1px solid #FFB84D; background: #FFB84D; color: #000000; text-shadow: none; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">{{pauseLabel}}</button>
+</div>
+</section>
+
+<div role="group" aria-label="Source type" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px; align-self: flex-start">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.btnStyle}}">{{t.label}} <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #A87933">{{t.count}}</span></button>
+</sc-for>
+</div>
+
+<sc-if value="{{hasUnseen}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{markSeen}}" style="align-self: flex-start; height: 40px; padding: 0 16px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFFFFF; font-family: inherit; font-size: 13.5px; cursor: pointer">{{unseenText}} · mark as read</button>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section aria-label="Headline feed" aria-live="polite" style="flex: 999 1 600px; min-width: 0; background: #0A0704; border: 1px solid #382811; border-radius: 0; overflow: hidden">
+<sc-for list="{{items}}" as="it" hint-placeholder-count="12">
+<a href="#" style="{{it.rowStyle}}">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #A87933; width: 66px; flex: none; padding-top: 2px">{{it.time}}</span>
+<span style="flex: 1 1 auto; min-width: 0">
+<span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px">
+<span style="{{it.typeStyle}}">{{it.type}}</span>
+<sc-for list="{{it.tickers}}" as="tk" hint-placeholder-count="1"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #FFE9C7">{{tk}}</span></sc-for>
+<sc-if value="{{it.notable}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF">NOTABLE</span></sc-if>
+<sc-if value="{{it.fresh}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #4ADE80">NEW</span></sc-if>
+</span>
+<span style="display: block; font-size: 15px; font-weight: 500; line-height: 1.4; color: #FFD89D">{{it.h}}</span>
+<span style="display: block; font-size: 12.5px; color: #A87933; margin-top: 3px">{{it.src}}</span>
+</span>
+</a>
+</sc-for>
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 28px; text-align: center; color: #C99442; font-size: 14px">No headlines match these filters yet.</div>
+</sc-if>
+</section>
+
+<aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+<section class="t-card" aria-label="Today's top stories" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Today's top stories</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 6px">Most-covered stories across major publications</div>
+<sc-for list="{{top}}" as="ts" hint-placeholder-count="5">
+<div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #A87933; width: 18px; flex: none">{{ts.rank}}</span>
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D; line-height: 1.4">{{ts.h}}</span><span style="display: block; font-size: 12px; color: #A87933; margin-top: 2px">{{ts.meta}}</span></span>
+</div>
+</sc-for>
+</section>
+
+<section class="t-card" aria-label="Watchlist" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Watchlist</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 8px">Headlines mentioning these tickers are flagged</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{watch}}" as="w" hint-placeholder-count="6">
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px">{{w.t}} <span style="color: #A87933">{{w.c}}</span></span>
+</sc-for>
+</div>
+</section>
+
+<section class="t-card" aria-label="Scheduled today" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Still to come today</h2>
+<sc-for list="{{sched}}" as="sc" hint-placeholder-count="4">
+<div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #221909; font-size: 13.5px">
+<span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; width: 66px; flex: none">{{sc.t}}</span><span>{{sc.e}}</span>
+</div>
+</sc-for>
+</section>
+
+<section aria-label="Sources" style="font-size: 12.5px; color: #A87933; line-height: 1.6">
+Sources in the live version: press release wires, SEC EDGAR 8-K filings, and RSS feeds from major financial publications. Headlines link out to the original; full articles stay on the publisher's site.
+</section>
+
+</aside>
+</div>
+</main>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    var self = this;
+    this.timer = setInterval(function () {
+      var st = self.state || {};
+      if (st.paused) return;
+      var q = st.queued === undefined ? 0 : st.queued;
+      if (q >= self.queue().length) return;
+      var now = new Date();
+      var t = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
+      self.setState({ queued: q + 1, arrived: (st.arrived || []).concat([{ q: q, time: t, at: Date.now() }]), unseen: (st.unseen || 0) + 1 });
+    }, 7000);
+    this.tick = setInterval(function () { self.forceUpdate(); }, 2000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.tick); try { document.title = 'Live headlines'; } catch (e) {} }
+  componentDidUpdate() {
+    var n = (this.state && this.state.unseen) || 0;
+    try { document.title = (n ? '(' + n + ') ' : '') + 'Live headlines'; } catch (e) {}
+  }
+  queue() {
+    return [
+      { type: 'Press release', tickers: ['PRSM'], h: 'Prism Semiconductor announces $2 billion share repurchase authorization', src: 'Company press release · newswire', notable: true },
+      { type: 'Publication', tickers: [], h: 'Fed officials signal openness to another quarter-point cut as inflation cools', src: 'National financial daily', notable: true },
+      { type: 'SEC filing', tickers: ['HLWY'], h: 'Halloway Machine Works 8-K: chief operating officer to depart at year end', src: 'SEC EDGAR · 8-K Item 5.02', notable: false },
+      { type: 'Publication', tickers: ['ODEN'], h: 'Oden Power and Motion said to explore sale of aftermarket parts unit, people familiar say', src: 'Wire service', notable: true },
+      { type: 'Press release', tickers: ['HRBR'], h: 'Harbor Logistics to webcast third-quarter results after market close today', src: 'Company press release · newswire', notable: false },
+      { type: 'Publication', tickers: [], h: 'Oil extends gains after supply disruption at major Gulf export terminal', src: 'Wire service', notable: false },
+      { type: 'SEC filing', tickers: ['NWND'], h: 'Northwind Industrial 8-K: board adopts shareholder rights plan after activist stake disclosure', src: 'SEC EDGAR · 8-K Item 3.03', notable: true },
+      { type: 'Press release', tickers: ['KTRA'], h: 'Kestrel Aerospace wins $640 million Air Force avionics contract', src: 'Company press release · newswire', notable: false },
+      { type: 'Publication', tickers: [], h: 'Regional bank stocks slide as commercial real estate worries resurface', src: 'Business network', notable: false },
+      { type: 'SEC filing', tickers: ['QNTL'], h: 'Quintal Software 13D: Morrow Street Advisors discloses 6.1% stake, seeks strategic review', src: 'SEC EDGAR · Schedule 13D', notable: true }
+    ];
+  }
+  base() {
+    return [
+      { time: '1:12 PM', type: 'Publication', tickers: [], h: 'Treasury yields hold near three-week lows as traders price in October cut', src: 'Financial daily', notable: false },
+      { time: '1:04 PM', type: 'Press release', tickers: ['NWND'], h: 'Northwind Industrial confirms receipt of letter from Halcyon Point Capital, says board will review', src: 'Company press release · newswire', notable: true },
+      { time: '12:51 PM', type: 'SEC filing', tickers: ['TRVS'], h: 'Travis Regional Bancorp 8-K: files investor presentation on commercial real estate exposure', src: 'SEC EDGAR · 8-K Item 7.01', notable: false },
+      { time: '12:37 PM', type: 'Publication', tickers: ['MDLN'], h: 'Meridian Apparel shares hit two-year low after holiday outlook cut', src: 'Business network', notable: false },
+      { time: '12:20 PM', type: 'Press release', tickers: [], h: 'Lumenvault sets IPO terms, seeks up to $486 million at top of range', src: 'Company press release · newswire', notable: false },
+      { time: '11:58 AM', type: 'Publication', tickers: [], h: 'Small business optimism ticks up for second month, survey shows', src: 'Wire service', notable: false },
+      { time: '11:42 AM', type: 'Publication', tickers: ['PRSM'], h: 'Chipmakers rally as data center spending forecasts move higher', src: 'National financial daily', notable: false },
+      { time: '11:20 AM', type: 'SEC filing', tickers: ['ARCO'], h: 'Arcos Homebuilders 8-K: amends credit agreement, extends maturity to 2031', src: 'SEC EDGAR · 8-K Item 1.01', notable: false },
+      { time: '10:55 AM', type: 'Press release', tickers: ['GRLN'], h: 'Greenline Rail declares quarterly dividend, raises payout 8%', src: 'Company press release · newswire', notable: false },
+      { time: '10:31 AM', type: 'Publication', tickers: ['TRVS'], h: 'Travis Regional falls 9% after loan-loss provisions jump on office loans', src: 'Wire service', notable: true },
+      { time: '9:48 AM', type: 'Publication', tickers: ['KTRA'], h: 'Kestrel Aerospace jumps after lifting full-year outlook on defense orders', src: 'Business network', notable: false },
+      { time: '7:31 AM', type: 'Publication', tickers: [], h: 'September CPI rises 0.2%, below forecasts; core holds at 3.1% annual pace', src: 'Wire service', notable: true }
+    ];
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var paused = !!st.paused, watchOnly = !!st.watchOnly, notableOnly = !!st.notableOnly;
+    var tab = st.tab || 'all';
+    var watchList = ['NWND', 'PRSM', 'HLWY', 'ODEN', 'FNWK', 'QNTL'];
+    var q = this.queue();
+    var arrived = (st.arrived || []).slice().reverse().map(function (a) {
+      var it = q[a.q];
+      return Object.assign({}, it, { time: a.time, fresh: Date.now() - a.at < 20000, live: true });
+    });
+    var all = arrived.concat(this.base().map(function (b) { return Object.assign({}, b, { fresh: false }); }));
+    var typeMap = { all: null, pr: 'Press release', sec: 'SEC filing', pub: 'Publication' };
+    var counts = { all: all.length, pr: 0, sec: 0, pub: 0 };
+    all.forEach(function (it) { if (it.type === 'Press release') counts.pr++; else if (it.type === 'SEC filing') counts.sec++; else counts.pub++; });
+    var tStyle = function (type) {
+      var c = type === 'Press release' ? ['#261C0C', '#8A6326', '#FFFFFF'] : (type === 'SEC filing' ? ['#0E0A05', '#8A6326', '#FFE9C7'] : ['#1A1309', '#4A3517', '#FFB84D']);
+      return 'font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
+    };
+    var items = all.filter(function (it) {
+      if (typeMap[tab] && it.type !== typeMap[tab]) return false;
+      if (notableOnly && !it.notable) return false;
+      if (watchOnly && !it.tickers.some(function (t) { return watchList.indexOf(t) >= 0; })) return false;
+      return true;
+    }).map(function (it) {
+      var onWatch = it.tickers.some(function (t) { return watchList.indexOf(t) >= 0; });
+      return Object.assign({}, it, {
+        typeStyle: tStyle(it.type),
+        rowStyle: 'display: flex; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #221909; color: #FFB84D; ' + (it.fresh ? 'animation: arrive 4s ease-out; ' : '') + (onWatch ? 'background: #1A1309;' : '')
+      });
+    });
+    var tabDefs = [['all', 'All'], ['pub', 'Publications'], ['pr', 'Press releases'], ['sec', 'SEC filings']];
+    var btn = function (on) { return 'height: 36px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;'); };
+    var toggle = function (on) { return 'height: 40px; padding: 0 14px; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13.5px; ' + (on ? 'background: #261C0C; border: 1px solid #FFB84D; color: #FFD89D;' : 'background: #0E0A05; border: 1px solid #3D2C13; color: #C99442;'); };
+    var unseen = st.unseen || 0;
+    var watch = watchList.map(function (t) {
+      return { t: t, c: all.filter(function (it) { return it.tickers.indexOf(t) >= 0; }).length };
+    });
+    return {
+      statusText: paused ? 'Paused' : 'Live',
+      statusStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 0; font-size: 12.5px; font-weight: 600; ' + (paused ? 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;' : 'background: #0D2616; border: 1px solid #1F6B3A; color: #4ADE80;'),
+      dotStyle: 'width: 8px; height: 8px; border-radius: 0; background: ' + (paused ? '#664A1F' : '#4ADE80') + ';' + (paused ? '' : ' animation: pulse 1.6s infinite;'),
+      pauseLabel: paused ? 'Resume' : 'Pause',
+      togglePause: function () { self.setState({ paused: !paused }); },
+      toggleWatch: function () { self.setState({ watchOnly: !watchOnly }); },
+      toggleNotable: function () { self.setState({ notableOnly: !notableOnly }); },
+      watchPressed: watchOnly ? 'true' : 'false',
+      notablePressed: notableOnly ? 'true' : 'false',
+      watchStyle: toggle(watchOnly),
+      notableStyle: toggle(notableOnly),
+      tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], pressed: t[0] === tab ? 'true' : 'false', pick: function () { self.setState({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
+      hasUnseen: unseen > 0,
+      unseenText: unseen + ' new since you last looked',
+      markSeen: function () { self.setState({ unseen: 0 }); },
+      items: items,
+      empty: items.length === 0,
+      top: [
+        { rank: 1, h: 'Softer CPI print revives bets on an October rate cut', meta: 'Covered by 9 major outlets' },
+        { rank: 2, h: 'Regional banks under pressure again on office loan losses', meta: 'Covered by 6 major outlets' },
+        { rank: 3, h: 'Activist pressure builds at mid-cap industrials', meta: 'Covered by 4 major outlets' },
+        { rank: 4, h: 'Lower-income shoppers pull back ahead of the holidays', meta: 'Covered by 4 major outlets' },
+        { rank: 5, h: 'IPO window stays open for AI and defense names', meta: 'Covered by 3 major outlets' }
+      ],
+      watch: watch,
+      sched: [
+        { t: '3:00 PM', e: 'Market close' },
+        { t: '3:05 PM', e: 'Harbor Logistics (HRBR) Q3 results' },
+        { t: '3:30 PM', e: 'Fed Governor remarks on the economic outlook' },
+        { t: '4:00 PM', e: 'Harbor Logistics earnings call' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

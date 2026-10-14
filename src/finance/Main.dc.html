@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stock quote page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">DES &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Pick a range to redraw the price chart</span>
+</div>
+<div class="t-cmd">
+<label for="tickerSearch" class="t-prompt">NSKN ›</label>
+<input id="tickerSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey" href="News.dc.html">2) Headlines</a>
+<a class="t-fkey is-on" href="#" aria-current="page">3) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">4) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">6) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>NWND US Equity · Description (DES)</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">Sample data: fictional company, illustrative numbers only</span>
+</div>
+</header>
+
+<main style="max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px; box-sizing: border-box">
+
+
+<section aria-label="Quote" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px">
+<div>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">NWND</span>
+<span style="color: #C99442; font-size: 13.5px">NYSE · Industrials · Machinery</span>
+</div>
+<h1 style="margin: 10px 0 6px; font-size: 34px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">Northwind Industrial Corp.</h1>
+<div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #FFD89D">$84.62</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: {{trendColor}}">{{trendArrow}} {{chgText}} ({{pctText}})</span>
+<span style="color: #C99442; font-size: 13.5px">{{rangeLabel}}</span>
+</div>
+<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">As of Oct 13, 2026 · 3:59 PM CT · Delayed 15 min</div>
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button type="button" style="height: 44px; padding: 0 18px; border-radius: 0; border: 1px solid #FFB84D; background: #FFB84D; color: #000000; text-shadow: none; font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer">+ Watchlist</button>
+<button type="button" style="height: 44px; padding: 0 18px; border-radius: 0; border: 1px solid #3D2C13; background: #0E0A05; color: #FFB84D; font-family: inherit; font-weight: 500; font-size: 14px; cursor: pointer">Set alert</button>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+
+<section class="t-card" aria-label="Price chart" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px 18px 14px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Price</h2>
+<div role="group" aria-label="Chart range" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
+<sc-for list="{{ranges}}" as="r" hint-placeholder-count="7">
+<button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.btnStyle}}">{{r.id}}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; gap: 10px">
+<div style="flex: 1 1 auto; min-width: 0">
+<svg viewBox="0 0 800 260" preserveAspectRatio="none" role="img" aria-label="Line chart of sample share price over the selected range" style="display: block; width: 100%; height: 280px">
+<line x1="0" y1="20" x2="800" y2="20" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="93" x2="800" y2="93" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="167" x2="800" y2="167" stroke="#241A0B" stroke-width="1"></line>
+<line x1="0" y1="240" x2="800" y2="240" stroke="#241A0B" stroke-width="1"></line>
+<path d="{{areaPath}}" fill="{{trendFill}}" stroke="none"></path>
+<path d="{{linePath}}" fill="none" stroke="{{trendColor}}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
+</svg>
+<div style="display: flex; justify-content: space-between; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
+<sc-for list="{{xLabels}}" as="x" hint-placeholder-count="5"><span>{{x}}</span></sc-for>
+</div>
+</div>
+<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; box-sizing: border-box; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; text-align: right; width: 52px">
+<span>{{yMax}}</span><span>{{yMid}}</span><span>{{yMin}}</span>
+</div>
+</div>
+</section>
+
+<section aria-label="Key statistics">
+<h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Key statistics</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px">
+<sc-for list="{{stats}}" as="s" hint-placeholder-count="8">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div style="color: #C99442; font-size: 12.5px">{{s.label}}</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500; margin-top: 2px; color: #FFD89D">{{s.value}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-card" aria-label="Quarterly financials" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Quarterly financials</h2>
+<span style="color: #A87933; font-size: 12.5px">USD millions except per share</span>
+</div>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 520px; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Metric</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Q3 FY25</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Q4 FY25</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Q1 FY26</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">Q2 FY26</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{fin}}" as="f" hint-placeholder-count="5">
+<tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
+<th scope="row" style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909">{{f.label}}</th>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{f.a}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{f.b}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{f.c}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; color: #FFE9C7; font-weight: 600">{{f.d}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="t-card" aria-label="Peer comparison" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Peer comparison</h2>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 560px; font-size: 14px">
+<thead>
+<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Company</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Mkt cap</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">EV/EBITDA</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">P/E</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">YTD</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{peers}}" as="p" hint-placeholder-count="5">
+<tr style="{{p.rowStyle}}">
+<th scope="row" style="text-align: left; font-weight: 500; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909"><span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; margin-right: 8px">{{p.t}}</span>{{p.n}}</th>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{p.cap}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{p.ev}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909">{{p.pe}}</td>
+<td style="{{p.ytdStyle}}">{{p.ytd}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="t-card" aria-label="Insider and activist activity" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Insider and activist activity</h2>
+<span style="color: #A87933; font-size: 12.5px">Forms 4, 13D and 13G via SEC EDGAR</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; padding: 12px 14px; border-radius: 0; background: #2A0F0D; border: 1px solid #7A2A24; margin-bottom: 16px">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF8A80; padding-top: 2px">ACTIVIST</span>
+<div style="flex: 1 1 300px; min-width: 0; font-size: 13.5px; color: #FFD89D">Halcyon Point Capital filed a 13D on Sep 22 disclosing a 5.4% stake. It is seeking two board seats and pushing a sale of the Fluid Controls segment. Expect this to come up on the Oct 29 call.</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">Net insider activity, 12 mo</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: #FF5F56">−$4.2M</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">Buyers / sellers, 12 mo</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: #FFD89D">2 / 3</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">Insider ownership</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: #FFD89D">1.9%</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">Sales under 10b5-1 plans</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: #FFD89D">2 of 3</div></div>
+</div>
+<h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">Recent insider transactions</h3>
+<div style="overflow-x: auto; margin-bottom: 16px">
+<table style="width: 100%; min-width: 640px; font-size: 13.5px">
+<thead>
+<tr style="color: #C99442; font-size: 12px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Filed</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Insider</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Transaction</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Shares</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Price</th>
+<th scope="col" style="font-weight: 500; padding: 6px 0 6px 8px; border-bottom: 1px solid #3D2C13">Value</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{insiders}}" as="ins" hint-placeholder-count="5">
+<tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
+<td style="text-align: left; padding: 9px 8px 9px 0; border-bottom: 1px solid #221909; white-space: nowrap">{{ins.d}}</td>
+<th scope="row" style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.n}}<span style="display: block; font-weight: 400; font-size: 12px; color: #A87933">{{ins.role}}</span></th>
+<td style="text-align: left; font-family: 'IBM Plex Mono', ui-monospace, monospace; padding: 9px 8px; border-bottom: 1px solid #221909; color: {{ins.color}}">{{ins.type}}</td>
+<td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.sh}}</td>
+<td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.px}}</td>
+<td style="padding: 9px 0 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.val}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">5%+ holder filings</h3>
+<sc-for list="{{bigHolders}}" as="bh" hint-placeholder-count="4">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 14px; padding: 10px 0; border-bottom: 1px solid #221909">
+<span style="font-size: 14px; color: #FFD89D; min-width: 0">{{bh.n}} <span style="font-size: 12.5px; color: #A87933">· {{bh.note}}</span></span>
+<span style="display: flex; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
+<span style="{{bh.formStyle}}">{{bh.form}}</span>
+<span style="color: #FFD89D">{{bh.pct}}</span>
+<span style="color: #A87933">{{bh.d}}</span>
+</span>
+</div>
+</sc-for>
+</section>
+
+<section class="t-card" aria-label="Index membership" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Index membership</h2>
+<span style="color: #A87933; font-size: 12.5px">Index provider announcements · passive ownership from 13F and fund filings</span>
+</div>
+<div style="overflow-x: auto; margin-bottom: 16px">
+<table style="width: 100%; min-width: 600px; font-size: 13.5px">
+<thead>
+<tr style="color: #C99442; font-size: 12px; text-align: right">
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Index</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Status</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Weight</th>
+<th scope="col" style="font-weight: 500; padding: 6px 0 6px 8px; border-bottom: 1px solid #3D2C13">Since</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{indexes}}" as="ix" hint-placeholder-count="6">
+<tr style="text-align: right">
+<th scope="row" style="text-align: left; font-weight: 500; padding: 9px 8px 9px 0; border-bottom: 1px solid #221909; color: #FFD89D">{{ix.n}}</th>
+<td style="text-align: left; padding: 9px 8px; border-bottom: 1px solid #221909"><span style="{{ix.statusStyle}}">{{ix.status}}</span></td>
+<td style="padding: 9px 8px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{ix.w}}</td>
+<td style="padding: 9px 0 9px 8px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #C99442">{{ix.since}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px">
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div style="color: #C99442; font-size: 12.5px">Held by index funds and ETFs</div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: #FFD89D">31.2%</div>
+<div aria-hidden="true" style="height: 6px; border-radius: 0; background: #241A0B; margin: 8px 0 6px"><div style="height: 6px; width: 31.2%; border-radius: 0; background: #FFB84D"></div></div>
+<div style="font-size: 12.5px; color: #A87933">of shares outstanding · up from 27.5% a year ago</div>
+</div>
+<div style="background: #261C0C; border: 1px solid #8A6326; border-radius: 0; padding: 14px 16px">
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-bottom: 6px">RECONSTITUTION WATCH</div>
+<div style="font-size: 13.5px; line-height: 1.5">Russell 2027: projected to stay in the Russell 1000, but sits near the Russell 2000 cutoff rank. A 20% drawdown before the April 30 rank day could flip it, forcing large index-fund turnover.</div>
+<div style="font-size: 13.5px; line-height: 1.5; margin-top: 6px; color: #C99442">S&amp;P 500: not eligible. Market cap is well below the inclusion threshold.</div>
+</div>
+</div>
+</section>
+
+</div>
+
+<aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-label="Next earnings" style="background: #261C0C; border: 1px solid #8A6326; border-radius: 0; padding: 18px">
+<div style="color: #FFD89D; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">NEXT EARNINGS</div>
+<div style="font-size: 22px; font-weight: 600; margin: 4px 0 2px; color: #FFE9C7">Thu, Oct 29, 2026</div>
+<div style="color: #FFB84D; font-size: 13.5px">Before market open · Call 8:00 AM CT</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px">
+<div><div style="color: #C99442; font-size: 12.5px">EPS est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">$1.24</div></div>
+<div><div style="color: #C99442; font-size: 12.5px">Revenue est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">$1.13B</div></div>
+</div>
+</section>
+
+<section class="t-card" aria-label="Analyst consensus" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Analyst consensus</h2>
+<div style="color: #C99442; font-size: 13px; margin-bottom: 14px">12 analysts · Avg. target <span style="color: #FFD89D; font-family: 'IBM Plex Mono', monospace">$95.00</span></div>
+<div aria-hidden="true" style="display: flex; height: 10px; border-radius: 0; overflow: hidden; gap: 2px">
+<div style="flex: 7; background: #FFB84D"></div>
+<div style="flex: 4; background: #664A1F"></div>
+<div style="flex: 1; background: #FF5F56"></div>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 13px; margin-top: 8px">
+<span>Buy 7</span><span>Hold 4</span><span>Sell 1</span>
+</div>
+</section>
+
+<section class="t-card" aria-label="Institutional ownership 13F" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership (13F)</h2>
+<span style="font-size: 12px; color: #A87933">Q2 2026</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 14px">
+<div>
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #FFE9C7">78.4%</div>
+<div style="font-size: 12.5px; color: #4ADE80">▲ +1.5 pts QoQ</div>
+<div style="font-size: 12.5px; color: #A87933">468 holders · +16</div>
+</div>
+<div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 40px; width: 110px">
+<div style="flex: 1; height: 19px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 22px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 20px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 26px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 28px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 31px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 34px; background: #6B4E22; border-radius: 0 0 0"></div>
+<div style="flex: 1; height: 38px; background: #FFE9C7; border-radius: 0 0 0"></div>
+</div>
+</div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>Halcyon Point Capital <span style="color: #A87933">· new</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">+2.49M</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>Ridgeway Partners</span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">+1.49M</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0 12px; font-size: 13.5px"><span>Lakeshore Advisors <span style="color: #A87933">· new</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">+0.96M</span></div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin-bottom: 2px">TOP SELLERS</div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>Brightline Investors</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">−0.83M</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>Ostrander Capital <span style="color: #A87933">· sold out</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">−0.71M</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px"><span>Wellmont Capital Mgmt</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">−0.53M</span></div>
+<p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">Value and activist money in, growth money out.</p>
+<a href="Ownership.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFD89D; font-size: 14px; font-weight: 500">Full 13F breakdown →</a>
+</section>
+
+<section class="t-card" aria-label="Latest news" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Latest news</h2>
+<sc-for list="{{news}}" as="n" hint-placeholder-count="4">
+<a href="#" style="display: block; padding: 12px 0; border-bottom: 1px solid #221909; color: #FFB84D">
+<div style="font-size: 14px; font-weight: 500; line-height: 1.4">{{n.h}}</div>
+<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{n.meta}}</div>
+</a>
+</sc-for>
+</section>
+
+</aside>
+</div>
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<span>Market data via [DATA PROVIDER] · Prices delayed 15 minutes</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  pickRange(id) { this.setState({ range: id }); }
+  renderVals() {
+    var cur = (this.state && this.state.range) || '1Y';
+    var cfg = {
+      '1D': { n: 78, seed: 11, vol: 0.004, x: ['9:30', '11:00', '12:30', '2:00', '3:59'], label: 'today' },
+      '5D': { n: 80, seed: 23, vol: 0.008, x: ['Wed', 'Thu', 'Fri', 'Mon', 'Tue'], label: 'past 5 days' },
+      '1M': { n: 60, seed: 37, vol: 0.014, x: ['Sep 15', 'Sep 22', 'Sep 29', 'Oct 6', 'Oct 13'], label: 'past month' },
+      '6M': { n: 90, seed: 41, vol: 0.02, x: ['Apr', 'May', 'Jun', 'Aug', 'Oct'], label: 'past 6 months' },
+      'YTD': { n: 90, seed: 53, vol: 0.022, x: ['Jan', 'Mar', 'May', 'Jul', 'Oct'], label: 'year to date' },
+      '1Y': { n: 100, seed: 67, vol: 0.024, x: ["Oct '25", "Jan '26", 'Apr', 'Jul', 'Oct'], label: 'past year' },
+      '5Y': { n: 110, seed: 79, vol: 0.04, x: ['2021', '2022', '2023', '2024', '2026'], label: 'past 5 years' }
+    };
+    var c = cfg[cur];
+    var s = c.seed * 2654435761 % 4294967296;
+    var rnd = function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+    var vals = [84.62];
+    for (var i = 1; i < c.n; i++) { vals.unshift(vals[0] * (1 - (rnd() - 0.47) * c.vol * 2)); }
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+    var pad = (mx - mn) * 0.08 || 1; mn -= pad; mx += pad;
+    var pts = vals.map(function (v, k) {
+      var x = (k / (vals.length - 1)) * 800;
+      var y = 20 + (1 - (v - mn) / (mx - mn)) * 220;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    var line = 'M' + pts.join(' L');
+    var area = line + ' L800,260 L0,260 Z';
+    var chg = vals[vals.length - 1] - vals[0];
+    var up = chg >= 0;
+    var self = this;
+    var ranges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y'].map(function (id) {
+      var on = id === cur;
+      return {
+        id: id,
+        pressed: on ? 'true' : 'false',
+        pick: function () { self.pickRange(id); },
+        btnStyle: 'min-width: 44px; height: 36px; padding: 0 10px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;')
+      };
+    });
+    var peerRows = [
+      { t: 'NWND', n: 'Northwind Industrial', cap: '$6.8B', ev: '11.2x', pe: '18.4x', ytd: 14.2, me: true },
+      { t: 'HLWY', n: 'Halloway Machine Works', cap: '$9.1B', ev: '12.6x', pe: '20.1x', ytd: 9.8 },
+      { t: 'CRSN', n: 'Carsten Fluid Systems', cap: '$4.3B', ev: '9.4x', pe: '15.7x', ytd: -3.6 },
+      { t: 'BRKT', n: 'Brackett Thermal', cap: '$5.5B', ev: '10.8x', pe: '17.2x', ytd: 6.1 },
+      { t: 'ODEN', n: 'Oden Power and Motion', cap: '$12.7B', ev: '13.9x', pe: '22.8x', ytd: 18.9 }
+    ].map(function (p) {
+      return {
+        t: p.t, n: p.n, cap: p.cap, ev: p.ev, pe: p.pe,
+        ytd: (p.ytd >= 0 ? '+' : '−') + Math.abs(p.ytd).toFixed(1) + '%',
+        rowStyle: 'text-align: right; font-family: IBM Plex Mono, monospace;' + (p.me ? ' background: #261C0C;' : ''),
+        ytdStyle: 'padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; color: ' + (p.ytd >= 0 ? '#4ADE80' : '#FF5F56') + ';'
+      };
+    });
+    var holders = [
+      { n: 'Vanguard Group', p: 10.8 },
+      { n: 'BlackRock', p: 8.9 },
+      { n: 'State Street', p: 4.6 },
+      { n: 'Dimensional Fund Advisors', p: 3.2 }
+    ].map(function (h) {
+      return { n: h.n, pct: h.p.toFixed(1) + '%', bar: 'height: 4px; border-radius: 0; background: #FFB84D; width: ' + (h.p / 12 * 100).toFixed(0) + '%;' };
+    });
+    return {
+      ranges: ranges,
+      linePath: line,
+      areaPath: area,
+      trendColor: up ? '#4ADE80' : '#FF5F56',
+      trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
+      trendArrow: up ? '▲' : '▼',
+      chgText: (up ? '+' : '−') + '$' + Math.abs(chg).toFixed(2),
+      pctText: (up ? '+' : '−') + Math.abs(chg / vals[0] * 100).toFixed(2) + '%',
+      rangeLabel: c.label,
+      xLabels: c.x,
+      yMax: mx.toFixed(2),
+      yMid: ((mx + mn) / 2).toFixed(2),
+      yMin: mn.toFixed(2),
+      stats: [
+        { label: 'Market cap', value: '$6.8B' },
+        { label: 'P/E (TTM)', value: '18.4x' },
+        { label: 'EV / EBITDA', value: '11.2x' },
+        { label: 'Dividend yield', value: '1.6%' },
+        { label: '52-week range', value: '61.20 – 89.75' },
+        { label: 'Avg. volume (3M)', value: '1.24M' },
+        { label: 'Beta (5Y)', value: '1.14' },
+        { label: 'Shares out.', value: '80.4M' }
+      ],
+      fin: [
+        { label: 'Revenue', a: '982', b: '1,041', c: '1,058', d: '1,102' },
+        { label: 'YoY growth', a: '+4.1%', b: '+5.6%', c: '+6.9%', d: '+8.2%' },
+        { label: 'Gross margin', a: '24.8%', b: '25.3%', c: '25.9%', d: '26.4%' },
+        { label: 'Adj. EBITDA', a: '138', b: '151', c: '156', d: '169' },
+        { label: 'Adj. EPS', a: '$1.02', b: '$1.11', c: '$1.09', d: '$1.21' }
+      ],
+      peers: peerRows,
+      insiders: [
+        { d: 'Oct 2', n: 'Maria Alvarez', role: 'CFO', type: 'Sale · 10b5-1 plan', sh: '12,000', px: '$83.10', val: '$997K', color: '#FF5F56' },
+        { d: 'Sep 18', n: 'Robert Chen', role: 'Director', type: 'Open-market buy', sh: '2,500', px: '$79.40', val: '$199K', color: '#4ADE80' },
+        { d: 'Aug 28', n: 'Dev Patel', role: 'CEO', type: 'Sale · 10b5-1 plan', sh: '25,000', px: '$81.75', val: '$2.04M', color: '#FF5F56' },
+        { d: 'Aug 6', n: 'James Okafor', role: 'President, Thermal', type: 'Option exercise and sale', sh: '18,400', px: '$77.20', val: '$1.42M', color: '#FF5F56' },
+        { d: 'May 12', n: 'Laura Brennan', role: 'Director', type: 'Open-market buy', sh: '1,200', px: '$68.90', val: '$83K', color: '#4ADE80' }
+      ],
+      bigHolders: [
+        { n: 'Halcyon Point Capital', note: 'activist, seeking board seats', form: '13D', pct: '5.4%', d: 'Sep 22', formStyle: 'font-family: IBM Plex Mono, monospace; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' },
+        { n: 'Ridgeway Partners', note: 'passive, new position', form: '13G', pct: '5.1%', d: 'Jul 30', formStyle: 'font-family: IBM Plex Mono, monospace; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;' },
+        { n: 'Vanguard Group', note: 'passive, annual amendment', form: '13G/A', pct: '10.8%', d: 'Feb 11', formStyle: 'font-family: IBM Plex Mono, monospace; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;' },
+        { n: 'BlackRock', note: 'passive, annual amendment', form: '13G/A', pct: '8.9%', d: 'Jan 29', formStyle: 'font-family: IBM Plex Mono, monospace; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;' }
+      ],
+      indexes: [
+        { n: 'S&P MidCap 400', status: 'Member', w: '0.21%', since: 'Jun 2019' },
+        { n: 'Russell 1000', status: 'Member', w: '0.01%', since: 'Jun 2021' },
+        { n: 'Russell Midcap', status: 'Member', w: '0.05%', since: 'Jun 2021' },
+        { n: 'Russell 1000 Value / Growth', status: 'Split 62 / 38', w: '—', since: 'Jun 2026' },
+        { n: 'CRSP US Mid Cap', status: 'Member', w: '0.18%', since: 'Mar 2020' },
+        { n: 'S&P 500', status: 'Not a member', w: '—', since: '—' }
+      ].map(function (ix) {
+        var mem = ix.status === 'Member' || ix.status.indexOf('Split') === 0;
+        return Object.assign({}, ix, { statusStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (mem ? 'background: #261C0C; border: 1px solid #8A6326; color: #FFFFFF;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') });
+      }),
+      holders: holders,
+      news: [
+        { h: 'Northwind raises full-year margin outlook on data center cooling demand', meta: 'Press release · Oct 9' },
+        { h: 'Analyst lifts price target to $98, citing backlog conversion', meta: 'Research note · Oct 6' },
+        { h: 'Northwind added to mid-cap industrials index in quarterly rebalance', meta: 'Market news · Sep 26' },
+        { h: 'Company to host investor day in Chicago on Nov 18', meta: 'Press release · Sep 18' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
