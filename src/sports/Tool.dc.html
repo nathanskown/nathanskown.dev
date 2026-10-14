@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sports tool</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0;background:#020607}</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="/">1-NSKN</a>
+<span class="t-chip t-hide-sm">Sports Menu</span>
+<span class="t-chip t-hide-sm">{{code}} &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">ALL TIMES CT</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Under construction · type a page code or team to jump</span>
+</div>
+<form class="t-cmd" data-cmd>
+<label for="toolSearch" class="t-prompt">NSKN ›</label>
+<input id="toolSearch" class="t-input" type="search" placeholder="TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+</form>
+<nav class="t-fbar" aria-label="Sports pages">
+<span class="t-fbar-title">Sports</span>
+<a class="{{fk.Main}}" href="Main.dc.html">1) Scores</a>
+<a class="{{fk.Simulator}}" href="Simulator.dc.html">2) Simulator</a>
+<a class="{{fk.Odds}}" href="Odds.dc.html">3) Playoff odds</a>
+<a class="{{fk.Spots}}" href="Spots.dc.html">4) Spots</a>
+<a class="{{fk.Injuries}}" href="Injuries.dc.html">5) Injuries</a>
+<a class="{{fk.LuckWatch}}" href="LuckWatch.dc.html">6) Luck watch</a>
+<a class="{{fk.Schedule}}" href="Schedule.dc.html">7) Schedule str.</a>
+<a class="{{fk.TrackRecord}}" href="TrackRecord.dc.html">8) Track record</a>
+<a class="{{fk.Methodology}}" href="Methodology.dc.html">9) Method</a>
+<a class="t-fkey" href="/">Home</a>
+</nav>
+<nav class="t-sub2" aria-label="Teams and games">
+<span class="t-sl">TEAMS</span>
+<a class="{{navCls.Team}}" href="Team.dc.html">LIONS</a>
+<a class="{{navCls.TeamTigers}}" href="TeamTigers.dc.html">TIGERS</a>
+<a class="{{navCls.TeamPistons}}" href="TeamPistons.dc.html">PISTONS</a>
+<a class="{{navCls.TeamRedWings}}" href="TeamRedWings.dc.html">RED WINGS</a>
+<a class="{{navCls.TeamMSUFootball}}" href="TeamMSUFootball.dc.html">MSU FB</a>
+<a class="{{navCls.TeamMSUBasketball}}" href="TeamMSUBasketball.dc.html">MSU BB</a>
+<a class="{{navCls.TeamMSUHockey}}" href="TeamMSUHockey.dc.html">MSU HKY</a>
+<span class="t-sl">GAMES</span>
+<a class="{{navCls.Game}}" href="Game.dc.html">NFL</a>
+<a class="{{navCls.GameBaseball}}" href="GameBaseball.dc.html">MLB</a>
+<a class="{{navCls.GameBasketball}}" href="GameBasketball.dc.html">NBA</a>
+<a class="{{navCls.GameHockey}}" href="GameHockey.dc.html">NHL</a>
+</nav>
+<div class="t-sub">
+<span>{{title}} ({{code}})</span>
+<span class="dim">Tue Oct 13, 2026</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">COMING SOON</span>
+</div>
+</header>
+
+<main style="max-width: 980px; margin: 0 auto; padding: clamp(28px, 7vw, 80px) 20px 64px; display: flex; flex-direction: column; gap: 20px">
+<div class="dim" style="letter-spacing: .14em; font-size: 12px">NSKN » SPORTS » {{code}}</div>
+<h1 style="margin: 0; font-family: 'VT323', ui-monospace, monospace; font-weight: 400; font-size: clamp(52px, 10vw, 104px); line-height: .85; color: #C8F7FC; text-shadow: 0 0 2px #66E6F2, 0 0 18px rgba(102,230,242,.35); text-transform: uppercase">{{title}}</h1>
+<p style="margin: 0; font-size: 15px; max-width: 64ch">{{blurb}}</p>
+<section class="t-panel" aria-label="Status">
+<div class="t-ph"><h2>Status</h2><span class="dim">Build queue</span></div>
+<div class="t-pb" style="display: flex; flex-direction: column; gap: 8px; font-size: 13.5px">
+<div><span class="t-tag">UNDER CONSTRUCTION</span></div>
+<div class="dim">This page is designed into the Sports section but not built yet. Everything else in the menu above is live.</div>
+</div>
+</section>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<a class="t-chipl" href="Main.dc.html" style="min-height: 44px; padding: 0 16px">&lt;MENU&gt; SCORES &amp; SCHEDULE</a>
+<a class="t-chipl" href="/" style="min-height: 44px; padding: 0 16px">HOME</a>
+</div>
+</main>
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tool":{"editor":"enum","options":["Simulator","Odds","Spots","Injuries","LuckWatch","Schedule","TrackRecord","Methodology"],"default":"Simulator"},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var TOOLS = {
+      Simulator: ['SIM', 'Matchup simulator', 'Pick any two teams and run the game thousands of times: projected margin, win probability and the likely range of scores.'],
+      Odds: ['ODDS', 'Playoff odds', 'Every team’s chances to make the playoffs, win the division and win it all, updated after each game.'],
+      Spots: ['SPOT', 'Situational spots', 'Rest, travel, short weeks and look-ahead games: the schedule spots that historically move results.'],
+      Injuries: ['INJ', 'Injuries', 'League-wide injury reports, with each absence’s estimated impact on the final margin.'],
+      LuckWatch: ['LUCK', 'Luck watch', 'Teams whose record has outrun, or lagged, their underlying numbers: one-score games, turnover luck, shooting and save rates.'],
+      Schedule: ['SOS', 'Schedule strength', 'Strength of schedule played and remaining for every team, so records can be read in context.'],
+      TrackRecord: ['TRAK', 'Track record', 'Every house-model pick, graded after the final: hit rate, error and calibration over time.'],
+      Methodology: ['METH', 'Methodology', 'How every number in the Sports section is built: inputs, regression to the mean and how the models are tested.']
+    };
+    var key = TOOLS[this.props.tool] ? this.props.tool : 'Simulator';
+    var fk = {};
+    Object.keys(TOOLS).concat(['Main']).forEach(function (k) { fk[k] = 't-fkey' + (k === key ? ' is-on' : ''); });
+    var navCls = {};
+    ['Team', 'TeamTigers', 'TeamPistons', 'TeamRedWings', 'TeamMSUFootball', 'TeamMSUBasketball', 'TeamMSUHockey', 'Game', 'GameBaseball', 'GameBasketball', 'GameHockey'].forEach(function (n) { navCls[n] = 't-chipl'; });
+    return { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, navCls: navCls };
+  }
+}
+</script>
+</body>
+</html>

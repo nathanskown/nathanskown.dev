@@ -104,7 +104,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <header>
 <div class="t-title">
-<a class="t-brand" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">1-NSKN</a>
+<a class="t-brand" href="/">1-NSKN</a>
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">WEI &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
@@ -128,7 +128,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
 <a class="t-fkey" href="Macro.dc.html">6) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
-<a class="t-fkey" href="https://claude.ai/artifact/KM86KatMZF741ZzKKDduEV" target="_blank" rel="noopener">9) Home</a>
+<a class="t-fkey" href="/">9) Home</a>
 </nav>
 <div class="t-sub">
 <span>Market Dashboard (WEI)</span>
@@ -332,7 +332,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-ph"><h2><span class="t-pn">17)</span>Headlines</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{headlines}}" as="h" hint-placeholder-count="6">
-<a class="t-rowlink" href="#">
+<a class="t-rowlink" href="News.dc.html">
 <span style="font-size: 12px; color: #c99442; width: 66px; flex: none; padding-top: 1px">{{h.time}}</span>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: block; font-size: 13.5px; line-height: 1.45; color: #ffd89d">{{h.h}}</span>
@@ -344,7 +344,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <aside class="t-panel" aria-label="Watchlist" style="flex: 1 1 300px">
-<div class="t-ph"><h2><span class="t-pn">18)</span>My Watchlist</h2><a href="#" style="font-size: 12px; letter-spacing: .08em">EDIT</a></div>
+<div class="t-ph"><h2><span class="t-pn">18)</span>My Watchlist</h2><a href="Ownership.dc.html" style="font-size: 12px; letter-spacing: .08em">13F LOOKUP <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="5">
 <a class="t-rowlink" href="{{w.href}}" style="justify-content: space-between; align-items: center">
@@ -516,10 +516,10 @@ class Component extends DCLogic {
     });
     var watchRows = [
       { t: 'NWND', n: 'Northwind Industrial', px: '$84.62', p: 1.41, href: 'Main.dc.html' },
-      { t: 'PRSM', n: 'Prism Semiconductor', px: '$138.44', p: 8.9, href: '#' },
-      { t: 'HLWY', n: 'Halloway Machine Works', px: '$112.30', p: 0.6, href: '#' },
+      { t: 'PRSM', n: 'Prism Semiconductor', px: '$138.44', p: 8.9, href: 'Ownership.dc.html?ticker=PRSM' },
+      { t: 'HLWY', n: 'Halloway Machine Works', px: '$112.30', p: 0.6, href: 'Ownership.dc.html?ticker=HLWY' },
       { t: 'FNWK', n: 'Fenwick Restaurants', px: '$44.19', p: -5.5, href: '#' },
-      { t: 'ODEN', n: 'Oden Power and Motion', px: '$205.60', p: 1.2, href: '#' }
+      { t: 'ODEN', n: 'Oden Power and Motion', px: '$205.60', p: 1.2, href: 'Ownership.dc.html?ticker=ODEN' }
     ].map(function (w) {
       return { t: w.t, n: w.n, px: w.px, href: w.href, chg: (w.p >= 0 ? '▲ +' : '▼ −') + Math.abs(w.p).toFixed(2) + '%', color: w.p >= 0 ? UP : DN };
     });

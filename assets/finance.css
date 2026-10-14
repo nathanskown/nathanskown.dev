@@ -86,3 +86,4 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h1{font-size:40px !important}
 }
 @media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+.t .t-card > h2:first-child{justify-content:flex-start}

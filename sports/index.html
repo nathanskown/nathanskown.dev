@@ -3,28 +3,480 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sports · NSKN Terminal</title>
-<meta name="theme-color" content="#020402">
+<title>Scores &amp; schedule · NSKN Terminal</title>
+<meta name="theme-color" content="#020607">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
-<style>
-.cs{max-width:760px;margin:0 auto;padding:clamp(28px,8vw,96px) 20px;display:flex;flex-direction:column;gap:18px}
-.cs h1{margin:0;font-family:'VT323',ui-monospace,monospace;font-weight:400;font-size:clamp(56px,12vw,112px);line-height:.85;color:var(--hi);text-shadow:0 0 2px var(--g),0 0 18px var(--glow)}
-.cs p{margin:0;font-size:15px;color:var(--g)}
-.cs .nk-k{margin-right:6px}
-</style>
+<link rel="stylesheet" href="/assets/sports.css">
 </head>
 <body>
-<div class="nk">
-<div class="nk-title"><a class="nk-brand" href="/">1-NSKN</a><span class="nk-chip">SPRT &lt;GO&gt;</span><span class="nk-spacer"></span><span class="nk-live"><span class="nk-dot"></span>LIVE</span></div>
-<main class="cs">
-<div class="nk-dim">NSKN » Sports · SPRT</div>
-<h1>SPORTS</h1>
-<p>Status: <span class="nk-hi">UNDER CONSTRUCTION</span>. Scores, schedules, game previews and recaps, and team pages are designed and on their way here.</p>
-<p class="nk-dim">Check the changelog on the home screen for progress.</p>
-<p><a class="nk-cta" href="/">&lt;MENU&gt; BACK HOME <span class="nk-k">GO</span></a></p>
-</main>
-<div class="nk-crt" aria-hidden="true"></div>
-</div>
+<div id="app"></div>
+<noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
+<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Game.dc.html":"/sports/game/football/","GameBaseball.dc.html":"/sports/game/baseball/","GameBasketball.dc.html":"/sports/game/basketball/","GameHockey.dc.html":"/sports/game/hockey/","Team.dc.html":"/sports/team/lions/","TeamTigers.dc.html":"/sports/team/tigers/","TeamPistons.dc.html":"/sports/team/pistons/","TeamRedWings.dc.html":"/sports/team/red-wings/","TeamMSUFootball.dc.html":"/sports/team/msu-football/","TeamMSUBasketball.dc.html":"/sports/team/msu-basketball/","TeamMSUHockey.dc.html":"/sports/team/msu-hockey/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Spots.dc.html":"/sports/spots/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["Sports Menu"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["SCOR <GO>"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES CT"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"class":"t-inv"},"c":["<HELP>"]}," for explanation."]},{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Follow your teams \u00b7 pick a league \u00b7 tap a Detroit or MSU game for its page"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"sportSearch","class":"t-prompt"},"c":["NSKN \u203a"]},{"t":"input","a":{"id":"sportSearch","class":"t-input","type":"search","placeholder":"TEAM, PAGE CODE OR HOME","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey is-on","href":"#","aria-current":"page"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["2) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["3) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Spots.dc.html"},"c":["4) Spots"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"LuckWatch.dc.html"},"c":["6) Luck watch"]},{"t":"a","a":{"class":"t-fkey","href":"Schedule.dc.html"},"c":["7) Schedule str."]},{"t":"a","a":{"class":"t-fkey","href":"TrackRecord.dc.html"},"c":["8) Track record"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["9) Method"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"nav","a":{"class":"t-sub2","aria-label":"Teams and games"},"c":[{"t":"span","a":{"class":"t-sl"},"c":["TEAMS"]},{"t":"a","a":{"class":"{{navCls.Team}}","href":"Team.dc.html"},"c":["LIONS"]},{"t":"a","a":{"class":"{{navCls.TeamTigers}}","href":"TeamTigers.dc.html"},"c":["TIGERS"]},{"t":"a","a":{"class":"{{navCls.TeamPistons}}","href":"TeamPistons.dc.html"},"c":["PISTONS"]},{"t":"a","a":{"class":"{{navCls.TeamRedWings}}","href":"TeamRedWings.dc.html"},"c":["RED WINGS"]},{"t":"a","a":{"class":"{{navCls.TeamMSUFootball}}","href":"TeamMSUFootball.dc.html"},"c":["MSU FB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUBasketball}}","href":"TeamMSUBasketball.dc.html"},"c":["MSU BB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUHockey}}","href":"TeamMSUHockey.dc.html"},"c":["MSU HKY"]},{"t":"span","a":{"class":"t-sl"},"c":["GAMES"]},{"t":"a","a":{"class":"{{navCls.Game}}","href":"Game.dc.html"},"c":["NFL"]},{"t":"a","a":{"class":"{{navCls.GameBaseball}}","href":"GameBaseball.dc.html"},"c":["MLB"]},{"t":"a","a":{"class":"{{navCls.GameBasketball}}","href":"GameBasketball.dc.html"},"c":["NBA"]},{"t":"a","a":{"class":"{{navCls.GameHockey}}","href":"GameHockey.dc.html"},"c":["NHL"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Scores & Schedule (SCOR)"]},{"t":"span","a":{"class":"dim"},"c":["Tue Oct 13, 2026"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["SAMPLE DATA \u00b7 TEAMS ARE EXAMPLES"]}]}]},{"t":"main","a":{"style":"max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px"},"c":[{"t":"section","a":{"aria-label":"Summary","style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px"},"c":[{"t":"div","a":{},"c":[{"t":"h1","a":{"style":"margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #C8F7FC"},"c":["Scores & schedule"]},{"t":"div","a":{"style":"color: #4FB8C2; font-size: 14px; margin-top: 4px"},"c":["Tuesday, October 13, 2026 \u00b7 All times Central"]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 10px; align-items: center"},"c":[{"t":"span","a":{"style":"display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 0; background: #061416; border: 1px solid #12363B; font-size: 13.5px"},"c":[{"t":"span","a":{"aria-hidden":"true","style":"width: 8px; height: 8px; border-radius: 0; background: #FF5F56"},"c":[]},"14 tennis matches live"]},{"t":"span","a":{"style":"display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 0; background: #0C2A2E; border: 1px solid #2A7C85; font-size: 13.5px"},"c":["Tonight: ALCS Game 2 \u00b7 15 NHL games \u00b7 9 UCL matches"]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"My teams","style":"background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 12px"},"c":[{"t":"div","a":{},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 15px; font-weight: 600; color: #C8F7FC"},"c":["My teams"]},{"t":"div","a":{"style":"color: #3C9AA3; font-size: 12.5px"},"c":["Follow any team to pin its latest result and next game here. Saved in this browser."]}]},{"t":"div","a":{"style":"flex: 1 1 280px; max-width: 420px"},"c":[{"t":"label","a":{"for":"teamAdd","class":"sr"},"c":["Add a team to follow"]},{"t":"input","a":{"id":"teamAdd","type":"search","value":"{{q}}","onchange":"{{onQ}}","placeholder":"Add a team: Lions, Arsenal, Rays\u2026","autocomplete":"off","style":"width: 100%; box-sizing: border-box; height: 44px; padding: 0 14px; border-radius: 0; border: 1px solid #2A7C85; background: #061416; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px"},"c":[]}]}]},{"t":"sc-if","a":{"value":"{{hasResults}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"role":"group","aria-label":"Matching teams","style":"display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px"},"c":[{"t":"sc-for","a":{"list":"{{results}}","as":"t","hint-placeholder-count":"4"},"c":[{"t":"button","a":{"type":"button","onclick":"{{t.add}}","style":"display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border-radius: 0; border: 1px solid #12363B; background: #0C2A2E; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; cursor: pointer"},"c":[{"t":"span","a":{"style":"color: #C8F7FC; font-weight: 600"},"c":["+"]},"{{t.name}}",{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #4FB8C2"},"c":["{{t.lg}}"]}]}]}]}]},{"t":"sc-if","a":{"value":"{{noMatch}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"font-size: 13px; color: #4FB8C2; margin-bottom: 12px"},"c":["No teams match \u201c{{q}}\u201d in this week\u2019s schedule."]}]},{"t":"sc-if","a":{"value":"{{noFollows}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"style":"padding: 16px; border-radius: 0; border: 1px dashed #1B4A50; color: #4FB8C2; font-size: 13.5px; text-align: center"},"c":["You\u2019re not following any teams yet. Search above to add one, and its games will be highlighted across the page."]}]},{"t":"sc-if","a":{"value":"{{hasFollows}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px"},"c":[{"t":"sc-for","a":{"list":"{{mine}}","as":"m","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"padding: 10px 6px 12px 14px; border-radius: 0; background: #0C2A2E; border: 1px solid #2A7C85"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: center; gap: 6px"},"c":[{"t":"span","a":{"style":"min-width: 0"},"c":[{"t":"a","a":{"href":"{{m.href}}","style":"font-weight: 600; color: #C8F7FC; font-size: 14px"},"c":["{{m.team}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #4FB8C2; margin-left: 6px"},"c":["{{m.lg}}"]}]},{"t":"button","a":{"type":"button","onclick":"{{m.remove}}","aria-label":"{{m.removeLabel}}","style":"flex: none; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 0; background: transparent; color: #4FB8C2; cursor: pointer"},"c":[{"t":"svg","a":{"width":"14","height":"14","viewbox":"0 0 14 14","aria-hidden":"true"},"c":[{"t":"path","a":{"d":"M2 2 L12 12 M12 2 L2 12","stroke":"currentColor","stroke-width":"1.6","stroke-linecap":"round","fill":"none"},"c":[]}]}]}]},{"t":"div","a":{"style":"font-size: 13px"},"c":[{"t":"span","a":{"style":"color: #3C9AA3"},"c":["Last "]},{"t":"span","a":{"style":"{{m.lastStyle}}"},"c":["{{m.last}}"]}]},{"t":"div","a":{"style":"font-size: 13px"},"c":[{"t":"span","a":{"style":"color: #3C9AA3"},"c":["Next "]},{"t":"span","a":{"style":"color: #C8F7FC"},"c":["{{m.next}}"]}]}]}]}]}]}]},{"t":"nav","a":{"aria-label":"Leagues","style":"display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; background: #041012; border: 1px solid #12363B; border-radius: 0"},"c":[{"t":"sc-for","a":{"list":"{{chips}}","as":"c","hint-placeholder-count":"10"},"c":[{"t":"button","a":{"type":"button","onclick":"{{c.pick}}","aria-pressed":"{{c.pressed}}","style":"{{c.btnStyle}}"},"c":["{{c.label}}"]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start"},"c":[{"t":"div","a":{"style":"flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 24px"},"c":[{"t":"sc-for","a":{"list":"{{leagues}}","as":"L","hint-placeholder-count":"4"},"c":[{"t":"section","a":{"class":"t-card","aria-label":"{{L.name}}","style":"background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px"},"c":[{"t":"div","a":{"style":"display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 18px; font-weight: 600; color: #C8F7FC"},"c":["{{L.name}}"]},{"t":"span","a":{"style":"color: #4FB8C2; font-size: 13px"},"c":["{{L.sub}}"]}]},{"t":"sc-if","a":{"value":"{{L.showMore}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"button","a":{"type":"button","onclick":"{{L.open}}","style":"height: 36px; padding: 0 12px; border-radius: 0; border: 1px solid #12363B; background: #061416; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; cursor: pointer"},"c":["All {{L.short}} \u00b7 {{L.total}} games"]}]}]},{"t":"sc-for","a":{"list":"{{L.groups}}","as":"G","hint-placeholder-count":"2"},"c":[{"t":"h3","a":{"style":"margin: 16px 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4FB8C2; text-transform: uppercase"},"c":["{{G.label}}"]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px"},"c":[{"t":"sc-for","a":{"list":"{{G.games}}","as":"g","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"{{g.cardStyle}}"},"c":[{"t":"a","a":{"href":"{{g.href}}","aria-label":"{{g.aria}}","style":"display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 32px; margin: -4px -6px 0; padding: 0 6px; border-radius: 0; font-size: 12px; text-decoration: none"},"c":[{"t":"span","a":{"style":"{{g.statusStyle}}"},"c":["{{g.status}}"]},{"t":"span","a":{"style":"color: #3C9AA3; text-align: right"},"c":["{{g.tag}}",{"t":"sc-if","a":{"value":"{{g.hasHref}}","hint-placeholder-val":"{{false}}"},"c":[" ",{"t":"span","a":{"aria-hidden":"true","style":"color: #C8F7FC"},"c":["\u203a"]}]}]}]},{"t":"sc-if","a":{"value":"{{g.hasTitle}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"a","a":{"href":"{{g.href}}","style":"font-size: 15px; font-weight: 600; color: #C8F7FC; text-decoration: none"},"c":["{{g.title}}"]}]},{"t":"sc-for","a":{"list":"{{g.rows}}","as":"r","hint-placeholder-count":"2"},"c":[{"t":"a","a":{"href":"{{r.href}}","aria-label":"{{r.aria}}","style":"display: flex; align-items: center; gap: 10px; min-height: 36px; margin: 0 -6px; padding: 0 6px; border-radius: 0; text-decoration: none"},"c":[{"t":"span","a":{"style":"{{r.abbrStyle}}"},"c":["{{r.abbr}}"]},{"t":"span","a":{"style":"{{r.nameStyle}}"},"c":["{{r.name}}"]},{"t":"span","a":{"style":"{{r.scoreStyle}}"},"c":["{{r.score}}"]}]}]},{"t":"sc-if","a":{"value":"{{g.hasProb}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{},"c":[{"t":"div","a":{"aria-hidden":"true","style":"display: flex; height: 5px; border-radius: 0; overflow: hidden; gap: 2px; margin-top: 2px"},"c":[{"t":"sc-for","a":{"list":"{{g.probSegs}}","as":"p","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"style":"{{p.style}}"},"c":[]}]}]},{"t":"div","a":{"style":"font-size: 11.5px; color: #3C9AA3; margin-top: 4px; font-family: 'IBM Plex Mono', monospace"},"c":["Win prob. {{g.probText}}"]}]}]},{"t":"sc-if","a":{"value":"{{g.hasNote}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["{{g.note}}"]}]},{"t":"sc-if","a":{"value":"{{g.hasHref}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"a","a":{"href":"{{g.href}}","style":"align-self: flex-start; display: inline-flex; align-items: center; min-height: 32px; font-size: 12.5px; font-weight: 500; color: #C8F7FC"},"c":["{{g.hrefLabel}}"]}]}]}]}]}]}]}]}]},{"t":"aside","a":{"aria-label":"Today and standings","style":"flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px"},"c":[{"t":"section","a":{"class":"t-card","aria-label":"Today's slate","style":"background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #C8F7FC"},"c":["Today's slate"]},{"t":"sc-for","a":{"list":"{{slate}}","as":"s","hint-placeholder-count":"8"},"c":[{"t":"div","a":{"style":"display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid #0B2427; font-size: 13.5px"},"c":[{"t":"span","a":{"style":"{{s.timeStyle}}"},"c":["{{s.t}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"span","a":{"style":"display: block; color: #C8F7FC"},"c":["{{s.e}}"]},{"t":"span","a":{"style":"display: block; font-size: 12px; color: #3C9AA3"},"c":["{{s.lg}}"]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"MLB postseason","style":"background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #C8F7FC"},"c":["MLB postseason"]},{"t":"sc-for","a":{"list":"{{series}}","as":"x","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"style":"padding: 10px 12px; border-radius: 0; background: #061416; border: 1px solid #12363B; margin-bottom: 8px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 12px; color: #4FB8C2"},"c":[{"t":"span","a":{"style":"font-weight: 600; letter-spacing: 0.06em"},"c":["{{x.round}}"]},{"t":"span","a":{},"c":["Best of 7"]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px"},"c":[{"t":"span","a":{"style":"color: #C8F7FC; font-weight: 600"},"c":["{{x.lead}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #C8F7FC"},"c":["{{x.wins}}"]}]},{"t":"div","a":{"style":"font-size: 12.5px; color: #C8F7FC"},"c":["{{x.next}}"]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"NFL standings","style":"background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 15px; font-weight: 600; color: #C8F7FC"},"c":["NFL standings \u00b7 {{divName}}"]},{"t":"span","a":{"style":"color: #3C9AA3; font-size: 12px"},"c":["Current"]}]},{"t":"div","a":{"role":"group","aria-label":"Division","style":"display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 10px"},"c":[{"t":"sc-for","a":{"list":"{{divs}}","as":"dv","hint-placeholder-count":"8"},"c":[{"t":"button","a":{"type":"button","onclick":"{{dv.pick}}","aria-pressed":"{{dv.pressed}}","style":"{{dv.btnStyle}}"},"c":["{{dv.label}}"]}]}]},{"t":"table","a":{"style":"width: 100%; font-size: 13.5px; margin-top: 6px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"color: #4FB8C2; font-size: 12px"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B"},"c":["Team"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B"},"c":["W\u2013L"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B"},"c":["Pct"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{nfcn}}","as":"n","hint-placeholder-count":"4"},"c":[{"t":"tr","a":{"style":"{{n.rowStyle}}"},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #0B2427"},"c":["{{n.t}}"]},{"t":"td","a":{"style":"text-align: right; padding: 8px 0; border-bottom: 1px solid #0B2427; font-family: 'IBM Plex Mono', monospace"},"c":["{{n.wl}}"]},{"t":"td","a":{"style":"text-align: right; padding: 8px 0; border-bottom: 1px solid #0B2427; font-family: 'IBM Plex Mono', monospace; color: #4FB8C2"},"c":["{{n.pct}}"]}]}]}]}]}]}]}]}]},{"t":"footer","a":{"style":"border-top: 1px solid #12363B; background: #000000"},"c":[{"t":"div","a":{"style":"max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #3C9AA3; font-size: 12.5px"},"c":[{"t":"span","a":{},"c":["Scores and schedules via [DATA PROVIDER] \u00b7 Win probabilities via [DATA PROVIDER] \u00b7 All times Central"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
+<script src="/assets/dc-runtime.js"></script>
+<script>
+class Component extends DCLogic {
+  componentDidMount() {
+    try {
+      var saved = JSON.parse(window.localStorage.getItem('skown.sports.follows') || '[]');
+      if (Array.isArray(saved) && saved.length) this.setState({ follows: saved });
+    } catch (e) {}
+  }
+  saveFollows(list) {
+    this.setState({ follows: list });
+    try { window.localStorage.setItem('skown.sports.follows', JSON.stringify(list)); } catch (e) {}
+  }
+  renderVals() {
+    var NAVON = '';
+    var navCls = {};
+    ['Team', 'TeamTigers', 'TeamPistons', 'TeamRedWings', 'TeamMSUFootball', 'TeamMSUBasketball', 'TeamMSUHockey', 'Game', 'GameBaseball', 'GameBasketball', 'GameHockey'].forEach(function (n) { navCls[n] = 't-chipl' + (n === NAVON ? ' is-on' : ''); });
+    var self = this;
+    var st = this.state || {};
+    var lg = st.lg || 'all';
+    var follows = st.follows || [];
+    var q = st.q || '';
+    var CAP = 3;
+
+    var mk = function (rows, status, o) {
+      o = o || {};
+      var final = status.indexOf('Final') === 0;
+      var live = !!o.live;
+      var win = (o.win !== undefined) ? o.win : -1;
+      if (win === -1 && final && typeof rows[0][2] === 'number' && typeof rows[1][2] === 'number' && rows[0][2] !== rows[1][2]) {
+        win = rows[0][2] > rows[1][2] ? 0 : 1;
+      }
+      var mine = false;
+      var outRows = rows.map(function (r, k) {
+        var c = win === -1 ? '#66E6F2' : (win === k ? '#C8F7FC' : '#3C9AA3');
+        var w = win === k ? '600' : '400';
+        return {
+          abbr: r[0], name: r[1], score: r[2] === undefined ? '' : String(r[2]),
+          abbrStyle: (r[0] ? 'display: inline-block;' : 'display: none;') + ' width: 46px; flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 13px; font-weight: 600; color: ' + (win === -1 ? '#C8F7FC' : c) + ';',
+          nameStyle: 'flex: 1 1 auto; min-width: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ' + c + '; font-weight: ' + w + ';',
+          scoreStyle: 'flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 15px; font-weight: ' + (win === k ? '600' : '500') + '; color: ' + c + ';'
+        };
+      });
+      var probSegs = [], probText = '';
+      if (o.prob) {
+        var cols = ['#66E6F2', '#1B4A50', '#23565C'];
+        probSegs = o.prob.map(function (p, k) { return { style: 'flex: ' + p[1] + '; background: ' + cols[k] + ';' }; });
+        probText = o.prob.map(function (p) { return p[0] + ' ' + Math.round(p[1]) + '%'; }).join(' · ');
+      }
+      return {
+        rows: outRows, status: live ? '● LIVE · ' + status : status, tag: o.tag || '',
+        title: o.title || '', hasTitle: !!o.title,
+        note: o.note || '', hasNote: !!o.note,
+        hasProb: !!o.prob, probSegs: probSegs, probText: probText,
+        href: o.href || '#', hasHref: !!o.href, hrefLabel: o.hrefLabel || 'Game page →', win: win,
+        mine: mine, live: live, raw: rows, statusRaw: status, isFinal: final, home: (o.home === undefined ? -1 : o.home),
+        statusStyle: 'font-weight: 600; letter-spacing: 0.02em; color: ' + (live ? '#FF5F56' : (final ? '#4FB8C2' : '#C8F7FC')) + ';',
+        cardStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 0; background: ' + (mine ? '#0C2A2E' : '#061416') + '; border: 1px solid ' + (mine ? '#66E6F2' : '#12363B') + ';'
+      };
+    };
+    // US convention: away on top, home below
+    var us = function (a, an, as, h, hn, hs, status, o) { o = o || {}; o.home = 1; return mk([[a, an, as], [h, hn, hs]], status, o); };
+    // Soccer convention: home on top
+    var fc = function (h, hn, hs, a, an, as, status, o) { o = o || {}; o.home = 0; return mk([[h, hn, hs], [a, an, as]], status, o); };
+    var ev = function (title, place, status, o) { o = o || {}; o.title = title; return mk([['', place, '']], status, o); };
+    var tn = function (p1, s1, p2, s2, status, o) { return mk([['', p1, s1], ['', p2, s2]], status, o); };
+
+    var data = [
+      { id: 'nfl', name: 'NFL', short: 'NFL', sub: 'Week 6 final · Week 7 ahead', groups: [
+        { label: 'Week 6 · Final', games: [
+          us('DET', 'Lions', 45, 'ARI', 'Cardinals', 21, 'Final', { tag: 'Sun', href: 'Game.dc.html?sport=football&mode=1' }),
+          us('BUF', 'Bills', 37, 'LA', 'Rams', 34, 'Final', { tag: 'MNF' }),
+          us('BAL', 'Ravens', 30, 'ATL', 'Falcons', 23, 'Final', { tag: 'SNF' }),
+          us('SF', '49ers', 32, 'SEA', 'Seahawks', 29, 'Final', { tag: 'Sun' }),
+          us('CHI', 'Bears', 7, 'GB', 'Packers', 31, 'Final', { tag: 'Sun' }),
+          us('MIN', 'Vikings', 23, 'NO', 'Saints', 13, 'Final', { tag: 'Sun' }),
+          us('DEN', 'Broncos', 23, 'LAC', 'Chargers', 17, 'Final', { tag: 'Sun' }),
+          us('LV', 'Raiders', 17, 'NE', 'Patriots', 45, 'Final', { tag: 'Sun' }),
+          us('CIN', 'Bengals', 31, 'MIA', 'Dolphins', 24, 'Final', { tag: 'Sun' }),
+          us('IND', 'Colts', 22, 'PIT', 'Steelers', 34, 'Final', { tag: 'Sun' }),
+          us('HOU', 'Texans', 26, 'TEN', 'Titans', 3, 'Final', { tag: 'Sun' }),
+          us('NYG', 'Giants', 27, 'WAS', 'Commanders', 27, 'Final/OT', { tag: 'Sun · Tie' }),
+          us('CLE', 'Browns', 12, 'NYJ', 'Jets', 17, 'Final', { tag: 'Sun' }),
+          us('PHI', 'Eagles', 17, 'JAC', 'Jaguars', 19, 'Final', { tag: 'Sun' }),
+          us('TB', 'Buccaneers', 24, 'DAL', 'Cowboys', 16, 'Final', { tag: 'TNF' })
+        ] },
+        { label: 'Week 7 · Upcoming', games: [
+          us('SEA', 'Seahawks', '', 'DEN', 'Broncos', '', 'Thu 7:15 PM', { tag: 'TNF', prob: [['SEA', 58.7], ['DEN', 41.3]] }),
+          us('HOU', 'Texans', '', 'JAC', 'Jaguars', '', 'Sun 8:30 AM', { prob: [['HOU', 42.7], ['JAC', 57.3]] }),
+          us('CHI', 'Bears', '', 'ATL', 'Falcons', '', 'Sun 12:00 PM', { prob: [['CHI', 61.5], ['ATL', 38.5]] }),
+          us('BAL', 'Ravens', '', 'CLE', 'Browns', '', 'Sun 12:00 PM', { prob: [['BAL', 66.9], ['CLE', 33.1]] }),
+          us('CAR', 'Panthers', '', 'PHI', 'Eagles', '', 'Sun 12:00 PM', { prob: [['CAR', 48.7], ['PHI', 51.3]] }),
+          us('PIT', 'Steelers', '', 'TB', 'Buccaneers', '', 'Sun 12:00 PM', { prob: [['PIT', 55.5], ['TB', 44.5]] }),
+          us('TEN', 'Titans', '', 'IND', 'Colts', '', 'Sun 12:00 PM', { prob: [['TEN', 25.6], ['IND', 74.4]] }),
+          us('NO', 'Saints', '', 'NYG', 'Giants', '', 'Sun 12:00 PM', { prob: [['NO', 51.2], ['NYG', 48.8]] }),
+          us('NYJ', 'Jets', '', 'NE', 'Patriots', '', 'Sun 12:00 PM', { prob: [['NYJ', 24.5], ['NE', 75.5]] }),
+          us('ARI', 'Cardinals', '', 'LA', 'Rams', '', 'Sun 3:05 PM', { prob: [['ARI', 13], ['LA', 87]] }),
+          us('LAC', 'Chargers', '', 'KC', 'Chiefs', '', 'Sun 3:25 PM'),
+          us('BUF', 'Bills', '', 'LV', 'Raiders', '', 'Sun 3:25 PM'),
+          us('DAL', 'Cowboys', '', 'GB', 'Packers', '', 'Sun 7:20 PM', { tag: 'SNF' }),
+          us('WAS', 'Commanders', '', 'SF', '49ers', '', 'Mon 7:15 PM', { tag: 'MNF' })
+        ] }
+      ] },
+      { id: 'mlb', name: 'MLB', short: 'MLB', sub: 'League Championship Series', groups: [
+        { label: 'Today & upcoming', games: [
+          us('CLE', 'Guardians', '', 'TB', 'Rays', '', 'Tonight 7:00 PM', { tag: 'ALCS · G2', note: 'CLE leads 1–0', prob: [['CLE', 44.9], ['TB', 55.1]], href: 'GameBaseball.dc.html' }),
+          us('MIL', 'Brewers', '', 'LAD', 'Dodgers', '', 'Wed 7:00 PM', { tag: 'NLCS · G3', note: 'MIL leads 2–0', prob: [['MIL', 38.3], ['LAD', 61.7]] }),
+          us('TB', 'Rays', '', 'CLE', 'Guardians', '', 'Thu 5:00 PM', { tag: 'ALCS · G3' }),
+          us('MIL', 'Brewers', '', 'LAD', 'Dodgers', '', 'Thu 8:00 PM', { tag: 'NLCS · G4', prob: [['MIL', 38.3], ['LAD', 61.7]] }),
+          us('TB', 'Rays', '', 'CLE', 'Guardians', '', 'Fri 5:00 PM', { tag: 'ALCS · G4' }),
+          us('LAD', 'Dodgers', '', 'MIL', 'Brewers', '', 'Fri 8:00 PM', { tag: 'NLCS · G5', note: 'If necessary' })
+        ] },
+        { label: 'Recent · Final', games: [
+          us('CLE', 'Guardians', 7, 'TB', 'Rays', 3, 'Final', { tag: 'ALCS · G1 · Mon' }),
+          us('LAD', 'Dodgers', 4, 'MIL', 'Brewers', 7, 'Final', { tag: 'NLCS · G2 · Mon', href: 'GameBaseball.dc.html?sport=baseball&mode=1' }),
+          us('LAD', 'Dodgers', 1, 'MIL', 'Brewers', 2, 'Final', { tag: 'NLCS · G1 · Sun' })
+        ] }
+      ] },
+      { id: 'nhl', name: 'NHL', short: 'NHL', sub: '15 games tonight', groups: [
+        { label: 'Tonight', games: [
+          us('NJ', 'Devils', '', 'DET', 'Red Wings', '', '5:00 PM', { prob: [['NJ', 50.2], ['DET', 49.8]], href: 'GameHockey.dc.html' }),
+          us('FLA', 'Panthers', '', 'CBJ', 'Blue Jackets', '', '5:15 PM', { prob: [['FLA', 45.9], ['CBJ', 54.1]] }),
+          us('BUF', 'Sabres', '', 'MTL', 'Canadiens', '', '5:30 PM', { prob: [['BUF', 41.6], ['MTL', 58.4]] }),
+          us('WSH', 'Capitals', '', 'CAR', 'Hurricanes', '', '5:45 PM', { prob: [['WSH', 42], ['CAR', 58]] }),
+          us('SEA', 'Kraken', '', 'PHI', 'Flyers', '', '6:00 PM', { prob: [['SEA', 48.3], ['PHI', 51.7]] }),
+          us('TB', 'Lightning', '', 'NYR', 'Rangers', '', '6:15 PM', { prob: [['TB', 58.7], ['NYR', 41.3]] }),
+          us('STL', 'Blues', '', 'OTT', 'Senators', '', '6:30 PM', { prob: [['STL', 49.5], ['OTT', 50.5]] }),
+          us('VAN', 'Canucks', '', 'NYI', 'Islanders', '', '6:45 PM', { prob: [['VAN', 34.4], ['NYI', 65.6]] }),
+          us('PIT', 'Penguins', '', 'CHI', 'Blackhawks', '', '7:00 PM', { prob: [['PIT', 58], ['CHI', 42]] }),
+          us('MIN', 'Wild', '', 'WPG', 'Jets', '', '7:15 PM', { prob: [['MIN', 50.3], ['WPG', 49.7]] }),
+          us('COL', 'Avalanche', '', 'DAL', 'Stars', '', '7:30 PM'),
+          us('VGK', 'Golden Knights', '', 'NSH', 'Predators', '', '7:45 PM'),
+          us('TOR', 'Maple Leafs', '', 'UTA', 'Mammoth', '', '8:00 PM'),
+          us('CGY', 'Flames', '', 'ANA', 'Ducks', '', '8:45 PM'),
+          us('EDM', 'Oilers', '', 'LA', 'Kings', '', '9:30 PM')
+        ] },
+        { label: 'Recent · Final', games: [
+          us('DET', 'Red Wings', 0, 'MTL', 'Canadiens', 1, 'Final/SO', { tag: 'Sat', href: 'GameHockey.dc.html?sport=hockey&mode=1' }),
+          us('VGK', 'Golden Knights', 2, 'MIN', 'Wild', 4, 'Final', { tag: 'Mon' }),
+          us('OTT', 'Senators', 4, 'NJ', 'Devils', 1, 'Final', { tag: 'Mon' }),
+          us('FLA', 'Panthers', 3, 'BUF', 'Sabres', 5, 'Final', { tag: 'Mon' })
+        ] }
+      ] },
+      { id: 'ncaaf', name: 'College football', short: 'NCAAF', sub: 'Week 7 · Two games tonight', groups: [
+        { label: 'Upcoming', games: [
+          us('DEL', 'Delaware', '', 'MTU', 'Middle Tennessee', '', 'Tonight 6:00 PM', { prob: [['DEL', 51.2], ['MTU', 48.8]] }),
+          us('FIU', 'FIU', '', 'JVST', 'Jacksonville St.', '', 'Tonight 7:00 PM', { prob: [['FIU', 42.9], ['JVST', 57.1]] }),
+          us('NW', 'Northwestern', '', 'MSU', 'Michigan State', '', 'Sat 11:00 AM'),
+          us('FLA', 'Florida', '', 'TEX', 'Texas', '', 'Sat 11:00 AM'),
+          us('KU', 'Kansas', '', 'KSU', 'Kansas State', '', 'Sat 11:00 AM'),
+          us('WASH', 'Washington', '', 'PUR', 'Purdue', '', 'Fri 7:00 PM'),
+          us('ECU', 'East Carolina', '', 'UAB', 'UAB', '', 'Thu 6:30 PM', { prob: [['ECU', 65.4], ['UAB', 34.6]] }),
+          us('KENN', 'Kennesaw St.', '', 'MOSU', 'Missouri St.', '', 'Wed 6:30 PM', { prob: [['KENN', 58.9], ['MOSU', 41.1]] })
+        ] },
+        { label: 'Saturday · Final', games: [
+          us('ILL', 'Illinois', 38, 'MSU', 'Michigan State', 37, 'Final/OT', { tag: 'Sat', href: 'Game.dc.html?sport=football&mode=2' }),
+          us('UGA', 'Georgia', 20, 'ALA', 'Alabama', 17, 'Final', { tag: 'Sat' }),
+          us('USC', 'USC', 31, 'PSU', 'Penn State', 23, 'Final', { tag: 'Sat' }),
+          us('LSU', 'LSU', 34, 'UK', 'Kentucky', 35, 'Final', { tag: 'Sat' }),
+          us('MINN', 'Minnesota', 13, 'PUR', 'Purdue', 41, 'Final', { tag: 'Sat' }),
+          us('KU', 'Kansas', 24, 'UTAH', 'Utah', 41, 'Final', { tag: 'Sat' }),
+          us('BSU', 'Boise State', 38, 'FRES', 'Fresno State', 31, 'Final', { tag: 'Sat' }),
+          us('JMU', 'James Madison', 27, 'GASO', 'Georgia Southern', 24, 'Final', { tag: 'Sat' })
+        ] }
+      ] },
+      { id: 'nba', name: 'NBA', short: 'NBA', sub: 'Regular season tips Tuesday, Oct 20', groups: [
+        { label: 'Opening week', games: [
+          us('BOS', 'Celtics', '', 'DET', 'Pistons', '', 'Tue 10/20 · 2:00 PM', { tag: 'Opening night', prob: [['BOS', 46.8], ['DET', 53.2]], href: 'GameBasketball.dc.html' }),
+          us('PHI', '76ers', '', 'NYK', 'Knicks', '', 'Tue 10/20 · 6:00 PM', { tag: 'Opening night', prob: [['PHI', 35.3], ['NYK', 64.7]] }),
+          us('OKC', 'Thunder', '', 'SAS', 'Spurs', '', 'Tue 10/20 · 8:30 PM', { tag: 'Opening night', prob: [['OKC', 45.5], ['SAS', 54.5]] }),
+          us('GSW', 'Warriors', '', 'LAL', 'Lakers', '', 'Wed 10/21 · 9:00 PM'),
+          us('MIN', 'Timberwolves', '', 'MIA', 'Heat', '', 'Wed 10/21 · 6:30 PM', { prob: [['MIN', 47.5], ['MIA', 52.5]] }),
+          us('CLE', 'Cavaliers', '', 'PHI', '76ers', '', 'Thu 10/22 · 6:00 PM')
+        ] }
+      ] },
+      { id: 'ncaab', name: 'College basketball', short: 'NCAAB', sub: 'Season begins in November', groups: [
+        { label: 'Coming up', games: [
+          ev('Men’s season tip-off', '[OPENING DATE] · Full schedule loads when the season starts', '[DATE]', { tag: 'NCAA D-I' }),
+          ev('Women’s season tip-off', '[OPENING DATE] · Full schedule loads when the season starts', '[DATE]', { tag: 'NCAA D-I' })
+        ] }
+      ] },
+      { id: 'soccer', name: 'Soccer', short: 'soccer', sub: 'Champions League today · Premier League · MLS', groups: [
+        { label: 'UEFA Champions League · Today', games: [
+          fc('RCL', 'Lens', '', 'SPO', 'Sporting CP', '', '11:45 AM', { tag: 'Matchday 2', prob: [['RCL', 38.3], ['SPO', 35.2], ['Draw', 26.5]] }),
+          fc('SBH', 'Sabah', '', 'SLA', 'Slavia Prague', '', '11:45 AM', { tag: 'Matchday 2', prob: [['SBH', 25.3], ['SLA', 49.9], ['Draw', 24.8]] }),
+          fc('ARS', 'Arsenal', '', 'LIL', 'Lille', '', '2:00 PM', { tag: 'Matchday 2', prob: [['ARS', 81.9], ['LIL', 6.1], ['Draw', 12]] }),
+          fc('ATM', 'Atlético Madrid', '', 'MUN', 'Manchester United', '', '2:00 PM', { tag: 'Matchday 2', prob: [['ATM', 50.9], ['MUN', 24], ['Draw', 25.1]] }),
+          fc('GAL', 'Galatasaray', '', 'BAR', 'Barcelona', '', '2:00 PM', { tag: 'Matchday 2', prob: [['GAL', 10.4], ['BAR', 76.6], ['Draw', 13]] }),
+          fc('INT', 'Inter', '', 'BRU', 'Club Brugge', '', '2:00 PM', { tag: 'Matchday 2', prob: [['INT', 79.1], ['BRU', 8.3], ['Draw', 12.6]] }),
+          fc('RBL', 'RB Leipzig', '', 'PSV', 'PSV Eindhoven', '', '2:00 PM', { tag: 'Matchday 2', prob: [['RBL', 63.1], ['PSV', 18.8], ['Draw', 18.1]] }),
+          fc('VIK', 'Viking', '', 'BMU', 'Bayern Munich', '', '2:00 PM', { tag: 'Matchday 2', prob: [['VIK', 5.2], ['BMU', 86.7], ['Draw', 8.1]] }),
+          fc('VIL', 'Villarreal', '', 'NAP', 'Napoli', '', '2:00 PM', { tag: 'Matchday 2', prob: [['VIL', 45.6], ['NAP', 28.5], ['Draw', 25.9]] })
+        ] },
+        { label: 'Premier League · Final', games: [
+          fc('LFC', 'Liverpool', 0, 'MCI', 'Manchester City', 3, 'Final', { tag: 'Sun' }),
+          fc('CFC', 'Chelsea', 5, 'BOU', 'Bournemouth', 1, 'Final', { tag: 'Sat' }),
+          fc('ARS', 'Arsenal', 2, 'LEE', 'Leeds United', 1, 'Final', { tag: 'Sat' }),
+          fc('MUN', 'Manchester United', 1, 'TOT', 'Tottenham', 1, 'Final', { tag: 'Sat' }),
+          fc('COV', 'Coventry City', 4, 'NEW', 'Newcastle', 1, 'Final', { tag: 'Mon' }),
+          fc('CRY', 'Crystal Palace', 3, 'NFO', 'Nottingham Forest', 1, 'Final', { tag: 'Sun' }),
+          fc('AVL', 'Aston Villa', 2, 'BRE', 'Brentford', 2, 'Final', { tag: 'Sat' }),
+          fc('IPS', 'Ipswich Town', 2, 'FUL', 'Fulham', 1, 'Final', { tag: 'Sat' }),
+          fc('SUN', 'Sunderland', 0, 'BRI', 'Brighton', 2, 'Final', { tag: 'Sat' }),
+          fc('HUL', 'Hull City', 2, 'EVE', 'Everton', 2, 'Final', { tag: 'Sun' })
+        ] },
+        { label: 'Premier League · This weekend', games: [
+          fc('EVE', 'Everton', '', 'CFC', 'Chelsea', '', 'Sat 6:30 AM', { prob: [['EVE', 30.3], ['CFC', 44.2], ['Draw', 25.5]] }),
+          fc('BRE', 'Brentford', '', 'LFC', 'Liverpool', '', 'Sat 9:00 AM', { prob: [['BRE', 39.8], ['LFC', 34.8], ['Draw', 25.4]] }),
+          fc('MCI', 'Manchester City', '', 'IPS', 'Ipswich Town', '', 'Sat 9:00 AM', { prob: [['MCI', 79.6], ['IPS', 7.8], ['Draw', 12.6]] }),
+          fc('FUL', 'Fulham', '', 'HUL', 'Hull City', '', 'Sat 9:00 AM', { prob: [['FUL', 55.6], ['HUL', 20.5], ['Draw', 23.9]] }),
+          fc('NEW', 'Newcastle', '', 'AVL', 'Aston Villa', '', 'Sat 11:30 AM', { prob: [['NEW', 43], ['AVL', 31.4], ['Draw', 25.6]] }),
+          fc('LEE', 'Leeds United', '', 'MUN', 'Manchester United', '', 'Sun 8:00 AM', { prob: [['LEE', 38.9], ['MUN', 35], ['Draw', 26.1]] }),
+          fc('BRI', 'Brighton', '', 'CRY', 'Crystal Palace', '', 'Sun 8:00 AM', { prob: [['BRI', 62], ['CRY', 17.1], ['Draw', 20.9]] }),
+          fc('BOU', 'Bournemouth', '', 'SUN', 'Sunderland', '', 'Sun 8:00 AM', { prob: [['BOU', 46.4], ['SUN', 26.9], ['Draw', 26.7]] }),
+          fc('NFO', 'Nottingham Forest', '', 'ARS', 'Arsenal', '', 'Sun 10:30 AM', { prob: [['NFO', 17], ['ARS', 59.6], ['Draw', 23.4]] }),
+          fc('TOT', 'Tottenham', '', 'COV', 'Coventry City', '', 'Mon 2:00 PM', { prob: [['TOT', 65.1], ['COV', 15.3], ['Draw', 19.6]] })
+        ] },
+        { label: 'MLS · Wednesday', games: [
+          fc('CHI', 'Chicago Fire', '', 'PHI', 'Philadelphia Union', '', 'Wed 7:30 PM', { prob: [['CHI', 38.9], ['PHI', 36.6], ['Draw', 24.5]] }),
+          fc('MIA', 'Inter Miami', '', 'NYC', 'NYCFC', '', 'Wed 6:30 PM', { prob: [['MIA', 63.7], ['NYC', 17.8], ['Draw', 18.5]] }),
+          fc('CIN', 'FC Cincinnati', '', 'NE', 'New England', '', 'Wed 6:30 PM', { prob: [['CIN', 50.7], ['NE', 26.3], ['Draw', 23]] }),
+          fc('CLB', 'Columbus Crew', '', 'CLT', 'Charlotte FC', '', 'Wed 6:30 PM', { prob: [['CLB', 47.4], ['CLT', 28], ['Draw', 24.6]] }),
+          fc('NSH', 'Nashville SC', '', 'SKC', 'Sporting KC', '', 'Wed 7:30 PM', { prob: [['NSH', 78.7], ['SKC', 8.8], ['Draw', 12.5]] }),
+          fc('STL', 'St. Louis City', '', 'VAN', 'Vancouver', '', 'Wed 7:30 PM', { prob: [['STL', 41.7], ['VAN', 33.5], ['Draw', 24.8]] })
+        ] },
+        { label: 'MLS · Weekend final', games: [
+          fc('STL', 'St. Louis City', 6, 'LA', 'LA Galaxy', 2, 'Final', { tag: 'Sun' }),
+          fc('NE', 'New England', 0, 'SEA', 'Seattle Sounders', 3, 'Final', { tag: 'Sat' }),
+          fc('ATX', 'Austin FC', 1, 'NSH', 'Nashville SC', 4, 'Final', { tag: 'Sat' }),
+          fc('RBNY', 'NY Red Bulls', 4, 'SD', 'San Diego FC', 1, 'Final', { tag: 'Sat' }),
+          fc('ORL', 'Orlando City', 3, 'CLB', 'Columbus Crew', 2, 'Final', { tag: 'Sat' }),
+          fc('SKC', 'Sporting KC', 3, 'POR', 'Portland', 3, 'Final', { tag: 'Sat' })
+        ] }
+      ] },
+      { id: 'tennis', name: 'Tennis', short: 'tennis', sub: 'ATP Challenger & WTA 125 · Live', groups: [
+        { label: 'Live now', games: [
+          tn('Laura Mair', '6 2 5', 'Lucrezia Stefanini', '3 6 4', 'Set 3', { live: true, tag: 'WTA 125 Rovereto' }),
+          tn('Luca Nardi', '4 3', 'August Holmgren', '6 3', 'Set 2', { live: true, tag: 'Challenger Olbia' }),
+          tn('Pierre-Hugues Herbert', '6 2', 'Norbert Gombos', '3 2', 'Set 2', { live: true, tag: 'Challenger Roanne' }),
+          tn('Max Wiskandt', '0 7 1', 'Miguel Damas', '6 5 0', 'Set 3', { live: true, tag: 'Challenger Catania' }),
+          tn('Marco Trungelliti', '2', 'Thiago Monteiro', '1', 'Set 1', { live: true, tag: 'Challenger Maia' }),
+          tn('Elsa Jacquemot', '2', 'Teodora Kostovic', '2', 'Set 1', { live: true, tag: 'WTA 125 Rovereto' })
+        ] },
+        { label: 'Completed today', games: [
+          tn('Pedro Vives Marcos', '6 6', 'Marco Cecchinato', '4 4', 'Final', { win: 0, tag: 'Challenger Catania' }),
+          tn('Polona Hercog', '6 6', 'Madalena Matias', '0 0', 'Final', { win: 0, tag: 'WTA 125 Lisbon' }),
+          tn('Jan Kumstat', '7 7', 'Edas Butvilas', '6 6', 'Final', { win: 0, tag: 'Challenger Olbia' }),
+          tn('Guiomar Maristany', '6 6', 'Gina Feistel', '2 3', 'Final', { win: 0, tag: 'WTA 125 Lisbon' })
+        ] },
+        { label: 'Tour level', games: [
+          ev('[ATP & WTA TOUR EVENTS THIS WEEK]', '[CITY] · [SURFACE] · Draws and order of play', '[DATES]', { tag: 'ATP / WTA' })
+        ] }
+      ] },
+      { id: 'golf', name: 'Golf', short: 'golf', sub: 'PGA Tour · FedEx Cup Fall', groups: [
+        { label: 'PGA Tour schedule', games: [
+          ev('Baycurrent Classic', 'Yokohama Country Club · Japan', 'Final', { tag: 'Last week', note: 'Winner [WINNER] · [SCORE]' }),
+          ev('Bermuda Championship', 'Port Royal Golf Course · Southampton, Bermuda', 'Oct 21–25', { tag: 'Next up' }),
+          ev('Mexico Open', 'Vallarta, Mexico', 'Oct 29 – Nov 1'),
+          ev('World Wide Technology Championship', 'El Cardonal at Diamante · Los Cabos', 'Nov 5–8'),
+          ev('Good Good Championship', 'Austin, Texas · Inaugural event', 'Nov 11–15'),
+          ev('RSM Classic', 'Sea Island Golf Club · St. Simons Island, GA', 'Nov 19–22', { tag: 'Fall finale' })
+        ] },
+        { label: 'Leaderboard', games: [
+          ev('Live leaderboard', 'Appears during tournament weeks · Pos, player, to par, thru, today', '[EVENT WEEK]', { tag: 'PGA / LPGA / LIV / DP World' })
+        ] }
+      ] }
+    ];
+
+    var chipsDef = [{ id: 'all', label: 'All' }].concat(data.map(function (d) { return { id: d.id, label: d.short === 'soccer' ? 'Soccer' : (d.short === 'tennis' ? 'Tennis' : (d.short === 'golf' ? 'Golf' : d.short)) }; }));
+    var chips = chipsDef.map(function (c) {
+      var on = c.id === lg;
+      return {
+        label: c.label, pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ lg: c.id }); },
+        btnStyle: 'height: 44px; padding: 0 16px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, ui-monospace, monospace; font-size: 14px; font-weight: 500; ' + (on ? 'background: #66E6F2; color: #000000; text-shadow: none;' : 'background: transparent; color: #4FB8C2;')
+      };
+    });
+
+    var TEAMPAGE = { 'nfl:DET': 'Team.dc.html', 'mlb:DET': 'TeamTigers.dc.html', 'nhl:DET': 'TeamRedWings.dc.html', 'nba:DET': 'TeamPistons.dc.html', 'ncaaf:MSU': 'TeamMSUFootball.dc.html', 'ncaab:MSU': 'TeamMSUBasketball.dc.html' };
+    var TEAMTPL = '#';
+    var GAMEPAGE = { nfl: 'Game.dc.html', ncaaf: 'Game.dc.html', mlb: 'GameBaseball.dc.html', nhl: 'GameHockey.dc.html', nba: 'GameBasketball.dc.html', ncaab: 'GameBasketball.dc.html' };
+    var W = '#EAFDFF';
+    var COLORS = {
+      'nfl:ARI': ['#97233F', W], 'nfl:ATL': ['#A71930', W], 'nfl:BAL': ['#241773', W], 'nfl:BUF': ['#00338D', W], 'nfl:CAR': ['#0085CA', W], 'nfl:CHI': ['#0B162A', '#C83803'],
+      'nfl:CIN': ['#FB4F14', '#000000'], 'nfl:CLE': ['#311D00', '#FF3C00'], 'nfl:DAL': ['#003594', W], 'nfl:DEN': ['#FB4F14', '#002244'], 'nfl:DET': ['#0076B6', W], 'nfl:GB': ['#203731', '#FFB612'],
+      'nfl:HOU': ['#03202F', '#A71930'], 'nfl:IND': ['#002C5F', W], 'nfl:JAC': ['#006778', '#D7A22A'], 'nfl:KC': ['#E31837', '#FFB81C'], 'nfl:LV': ['#000000', '#A5ACAF'], 'nfl:LAC': ['#0080C6', '#FFC20E'],
+      'nfl:LA': ['#003594', '#FFD100'], 'nfl:MIA': ['#008E97', W], 'nfl:MIN': ['#4F2683', '#FFC62F'], 'nfl:NE': ['#002244', '#C60C30'], 'nfl:NO': ['#D3BC8D', '#101820'], 'nfl:NYG': ['#0B2265', W],
+      'nfl:NYJ': ['#125740', W], 'nfl:PHI': ['#004C54', W], 'nfl:PIT': ['#FFB612', '#101820'], 'nfl:SF': ['#AA0000', '#B3995D'], 'nfl:SEA': ['#002244', '#69BE28'], 'nfl:TB': ['#D50A0A', W],
+      'nfl:TEN': ['#0C2340', '#4B92DB'], 'nfl:WAS': ['#5A1414', '#FFB612'],
+      'mlb:CLE': ['#00385D', W], 'mlb:TB': ['#092C5C', '#8FBCE6'], 'mlb:MIL': ['#12284B', '#FFC52F'], 'mlb:LAD': ['#005A9C', W],
+      'nhl:NJ': ['#000000', '#E8344A'], 'nhl:DET': ['#CE1126', W], 'nhl:FLA': ['#C8102E', '#B9975B'], 'nhl:CBJ': ['#002654', W], 'nhl:BUF': ['#003087', '#FFB81C'], 'nhl:MTL': ['#AF1E2D', W],
+      'nhl:WSH': ['#041E42', '#C8102E'], 'nhl:CAR': ['#CC0000', W], 'nhl:SEA': ['#001628', '#99D9D9'], 'nhl:PHI': ['#F74902', '#000000'], 'nhl:TB': ['#002868', W], 'nhl:NYR': ['#0038A8', W],
+      'nhl:STL': ['#002F87', '#FCB514'], 'nhl:OTT': ['#C52032', W], 'nhl:VAN': ['#00205B', W], 'nhl:NYI': ['#00539B', '#F47D30'], 'nhl:PIT': ['#FCB514', '#000000'], 'nhl:CHI': ['#CF0A2C', W],
+      'nhl:MIN': ['#154734', W], 'nhl:WPG': ['#041E42', W], 'nhl:COL': ['#6F263D', W], 'nhl:DAL': ['#006847', W], 'nhl:VGK': ['#B4975A', '#333F42'], 'nhl:NSH': ['#FFB81C', '#041E42'],
+      'nhl:TOR': ['#00205B', W], 'nhl:UTA': ['#0B162A', '#6CACE4'], 'nhl:CGY': ['#C8102E', '#F1BE48'], 'nhl:ANA': ['#F47A38', '#000000'], 'nhl:EDM': ['#041E42', '#FF4C00'], 'nhl:LA': ['#041012', '#A2AAAD'],
+      'nhl:BOS': ['#041012', '#FFB81C'], 'nhl:SJ': ['#006D75', W],
+      'nba:BOS': ['#007A33', W], 'nba:DET': ['#C8102E', W], 'nba:PHI': ['#006BB6', W], 'nba:NYK': ['#006BB6', '#F58426'], 'nba:OKC': ['#007AC1', '#EF3B24'], 'nba:SAS': ['#041012', '#C4CED4'],
+      'nba:GSW': ['#1D428A', '#FFC72C'], 'nba:LAL': ['#552583', '#FDB927'], 'nba:MIN': ['#0C2340', '#78BE20'], 'nba:MIA': ['#98002E', W], 'nba:CLE': ['#860038', '#FDBB30'],
+      'ncaaf:MSU': ['#18453B', W], 'ncaaf:ILL': ['#E84A27', '#13294B']
+    };
+    // Followed teams: key = leagueId:abbr. Highlight their games and build the team catalog.
+    var lgLabel = {};
+    chipsDef.forEach(function (c) { lgLabel[c.id] = c.label; });
+    var catalog = [], seen = {};
+    data.forEach(function (d) {
+      d.groups.forEach(function (G) {
+        G.games.forEach(function (g) {
+          var hit = false;
+          g.raw.forEach(function (r) {
+            if (!r[0] || r[0].charAt(0) === '[') return;
+            var key = d.id + ':' + r[0];
+            if (follows.indexOf(key) >= 0) hit = true;
+            if (!seen[key]) { seen[key] = true; catalog.push({ key: key, abbr: r[0], name: r[1], lg: lgLabel[d.id], lgId: d.id }); }
+          });
+          g.mine = hit;
+          // Logo slot: provider logo in production; team-color monogram until then.
+          g.raw.forEach(function (r, k) {
+            if (!r[0] || !g.rows[k]) return;
+            var c = COLORS[d.id + ':' + r[0]];
+            var lose = g.win !== -1 && g.win !== k;
+            g.rows[k].abbrStyle = 'display: inline-flex; align-items: center; justify-content: center; flex: none; width: 42px; height: 24px; border-radius: 0; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600; background: ' + (c ? c[0] : '#0B2427') + '; color: ' + (c ? c[1] : '#C8F7FC') + '; opacity: ' + (lose ? '0.5' : '1') + ';';
+          });
+          // Every team name links to its team page; every card links to its game page.
+          g.rows.forEach(function (row, k) {
+            var ab = g.raw[k] && g.raw[k][0];
+            row.href = TEAMPAGE[d.id + ':' + ab] || TEAMTPL;
+            row.aria = row.name + (ab ? ' team page' : ' player page');
+          });
+          g.hrefLabel = 'Game page →';
+          g.aria = g.hasHref ? 'Open game page: ' + g.raw.map(function (r) { return r[1]; }).join(' vs ') + ', ' + g.statusRaw : undefined;
+          g.cardStyle = 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 0; background: ' + (hit ? '#0C2A2E' : '#061416') + '; border: 1px solid ' + (hit ? '#66E6F2' : '#12363B') + ';';
+        });
+      });
+    });
+    var summarize = function (t) {
+      var last = null, next = null;
+      data.forEach(function (d) {
+        if (d.id !== t.lgId) return;
+        d.groups.forEach(function (G) {
+          G.games.forEach(function (g) {
+            var idx = g.raw[0][0] === t.abbr ? 0 : (g.raw[1] && g.raw[1][0] === t.abbr ? 1 : -1);
+            if (idx < 0) return;
+            var opp = g.raw[1 - idx];
+            var where = (g.home === idx) ? 'vs ' : 'at ';
+            if (g.isFinal && !last) {
+              var ts = g.raw[idx][2], os = opp[2];
+              last = { text: (ts > os ? 'W ' : (ts < os ? 'L ' : 'T ')) + ts + '–' + os + ' ' + where + opp[0], res: ts > os ? 1 : (ts < os ? -1 : 0) };
+            } else if (!g.isFinal && !next) {
+              next = g.statusRaw + ' ' + where + opp[0];
+            }
+          });
+        });
+      });
+      return { last: last, next: next };
+    };
+    var byKey = {};
+    catalog.forEach(function (t) { byKey[t.key] = t; });
+    var mine = follows.filter(function (k) { return byKey[k]; }).map(function (k) {
+      var t = byKey[k], s = summarize(t);
+      return {
+        team: t.name, lg: t.lg,
+        href: ({ 'nfl:DET': 'Team.dc.html', 'mlb:DET': 'TeamTigers.dc.html', 'nhl:DET': 'TeamRedWings.dc.html', 'nba:DET': 'TeamPistons.dc.html', 'ncaaf:MSU': 'TeamMSUFootball.dc.html', 'ncaab:MSU': 'TeamMSUBasketball.dc.html' })[k] || '#',
+        last: s.last ? s.last.text : 'No recent result',
+        next: s.next || 'Nothing scheduled this week',
+        lastStyle: 'font-weight: 500; color: ' + (!s.last ? '#4FB8C2' : (s.last.res > 0 ? '#4ADE80' : (s.last.res < 0 ? '#FF5F56' : '#66E6F2'))) + ';',
+        removeLabel: 'Stop following ' + t.name,
+        remove: function () { self.saveFollows(follows.filter(function (x) { return x !== k; })); }
+      };
+    });
+    var ql = q.trim().toLowerCase();
+    var results = !ql ? [] : catalog.filter(function (t) {
+      return follows.indexOf(t.key) < 0 && (t.name.toLowerCase().indexOf(ql) >= 0 || t.abbr.toLowerCase() === ql || t.lg.toLowerCase() === ql);
+    }).slice(0, 8).map(function (t) {
+      return { name: t.name, lg: t.lg, add: function () { self.saveFollows(follows.concat([t.key])); self.setState({ q: '' }); } };
+    });
+
+    var rank = function (g) { return (g.mine ? 0 : 2) + (g.live ? 0 : 1); };
+    var leagues = data.filter(function (d) { return lg === 'all' || d.id === lg; }).map(function (d) {
+      var total = 0;
+      var groups = d.groups.map(function (G) {
+        total += G.games.length;
+        var games = G.games;
+        if (lg === 'all') {
+          games = games.map(function (g, i) { return { g: g, i: i }; })
+            .sort(function (a, b) { return (rank(a.g) - rank(b.g)) || (a.i - b.i); })
+            .slice(0, CAP).map(function (x) { return x.g; });
+        }
+        return { label: G.label, games: games };
+      });
+      if (lg === 'all') groups = groups.slice(0, 2);
+      return {
+        name: d.name, sub: d.sub, short: d.short, total: total,
+        showMore: lg === 'all',
+        open: function () { self.setState({ lg: d.id }); },
+        groups: groups
+      };
+    });
+
+    var slateDef = [
+      { t: 'Live', e: '14 matches in progress', lg: 'Tennis · ATP Challenger, WTA 125', live: true },
+      { t: '11:45 AM', e: 'Lens v Sporting CP · Sabah v Slavia Prague', lg: 'UEFA Champions League' },
+      { t: '2:00 PM', e: 'Arsenal v Lille · Atlético v Man United + 5 more', lg: 'UEFA Champions League' },
+      { t: '5:00 PM', e: 'NHL slate begins · 15 games through 9:30 PM', lg: 'NHL' },
+      { t: '6:00 PM', e: 'Delaware at Middle Tennessee', lg: 'College football' },
+      { t: '7:00 PM', e: 'Guardians at Rays · ALCS Game 2', lg: 'MLB · CLE leads 1–0' },
+      { t: '7:00 PM', e: 'FIU at Jacksonville State', lg: 'College football' }
+    ];
+    var slate = slateDef.map(function (s) {
+      return { t: s.t, e: s.e, lg: s.lg, timeStyle: 'width: 66px; flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 12.5px; padding-top: 1px; color: ' + (s.live ? '#FF5F56' : (s.mine ? '#EAFDFF' : '#C8F7FC')) + '; font-weight: ' + (s.live || s.mine ? '600' : '400') + ';' };
+    });
+
+    var divData = [
+      { id: 'afce', label: 'AFC E', name: 'AFC East', t: [['NE', 'Bills', 4, 1, 'BUF'], ['', 'Patriots', 3, 2, 'NE'], ['', 'Jets', 2, 3, 'NYJ'], ['', 'Dolphins', 0, 5, 'MIA']] },
+      { id: 'afcn', label: 'AFC N', name: 'AFC North', t: [['', 'Ravens', 4, 1, 'BAL'], ['', 'Browns', 3, 2, 'CLE'], ['', 'Steelers', 3, 2, 'PIT'], ['', 'Bengals', 3, 2, 'CIN']] },
+      { id: 'afcs', label: 'AFC S', name: 'AFC South', t: [['', 'Jaguars', 4, 1, 'JAC'], ['', 'Colts', 2, 3, 'IND'], ['', 'Texans', 1, 4, 'HOU'], ['', 'Titans', 0, 5, 'TEN']] },
+      { id: 'afcw', label: 'AFC W', name: 'AFC West', t: [['', 'Chiefs', 4, 0, 'KC'], ['', 'Broncos', 3, 2, 'DEN'], ['', 'Raiders', 3, 2, 'LV'], ['', 'Chargers', 0, 5, 'LAC']] },
+      { id: 'nfce', label: 'NFC E', name: 'NFC East', t: [['', 'Giants', 3, 1, 'NYG'], ['', 'Eagles', 2, 3, 'PHI'], ['', 'Cowboys', 2, 3, 'DAL'], ['', 'Commanders', 1, 3, 'WAS']] },
+      { id: 'nfcn', label: 'NFC N', name: 'NFC North', t: [['', 'Vikings', 5, 0, 'MIN'], ['', 'Packers', 3, 2, 'GB'], ['', 'Lions', 3, 2, 'DET'], ['', 'Bears', 3, 2, 'CHI']] },
+      { id: 'nfcs', label: 'NFC S', name: 'NFC South', t: [['', 'Panthers', 2, 2, 'CAR'], ['', 'Falcons', 2, 3, 'ATL'], ['', 'Buccaneers', 1, 4, 'TB'], ['', 'Saints', 1, 4, 'NO']] },
+      { id: 'nfcw', label: 'NFC W', name: 'NFC West', t: [['', '49ers', 5, 0, 'SF'], ['', 'Seahawks', 3, 2, 'SEA'], ['', 'Rams', 2, 3, 'LA'], ['', 'Cardinals', 1, 4, 'ARI']] }
+    ];
+    var divId = st.div || 'afce';
+    var curDiv = divData.filter(function (d) { return d.id === divId; })[0] || divData[0];
+    var divs = divData.map(function (d) {
+      var on = d.id === curDiv.id;
+      return {
+        label: d.label, pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ div: d.id }); },
+        btnStyle: 'height: 44px; padding: 0 4px; border-radius: 0; cursor: pointer; font-family: \'IBM Plex Mono\', monospace; font-size: 12px; font-weight: 500; border: 1px solid ' + (on ? '#66E6F2' : '#12363B') + '; ' + (on ? 'background: #66E6F2; color: #000000; text-shadow: none;' : 'background: #061416; color: #4FB8C2;')
+      };
+    });
+    var nfcn = curDiv.t.map(function (r) {
+      var gp = r[2] + r[3];
+      var pct = gp ? (r[2] / gp) : 0;
+      var pctStr = pct === 1 ? '1.000' : pct.toFixed(3).replace(/^0/, '');
+      var fol = follows.indexOf('nfl:' + r[4]) >= 0;
+      return { t: r[1], wl: r[2] + '–' + r[3], pct: pctStr, rowStyle: fol ? 'color: #C8F7FC; background: #0C2A2E;' : 'color: #66E6F2;' };
+    });
+
+    return {
+      navCls: navCls,
+      chips: chips,
+      leagues: leagues,
+      mine: mine,
+      q: q,
+      onQ: function (e) { self.setState({ q: e.target.value }); },
+      results: results,
+      hasResults: results.length > 0,
+      noMatch: ql.length > 0 && results.length === 0,
+      hasFollows: mine.length > 0,
+      noFollows: mine.length === 0,
+      divs: divs,
+      divName: curDiv.name,
+      slate: slate,
+      series: [
+        { round: 'ALCS', lead: 'Guardians lead Rays', wins: '1–0', next: 'Game 2 tonight · 7:00 PM at TB' },
+        { round: 'NLCS', lead: 'Brewers lead Dodgers', wins: '2–0', next: 'Game 3 Wed · 7:00 PM at LAD' }
+      ],
+      nfcn: nfcn
+    };
+  }
+}
+DC.mount(Component, {"$preview": {"width": 1440, "height": 4000}});
+</script>
 </body>
 </html>

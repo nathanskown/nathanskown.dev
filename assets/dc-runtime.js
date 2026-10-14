@@ -7,15 +7,11 @@
   'use strict';
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
-  var ROUTES = {
-    'Dashboard.dc.html': '/finance/',
-    'News.dc.html': '/finance/headlines/',
-    'Main.dc.html': '/finance/quote/',
-    'Ownership.dc.html': '/finance/ownership/',
-    'Earnings.dc.html': '/finance/earnings/',
-    'Macro.dc.html': '/finance/macro/',
-    'IPO.dc.html': '/finance/ipo/'
-  };
+  var ROUTES = window.DC_ROUTES || {};
+  function route(href) {
+    var q = href.indexOf('?'), base = q < 0 ? href : href.slice(0, q);
+    return ROUTES[base] ? ROUTES[base] + (q < 0 ? '' : href.slice(q)) : href;
+  }
   var EVENT_MAP = { change: 'input', doubleclick: 'dblclick' };
   var HOLE = /\{\{\s*([^}]+?)\s*\}\}/g;
   var WHOLE = /^\{\{\s*([^}]+?)\s*\}\}$/;
@@ -76,7 +72,11 @@
       if (SVG_ATTR[name]) name = SVG_ATTR[name];
       if (name === 'ref') { if (typeof val === 'function') v.ref = val; continue; }
       if (name === 'classname') name = 'class';
-      if (name === 'href' && typeof val === 'string' && ROUTES[val]) val = ROUTES[val];
+      if (name === 'href' && typeof val === 'string') {
+        val = route(val);
+        // a link with nowhere to go renders as plain text instead of a dead link
+        if (tag === 'a' && (val === '#' || val === '')) continue;
+      }
       if (val === undefined || val === null || val === false) continue;
       v.attrs[name] = val === true ? '' : String(val);
     }
@@ -145,11 +145,47 @@
     c._v = out;
   }
 
+  /* command line on every inner page: type a page code, team or ticker and press Enter */
+  var CMDS = {
+    HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest',
+    MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
+    DES: '/finance/quote/', QUOTE: '/finance/quote/', NWND: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
+    ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
+    PRSM: '/finance/ownership/?ticker=PRSM', HLWY: '/finance/ownership/?ticker=HLWY', ODEN: '/finance/ownership/?ticker=ODEN', KTRA: '/finance/ownership/?ticker=KTRA',
+    SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
+    GAME: '/sports/game/football/', NFL: '/sports/game/football/', MLB: '/sports/game/baseball/', NBA: '/sports/game/basketball/', NHL: '/sports/game/hockey/',
+    TEAM: '/sports/team/lions/', LIONS: '/sports/team/lions/', TIGERS: '/sports/team/tigers/', PISTONS: '/sports/team/pistons/',
+    REDWINGS: '/sports/team/red-wings/', WINGS: '/sports/team/red-wings/', MSU: '/sports/team/msu-football/', MSUFB: '/sports/team/msu-football/',
+    MSUBB: '/sports/team/msu-basketball/', MSUHKY: '/sports/team/msu-hockey/',
+    SIM: '/sports/simulator/', ODDS: '/sports/odds/', SPOT: '/sports/spots/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
+    SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/'
+  };
+  function runCmd(input) {
+    var c = input.value.trim().toUpperCase().replace(/(\s+|<)GO>?$/, '').replace(/[\s-]+/g, '');
+    if (!c) return;
+    if (CMDS[c]) { location.href = CMDS[c]; return; }
+    input.value = '';
+    input.placeholder = c === 'HELP' ? 'TRY WEI · TOP · DES · ERN · SCOR · LIONS · MSU · HOME' : '"' + c + '" NOT FOUND · TRY HELP';
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target && e.target.classList && e.target.classList.contains('t-input')) { e.preventDefault(); runCmd(e.target); }
+  });
+  document.addEventListener('submit', function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-cmd')) {
+      e.preventDefault();
+      var i = e.target.querySelector('.t-input'); if (i) runCmd(i);
+    }
+  });
+
   window.DC = {
     mount: function (Component, defaults) {
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];
       var c = new Component(props);
+      // deep links: ?mode=1&sport=football or ?ticker=PRSM preset the page's state
+      var init = {};
+      new URLSearchParams(location.search).forEach(function (v, k) { init[k] = /^-?\d+$/.test(v) ? Number(v) : v; });
+      if (Object.keys(init).length) c.state = Object.assign({}, c.state || {}, init);
       c._root = document.getElementById('app');
       c._mounted = true;
       render(c);

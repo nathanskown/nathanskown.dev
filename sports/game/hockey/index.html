@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game center · Hockey · NSKN Terminal</title>
+<meta name="theme-color" content="#020607">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/sports.css">
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
+<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Game.dc.html":"/sports/game/football/","GameBaseball.dc.html":"/sports/game/baseball/","GameBasketball.dc.html":"/sports/game/basketball/","GameHockey.dc.html":"/sports/game/hockey/","Team.dc.html":"/sports/team/lions/","TeamTigers.dc.html":"/sports/team/tigers/","TeamPistons.dc.html":"/sports/team/pistons/","TeamRedWings.dc.html":"/sports/team/red-wings/","TeamMSUFootball.dc.html":"/sports/team/msu-football/","TeamMSUBasketball.dc.html":"/sports/team/msu-basketball/","TeamMSUHockey.dc.html":"/sports/team/msu-hockey/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Spots.dc.html":"/sports/spots/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["Sports Menu"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["GAME <GO>"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES CT"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"class":"t-inv"},"c":["<HELP>"]}," for explanation."]},{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Switch between preview and recap with the tabs below"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"gameSearch","class":"t-prompt"},"c":["NSKN \u203a"]},{"t":"input","a":{"id":"gameSearch","class":"t-input","type":"search","placeholder":"TEAM, PAGE CODE OR HOME","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["2) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["3) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Spots.dc.html"},"c":["4) Spots"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"LuckWatch.dc.html"},"c":["6) Luck watch"]},{"t":"a","a":{"class":"t-fkey","href":"Schedule.dc.html"},"c":["7) Schedule str."]},{"t":"a","a":{"class":"t-fkey","href":"TrackRecord.dc.html"},"c":["8) Track record"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["9) Method"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"nav","a":{"class":"t-sub2","aria-label":"Teams and games"},"c":[{"t":"span","a":{"class":"t-sl"},"c":["TEAMS"]},{"t":"a","a":{"class":"{{navCls.Team}}","href":"Team.dc.html"},"c":["LIONS"]},{"t":"a","a":{"class":"{{navCls.TeamTigers}}","href":"TeamTigers.dc.html"},"c":["TIGERS"]},{"t":"a","a":{"class":"{{navCls.TeamPistons}}","href":"TeamPistons.dc.html"},"c":["PISTONS"]},{"t":"a","a":{"class":"{{navCls.TeamRedWings}}","href":"TeamRedWings.dc.html"},"c":["RED WINGS"]},{"t":"a","a":{"class":"{{navCls.TeamMSUFootball}}","href":"TeamMSUFootball.dc.html"},"c":["MSU FB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUBasketball}}","href":"TeamMSUBasketball.dc.html"},"c":["MSU BB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUHockey}}","href":"TeamMSUHockey.dc.html"},"c":["MSU HKY"]},{"t":"span","a":{"class":"t-sl"},"c":["GAMES"]},{"t":"a","a":{"class":"{{navCls.Game}}","href":"Game.dc.html"},"c":["NFL"]},{"t":"a","a":{"class":"{{navCls.GameBaseball}}","href":"GameBaseball.dc.html"},"c":["MLB"]},{"t":"a","a":{"class":"{{navCls.GameBasketball}}","href":"GameBasketball.dc.html"},"c":["NBA"]},{"t":"a","a":{"class":"{{navCls.GameHockey}}","href":"GameHockey.dc.html"},"c":["NHL"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Game Center (GAME)"]},{"t":"span","a":{"class":"dim"},"c":["Tue Oct 13, 2026"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["SAMPLE DATA \u00b7 [BRACKETS] = FILLS IN FROM THE FEED"]}]}]},{"t":"main","a":{"style":"max-width: 1240px; margin: 0 auto; padding: 20px 24px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px"},"c":[{"t":"nav","a":{"aria-label":"Breadcrumb","style":"font-size: 13px; color: #3C9AA3"},"c":[{"t":"a","a":{"href":"Main.dc.html","style":"color: #C8F7FC; text-decoration: none"},"c":["Scores"]}," \u203a {{lgShort}} \u203a {{cur.tag}}"]},{"t":"div","a":{"role":"group","aria-label":"Page version","style":"display: flex; flex-wrap: wrap; gap: 4px; background: #041012; border-radius: 0; padding: 4px"},"c":[{"t":"sc-for","a":{"list":"{{modes}}","as":"m","hint-placeholder-count":"2"},"c":[{"t":"button","a":{"type":"button","onclick":"{{m.pick}}","aria-pressed":"{{m.pressed}}","style":"{{m.btnStyle}}"},"c":["{{m.label}}"]}]}]}]},{"t":"section","a":{"aria-label":"Matchup","style":"background: #041012; border-radius: 0; padding: 26px 22px 22px"},"c":[{"t":"div","a":{"style":"text-align: center; font-size: 12px; color: #4FB8C2; letter-spacing: 0.08em; text-transform: uppercase"},"c":["{{cur.lg}} \u00b7 {{cur.date}}"]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; gap: 12px; margin-top: 18px"},"c":[{"t":"a","a":{"href":"{{away.href}}","style":"display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; text-decoration: none; color: inherit"},"c":[{"t":"span","a":{"role":"img","aria-label":"{{away.logoLabel}}","style":"{{away.badge}}"},"c":["{{away.abbr}}"]},{"t":"span","a":{"style":"color: #C8F7FC; font-size: 17px; font-weight: 600"},"c":["{{away.name}}"]},{"t":"span","a":{"style":"font-size: 13px; color: #4FB8C2"},"c":["{{away.rec}} \u00b7 {{away.sub}}"]}]},{"t":"div","a":{"style":"display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px"},"c":[{"t":"sc-if","a":{"value":"{{isRecap}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"style":"display: flex; align-items: baseline; gap: 16px; font-family: 'IBM Plex Mono', monospace"},"c":[{"t":"span","a":{"style":"font-size: 52px; font-weight: 600; line-height: 1; color: {{awayColor}}"},"c":["{{away.score}}"]},{"t":"span","a":{"style":"font-size: 20px; color: #23565C"},"c":["\u2013"]},{"t":"span","a":{"style":"font-size: 52px; font-weight: 600; line-height: 1; color: {{homeColor}}"},"c":["{{home.score}}"]}]}]},{"t":"sc-if","a":{"value":"{{isPreview}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 32px; font-weight: 600; color: #C8F7FC; line-height: 1.1"},"c":["{{cur.time}}"]}]},{"t":"span","a":{"style":"display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 0; background: #0C2A2E; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: #EAFDFF"},"c":["{{cur.status}}"]},{"t":"span","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["{{cur.venue}}"]}]},{"t":"a","a":{"href":"{{home.href}}","style":"display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; text-decoration: none; color: inherit"},"c":[{"t":"span","a":{"role":"img","aria-label":"{{home.logoLabel}}","style":"{{home.badge}}"},"c":["{{home.abbr}}"]},{"t":"span","a":{"style":"color: #C8F7FC; font-size: 17px; font-weight: 600"},"c":["{{home.name}}"]},{"t":"span","a":{"style":"font-size: 13px; color: #4FB8C2"},"c":["{{home.rec}} \u00b7 {{home.sub}}"]}]}]},{"t":"sc-if","a":{"value":"{{isPreview}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"max-width: 640px; margin: 22px auto 0"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: #4FB8C2; letter-spacing: 0.06em; text-transform: uppercase"},"c":[{"t":"span","a":{},"c":["Matchup predictor \u00b7 house model"]},{"t":"span","a":{},"c":["Feed: {{feedProb}}"]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; font-family: 'IBM Plex Mono', monospace"},"c":[{"t":"span","a":{"style":"font-size: 24px; font-weight: 600; color: {{probAColor}}"},"c":["{{probA}}"]},{"t":"span","a":{"style":"font-size: 13px; color: #EAFDFF; font-family: 'IBM Plex Mono', ui-monospace, monospace"},"c":["{{cur.projLine}}"]},{"t":"span","a":{"style":"font-size: 24px; font-weight: 600; color: {{probBColor}}"},"c":["{{probB}}"]}]},{"t":"div","a":{"aria-hidden":"true","style":"display: flex; gap: 3px; height: 8px; margin-top: 8px; border-radius: 0; overflow: hidden"},"c":[{"t":"div","a":{"style":"{{probBarA}}"},"c":[]},{"t":"div","a":{"style":"{{probBarB}}"},"c":[]}]}]}]},{"t":"div","a":{"style":"text-align: center; font-size: 13px; color: #C8F7FC; margin-top: 16px"},"c":["{{cur.context}}"]}]},{"t":"nav","a":{"aria-label":"On this page","style":"display: flex; flex-wrap: wrap; gap: 6px"},"c":[{"t":"sc-for","a":{"list":"{{jump}}","as":"j","hint-placeholder-count":"5"},"c":[{"t":"a","a":{"href":"{{j.href}}","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["{{j.t}}"]}]}]},{"t":"sc-if","a":{"value":"{{isPreview}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"display: flex; flex-direction: column; gap: 20px"},"c":[{"t":"section","a":{"class":"t-card","id":"edge","aria-label":"Model takeaway","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Model takeaway"]},{"t":"a","a":{"href":"Methodology.dc.html","style":"display: inline-flex; align-items: center; height: 40px; font-size: 13.5px; color: #C8F7FC; text-decoration: none"},"c":["How the model works \u2192"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 12px"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["Likely winner"]},{"t":"div","a":{"style":"display: flex; align-items: center; gap: 10px; margin-top: 6px"},"c":[{"t":"span","a":{"style":"{{pickMini}}"},"c":["{{take.pick}}"]},{"t":"span","a":{"style":"font-size: 16px; font-weight: 600; color: #C8F7FC"},"c":["{{pickName}}"]}]}]},{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["Projected margin"]},{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: #C8F7FC; margin-top: 4px"},"c":["{{take.margin}}"]}]},{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["Win probability"]},{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: #C8F7FC; margin-top: 4px"},"c":["{{take.win}}"]}]},{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["Fair line (cover read)"]},{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: #C8F7FC; margin-top: 4px"},"c":["{{take.fair}}"]}]}]},{"t":"div","a":{"style":"margin-top: 14px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 12.5px"},"c":[{"t":"span","a":{"style":"color: #5CC7D1"},"c":["Data coverage: share of model weight that is live right now"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: #C8F7FC"},"c":["{{coverage}}% \u00b7 {{confidence}}"]}]},{"t":"div","a":{"role":"img","aria-label":"Data coverage {{coverage}} percent","style":"height: 8px; border-radius: 0; background: #0A1F22; margin-top: 6px; overflow: hidden"},"c":[{"t":"div","a":{"style":"{{coverageBar}}"},"c":[]}]}]},{"t":"sc-for","a":{"list":"{{take.drivers}}","as":"dr","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px; line-height: 1.55"},"c":[{"t":"span","a":{"style":"flex: none; width: 22px; height: 22px; border-radius: 0; background: #0C2A2E; color: #EAFDFF; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px"},"c":["{{dr.n}}"]},{"t":"span","a":{"style":"color: #66E6F2"},"c":["{{dr.t}}"]}]}]},{"t":"p","a":{"style":"margin: 10px 0 0; font-size: 13.5px; color: #C8F7FC"},"c":["{{take.cover}}"]}]},{"t":"section","a":{"class":"t-card","id":"metrics","aria-label":"Key comparative metrics","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px"},"c":[{"t":"div","a":{},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Key metrics"]},{"t":"div","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["The {{keyCount}} highest-weighted of {{indCount}} indicators that feed the takeaway"]}]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #C8F7FC"},"c":["{{tally}}"]}]},{"t":"div","a":{"style":"overflow-x: auto; margin-top: 10px"},"c":[{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"font-size: 12px; color: #3C9AA3; text-align: left"},"c":[{"t":"th","a":{"scope":"col","style":"font-weight: 500; padding: 8px 10px 8px 0"},"c":["Metric"]},{"t":"th","a":{"scope":"col","style":"font-weight: 500; padding: 8px 10px; text-align: right"},"c":["{{away.abbr}}"]},{"t":"th","a":{"scope":"col","style":"font-weight: 500; padding: 8px 10px; text-align: right"},"c":["{{home.abbr}}"]},{"t":"th","a":{"scope":"col","style":"font-weight: 500; padding: 8px 10px; text-align: center"},"c":["Edge"]},{"t":"th","a":{"scope":"col","style":"font-weight: 500; padding: 8px 0 8px 10px; text-align: right"},"c":["Weight"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{keyRows}}","as":"r","hint-placeholder-count":"13"},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; vertical-align: top; padding: 10px 10px 10px 0; border-top: 1px solid #0A1F22; font-weight: 500; color: #C8F7FC"},"c":[{"t":"span","a":{"style":"display: block"},"c":["{{r.name}}"]},{"t":"span","a":{"style":"display: block; font-weight: 400; font-size: 12px; color: #3C9AA3"},"c":["{{r.note}}"]}]},{"t":"td","a":{"style":"{{r.aStyle}}"},"c":["{{r.a}}"]},{"t":"td","a":{"style":"{{r.bStyle}}"},"c":["{{r.b}}"]},{"t":"td","a":{"style":"vertical-align: top; padding: 10px; border-top: 1px solid #0A1F22; text-align: center"},"c":[{"t":"span","a":{"style":"{{r.pill}}"},"c":["{{r.edge}}"]}]},{"t":"td","a":{"style":"vertical-align: top; padding: 10px 0 10px 10px; border-top: 1px solid #0A1F22; text-align: right; font-family: 'IBM Plex Mono', monospace; color: #5CC7D1"},"c":["{{r.wLabel}}"]}]}]}]}]}]},{"t":"button","a":{"type":"button","onclick":"{{toggleAll}}","aria-expanded":"{{allExpanded}}","style":"margin-top: 14px; height: 44px; padding: 0 18px; border-radius: 0; border: 1px solid #12363B; background: #061416; color: #EAFDFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; cursor: pointer"},"c":["{{toggleLabel}}"]},{"t":"sc-if","a":{"value":"{{showAll}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"margin-top: 14px"},"c":[{"t":"sc-for","a":{"list":"{{groups}}","as":"gp","hint-placeholder-count":"4"},"c":[{"t":"h3","a":{"style":"margin: 16px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4FB8C2; text-transform: uppercase"},"c":["{{gp.cat}} ",{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: #23565C"},"c":["\u00b7 {{gp.w}}"]}]},{"t":"div","a":{"style":"overflow-x: auto"},"c":[{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px"},"c":[{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{gp.rows}}","as":"r","hint-placeholder-count":"4"},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; vertical-align: top; padding: 9px 10px 9px 0; border-top: 1px solid #0A1F22; font-weight: 500; color: #66E6F2; width: 34%"},"c":[{"t":"span","a":{"style":"display: block"},"c":["{{r.name}}"]},{"t":"span","a":{"style":"display: block; font-weight: 400; font-size: 12px; color: #3C9AA3"},"c":["{{r.note}}"]}]},{"t":"td","a":{"style":"{{r.aStyle}}"},"c":["{{r.a}}"]},{"t":"td","a":{"style":"{{r.bStyle}}"},"c":["{{r.b}}"]},{"t":"td","a":{"style":"vertical-align: top; padding: 9px 10px; border-top: 1px solid #0A1F22; text-align: center"},"c":[{"t":"span","a":{"style":"{{r.pill}}"},"c":["{{r.edge}}"]}]},{"t":"td","a":{"style":"vertical-align: top; padding: 9px 10px; border-top: 1px solid #0A1F22"},"c":[{"t":"span","a":{"style":"{{r.statusStyle}}"},"c":["{{r.statusLabel}}"]}]},{"t":"td","a":{"style":"vertical-align: top; padding: 9px 0 9px 10px; border-top: 1px solid #0A1F22; text-align: right; font-family: 'IBM Plex Mono', monospace; color: #5CC7D1"},"c":["{{r.wLabel}}"]}]}]}]}]}]}]}]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","id":"model","aria-label":"Projection","style":"flex: 1 1 380px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 10px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Projection"]},{"t":"sc-for","a":{"list":"{{cur.models}}","as":"mo","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid #0A1F22"},"c":[{"t":"span","a":{"style":"font-size: 14px; color: #66E6F2"},"c":["{{mo.k}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #C8F7FC; font-weight: 600"},"c":["{{mo.m}} ",{"t":"span","a":{"style":"color: #4FB8C2; font-weight: 400"},"c":["\u00b7 {{mo.p}}"]}]}]}]},{"t":"h3","a":{"style":"margin: 16px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4FB8C2; text-transform: uppercase"},"c":["How it\u2019s built"]},{"t":"sc-for","a":{"list":"{{cur.comps}}","as":"c","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 13.5px"},"c":[{"t":"span","a":{"style":"color: #5CC7D1"},"c":["{{c.k}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: #66E6F2"},"c":["{{c.v}}"]}]}]},{"t":"p","a":{"style":"margin: 10px 0 0; font-size: 12.5px; line-height: 1.55; color: #3C9AA3"},"c":["{{cur.modelNote}}"]}]},{"t":"section","a":{"class":"t-card","id":"keys","aria-label":"What decides it","style":"flex: 1 1 380px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["What decides it"]},{"t":"sc-for","a":{"list":"{{cur.keys}}","as":"k","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid #0A1F22; font-size: 14px; line-height: 1.55"},"c":[{"t":"span","a":{"style":"flex: none; width: 22px; height: 22px; border-radius: 0; background: #0C2A2E; color: #EAFDFF; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px"},"c":["{{k.n}}"]},{"t":"span","a":{"style":"color: #66E6F2"},"c":["{{k.t}}"]}]}]}]}]},{"t":"section","a":{"class":"t-card","id":"units","aria-label":"Unit versus unit","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Unit vs. unit"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["{{cur.unitNote}}"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-top: 12px"},"c":[{"t":"sc-for","a":{"list":"{{cur.units}}","as":"u","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 14px; font-weight: 600; color: #C8F7FC"},"c":["{{u.title}}"]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 11.5px; color: #3C9AA3; margin: 6px 0 2px; letter-spacing: 0.04em; text-transform: uppercase"},"c":[{"t":"span","a":{},"c":["{{u.left}}"]},{"t":"span","a":{},"c":["Edge"]},{"t":"span","a":{},"c":["{{u.right}}"]}]},{"t":"sc-for","a":{"list":"{{u.rows}}","as":"r","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"style":"display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #0A1F22"},"c":[{"t":"div","a":{},"c":[{"t":"span","a":{"style":"display: block; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #C8F7FC"},"c":["{{r.o}}"]},{"t":"span","a":{"style":"display: block; font-size: 11.5px; color: #3C9AA3"},"c":["{{r.k}}"]}]},{"t":"span","a":{"style":"{{r.pill}}"},"c":["{{r.adv}}"]},{"t":"div","a":{"style":"text-align: right"},"c":[{"t":"span","a":{"style":"display: block; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #C8F7FC"},"c":["{{r.d}}"]},{"t":"span","a":{"style":"display: block; font-size: 11.5px; color: #3C9AA3"},"c":["{{r.k2}}"]}]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","id":"form","aria-label":"Recent form","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 4px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Recent form"]},{"t":"div","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["Margin of each game, oldest to newest"]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-top: 12px"},"c":[{"t":"sc-for","a":{"list":"{{forms}}","as":"f","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: center"},"c":[{"t":"span","a":{"style":"display: flex; align-items: center; gap: 8px"},"c":[{"t":"span","a":{"style":"{{f.mini}}"},"c":["{{f.abbr}}"]},{"t":"span","a":{"style":"font-size: 14px; font-weight: 600; color: #C8F7FC"},"c":["{{f.name}}"]}]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #5CC7D1"},"c":["{{f.summary}}"]}]},{"t":"sc-for","a":{"list":"{{f.games}}","as":"g","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"style":"display: grid; grid-template-columns: 96px 30px minmax(0, 1fr) 54px; align-items: center; gap: 8px; padding: 7px 0; font-size: 13px"},"c":[{"t":"span","a":{"style":"color: #5CC7D1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"},"c":["{{g.opp}}"]},{"t":"span","a":{"style":"{{g.res}}"},"c":["{{g.r}}"]},{"t":"span","a":{"aria-hidden":"true","style":"display: flex; height: 8px"},"c":[{"t":"span","a":{"style":"flex: 1; display: flex; justify-content: flex-end"},"c":[{"t":"span","a":{"style":"{{g.neg}}"},"c":[]}]},{"t":"span","a":{"style":"width: 1px; background: #1B4A50"},"c":[]},{"t":"span","a":{"style":"flex: 1; display: flex"},"c":[{"t":"span","a":{"style":"{{g.pos}}"},"c":[]}]}]},{"t":"span","a":{"style":"text-align: right; font-family: 'IBM Plex Mono', monospace; color: #66E6F2"},"c":["{{g.score}}"]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","id":"context","aria-label":"Context","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 8px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Context & schedule spot"]},{"t":"div","a":{"style":"overflow-x: auto"},"c":[{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; min-width: 460px; font-size: 14px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 0"},"c":["Measure"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 8px"},"c":["{{away.abbr}}"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 8px"},"c":["{{home.abbr}}"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 0 6px 12px"},"c":["Why it matters"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{ctx}}","as":"c","hint-placeholder-count":"8"},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; font-weight: 500; padding: 10px 0; border-top: 1px solid #0A1F22; color: #66E6F2"},"c":["{{c.k}}"]},{"t":"td","a":{"style":"{{c.aStyle}}"},"c":["{{c.a}}"]},{"t":"td","a":{"style":"{{c.bStyle}}"},"c":["{{c.b}}"]},{"t":"td","a":{"style":"padding: 10px 0 10px 12px; border-top: 1px solid #0A1F22; color: #4FB8C2; font-size: 13px"},"c":["{{c.n}}"]}]}]}]}]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","id":"injuries","aria-label":"Injury report","style":"flex: 2 1 480px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Injury report"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["Via [INJURY FEED]"]}]},{"t":"div","a":{"style":"overflow-x: auto"},"c":[{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14px; margin-top: 8px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 0"},"c":["Team"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Player"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Injury"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Status"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 0"},"c":["Impact"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{cur.injuries}}","as":"ij","hint-placeholder-count":"4"},"c":[{"t":"tr","a":{},"c":[{"t":"td","a":{"style":"padding: 10px 0; border-top: 1px solid #0A1F22; font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #C8F7FC"},"c":["{{ij.team}}"]},{"t":"td","a":{"style":"padding: 10px 8px; border-top: 1px solid #0A1F22; color: #C8F7FC"},"c":["[PLAYER] ",{"t":"span","a":{"style":"color: #3C9AA3"},"c":["\u00b7 [POS]"]}]},{"t":"td","a":{"style":"padding: 10px 8px; border-top: 1px solid #0A1F22"},"c":["[INJURY]"]},{"t":"td","a":{"style":"padding: 10px 8px; border-top: 1px solid #0A1F22; color: #FF8A80"},"c":["[STATUS]"]},{"t":"td","a":{"style":"padding: 10px 0; border-top: 1px solid #0A1F22; text-align: right; font-family: 'IBM Plex Mono', monospace; color: #66E6F2"},"c":["[\u00b1X.X {{ij.unit}}]"]}]}]}]}]}]},{"t":"p","a":{"style":"margin: 10px 0 0; font-size: 12.5px; color: #3C9AA3"},"c":["Impact = the player\u2019s value over replacement, expressed in projected {{cur.impactUnit}}. It feeds straight into the projection above."]}]},{"t":"section","a":{"class":"t-card","id":"info","aria-label":"Game info","style":"flex: 1 1 300px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 8px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Game info"]},{"t":"sc-for","a":{"list":"{{cur.info}}","as":"in","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"style":"padding: 9px 0; border-bottom: 1px solid #0A1F22"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #3C9AA3; text-transform: uppercase"},"c":["{{in.k}}"]},{"t":"div","a":{"style":"color: #C8F7FC; font-size: 14px"},"c":["{{in.v}}"]}]}]},{"t":"div","a":{"style":"padding: 9px 0"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #3C9AA3; text-transform: uppercase"},"c":["Last meeting"]},{"t":"div","a":{"style":"color: #C8F7FC; font-size: 14px"},"c":["{{cur.h2h}}"]}]}]}]}]}]},{"t":"sc-if","a":{"value":"{{isRecap}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"style":"display: flex; flex-direction: column; gap: 20px"},"c":[{"t":"section","a":{"class":"t-card","id":"flow","aria-label":"Game flow","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Game flow"]},{"t":"span","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["{{flowNote}}"]}]},{"t":"sc-if","a":{"value":"{{hasFlow}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"style":"display: flex; gap: 10px; margin-top: 12px"},"c":[{"t":"div","a":{"aria-hidden":"true","style":"display: flex; flex-direction: column; justify-content: space-between; height: 190px; padding: 4px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #3C9AA3; width: 64px; text-align: right"},"c":[{"t":"span","a":{},"c":["{{flowTop}}"]},{"t":"span","a":{},"c":["Even"]},{"t":"span","a":{},"c":["{{flowBot}}"]}]},{"t":"div","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"svg","a":{"viewbox":"0 0 800 190","preserveaspectratio":"none","role":"img","aria-label":"{{flowAria}}","style":"display: block; width: 100%; height: 190px"},"c":[{"t":"line","a":{"x1":"0","y1":"95","x2":"800","y2":"95","stroke":"#1B4A50","stroke-width":"1","vector-effect":"non-scaling-stroke"},"c":[]},{"t":"sc-for","a":{"list":"{{flowTicks}}","as":"tk","hint-placeholder-count":"4"},"c":[{"t":"line","a":{"x1":"{{tk.x}}","y1":"0","x2":"{{tk.x}}","y2":"190","stroke":"#0A1F22","stroke-width":"1","vector-effect":"non-scaling-stroke"},"c":[]}]},{"t":"path","a":{"d":"{{flowArea}}","fill":"rgba(102,230,242,0.16)","stroke":"none"},"c":[]},{"t":"path","a":{"d":"{{flowPath}}","fill":"none","stroke":"#C8F7FC","stroke-width":"2","vector-effect":"non-scaling-stroke","stroke-linejoin":"round"},"c":[]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 11.5px; color: #3C9AA3; font-family: 'IBM Plex Mono', monospace; margin-top: 4px"},"c":[{"t":"sc-for","a":{"list":"{{flowLabels}}","as":"fl","hint-placeholder-count":"4"},"c":[{"t":"span","a":{},"c":["{{fl.t}}"]}]}]}]}]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 16px"},"c":[{"t":"sc-for","a":{"list":"{{cur.factors}}","as":"kf","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 12px 14px"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #3C9AA3; text-transform: uppercase"},"c":["{{kf.k}}"]},{"t":"div","a":{"style":"color: #C8F7FC; font-size: 14px; margin-top: 2px"},"c":["{{kf.v}}"]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"Summary","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["What happened"]},{"t":"p","a":{"style":"margin: 0; font-size: 15px; line-height: 1.65; color: #66E6F2; max-width: 860px"},"c":["{{cur.summary}}"]}]},{"t":"section","a":{"class":"t-card","id":"box","aria-label":"Line score","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 10px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{cur.lineTitle}}"]},{"t":"div","a":{"style":"overflow-x: auto"},"c":[{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; min-width: 420px; font-family: 'IBM Plex Mono', monospace; font-size: 14px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; padding: 8px; color: #3C9AA3; font-weight: 500; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px"},"c":["Team"]},{"t":"sc-for","a":{"list":"{{lineHeaders}}","as":"h","hint-placeholder-count":"5"},"c":[{"t":"th","a":{"scope":"col","style":"{{h.style}}"},"c":["{{h.t}}"]}]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{lineRows}}","as":"r","hint-placeholder-count":"2"},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; padding: 10px 8px; border-top: 1px solid #0A1F22"},"c":[{"t":"span","a":{"style":"{{r.mini}}"},"c":["{{r.abbr}}"]}]},{"t":"sc-for","a":{"list":"{{r.cells}}","as":"c","hint-placeholder-count":"5"},"c":[{"t":"td","a":{"style":"{{c.style}}"},"c":["{{c.t}}"]}]}]}]}]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 12px; font-size: 13px"},"c":[{"t":"sc-for","a":{"list":"{{cur.notes}}","as":"n","hint-placeholder-count":"3"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"style":"color: #3C9AA3"},"c":["{{n.k}} "]},{"t":"span","a":{"style":"color: #C8F7FC"},"c":["{{n.v}}"]}]}]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","id":"stats","aria-label":"Team stats","style":"flex: 1 1 380px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Team stats"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #4FB8C2"},"c":["{{away.abbr}} \u00b7 {{home.abbr}}"]}]},{"t":"sc-for","a":{"list":"{{stats}}","as":"s","hint-placeholder-count":"8"},"c":[{"t":"div","a":{"style":"padding: 9px 0; border-bottom: 1px solid #0A1F22"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 13.5px"},"c":[{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: {{s.aColor}}; font-weight: 600"},"c":["{{s.a}}"]},{"t":"span","a":{"style":"color: #4FB8C2"},"c":["{{s.k}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: {{s.bColor}}; font-weight: 600"},"c":["{{s.b}}"]}]},{"t":"sc-if","a":{"value":"{{s.hasBar}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"aria-hidden":"true","style":"display: flex; gap: 3px; height: 4px; margin-top: 6px"},"c":[{"t":"div","a":{"style":"{{s.aBar}}"},"c":[]},{"t":"div","a":{"style":"{{s.bBar}}"},"c":[]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"Leaders","style":"flex: 1 1 380px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Game leaders"]},{"t":"sc-for","a":{"list":"{{cur.leaders}}","as":"l","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"padding: 10px 0; border-bottom: 1px solid #0A1F22"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #3C9AA3; text-transform: uppercase"},"c":["{{l.cat}}"]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 4px"},"c":[{"t":"div","a":{},"c":[{"t":"span","a":{"style":"display: block; font-size: 14px; color: #C8F7FC; font-weight: 500"},"c":["{{l.aName}}"]},{"t":"span","a":{"style":"display: block; font-size: 12.5px; color: #4FB8C2; font-family: 'IBM Plex Mono', monospace"},"c":["{{l.aLine}}"]}]},{"t":"div","a":{},"c":[{"t":"span","a":{"style":"display: block; font-size: 14px; color: #C8F7FC; font-weight: 500"},"c":["{{l.bName}}"]},{"t":"span","a":{"style":"display: block; font-size: 12.5px; color: #4FB8C2; font-family: 'IBM Plex Mono', monospace"},"c":["{{l.bLine}}"]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","id":"plays","aria-label":"Scoring summary","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{cur.momentsTitle}}"]},{"t":"sc-for","a":{"list":"{{moments}}","as":"mo","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"style":"display: flex; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"width: 66px; flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #3C9AA3"},"c":["{{mo.t}}"]},{"t":"span","a":{"style":"{{mo.mini}}"},"c":["{{mo.team}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0; color: #66E6F2"},"c":["{{mo.text}}"]},{"t":"span","a":{"style":"flex: none; font-family: 'IBM Plex Mono', monospace; color: #C8F7FC"},"c":["{{mo.score}}"]}]}]}]}]}]}]},{"t":"footer","a":{"style":"border-top: 1px solid #12363B; background: #010405"},"c":[{"t":"div","a":{"style":"max-width: 1240px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #3C9AA3; font-size: 12.5px"},"c":[{"t":"span","a":{},"c":["Box scores via [DATA PROVIDER] \u00b7 Logos via [LOGO PROVIDER] \u00b7 House model is informational, not betting advice \u00b7 All times Central"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
+<script src="/assets/dc-runtime.js"></script>
+<script>
+class Component extends DCLogic {
+  renderVals() {
+    var NAVON = '' + ({ football: 'Game', baseball: 'GameBaseball', basketball: 'GameBasketball', hockey: 'GameHockey' })[this.props.sport || 'football'] + '';
+    var navCls = {};
+    ['Team', 'TeamTigers', 'TeamPistons', 'TeamRedWings', 'TeamMSUFootball', 'TeamMSUBasketball', 'TeamMSUHockey', 'Game', 'GameBaseball', 'GameBasketball', 'GameHockey'].forEach(function (n) { navCls[n] = 't-chipl' + (n === NAVON ? ' is-on' : ''); });
+    var self = this;
+    var st = this.state || {};
+    var sport = this.props.sport || 'football';
+    var P = '[—]';
+    // Team identity: logo slot renders the licensed logo from the provider; until then, a team-color monogram.
+    var T = function (abbr, name, rec, sub, bg, fg, href, score) {
+      return { abbr: abbr, name: name, rec: rec, sub: sub, bg: bg, fg: fg || '#EAFDFF', href: href || '#', score: score === undefined ? '' : String(score) };
+    };
+    var inj = function (team) { return { team: team }; };
+    var DET_NFL = ['DET', 'Detroit Lions', '#0076B6', '#EAFDFF', 'Team.dc.html'];
+
+    var SPORTS = {
+      football: { lgShort: 'NFL', modes: [
+        { label: 'Preview · Packers at Lions', kind: 'preview', tag: 'Packers at Lions', lg: 'NFL · Week 8', date: 'Sun, Oct 25, 2026',
+          time: '3:25 PM CT', venue: 'Ford Field · Detroit', status: 'UPCOMING', context: 'NFC North · Detroit is coming off its Week 7 bye',
+          away: T('GB', 'Green Bay Packers', '3–2', '7 days rest', '#203731', '#FFB612'), home: T('DET', 'Detroit Lions', '3–2', '14 days rest (bye)', '#0076B6', '#EAFDFF', 'Team.dc.html'),
+          prob: [45, 55], feed: null, projLine: 'DET by 1.8 · house model',
+          models: [['Points view (SOS-adjusted, regressed)', 'DET by 1.9', '—'], ['Yardage view (net yards ÷ 14, regressed)', 'GB by 1.2', '—'], ['Efficiency blend (53/47)', 'DET by 0.4', '—'], ['+ situational & luck adjustments', 'DET by 1.8', '55%']],
+          comps: [['Home field (division game, halved)', '+0.8 DET'], ['Surface: GB grass → Ford Field turf', '+0.5 DET'], ['Rest: bye vs. 6-day turnaround (capped)', '+0.3 DET'], ['Turnover-luck regression (DET 0 INT on 191 att.)', '−0.3 DET'], ['EPA, QB and injury inputs', 'Pending feed']],
+          modelNote: 'Points and yardage views are SOS-adjusted and regressed halfway toward zero at five games, then blended and adjusted for venue, rest, surface and turnover luck. Win % assumes a 13.5-point standard deviation. EPA, QB and injury inputs (34% of the weight) switch on when play-by-play and injury feeds connect. Informational only, not betting advice.',
+          take: { pick: 'DET', margin: 'DET by 1.8', win: '55%', fair: 'DET −1.8', drivers: ['Venue does most of the work: home field in a division game (+0.8) and Green Bay switching from grass to turf (+0.5).', 'Efficiency is close to a wash. Points say Detroit by 1.9; yardage says Green Bay by 1.2.', 'Detroit hasn’t thrown an interception in 191 attempts. That won’t last, and turnover regression costs Detroit about 0.3 points.'], cover: 'Fair line: Detroit −1.8. Only 46% of the model is live (EPA, QB and injury feeds pending), so this is a lean, not a pick.' },
+          ind: [
+            ['Efficiency', 'Opponent-adjusted net EPA / play', '[—]', '[—]', 'na', 18, 'feed', true, 'Best single predictor of future margin'],
+            ['Efficiency', 'Adjusted point differential / game', '−0.7', '+1.2', 'b', 12, 'live', true, 'SOS-adjusted, regressed 50% at five games'],
+            ['Efficiency', 'Pass EPA / dropback matchup', '[—]', '[—]', 'na', 10, 'feed', true, 'Proxy below: net yards per dropback'],
+            ['Personnel', 'QB composite (EPA + CPOE)', '[—]', '[—]', 'na', 9, 'feed', true, 'Love vs. Goff'],
+            ['Efficiency', 'Success rate differential', '[—]', '[—]', 'na', 7, 'feed', true, 'Needs play-by-play'],
+            ['Personnel', 'Injury impact (value over replacement)', '[—]', '[—]', 'na', 7, 'feed', true, 'Points lost to absences'],
+            ['Situational', 'Home field', '—', '+0.8 pts', 'b', 6, 'live', true, 'Division game, so about half the usual edge'],
+            ['Efficiency', 'Net yards per play', '+0.93', '+0.30', 'a', 5, 'live', true, 'Immune to turnover and red-zone luck'],
+            ['Personnel', 'Pass rush vs. protection', '+3.1 pp', '+3.2 pp', 'even', 4, 'live', true, 'Sack rate generated minus allowed'],
+            ['Regression', 'Turnover luck', '3 INT · 59% fumble rec.', '0 INT · 67% fumble rec.', 'a', 4, 'live', true, 'Regression favors Green Bay'],
+            ['Efficiency', 'Net first-down rate', '−1.5 pp', '−0.3 pp', 'b', 3, 'live', true, 'First downs per play, gained minus allowed'],
+            ['Regression', 'Pythagorean / one-score luck', '+0.7 wins', '+0.2 wins', 'b', 3, 'live', true, 'Green Bay’s 3–2 is more inflated'],
+            ['Situational', 'Rest differential', '7 days', '14 days', 'b', 2, 'live', true, 'Capped: post-2011 effect is small'],
+            ['Situational', 'Travel & time zone', '~380 mi · same TZ', 'Home', 'even', 3, 'live', false, 'No body-clock penalty'],
+            ['Regression', 'Prior-season rating', '[2025 rating]', '[2025 rating]', 'na', 3, 'feed', false, 'Fades to zero by Week 8'],
+            ['Situational', 'Weather', 'Dome', 'Dome', 'even', 2, 'live', false, 'No weather impact'],
+            ['Situational', 'Surface change', 'Grass → turf', 'Home turf', 'b', 2, 'live', false, 'Away teams off their surface ≈ −1 pt'],
+            ['Context', 'Record', '3–2', '3–2', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Points scored / allowed per game', '20.8 / 22.4', '32.8 / 29.6', 'even', 0, 'ctx', false, 'Captured in adjusted point differential'],
+            ['Context', 'Net yards per dropback (O / D)', '6.95 / 5.29', '6.92 / 6.38', 'even', 0, 'ctx', false, 'Proxy for pass EPA'],
+            ['Context', 'Rush yards per carry (O / D)', '3.05 / 4.06', '4.39 / 4.25', 'even', 0, 'ctx', false, 'Rushing is weakly predictive'],
+            ['Context', 'First downs per play (O / D)', '.293 / .308', '.367 / .370', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Sack rate allowed / generated', '5.1% / 8.2%', '5.4% / 8.6%', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Takeaways / giveaways', '9 / 6', '5 / 1', 'even', 0, 'ctx', false, 'Mostly noise week to week'],
+            ['Context', 'Interceptions thrown / per attempt', '3 · 1.6%', '0 · 0.0%', 'even', 0, 'ctx', false, 'League rate ≈ 2.3%'],
+            ['Context', 'Penalty yards per game', '73.8', '51.6', 'even', 0, 'ctx', false, 'Weakly predictive'],
+            ['Context', 'Plays per game', '58.8', '66.4', 'even', 0, 'ctx', false, 'Pace affects totals more than sides'],
+            ['Context', 'Opponents’ win %', '.520', '.417', 'even', 0, 'ctx', false, 'Already in adjusted point differential'],
+            ['Context', 'Time of possession', '[—]', '[—]', 'even', 0, 'ctx', false, 'A result of winning, not a cause'],
+            ['Context', 'Head-to-head (last 5)', '[—]', '[—]', 'even', 0, 'ctx', false, 'Not predictive once team strength is known']
+          ],
+          edges: [
+            ['Scoring', '20.8 ppg', '32.8 ppg', 'b', 'Detroit scores 12 more points a game and has topped 30 in four of five.'],
+            ['Points allowed', '22.4', '29.6', 'a', 'Green Bay allows 7.2 fewer points a game.'],
+            ['Net yards per play', '+0.93', '+0.30', 'a', 'Per play, Green Bay has been the better team. Detroit’s scoring is outrunning its yardage.'],
+            ['Run game', '3.05 ypc', '4.39 ypc', 'b', 'Green Bay can’t run. Detroit can, and its run defense (4.25 allowed) holds up.'],
+            ['Pass defense', '5.29 / dropback', '6.38 / dropback', 'a', 'Green Bay’s pass defense is the best unit on either side of this game.'],
+            ['Pass offense', '6.95 / dropback', '6.92 / dropback', 'even', 'Both passing games are essentially identical per dropback.'],
+            ['Turnover margin', '+3', '+4', 'even', 'Detroit has 1 giveaway in five games. That’s great, and it’s not sustainable.'],
+            ['Discipline', '73.8 pen yds/g', '51.6 pen yds/g', 'b', 'Green Bay gives away 22 more yards a game in penalties.'],
+            ['Rest', '7 days', '14 days', 'b', 'Detroit is off the bye. Green Bay plays Sunday night the week before.'],
+            ['Schedule faced', '.520 opp', '.417 opp', 'a', 'Green Bay’s numbers came against tougher opponents.'],
+            ['Home field', '—', 'Ford Field', 'b', 'Detroit is 2–0 at home this season.']
+          ],
+          keys: [
+            'The scoreboard and the stat sheet disagree. Detroit is +16 in points but only +0.30 yards per play. Green Bay is −8 in points but +0.93 per play. Expect Green Bay to play better than its record and Detroit slightly worse than its.',
+            'Green Bay averages 3.05 yards per carry. That pushes Jordan Love into a Detroit pass defense allowing 6.38 net yards per dropback, which is the matchup Green Bay will try to win.',
+            'Detroit’s offense against Green Bay’s pass defense is strength on strength: 6.92 net yards per dropback against a defense allowing 5.29. Whoever wins that matchup likely covers the projected margin.',
+            'Detroit has given the ball away once all season. When that luck evens out, the scoring edge shrinks fast. It’s the biggest risk in backing the Lions here.'
+          ],
+          unitNote: 'Season averages · league reference ≈ 2025 NFL',
+          units: [
+            { title: 'Lions offense vs. Packers defense', left: 'DET O', right: 'GB D', rows: [
+              ['32.8', 'Points / game', '22.4', 'Allowed (lg ≈ 23)', 'DET'], ['5.93', 'Yards / play', '4.70', 'Allowed (lg ≈ 5.4)', 'GB'],
+              ['4.39', 'Rush yds / carry', '4.06', 'Allowed (lg ≈ 4.4)', 'GB'], ['6.92', 'Net yds / dropback', '5.29', 'Allowed (lg ≈ 6.1)', 'EVEN'],
+              ['5.4%', 'Sack rate allowed', '8.2%', 'Sack rate (lg ≈ 7%)', 'DET'], ['1', 'Giveaways (5 g)', '9', 'Takeaways (5 g)', 'EVEN'] ] },
+            { title: 'Packers offense vs. Lions defense', left: 'GB O', right: 'DET D', rows: [
+              ['20.8', 'Points / game', '29.6', 'Allowed (lg ≈ 23)', 'GB'], ['5.64', 'Yards / play', '5.63', 'Allowed (lg ≈ 5.4)', 'GB'],
+              ['3.05', 'Rush yds / carry', '4.25', 'Allowed (lg ≈ 4.4)', 'DET'], ['6.95', 'Net yds / dropback', '6.38', 'Allowed (lg ≈ 6.1)', 'GB'],
+              ['5.1%', 'Sack rate allowed', '8.6%', 'Sack rate (lg ≈ 7%)', 'EVEN'], ['6', 'Giveaways (5 g)', '5', 'Takeaways (5 g)', 'EVEN'] ] }
+          ],
+          formA: { summary: '3–2 · PF 104 · PA 112', games: [['at MIN', -17, '22–39'], ['at NYJ (OT)', 3, '20–17'], ['vs ATL', -21, '14–35'], ['at TB', 3, '17–14'], ['vs CHI', 24, '31–7']] },
+          formB: { summary: '3–2 · PF 164 · PA 148', games: [['vs NO', 1, '31–30'], ['at BUF', -10, '31–41'], ['vs NYJ', 7, '31–24'], ['at CAR', -6, '26–32'], ['at ARI', 24, '45–21']] },
+          ctx: [
+            ['Point differential', '−8', '+16', 'b', 'Points are noisy at five games but still the best single predictor'],
+            ['Pythagorean wins (of 5)', '2.3', '2.8', 'b', 'Wins a team “should” have, given points for and against'],
+            ['Luck (actual − expected)', '+0.7', '+0.2', 'b', 'Green Bay’s 3–2 is the more fortunate record'],
+            ['One-score games', '2–0', '2–1', 'even', 'Close-game records tend to regress toward .500'],
+            ['Opponents’ win %', '.520', '.417', 'a', 'Detroit’s schedule so far has been soft'],
+            ['Days of rest', '7', '14', 'b', 'Bye-week teams carry a small, real edge'],
+            ['Home / road record', '2–1 road', '2–0 home', 'even', 'Both teams are unbeaten in this game’s split'],
+            ['Plays per game', '58.8', '66.4', 'b', 'Detroit plays faster, so more possessions favor the better offense'],
+            ['Penalty yards / game', '73.8', '51.6', 'b', 'Hidden yardage that rarely shows in the box score']
+          ],
+          h2h: '[LAST MEETING · DATE · SCORE] · Series [W–L]', impactUnit: 'points', injUnit: 'pts',
+          injuries: [inj('DET'), inj('DET'), inj('GB'), inj('GB')],
+          info: [['Kickoff', 'Sun, Oct 25 · 3:25 PM CT'], ['Venue', 'Ford Field · Detroit, MI · Indoors'], ['TV / stream', '[NETWORK]'], ['Officials', '[REFEREE] · [CREW PENALTY RATE]'], ['Weather', 'Dome, no weather impact']] },
+        { label: 'Recap · Lions at Cardinals', kind: 'recap', tag: 'Lions at Cardinals', lg: 'NFL · Week 6', date: 'Sun, Oct 11, 2026 · 3:25 PM CT',
+          venue: 'State Farm Stadium · Glendale, AZ', status: 'FINAL', context: 'Detroit improves to 3–2 heading into its Week 7 bye',
+          away: T('DET', 'Detroit Lions', '3–2', 'Road', '#0076B6', '#EAFDFF', 'Team.dc.html', 45), home: T('ARI', 'Arizona Cardinals', P, 'Home', '#97233F', '#EAFDFF', '#', 21),
+          flow: { lead: 'DET', trail: 'ARI', max: 60, labels: ['Q1', 'Q2', 'Q3', 'Q4', 'End'], ticks: [15, 30, 45], pts: [[0, 0], [9.83, -7], [17.58, 0], [20.37, 7], [25.08, 14], [29.05, 17], [35.17, 24], [40.55, 17], [43.88, 24], [54.83, 31], [57.72, 24], [60, 24]] },
+          factors: [['Second quarter', 'DET 24, ARI 0'], ['Ground game', '163 rush yds vs. 56'], ['Pressure', '5 sacks · 12 QB hits'], ['Turnovers', 'DET 0 · ARI 1']],
+          lineTitle: 'Scoring by quarter', headers: ['1', '2', '3', '4', 'T'],
+          line: [['DET', [0, 24, 14, 7, 45]], ['ARI', [7, 0, 7, 7, 21]]],
+          notes: [{ k: 'Time of possession', v: 'DET 29:49 · ARI 30:11' }, { k: 'Yards per play', v: 'DET 6.3 · ARI 4.6' }],
+          summary: 'Arizona scored first, then Detroit scored 24 unanswered points in the second quarter and never let it get close. Jared Goff threw three touchdowns with no interceptions, two of them to Jameson Williams, and Jahmyr Gibbs ran for two more. The defense sacked Jacoby Brissett five times and forced the game’s only turnover. Arizona moved the ball through the air (299 yards) but ran for just 56 and missed a 50-plus-yard field goal.',
+          stats: [['Total yards', 412, 327], ['Net passing yards', 249, 271], ['Rushing yards', 163, 56], ['Yards per play', 6.3, 4.6], ['First downs', 24, 20], ['Turnovers', 0, 1, true], ['Sacks taken', 3, 5, true], ['Penalties – yards', '4–31', '5–45']],
+          leaders: [['Passing', 'Jared Goff', '19/30 · 271 yds · 3 TD', 'Jacoby Brissett', '30/48 · 299 yds · 3 TD · 1 INT'], ['Rushing', 'Jahmyr Gibbs', '2 TD · team 163 yds on 32', 'Team', '56 yds on 18 carries'], ['Receiving', 'Jameson Williams', '2 TD (8, 39 yds)', 'T. Quitoriano', '2 TD (2, 13 yds)'], ['Defense', 'Lions defense', '5 sacks · 1 INT · 12 QB hits', 'Cardinals defense', '3 sacks · 5 QB hits']],
+          momentsTitle: 'Scoring summary',
+          moments: [['Q1 5:10', 'ARI', 'T. Quitoriano 2-yd pass from Brissett', '0–7'], ['Q2 12:25', 'DET', 'Jahmyr Gibbs 1-yd run', '7–7'], ['Q2 9:38', 'DET', 'Sam LaPorta 38-yd pass from Goff', '14–7'], ['Q2 4:55', 'DET', 'Jameson Williams 8-yd pass from Goff', '21–7'], ['Q2 0:57', 'DET', 'Jake Bates 46-yd field goal', '24–7'], ['Q3 9:50', 'DET', 'Jameson Williams 39-yd pass from Goff', '31–7'], ['Q3 4:27', 'ARI', 'T. Quitoriano 13-yd pass from Brissett', '31–14'], ['Q3 1:07', 'DET', 'Jared Goff 1-yd run', '38–14'], ['Q4 5:10', 'DET', 'Jahmyr Gibbs 3-yd run', '45–14'], ['Q4 2:17', 'ARI', 'Trey McBride 9-yd pass from Brissett', '45–21']] },
+        { label: 'Recap · Illinois at MSU', kind: 'recap', tag: 'Illinois at Michigan State', lg: 'NCAAF · Big Ten', date: 'Sat, Oct 10, 2026',
+          venue: 'Spartan Stadium · East Lansing, MI', status: 'FINAL / OT', context: 'Michigan State falls to 2–4 (0–3 Big Ten), its fourth straight loss',
+          away: T('ILL', 'Illinois', P, 'Road', '#E84A27', '#13294B', '#', 38), home: T('MSU', 'Michigan State', '2–4', 'Home', '#18453B', '#EAFDFF', 'TeamMSUFootball.dc.html', 37),
+          flow: { lead: 'ILL', trail: 'MSU', max: 64, labels: ['Q1', 'Q2', 'Q3', 'Q4', 'OT'], ticks: [15, 30, 45, 60], pts: [[0, 0], [3.15, 3], [11.57, 10], [20.82, 17], [26.45, 10], [29.93, 13], [36.15, 16], [42.07, 13], [43.32, 6], [46.68, 14], [52.12, 7], [58.65, 0], [62, 7], [64, 1]] },
+          factors: [['Slow start', 'Down 0–17 in the 2nd quarter'], ['Penalties', 'MSU 9 for 69 · ILL 2 for 16'], ['Efficiency', 'Milivojevic 23 of 27'], ['Overtime', 'Failed 2-pt try for the win']],
+          lineTitle: 'Scoring by quarter', headers: ['1', '2', '3', '4', 'OT', 'T'],
+          line: [['ILL', [10, 10, 3, 8, 7, 38]], ['MSU', [0, 7, 10, 14, 6, 37]]],
+          notes: [{ k: 'Time of possession', v: 'ILL 33:52 · MSU 26:08' }, { k: 'Penalties', v: 'ILL 2–16 · MSU 9–69' }],
+          summary: 'Michigan State trailed 17–0 in the second quarter and 31–17 early in the fourth, then forced overtime on J. Patterson’s 2-yard run with 1:21 left. Illinois scored first in overtime. Patterson answered, and the Spartans went for two and the win. The conversion pass fell incomplete. A. Milivojevic was nearly perfect (23 of 27), but nine penalties for 69 yards and a 17-point hole are why this is now four straight losses.',
+          stats: [['Total yards', 409, 342], ['Passing yards', 282, 215], ['Rushing yards', 127, 127], ['First downs', 25, 19], ['Turnovers', 1, 1, true], ['Sacks taken', 0, 2, true], ['Penalties – yards', '2–16', '9–69']],
+          leaders: [['Passing', 'K. Houser / M. Clayton', '26/37 · 282 yds · 3 TD · 1 INT', 'A. Milivojevic', '23/27 · 215 yds · 2 TD'], ['Rushing', 'K. Houser', '1 TD', 'J. Patterson', '3 TD (11, 2, 1 yds)'], ['Receiving', 'H. Clement', '25-yd TD in OT', 'F. Moore', '24-yd TD'], ['Kicking', 'E. Moczulski', '3/3 FG · long 40', 'L. Boyd', '1/1 FG · 42 yds']],
+          momentsTitle: 'Scoring summary',
+          moments: [['Q1 11:51', 'ILL', 'E. Moczulski 40-yd field goal', '3–0'], ['Q1 3:26', 'ILL', 'A. Laughery 5-yd pass from Houser', '10–0'], ['Q2 9:11', 'ILL', 'K. Houser 2-yd run', '17–0'], ['Q2 3:33', 'MSU', 'J. Patterson 6-yd pass from Milivojevic', '17–7'], ['Q2 0:04', 'ILL', 'E. Moczulski 35-yd field goal', '20–7'], ['Q3 8:51', 'ILL', 'E. Moczulski 38-yd field goal', '23–7'], ['Q3 2:56', 'MSU', 'L. Boyd 42-yd field goal', '23–10'], ['Q3 1:41', 'MSU', 'J. Patterson 11-yd run', '23–17'], ['Q4 13:19', 'ILL', 'C. Dixon 14-yd pass from Clayton + 2-pt run', '31–17'], ['Q4 7:53', 'MSU', 'F. Moore 24-yd pass from Milivojevic', '31–24'], ['Q4 1:21', 'MSU', 'J. Patterson 2-yd run', '31–31'], ['OT', 'ILL', 'H. Clement 25-yd pass from Clayton', '38–31'], ['OT', 'MSU', 'J. Patterson 1-yd run · 2-pt pass fails', '38–37']] }
+      ] },
+      baseball: { lgShort: 'MLB', modes: [
+        { label: 'Preview · ALCS Game 2', kind: 'preview', tag: 'Guardians at Rays · ALCS G2', lg: 'MLB · ALCS Game 2', date: 'Tue, Oct 13, 2026',
+          time: '7:00 PM CT', venue: '[BALLPARK] · Tampa Bay', status: 'TONIGHT', context: 'Cleveland leads the series 1–0 after a 7–3 win in Game 1',
+          away: T('CLE', 'Cleveland Guardians', '85–77', 'Leads series 1–0', '#00385D', '#EAFDFF'), home: T('TB', 'Tampa Bay Rays', '98–64', 'Trails 0–1', '#092C5C', '#8FBCE6'),
+          prob: [38, 62], feed: 55.1, feedTeam: 'TB', projLine: 'TB favored · log5 + home field',
+          models: [['Log5 · neutral site', 'TB', '58%'], ['Log5 + home field', 'TB', '62%'], ['Feed model', 'TB', '55%'], ['Series win odds (house)', 'TB', '50%']],
+          comps: [['TB regular-season win %', '.605'], ['CLE regular-season win %', '.525'], ['Home-field factor', '54 / 46'], ['Series state', 'CLE leads 1–0']],
+          take: { pick: 'TB', margin: 'TB by 1.3 runs', win: '62%', fair: 'TB 62%', drivers: ['Team strength: 98 wins vs. 85. Log5 makes Tampa Bay 58% on a neutral field.', 'Home field adds about 4 points of win probability.', 'Starters aren’t in yet. They carry 25% of the weight and can swing this more than anything else.'], cover: 'Only 24% of the model is live. Wait for probable starters and bullpen usage before trusting this number.' },
+          ind: [
+            ['Pitching', 'Starting pitcher (SIERA / xFIP)', '[—]', '[—]', 'na', 25, 'feed', true, 'Beats ERA at predicting future ERA'],
+            ['Offense', 'Lineup vs. starter’s hand (wRC+)', '[—]', '[—]', 'na', 20, 'feed', true, 'Platoon-adjusted lineup quality'],
+            ['Team', 'Team strength (Pythag; win % fallback)', '.525', '.605', 'b', 10, 'live', true, 'W–L until run differential connects'],
+            ['Pitching', 'Bullpen quality (xFIP / K–BB%)', '[—]', '[—]', 'na', 8, 'feed', true, ''],
+            ['Pitching', 'Bullpen fatigue (IP, last 3 days)', '[—]', '[—]', 'na', 7, 'feed', true, 'High-leverage arms available?'],
+            ['Venue', 'Home field', '—', '54 / 46', 'b', 6, 'live', true, 'Home teams win ~53.5%'],
+            ['Defense', 'Team defense (OAA / DRS)', '[—]', '[—]', 'na', 5, 'feed', true, ''],
+            ['Venue', 'Park factor', 'Same park', 'Same park', 'even', 5, 'live', true, 'Affects totals more than sides'],
+            ['Venue', 'Weather / roof', '[—]', '[—]', 'na', 4, 'feed', true, ''],
+            ['Lineup', 'Lineup confirmation & platoon', '[—]', '[—]', 'na', 4, 'feed', true, 'Posts ~3 hours before first pitch'],
+            ['Schedule', 'Travel & rest', 'Played here Mon.', 'Played here Mon.', 'even', 3, 'live', true, 'No edge'],
+            ['Umpire', 'Home-plate umpire zone', '[—]', '[—]', 'na', 3, 'feed', true, ''],
+            ['Context', 'Regular season', '85–77', '98–64', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Series', 'Leads 1–0', 'Trails 0–1', 'even', 0, 'ctx', false, 'Series state doesn’t change single-game odds'],
+            ['Context', 'Game 1 runs', '7', '3', 'even', 0, 'ctx', false, 'One game is noise'],
+            ['Context', 'Division finish', '1st AL Central', '1st AL East', 'even', 0, 'ctx', false, '']
+          ],
+          modelNote: 'Log5 turns two teams’ win percentages into a head-to-head probability. Home field assumes the home team wins 54% of otherwise even games. Series odds play out every remaining game: TB 62% at home, 54% at Cleveland. Starters aren’t included yet, and they matter most here.',
+          edges: [
+            ['Team quality', '85–77', '98–64', 'b', 'Tampa Bay won 13 more games and the AL East.'],
+            ['Home field', '—', 'Game 2 at TB', 'b', 'Tonight is the last game in Tampa Bay until a possible Game 6.'],
+            ['Series position', 'Up 1–0', 'Down 0–1', 'a', 'Cleveland needs 3 of the remaining 6. Tampa Bay needs 4.'],
+            ['Game 1 offense', '7 runs', '3 runs', 'a', 'Cleveland’s lineup won the opener comfortably.'],
+            ['Starting pitcher', '[ERA · FIP]', '[ERA · FIP]', 'even', 'Probable starters post once announced. This is the biggest swing factor.'],
+            ['Bullpen workload', '[IP last 3 days]', '[IP last 3 days]', 'even', 'October games are decided by tired relievers more than season ERA.'],
+            ['Run differential', '[RD]', '[RD]', 'even', 'Run differential is a better predictor than W–L.']
+          ],
+          keys: [
+            'On paper Tampa Bay is the better team: 13 more wins and home field. Log5 has the Rays at 62% tonight, higher than the feed’s 55%. That gap is worth watching.',
+            'The series itself is a coin flip (Tampa Bay 50%). Cleveland already took Game 1 in Tampa Bay, and Games 3 through 5 are in Cleveland.',
+            'Starters, lineups and bullpen rest post here once announced. In a short series, bullpen fatigue and platoon matchups swing more games than season stats.'
+          ],
+          unitNote: 'Fills with probable starters and lineups',
+          units: [
+            { title: 'Starting pitchers', left: 'CLE SP', right: 'TB SP', rows: [['[NAME]', 'Pitcher', '[NAME]', 'Pitcher', 'TBD'], ['[X.XX]', 'ERA', '[X.XX]', 'ERA', 'TBD'], ['[X.XX]', 'FIP', '[X.XX]', 'FIP', 'TBD'], ['[XX%]', 'K–BB%', '[XX%]', 'K–BB%', 'TBD'], ['[X.X IP]', 'Avg. postseason start', '[X.X IP]', 'Avg. postseason start', 'TBD']] },
+            { title: 'Lineups & bullpens', left: 'CLE', right: 'TB', rows: [['[.XXX]', 'Team OPS', '[.XXX]', 'Team OPS', 'TBD'], ['[.XXX]', 'OPS vs. starter’s hand', '[.XXX]', 'OPS vs. starter’s hand', 'TBD'], ['[X.XX]', 'Bullpen ERA', '[X.XX]', 'Bullpen ERA', 'TBD'], ['[X.X]', 'Bullpen IP, last 3 days', '[X.X]', 'Bullpen IP, last 3 days', 'TBD']] }
+          ],
+          formA: { summary: 'ALCS: 1–0', games: [['at TB · G1', 4, '7–3']] },
+          formB: { summary: 'ALCS: 0–1', games: [['vs CLE · G1', -4, '3–7']] },
+          ctx: [
+            ['Regular season', '85–77', '98–64', 'b', 'A 13-win gap is significant'],
+            ['Win %', '.525', '.605', 'b', 'Feeds the log5 model'],
+            ['Division', '1st AL Central', '1st AL East', 'even', 'Cleveland won a weaker division'],
+            ['Series', 'Leads 1–0', 'Trails 0–1', 'a', 'Teams up 1–0 in a best-of-7 have the edge'],
+            ['Run differential', P, P, 'even', 'Better than W–L for true team quality'],
+            ['Last 10 games', P, P, 'even', ''],
+            ['Home / road record', P, P, 'even', 'Rays at home vs. Guardians on the road']
+          ],
+          h2h: 'ALCS Game 1 · Mon, Oct 12 · CLE 7, TB 3', impactUnit: 'runs', injUnit: 'runs',
+          injuries: [inj('CLE'), inj('TB'), inj('TB')],
+          info: [['First pitch', 'Tue, Oct 13 · 7:00 PM CT'], ['Venue', '[BALLPARK]'], ['TV / stream', '[NETWORK]'], ['Home plate umpire', '[UMPIRE] · [ZONE TENDENCY]'], ['Weather / roof', '[CONDITIONS]']] },
+        { label: 'Recap · NLCS Game 2', kind: 'recap', tag: 'Dodgers at Brewers · NLCS G2', lg: 'MLB · NLCS Game 2', date: 'Mon, Oct 12, 2026 · 4:00 PM CT',
+          venue: 'American Family Field · Milwaukee', status: 'FINAL', context: 'Brewers lead the series 2–0 · Game 3 Wed 7:00 PM at Los Angeles',
+          away: T('LAD', 'Los Angeles Dodgers', '100–62', 'Road', '#005A9C', '#EAFDFF', '#', 4), home: T('MIL', 'Milwaukee Brewers', '103–59', 'Home', '#12284B', '#FFC52F', '#', 7),
+          flow: { lead: 'MIL', trail: 'LAD', max: 9, labels: ['1', '3', '5', '7', '9'], ticks: [2, 4, 6, 8], pts: [[0, 0], [1, 0], [2, 0], [3, 1], [4, 1], [5, 0], [6, 1], [7, 1], [8, 3], [9, 3]] },
+          factors: [['Runners in scoring position', 'LAD 0/4 · MIL 6/15'], ['Starter', 'Yamamoto out after 2⅔'], ['Big bat', 'Contreras 3-5, HR, 3 RBI'], ['Bullpen', 'MIL relievers: 5 IP, 0 H']],
+          lineTitle: 'Line score', headers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'R', 'H', 'E'], totals: 3,
+          line: [['LAD', [1, 0, 1, 0, 2, 0, 0, 0, 0, 4, 3, 2]], ['MIL', [1, 0, 2, 0, 1, 1, 0, 2, 'X', 7, 12, 2]]],
+          notes: [{ k: 'W', v: 'JoJo Romero' }, { k: 'L', v: 'Brock Stewart' }, { k: 'SV', v: 'Aaron Ashby' }],
+          summary: 'Milwaukee held the Dodgers to three hits and took a 2–0 series lead without leaving home. Los Angeles went up 4–3 in the fifth, Milwaukee tied it in the bottom half, and the Dodgers didn’t score again. William Contreras went 3-for-5 with a home run and three RBIs. Yoshinobu Yamamoto lasted only 2⅔ innings, and the Dodgers went 0-for-4 with runners in scoring position. Shohei Ohtani and Freddie Freeman were a combined 0-for-8.',
+          stats: [['Runs', 4, 7], ['Hits', 3, 12], ['Errors', 2, 2, true], ['Hits w/ RISP', '0/4', '6/15'], ['Team OBP', '.156', '.452'], ['Team OPS', '.299', '.909'], ['Pitches thrown', 172, 125, true]],
+          leaders: [['Top hitter', 'Kyle Tucker', '1-for-3 · 2B · R', 'William Contreras', '3-for-5 · HR · 3 RBI'], ['Also notable', 'Mookie Betts', '1-for-4 · BB · R', 'Brice Turang', '2-for-5 · 2B · 3 R'], ['Starting pitcher', 'Yoshinobu Yamamoto', '2.2 IP · 4 H · 3 ER · 2 BB', 'Logan Henderson', '4 IP · 3 H · 2 ER · 2 BB'], ['Bullpen', 'Tanner Scott', '1 IP · 0 H · 3 K', 'Aaron Ashby (SV)', '1.2 IP · 0 H · 2 K']],
+          momentsTitle: 'Inning by inning',
+          moments: [['1st', '—', 'Both teams score once', '1–1'], ['3rd', 'MIL', 'Brewers score two, Dodgers one', '2–3'], ['5th', 'LAD', 'Dodgers score two to lead 4–3; Brewers tie it', '4–4'], ['6th', 'MIL', 'Brewers take the lead for good', '4–5'], ['8th', 'MIL', 'Two insurance runs off the Dodgers’ bullpen', '4–7']] }
+      ] },
+      basketball: { lgShort: 'NBA', modes: [
+        { label: 'Preview · Celtics at Pistons', kind: 'preview', tag: 'Celtics at Pistons', lg: 'NBA · Opening night', date: 'Tue, Oct 20, 2026',
+          time: '2:00 PM CT', venue: 'Little Caesars Arena · Detroit', status: 'SEASON OPENER', context: 'Detroit opens defense of last season’s No. 1 East seed',
+          away: T('BOS', 'Boston Celtics', '0–0', 'Opener', '#007A33', '#EAFDFF'), home: T('DET', 'Detroit Pistons', '0–0', 'Opener', '#C8102E', '#EAFDFF', 'TeamPistons.dc.html'),
+          prob: [46.8, 53.2], feed: 53.2, feedTeam: 'DET', projLine: 'Feed model · house model starts after 10 games',
+          models: [['Feed model', 'DET', '53%'], ['House model', 'After 10+ games', '—'], ['Preseason prior (last season, regressed)', '[DET by X.X]', '[XX%]']],
+          comps: [['DET 2025–26', '60 wins · No. 1 East'], ['BOS 2025–26', '[W–L]'], ['Home court', '+[X.X] pts'], ['Returning minutes', 'DET [XX%] · BOS [XX%]']],
+          take: { pick: 'DET', margin: 'DET by ~1', win: '53%', fair: 'DET 53%', drivers: ['Home court is the only live edge (about 2.5 points).', 'The house model doesn’t produce its own number until both teams have played 10 games; this uses the feed.', 'Availability carries 15% of the weight. Who actually plays on opening night matters more than any season-long stat.'], cover: 'Only 18% of the model is live. This is a placeholder read until the season starts.' },
+          ind: [
+            ['Strength', 'Opponent-adjusted net rating', '[—]', '[—]', 'na', 30, 'feed', true, 'Preseason: last season, regressed'],
+            ['Four factors', 'Effective FG% differential', '[—]', '[—]', 'na', 15, 'feed', true, 'Largest of the four factors'],
+            ['Personnel', 'Availability & star minutes', '[—]', '[—]', 'na', 15, 'feed', true, 'Biggest line mover in the NBA'],
+            ['Four factors', 'Turnover rate differential', '[—]', '[—]', 'na', 8, 'feed', true, ''],
+            ['Four factors', 'Rebound rate differential', '[—]', '[—]', 'na', 6, 'feed', true, ''],
+            ['Situational', 'Rest / back-to-back', 'Opener', 'Opener', 'even', 6, 'live', true, 'A back-to-back costs ~1.25 pts'],
+            ['Situational', 'Home court', '—', '+2.5 pts', 'b', 6, 'live', true, 'Smaller than historical ~3.25'],
+            ['Four factors', 'Free-throw rate differential', '[—]', '[—]', 'na', 4, 'feed', true, ''],
+            ['Prior', 'Roster continuity / last season', '[—]', '60 wins · 3 rotation players lost', 'na', 4, 'feed', true, ''],
+            ['Situational', 'Travel', '~610 mi · same TZ', 'Home', 'even', 3, 'live', true, ''],
+            ['Situational', 'Schedule density', '—', '—', 'even', 3, 'live', true, 'No 3-in-4 stretches yet'],
+            ['Context', '2025–26 finish', '[—]', 'No. 1 East · lost R2 G7', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Key additions', '[—]', 'Collins, Joe, Prince, G. Harris', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Key departures', '[—]', 'Stewart, T. Harris, LeVert', 'even', 0, 'ctx', false, '']
+          ],
+          modelNote: 'Until teams have played 10 games, the house model leans on last season’s net rating, regressed toward average and adjusted for roster turnover (share of minutes returning). After that it switches to this season’s schedule-adjusted net rating.',
+          edges: [
+            ['Last season', '[W–L]', '60 wins', 'b', 'Detroit had the East’s best record a year ago.'],
+            ['Home court', '—', 'LCA', 'b', 'Opening night at home.'],
+            ['Roster continuity', '[XX%]', '[XX%]', 'even', 'Detroit lost Stewart, T. Harris and LeVert. Continuity matters most in October.'],
+            ['Net rating (last season)', P, P, 'even', 'The best single number for team quality.'],
+            ['Pace', P, P, 'even', 'Faster games mean more possessions and more variance.']
+          ],
+          keys: [
+            'Detroit lost Game 7 at home to Cleveland in last season’s East semis. Opening night is the first look at a rotation without Isaiah Stewart and Tobias Harris.',
+            'How John Collins fits next to Cade Cunningham and Ausar Thompson is the biggest early question.',
+            'Early-season numbers are noisy. Read the first two weeks as signal on rotations, not on team strength.'
+          ],
+          unitNote: 'Fills once the season starts',
+          units: [
+            { title: 'Pistons offense vs. Celtics defense', left: 'DET O', right: 'BOS D', rows: [['[XXX.X]', 'Offensive rating', '[XXX.X]', 'Defensive rating', 'TBD'], ['[XX.X%]', 'Effective FG%', '[XX.X%]', 'Opp. eFG%', 'TBD'], ['[XX.X%]', 'Turnover rate', '[XX.X%]', 'Forced TO rate', 'TBD'], ['[XX.X%]', 'Offensive reb. %', '[XX.X%]', 'Defensive reb. %', 'TBD']] },
+            { title: 'Celtics offense vs. Pistons defense', left: 'BOS O', right: 'DET D', rows: [['[XXX.X]', 'Offensive rating', '[XXX.X]', 'Defensive rating', 'TBD'], ['[XX.X%]', '3-point rate', '[XX.X%]', 'Opp. 3-point rate', 'TBD'], ['[XX.X%]', 'Free-throw rate', '[XX.X%]', 'Opp. FT rate', 'TBD'], ['[XX.X]', 'Pace', '[XX.X]', 'Pace', 'TBD']] }
+          ],
+          formA: { summary: 'Preseason', games: [['[OPP]', 0, P], ['[OPP]', 0, P]] },
+          formB: { summary: 'Preseason', games: [['[OPP]', 0, P], ['[OPP]', 0, P]] },
+          ctx: [['2025–26 record', P, '60 wins', 'b', ''], ['2025–26 playoffs', P, 'Lost East semis G7', 'even', ''], ['Key additions', P, 'Collins, Joe, Prince, G. Harris', 'even', ''], ['Key departures', P, 'Stewart, T. Harris, LeVert', 'even', 'Detroit lost real rotation minutes'], ['Days of rest', 'Opener', 'Opener', 'even', '']],
+          h2h: '[LAST MEETING · DATE · SCORE] · 2025–26 series [W–L]', impactUnit: 'points of net rating', injUnit: 'pts',
+          injuries: [inj('BOS'), inj('DET'), inj('DET')],
+          info: [['Tip-off', 'Tue, Oct 20 · 2:00 PM CT'], ['Venue', 'Little Caesars Arena · Detroit, MI'], ['TV / stream', '[NETWORK]'], ['Officials', '[CREW CHIEF] · [FOUL RATE]'], ['Season series', '1st of [N] meetings']] },
+        { label: 'Recap · layout', kind: 'recap', tag: 'Celtics at Pistons', lg: 'NBA · Opening night', date: 'Tue, Oct 20, 2026',
+          venue: 'Little Caesars Arena · Detroit', status: 'FINAL', context: 'The recap fills in after the final buzzer. This is the layout.',
+          away: T('BOS', 'Boston Celtics', '[W–L]', 'Road', '#007A33', '#EAFDFF', '#', '[PTS]'), home: T('DET', 'Detroit Pistons', '[W–L]', 'Home', '#C8102E', '#EAFDFF', 'TeamPistons.dc.html', '[PTS]'),
+          flow: null, factors: [['Swing run', '[XX–X RUN · Q#]'], ['Shooting', '[eFG% vs eFG%]'], ['Glass', '[OREB vs OREB]'], ['Turnovers', '[TOV vs TOV]']],
+          lineTitle: 'Scoring by quarter', headers: ['1', '2', '3', '4', 'T'], line: [['BOS', [P, P, P, P, P]], ['DET', [P, P, P, P, P]]],
+          notes: [{ k: 'Lead changes', v: P }, { k: 'Largest lead', v: P }],
+          summary: '[Three to four sentences on how the game was decided: the run that swung it, the star performance, and what it means in the standings.]',
+          stats: [['Field goals', '[FGM–FGA]', '[FGM–FGA]'], ['3-pointers', '[3PM–3PA]', '[3PM–3PA]'], ['Free throws', '[FTM–FTA]', '[FTM–FTA]'], ['Rebounds', P, P], ['Assists', P, P], ['Turnovers', P, P], ['Points in the paint', P, P], ['Bench points', P, P]],
+          leaders: [['Points', '[PLAYER]', P, '[PLAYER]', P], ['Rebounds', '[PLAYER]', P, '[PLAYER]', P], ['Assists', '[PLAYER]', P, '[PLAYER]', P], ['+/−', '[PLAYER]', P, '[PLAYER]', P]],
+          momentsTitle: 'Key runs', moments: [['Q1', '—', '[RUN · e.g. 12–0 run]', P], ['Q3', '—', '[RUN]', P], ['Q4', '—', '[CLINCHING SEQUENCE]', P]] }
+      ] },
+      hockey: { lgShort: 'NHL', modes: [
+        { label: 'Preview · Devils at Red Wings', kind: 'preview', tag: 'Devils at Red Wings', lg: 'NHL · Regular season', date: 'Tue, Oct 13, 2026',
+          time: '5:00 PM CT', venue: 'Little Caesars Arena · Detroit', status: 'TONIGHT', context: 'New Jersey played last night: second half of a back-to-back',
+          away: T('NJ', 'New Jersey Devils', '2–3', 'Back-to-back', '#000000', '#E8344A'), home: T('DET', 'Detroit Red Wings', '1–3–1', '2 days rest', '#CE1126', '#EAFDFF', 'TeamRedWings.dc.html'),
+          prob: [42, 58], feed: 49.8, feedTeam: 'DET', projLine: 'DET by 0.5 goals · house model',
+          models: [['Shot-share view (CF% → goals, regressed)', 'NJ by 0.1', '—'], ['Goal view (SOS-adjusted, regressed)', 'DET by 0.4', '—'], ['Process blend (60/40 shots/goals)', 'DET by 0.1', '—'], ['+ home ice & back-to-back', 'DET by 0.5', '58%'], ['Feed model', 'Even', '50%']],
+          comps: [['Home ice', '+0.15 DET'], ['NJ on a road back-to-back', '+0.25 DET'], ['PDO regression (both unlucky)', 'NJ slightly more'], ['xG, goalie and lineup inputs', 'Pending feed']],
+          modelNote: 'Shot share is regressed by GP ÷ (GP + 5) and goals by GP ÷ (GP + 10), because shots stabilize faster. They are blended 60/40, then home ice and rest are added. Win % assumes a 2.4-goal standard deviation. xG, goalie and lineup inputs (50% of the weight) switch on when those feeds connect.',
+          take: { pick: 'DET', margin: 'DET by 0.5 g', win: '58%', fair: 'DET 58%', drivers: ['The schedule spot carries the lean: New Jersey’s road back-to-back (+0.25) and home ice (+0.15).', 'Process favors New Jersey. The Devils take 61.6% of shot attempts to Detroit’s 53.1%, which is the case for the Devils.', 'Both teams have been unlucky (PDO 94.0 and 96.7, where about 100 is normal). New Jersey is more due for a correction.'], cover: 'The feed calls it even, and the house lean on Detroit comes from the situation, not team quality. With xG, goalie and lineup data pending, it is a small lean.' },
+          ind: [
+            ['Process', 'xGF% (5v5, score-adjusted)', '[—]', '[—]', 'na', 22, 'feed', true, 'Best public predictor of future goals'],
+            ['Goaltending', 'Goalie GSAx (regressed)', '[—]', '[—]', 'na', 14, 'feed', true, 'Confirmed ~90 min before puck drop'],
+            ['Special teams', 'Power play / penalty kill', '20.0% / 68.8%', '21.1% / 70.0%', 'even', 10, 'live', true, 'Both penalty kills are poor'],
+            ['Results', 'Adjusted goal differential / game', '−0.50', '−0.13', 'b', 8, 'live', true, 'SOS-adjusted, regressed two-thirds'],
+            ['Situational', 'Rest / back-to-back', '0 days (road B2B)', '2 days', 'b', 8, 'live', true, 'Road B2B teams win ~42%'],
+            ['Personnel', 'Injuries & lineup', '[—]', '[—]', 'na', 8, 'feed', true, 'Lines confirmed at morning skate'],
+            ['Process', 'High-danger chance share', '[—]', '[—]', 'na', 6, 'feed', true, 'Shot location'],
+            ['Situational', 'Home ice', '—', '+0.15 g', 'b', 6, 'live', true, 'Home points % ≈ .585 vs .524'],
+            ['Process', 'Shot-attempt share (CF%)', '61.6%', '53.1%', 'a', 5, 'live', true, 'New Jersey controls play'],
+            ['Luck', 'PDO regression', '94.0', '96.7', 'a', 5, 'live', true, 'Both due to bounce back; NJ more'],
+            ['Schedule', 'Strength of schedule', '.448', '.704', 'b', 3, 'live', true, 'Detroit has faced far better teams'],
+            ['Possession', 'Faceoff win %', '49.0%', '50.3%', 'even', 2, 'live', true, 'Small effect'],
+            ['Situational', 'Travel', '~480 mi · same TZ', 'Home', 'even', 3, 'live', false, ''],
+            ['Context', 'Record', '2–3', '1–3–1', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Goals for / against per game', '2.2 / 3.6', '2.0 / 2.8', 'even', 0, 'ctx', false, 'Shootout goals excluded'],
+            ['Context', 'Shots for / against per game', '36.2 / 25.8', '32.8 / 25.4', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Shot share (SF%)', '58.4%', '56.4%', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Shot attempts for / against per game', '74.4 / 46.4', '61.6 / 54.4', 'even', 0, 'ctx', false, ''],
+            ['Context', 'Team save %', '.868', '.898', 'even', 0, 'ctx', false, 'Regresses toward ~.900'],
+            ['Context', 'Even-strength shooting %', '4.8%', '3.9%', 'even', 0, 'ctx', false, 'League ≈ 8–9%; both unsustainably low'],
+            ['Context', 'Hits per game', '15.4', '25.4', 'even', 0, 'ctx', false, 'Often a sign of not having the puck'],
+            ['Context', 'Giveaways / takeaways per game', '17.6 / 4.6', '15.2 / 3.8', 'even', 0, 'ctx', false, 'Scorer-dependent'],
+            ['Context', 'One-goal games', '1–0', '0–2', 'even', 0, 'ctx', false, 'Coin flips']
+          ],
+          edges: [
+            ['Goal differential', '−7', '−4', 'b', 'Both are bad. New Jersey has been worse.'],
+            ['Goals for / game', '2.2', '2.0', 'a', 'Neither team is scoring. Detroit has been shut out twice.'],
+            ['Goals against / game', '3.6', '2.8', 'b', 'Detroit’s goaltending has kept games closer.'],
+            ['Schedule faced', '.448 opp', '.704 opp', 'b', 'Detroit has played the hardest early slate in this matchup by far.'],
+            ['Rest', 'Back-to-back', '2 days', 'b', 'New Jersey lost 4–1 to Ottawa last night.'],
+            ['Home ice', '—', 'LCA', 'b', 'Small but real, especially for last change.'],
+            ['One-goal games', '1–0', '0–2', 'a', 'Detroit keeps losing the coin flips (2–3, 0–1 SO).'],
+            ['Special teams', '[PP% · PK%]', '[PP% · PK%]', 'even', 'Detroit went 0-for-4 on the power play in Montreal.'],
+            ['Goaltending', '[SV% · GSAx]', '[SV% · GSAx]', 'even', 'Confirmed starters post about 90 minutes before puck drop.']
+          ],
+          keys: [
+            'Detroit’s record undersells it. Its five opponents are 19–8 (.704), the hardest early slate here. New Jersey’s opponents are .448.',
+            'New Jersey played last night and lost 4–1. Back-to-back fatigue shows up most in the third period, and it’s the second-biggest input in the model.',
+            'The house model leans Detroit (58%) on the schedule spot, but New Jersey has controlled play (61.6% of shot attempts). Five games is a small sample, so this is a lean, not a conclusion.',
+            'Watch the goalie announcement. A backup in net for New Jersey on the back end of a back-to-back would widen the edge.'
+          ],
+          unitNote: 'Five games · shot and xG data via [DATA PROVIDER]',
+          units: [
+            { title: 'Red Wings attack vs. Devils defense', left: 'DET', right: 'NJ', rows: [['2.0', 'Goals for / game', '3.6', 'Goals against / game', 'DET'], ['[XX.X]', 'Shots for / game', '[XX.X]', 'Shots against / game', 'TBD'], ['[X.XX]', 'xGF / 60', '[X.XX]', 'xGA / 60', 'TBD'], ['[XX%]', 'Power play', '[XX%]', 'Penalty kill', 'TBD']] },
+            { title: 'Devils attack vs. Red Wings defense', left: 'NJ', right: 'DET', rows: [['2.2', 'Goals for / game', '2.8', 'Goals against / game', 'EVEN'], ['[XX.X]', 'Shots for / game', '[XX.X]', 'Shots against / game', 'TBD'], ['[X.XX]', 'xGF / 60', '[X.XX]', 'xGA / 60', 'TBD'], ['[XX%]', 'Power play', '[XX%]', 'Penalty kill', 'TBD']] }
+          ],
+          formA: { summary: '2–3 · GF 11 · GA 18', games: [['vs PHI', 1, '3–2'], ['at NYI', -6, '0–6'], ['vs UTA', -2, '3–5'], ['vs VAN', 3, '4–1'], ['vs OTT', -3, '1–4']] },
+          formB: { summary: '1–3–1 · GF 10 · GA 14', games: [['vs NYR', -2, '0–2'], ['vs WPG', -1, '2–3'], ['vs OTT', 2, '5–3'], ['vs SEA', -3, '3–6'], ['at MTL (SO)', -0.5, '0–1']] },
+          ctx: [
+            ['Goal differential', '−7', '−4', 'b', 'Shootout goals excluded'],
+            ['Pythagorean win %', '.272', '.338', 'b', 'Goals for² ÷ (GF² + GA²)'],
+            ['Opponents’ win %', '.448', '.704', 'b', 'Detroit’s numbers came against far better teams'],
+            ['Next 6 opponents’ win %', P, '.333', 'b', 'Detroit’s schedule softens sharply after tonight'],
+            ['Rest', '0 days', '2 days', 'b', 'Back-to-backs are the most reliable situational edge in hockey'],
+            ['Home / road record', '0–1 road', '1–3 home', 'even', 'Detroit hasn’t protected home ice yet'],
+            ['Shutouts suffered', '1', '2', 'a', '']
+          ],
+          h2h: '[LAST MEETING · DATE · SCORE] · Last 10 meetings [W–L–OTL]', impactUnit: 'goals', injUnit: 'g',
+          injuries: [inj('NJ'), inj('DET'), inj('DET')],
+          info: [['Puck drop', 'Tue, Oct 13 · 5:00 PM CT'], ['Venue', 'Little Caesars Arena · Detroit, MI'], ['TV / stream', '[NETWORK]'], ['Starting goalies', '[CONFIRMED STARTERS]'], ['Officials', '[REFEREES] · [PENALTY RATE]']] },
+        { label: 'Recap · Red Wings at Canadiens', kind: 'recap', tag: 'Red Wings at Canadiens', lg: 'NHL · Regular season', date: 'Sat, Oct 10, 2026 · 6:00 PM CT',
+          venue: 'Bell Centre · Montreal', status: 'FINAL / SO', context: 'Detroit falls to 1–3–1, last in the Atlantic',
+          away: T('DET', 'Detroit Red Wings', '1–3–1', 'Road', '#CE1126', '#EAFDFF', 'TeamRedWings.dc.html', 0), home: T('MTL', 'Montreal Canadiens', P, 'Home', '#AF1E2D', '#EAFDFF', '#', 1),
+          flow: null, factors: [['Goaltending', 'Tarasov 30 saves on 30'], ['Power play', 'DET 0/4 · MTL 0/4'], ['Faceoffs', 'DET won 43.3%'], ['Shootout', 'Bolduc scores the winner']],
+          lineTitle: 'Scoring by period', headers: ['1', '2', '3', 'OT', 'SO', 'T'],
+          line: [['DET', [0, 0, 0, 0, 0, 0]], ['MTL', [0, 0, 0, 0, 1, 1]]],
+          notes: [{ k: '2nd star', v: 'Daniil Tarasov (DET)' }, { k: '3rd star', v: 'Zachary Bolduc (MTL)' }, { k: '1st star', v: '[PLAYER]' }],
+          summary: 'Sixty-five minutes, no goals. Montreal won it in the shootout on Zachary Bolduc’s goal. Daniil Tarasov stopped all 30 shots he faced and earned the second star, the only real positive for Detroit. The Red Wings went 0-for-4 on the power play, lost 34 of 60 faceoffs (Dylan Larkin won just 7 of 23) and committed 18 giveaways. That’s two shutouts in five games for a team that has now lost four of five.',
+          stats: [['Shots on goal', 30, 30], ['Power play', '0/4', '0/4'], ['Faceoff win %', '43.3%', '56.7%'], ['Hits', 22, 19], ['Blocked shots', 22, 12], ['Giveaways', 18, 13, true], ['Takeaways', 5, 5], ['Penalty minutes', 8, 8, true]],
+          leaders: [['Goaltending', 'Daniil Tarasov', '30 saves on 30 · 2nd star', '[GOALIE]', '30 saves on 30'], ['Shots', 'Alex DeBrincat', '7 shots (3 on the PP)', 'Cole Caufield', '6 shots'], ['Faceoffs', 'Dylan Larkin', '7–16 (30.4%)', 'Alex Newhook', '8–6 (57.1%)'], ['Physical', 'Moritz Seider', '6 hits · 6 blocked shots', 'Kaiden Guhle', '4 hits']],
+          momentsTitle: 'Shootout',
+          moments: [['SO', 'MTL', 'Zachary Bolduc scores. The winner.', '0–1'], ['SO', 'DET', 'DeBrincat, Larkin, Arvidsson and Sandin-Pellikka all fail to score', '—'], ['SO', 'MTL', 'Caufield and Slafkovský stopped; Texier and Hutson miss', '—']] }
+      ] }
+    };
+
+    var data = SPORTS[sport] || SPORTS.football;
+    var mi = (st.sport === sport && st.mode !== undefined) ? Math.min(st.mode, data.modes.length - 1) : 0;
+    var raw = data.modes[mi];
+
+    var badge = function (t, size) {
+      var s = size || 76;
+      return 'display: inline-flex; align-items: center; justify-content: center; width: ' + s + 'px; height: ' + s + 'px; border-radius: ' + Math.round(s * 0.28) + 'px; background: ' + t.bg + '; color: ' + t.fg + '; font-family: \'IBM Plex Mono\', monospace; font-size: ' + Math.round(s * 0.27) + 'px; font-weight: 600; letter-spacing: 0.02em; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);';
+    };
+    var mini = function (t) {
+      return 'flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; padding: 0 6px; box-sizing: border-box; border-radius: 0; background: ' + t.bg + '; color: ' + t.fg + '; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600;';
+    };
+    var teamFor = function (abbr) { return abbr === raw.away.abbr ? raw.away : (abbr === raw.home.abbr ? raw.home : null); };
+    var neutralMini = 'flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 24px; border-radius: 0; background: #0A1F22; color: #4FB8C2; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px;';
+
+    var modes = data.modes.map(function (m, i) {
+      var on = i === mi;
+      return { label: m.label, pressed: on ? 'true' : 'false', pick: function () { self.setState({ mode: i, sport: sport }); },
+        btnStyle: 'height: 44px; padding: 0 16px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, ui-monospace, monospace; font-size: 13.5px; font-weight: 500; ' + (on ? 'background: #66E6F2; color: #000000; text-shadow: none;' : 'background: transparent; color: #4FB8C2;') };
+    });
+
+    var side = function (t) { var o = {}; for (var k in t) o[k] = t[k]; o.badge = badge(t); o.logoLabel = t.name + ' logo'; return o; };
+    var away = side(raw.away), home = side(raw.home);
+
+    var cur = {
+      tag: raw.tag, lg: raw.lg, date: raw.date, venue: raw.venue, status: raw.status, context: raw.context, time: raw.time || '',
+      projLine: raw.projLine || '', summary: raw.summary || '', lineTitle: raw.lineTitle || '', momentsTitle: raw.momentsTitle || '',
+      notes: raw.notes || [], modelNote: raw.modelNote || '', unitNote: raw.unitNote || '', h2h: raw.h2h || '', impactUnit: raw.impactUnit || '',
+      models: (raw.models || []).map(function (x) { return { k: x[0], m: x[1], p: x[2] }; }),
+      comps: (raw.comps || []).map(function (x) { return { k: x[0], v: x[1] }; }),
+      keys: (raw.keys || []).map(function (t, i) { return { t: t, n: i + 1 }; }),
+      info: (raw.info || []).map(function (x) { return { k: x[0], v: x[1] }; }),
+      injuries: (raw.injuries || []).map(function (x) { return { team: x.team, unit: raw.injUnit || '' }; }),
+      factors: (raw.factors || []).map(function (x) { return { k: x[0], v: x[1] }; }),
+      leaders: (raw.leaders || []).map(function (l) { return { cat: l[0], aName: l[1], aLine: l[2], bName: l[3], bLine: l[4] }; })
+    };
+
+    var isRecap = raw.kind === 'recap';
+    var aWin = null;
+    if (isRecap) { var as = Number(raw.away.score), hs = Number(raw.home.score); if (!isNaN(as) && !isNaN(hs) && as !== hs) aWin = as > hs; }
+
+    // Edge cards
+    var tally = { a: 0, b: 0, even: 0 };
+    var pillFor = function (w) {
+      var t = w === 'a' ? raw.away : (w === 'b' ? raw.home : null);
+      if (!t) return 'flex: none; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 0; background: #0A1F22; color: #4FB8C2; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em;';
+      return 'flex: none; display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 0; background: ' + t.bg + '; color: ' + t.fg + '; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600;';
+    };
+    var edges = (raw.edges || []).map(function (e) {
+      tally[e[3]]++;
+      var w = e[3];
+      return { k: e[0], a: e[1], b: e[2], why: e[4], winLabel: w === 'a' ? raw.away.abbr : (w === 'b' ? raw.home.abbr : 'EVEN'), pill: pillFor(w),
+        aStyle: 'font-size: 15px; font-weight: 600; color: ' + (w === 'a' ? '#C8F7FC' : '#5CC7D1') + ';',
+        bStyle: 'font-size: 15px; font-weight: 600; color: ' + (w === 'b' ? '#C8F7FC' : '#5CC7D1') + ';',
+        card: 'background: #061416; border-radius: 0; padding: 14px 16px; box-shadow: inset 3px 0 0 ' + (w === 'a' ? raw.away.bg : (w === 'b' ? raw.home.bg : '#12363B')) + ';' };
+    });
+    var edgeTally = raw.edges ? (raw.away.abbr + ' ' + tally.a + ' · ' + raw.home.abbr + ' ' + tally.b + ' · Even ' + tally.even) : '';
+
+    // Unit vs unit
+    var units = (raw.units || []).map(function (u) {
+      return { title: u.title, left: u.left, right: u.right, rows: u.rows.map(function (r) {
+        var t = teamFor(r[4]);
+        var pill = t ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 46px; height: 22px; border-radius: 0; background: ' + t.bg + '; color: ' + t.fg + '; font-family: \'IBM Plex Mono\', monospace; font-size: 11px; font-weight: 600;' : 'display: inline-flex; align-items: center; justify-content: center; min-width: 46px; height: 22px; border-radius: 0; background: #0A1F22; color: #3C9AA3; font-size: 11px; font-weight: 600;';
+        return { o: r[0], k: r[1], d: r[2], k2: r[3], adv: r[4], pill: pill };
+      }) };
+    });
+    cur.units = units;
+
+    // Form
+    var mkForm = function (t, f) {
+      if (!f) return null;
+      var mx = 1; f.games.forEach(function (g) { mx = Math.max(mx, Math.abs(g[1])); });
+      return { abbr: t.abbr, name: t.name, mini: mini(t), summary: f.summary, games: f.games.map(function (g) {
+        var m = g[1], w = Math.abs(m) / mx * 100;
+        var r = m > 0 ? 'W' : (m < 0 ? 'L' : '·');
+        var bg = m > 0 ? '#1F3A2C' : (m < 0 ? '#3D2219' : '#0A1F22'), fg = m > 0 ? '#86EFAC' : (m < 0 ? '#FF8A80' : '#23565C');
+        return { opp: g[0], score: g[2], r: r,
+          res: 'display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 22px; border-radius: 0; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600; background: ' + bg + '; color: ' + fg + ';',
+          neg: m < 0 ? 'display: block; height: 8px; border-radius: 0 0 0 4px; background: #FF5F56; width: ' + w.toFixed(0) + '%;' : 'display: none;',
+          pos: m > 0 ? 'display: block; height: 8px; border-radius: 0 4px 4px 0; background: #4ADE80; width: ' + w.toFixed(0) + '%;' : 'display: none;' };
+      }) };
+    };
+    var forms = [mkForm(raw.away, raw.formA), mkForm(raw.home, raw.formB)].filter(function (x) { return x; });
+
+    // Context table
+    var ctx = (raw.ctx || []).map(function (c) {
+      var base = 'text-align: right; padding: 10px 8px; border-top: 1px solid #0A1F22; font-family: \'IBM Plex Mono\', monospace; white-space: nowrap; ';
+      return { k: c[0], a: c[1], b: c[2], n: c[4],
+        aStyle: base + (c[3] === 'a' ? 'color: #C8F7FC; font-weight: 600; box-shadow: inset 0 -2px 0 ' + raw.away.bg + ';' : 'color: #5CC7D1;'),
+        bStyle: base + (c[3] === 'b' ? 'color: #C8F7FC; font-weight: 600; box-shadow: inset 0 -2px 0 ' + raw.home.bg + ';' : 'color: #5CC7D1;') };
+    });
+
+    // Recap pieces
+    var lineHeaders = [], lineRows = [], stats = [], moments = [];
+    if (isRecap) {
+      var n = raw.headers.length, tot = raw.totals || 1;
+      lineHeaders = raw.headers.map(function (h, i) {
+        var isTot = i >= n - tot;
+        return { t: h, style: 'text-align: center; padding: 8px 6px; font-weight: ' + (isTot ? '600' : '500') + '; color: ' + (isTot ? '#C8F7FC' : '#3C9AA3') + '; font-size: 12px; ' + (i === n - tot ? 'border-left: 1px solid #12363B;' : '') };
+      });
+      lineRows = raw.line.map(function (r, ri) {
+        var t = ri === 0 ? raw.away : raw.home;
+        var winner = aWin === null ? false : (ri === 0 ? aWin : !aWin);
+        return { abbr: r[0], mini: mini(t), cells: r[1].map(function (c, i) {
+          var isTot = i >= n - tot;
+          return { t: String(c), style: 'text-align: center; padding: 10px 6px; border-top: 1px solid #0A1F22; ' + (i === n - tot ? 'border-left: 1px solid #12363B; ' : '') + 'color: ' + (isTot ? (winner ? '#C8F7FC' : '#5CC7D1') : '#66E6F2') + '; font-weight: ' + (isTot ? '600' : '400') + ';' };
+        }) };
+      });
+      stats = raw.stats.map(function (s) {
+        var a = s[1], b = s[2], low = !!s[3];
+        var num = typeof a === 'number' && typeof b === 'number';
+        var aB = num ? (low ? a < b : a > b) : false, bB = num ? (low ? b < a : b > a) : false;
+        var t2 = num ? a + b : 0, aw = num && t2 > 0 ? a / t2 : 0.5;
+        return { k: s[0], a: String(a), b: String(b), hasBar: num && t2 > 0, aColor: aB ? '#C8F7FC' : '#5CC7D1', bColor: bB ? '#C8F7FC' : '#5CC7D1',
+          aBar: 'flex: ' + (aw * 100).toFixed(1) + '; border-radius: 0; background: ' + (aB ? raw.away.bg : '#12363B') + ';',
+          bBar: 'flex: ' + ((1 - aw) * 100).toFixed(1) + '; border-radius: 0; background: ' + (bB ? raw.home.bg : '#12363B') + ';' };
+      });
+      moments = raw.moments.map(function (m) { var t = teamFor(m[1]); return { t: m[0], team: m[1], text: m[2], score: m[3], mini: t ? mini(t) : neutralMini }; });
+    }
+
+    // Game flow chart
+    var hasFlow = false, flowPath = '', flowArea = '', flowTicks = [], flowLabels = [], flowTop = '', flowBot = '', flowNote = '', flowAria = '';
+    if (isRecap && raw.flow) {
+      var fl = raw.flow; hasFlow = true;
+      var mxAbs = 1; fl.pts.forEach(function (p) { mxAbs = Math.max(mxAbs, Math.abs(p[1])); });
+      mxAbs = Math.ceil(mxAbs / 7) * 7;
+      var X = function (t) { return (t / fl.max * 800).toFixed(1); }, Y = function (m) { return (95 - m / mxAbs * 88).toFixed(1); };
+      var d = 'M' + X(fl.pts[0][0]) + ',' + Y(fl.pts[0][1]);
+      for (var i = 1; i < fl.pts.length; i++) { d += ' H' + X(fl.pts[i][0]) + ' V' + Y(fl.pts[i][1]); }
+      flowPath = d; flowArea = d + ' V95 H0 Z';
+      flowTicks = fl.ticks.map(function (t) { return { x: X(t) }; });
+      flowLabels = fl.labels.map(function (t) { return { t: t }; });
+      flowTop = fl.lead + ' +' + mxAbs; flowBot = fl.trail + ' +' + mxAbs;
+      flowNote = 'Above the line = ' + fl.lead + ' leading';
+      flowAria = 'Score margin over the course of the game; above the line means ' + fl.lead + ' leads';
+    } else if (isRecap) {
+      flowNote = sport === 'hockey' ? 'No goals in regulation or overtime. Decided in the shootout.' : 'Flow chart draws from play-by-play once the game is final.';
+    }
+
+    // Indicators → key metrics, all-indicator groups, weighted tally and coverage
+    var ind = raw.ind || [];
+    var showAll = !!st.showAll;
+    var cellBase = 'vertical-align: top; padding: 10px; border-top: 1px solid #0A1F22; text-align: right; font-family: \'IBM Plex Mono\', monospace; white-space: nowrap; ';
+    var tw = { a: 0, b: 0, even: 0 }, coverage = 0;
+    var mkInd = function (x) {
+      var win = x[4], live = x[6] === 'live', ctx = x[6] === 'ctx';
+      if (live) { coverage += x[5]; if (win === 'a' || win === 'b' || win === 'even') tw[win] += x[5]; }
+      var t = win === 'a' ? raw.away : (win === 'b' ? raw.home : null);
+      var pill = t ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 52px; height: 24px; border-radius: 0; background: ' + t.bg + '; color: ' + t.fg + '; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600;'
+        : 'display: inline-flex; align-items: center; justify-content: center; min-width: 52px; height: 24px; border-radius: 0; background: #0A1F22; color: #3C9AA3; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;';
+      var edge = t ? t.abbr : (win === 'na' ? 'PENDING' : (ctx ? '—' : 'EVEN'));
+      var sl = live ? 'Live' : (ctx ? 'Context' : 'Needs feed');
+      var ss = 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 0; font-size: 11px; font-weight: 600; white-space: nowrap; ' + (live ? 'background: #1F3A2C; color: #86EFAC;' : (ctx ? 'background: #0A1F22; color: #3C9AA3;' : 'background: #3A2E1A; color: #E8C27A;'));
+      return { cat: x[0], name: x[1], a: x[2], b: x[3], w: x[5], wLabel: x[5] ? x[5] + '%' : '0%', note: x[8] || '', key: !!x[7], edge: edge, pill: pill, statusLabel: sl, statusStyle: ss,
+        aStyle: cellBase + (win === 'a' ? 'color: #C8F7FC; font-weight: 600;' : 'color: #5CC7D1;'),
+        bStyle: cellBase + (win === 'b' ? 'color: #C8F7FC; font-weight: 600;' : 'color: #5CC7D1;') };
+    };
+    var inds = ind.map(mkInd);
+    var keyRows = inds.filter(function (r) { return r.key; }).sort(function (x, y) { return y.w - x.w; }).slice(0, 15);
+    var gOrder = [], gMap = {};
+    inds.forEach(function (r) { if (!gMap[r.cat]) { gMap[r.cat] = { cat: r.cat, rows: [], wsum: 0 }; gOrder.push(r.cat); } gMap[r.cat].rows.push(r); gMap[r.cat].wsum += r.w; });
+    var groups = gOrder.map(function (c) { var g = gMap[c]; return { cat: c, rows: g.rows, w: g.wsum ? g.wsum + '% of model' : 'context only' }; });
+    var take = raw.take || { pick: '', margin: '', win: '', fair: '', drivers: [], cover: '' };
+    var pickT = teamFor(take.pick);
+    var conf = coverage >= 80 ? 'High confidence' : (coverage >= 60 ? 'Moderate confidence' : 'Lean only');
+    var prob = raw.prob;
+    var jump = isRecap
+      ? [{ t: 'Game flow', href: '#flow' }, { t: 'Box score', href: '#box' }, { t: 'Team stats', href: '#stats' }, { t: 'Scoring', href: '#plays' }]
+      : [{ t: 'Takeaway', href: '#edge' }, { t: 'Key metrics', href: '#metrics' }, { t: 'Projection', href: '#model' }, { t: 'Unit vs. unit', href: '#units' }, { t: 'Form', href: '#form' }, { t: 'Context', href: '#context' }, { t: 'Injuries', href: '#injuries' }];
+    var feedProb = raw.feed ? (raw.feedTeam + ' ' + Math.round(raw.feed) + '%') : '[XX%]';
+    var favA = prob && prob[0] > prob[1];
+
+    return {
+      navCls: navCls,
+      lgShort: data.lgShort, modes: modes, cur: cur, away: away, home: home, jump: jump,
+      isRecap: isRecap, isPreview: !isRecap,
+      awayColor: aWin === false ? '#3C9AA3' : '#C8F7FC', homeColor: aWin === true ? '#3C9AA3' : '#C8F7FC',
+      probA: prob ? raw.away.abbr + ' ' + Math.round(prob[0]) + '%' : '[XX%]', probB: prob ? raw.home.abbr + ' ' + Math.round(prob[1]) + '%' : '[XX%]',
+      probAColor: favA ? '#C8F7FC' : '#5CC7D1', probBColor: favA ? '#5CC7D1' : '#C8F7FC',
+      probBarA: 'flex: ' + (prob ? prob[0] : 50) + '; background: ' + raw.away.bg + ';', probBarB: 'flex: ' + (prob ? prob[1] : 50) + '; background: ' + raw.home.bg + ';',
+      feedProb: feedProb,
+      edges: edges, edgeTally: edgeTally, forms: forms, ctx: ctx,
+      keyRows: keyRows, groups: groups, indCount: inds.length, keyCount: keyRows.length, showAll: showAll,
+      allExpanded: showAll ? 'true' : 'false', toggleLabel: showAll ? 'Hide full indicator list' : 'Show all ' + inds.length + ' indicators',
+      toggleAll: function () { self.setState({ showAll: !showAll }); },
+      tally: 'Weighted edge (live): ' + raw.away.abbr + ' ' + tw.a + '% · ' + raw.home.abbr + ' ' + tw.b + '% · even ' + tw.even + '%',
+      coverage: coverage, confidence: conf,
+      coverageBar: 'height: 8px; width: ' + coverage + '%; border-radius: 0; background: ' + (coverage >= 60 ? '#4ADE80' : '#C9A96E') + ';',
+      take: { pick: take.pick, margin: take.margin, win: take.win, fair: take.fair, cover: take.cover, drivers: (take.drivers || []).map(function (t, i) { return { t: t, n: i + 1 }; }) },
+      pickMini: pickT ? mini(pickT) : neutralMini, pickName: pickT ? pickT.name : '',
+      lineHeaders: lineHeaders, lineRows: lineRows, stats: stats, moments: moments,
+      hasFlow: hasFlow, flowPath: flowPath, flowArea: flowArea, flowTicks: flowTicks, flowLabels: flowLabels, flowTop: flowTop, flowBot: flowBot, flowNote: flowNote, flowAria: flowAria
+    };
+  }
+}
+DC.mount(Component, {"sport": {"default": "hockey"}, "$preview": {"width": 1440, "height": 3400}});
+</script>
+</body>
+</html>
