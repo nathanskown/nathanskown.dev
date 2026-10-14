@@ -165,7 +165,7 @@ def job_track():
 
 # ---------------------------------------------------------------- backtest
 def backtest(lg):
-    P = M.PARAMS[lg]
+    P = M.get_params(lg)
     cache = read(f"model/_games_{lg}.json") or {}
     ev = sorted((g for g in cache.get("events", {}).values()
                  if g["done"] and not g["off"] and g.get("hs") is not None and g.get("as") is not None and (g.get("t") in (2, None))),
@@ -175,8 +175,8 @@ def backtest(lg):
     smap = M._standings_map(lg)
     members = set(M._members(lg))
     group, hfa_fn, norm = M.context(lg, smap, members)
-    prior = {}
-    if lg == "nba":
+    prior = M.season_prior(lg, cache["season"], P, members, hfa_fn, norm)
+    if not prior and lg == "nba":
         try:
             prior = M._nba_prior(cache["season"])
         except Exception:

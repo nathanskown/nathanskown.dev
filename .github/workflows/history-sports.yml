@@ -1,0 +1,50 @@
+name: Sports history and tuning
+
+# Run by hand. Downloads the last five regular seasons for each league from ESPN, then replays them to
+# fit the house model's settings and checks the result on a held-out season (see pipeline/sports/tune.py).
+# Re-run it whenever you want the settings refit, for example at the start of a new season.
+on:
+  workflow_dispatch:
+    inputs:
+      leagues:
+        description: "Leagues to download (comma separated)"
+        default: "nfl,ncaaf,nhl,nba,ncaab,ncaah"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sports-data
+  cancel-in-progress: false
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3 numpy==2.1.3
+      - name: Download seasons, tune, rebuild models
+        run: |
+          git config user.name "sports-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="${GITHUB_REF_NAME}"
+          save() {
+            git add data/sports
+            if git diff --cached --quiet; then echo "nothing new for $1"; return; fi
+            git commit -q -m "data: $1"
+            for i in 1 2 3; do git pull -q --rebase -X theirs origin "$branch" && git push -q origin "HEAD:$branch" && break; sleep 5; done
+          }
+          for lg in $(echo "${{ github.event.inputs.leagues || 'nfl,ncaaf,nhl,nba,ncaab,ncaah' }}" | tr ',' ' '); do
+            echo "::group::history $lg"
+            HIST_LG=$lg python -m pipeline.sports.run history || echo "history $lg exited with an error"
+            echo "::endgroup::"
+            save "sports history ($lg)"
+          done
+          echo "::group::tune"
+          python -m pipeline.sports.run tune || echo "tune exited with an error"
+          echo "::endgroup::"
+          save "sports tuning"

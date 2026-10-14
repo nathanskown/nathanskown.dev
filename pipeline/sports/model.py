@@ -31,14 +31,40 @@ PARAMS = {
     "nfl":   dict(hfa=1.8, divHfa=0.9, sigma=13.5, k=5, cap=None, minGp=1, unit="points"),
     "ncaaf": dict(hfa=2.5, sigma=16.0, k=4, cap=35, minGp=2, unit="points"),
     "nhl":   dict(hfa=0.2, sigma=2.4, k=10, cap=None, minGp=3, unit="goals"),
-    "nba":   dict(hfa=2.5, sigma=12.0, k=10, cap=None, minGp=0, unit="points"),
+    "nba":   dict(hfa=2.5, sigma=12.0, k=10, cap=None, minGp=0, unit="points", carry=0.65),
     "mlb":   dict(hfa=0.15, sigma=4.2, k=20, cap=None, minGp=10, unit="runs"),
     "ncaab": dict(hfa=3.0, sigma=11.0, k=6, cap=40, minGp=3, unit="points"),
     "ncaah": dict(hfa=0.25, sigma=2.4, k=6, cap=None, minGp=3, unit="goals"),
 }
+# Preseason prior = carry x last season's final rating. 0 means start every team at average; only the
+# NBA carries last season over by default. tune.py fits carry and the other settings on past seasons and
+# writes model/tuned.json; get_params() applies them only where the held-out season improved.
 CACHE_VERSION = 3          # bump to force a full rescan after a scan fix
 POOL = "_other"            # opponents outside the covered division (FCS, non-D-I) share one rating
 RNG = np.random.default_rng()
+
+
+def get_params(lg):
+    P = dict(PARAMS[lg])
+    t = (read("model/tuned.json") or {}).get(lg)
+    if t and t.get("adopt"):
+        P.update(t["params"])
+        P["tuned"] = True
+    return P
+
+
+def season_prior(lg, year, P, members, hfa_fn, norm_id):
+    """{team: carry x rating from last season's full schedule} using stored history, or {} if there is none."""
+    from . import history
+    carry = P.get("carry", 0)
+    prev = history.load(lg).get(year - 1) if carry else None
+    if not prev:
+        return {}
+    rows = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in prev]
+    rows = [r for r in rows if r[0] != r[1]]
+    R = ridge(rows, members, hfa_fn, P["k"], None, P["cap"])
+    seen = {t for r in rows for t in r[:2]}
+    return {t: carry * R[t] for t in seen if t in members}
 
 
 def phi(x):
@@ -209,7 +235,7 @@ def _nba_prior(year):
 def context(lg, smap=None, members=None):
     """Pieces shared by the live model and the track-record backtest: each team's division or
     conference, the home edge for a game, and how outside teams collapse into the pooled rating."""
-    P = PARAMS[lg]
+    P = get_params(lg)
     smap = smap if smap is not None else _standings_map(lg)
     members = members if members is not None else set(_members(lg))
     group = {t: smap.get(t, {}).get("group") for t in members}
@@ -226,7 +252,7 @@ def context(lg, smap=None, members=None):
 
 def build(lg):
     global RNG
-    P = PARAMS[lg]
+    P = get_params(lg)
     si = season_info(lg)
     smap = _standings_map(lg)
     members = set(_members(lg))
@@ -251,8 +277,10 @@ def build(lg):
         group, hfa_fn, norm_id = context(lg, smap, members)
         results = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in played]
         results = [r for r in results if r[0] != r[1]]
-        prior = {}
-        if lg == "nba":
+        prior = season_prior(lg, si["year"], P, members, hfa_fn, norm_id)
+        if prior:
+            res["prior"] = f"{P['carry']:g} x last season's rating"
+        elif lg == "nba":
             try:
                 prior = _nba_prior(si["year"])
                 res["prior"] = "0.65 x last season's point margin per game"
@@ -280,6 +308,7 @@ def build(lg):
         res["basis"] = (f"Ridge-regularised SRS from {len(results)} completed games, home edge removed"
                         + (f", margins capped at {P['cap']}" if P["cap"] else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']} games of weight.")
+        res["tuned"] = bool(P.get("tuned"))
         if lg == "nfl":
             res["odds"], res["oddsBasis"] = nfl_odds(res, events, smap)
         if lg == "nhl":
@@ -307,10 +336,11 @@ def nfl_odds(res, events, smap, N=10000):
     T = res["teams"]
     rating = np.array([T[t]["rating"] for t in ids])
     gp = np.array([T[t]["gp"] for t in ids], float)
-    unc = 13.5 / np.sqrt(gp + 5)
+    SIG, HFA, DIVH = res["sigma"], res["hfa"], res.get("divHfa", res["hfa"])
+    unc = SIG / np.sqrt(gp + res["k"])
     true = rating[None, :] + RNG.normal(0, 1, (N, 32)) * unc[None, :]
     wins = np.zeros((N, 32)); divw = np.zeros((N, 32)); pdiff = np.zeros((N, 32))
-    hfa = lambda h, a: 0.9 if div[h] == div[a] else 1.8
+    hfa = lambda h, a: DIVH if div[h] == div[a] else HFA
     played = rem = 0
     for g in events.values():
         if g.get("t") != 2 or g["off"] or g["h"] not in ix or g["a"] not in ix:
@@ -326,7 +356,7 @@ def nfl_odds(res, events, smap, N=10000):
                 divw[:, h] += hw; divw[:, a] += 1 - hw
         else:
             rem += 1
-            m = true[:, h] - true[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + RNG.normal(0, 13.5, N)
+            m = true[:, h] - true[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + RNG.normal(0, SIG, N)
             hw = m > 0
             wins[:, h] += hw; wins[:, a] += ~hw; pdiff[:, h] += m; pdiff[:, a] -= m
             if same:
@@ -340,7 +370,7 @@ def nfl_odds(res, events, smap, N=10000):
     P = {t: collections.Counter() for t in ids}
 
     def play(hi, lo, s, neutral=False):
-        m = true[s, hi] - true[s, lo] + (0 if neutral else 1.8) + RNG.normal(0, 13.5)
+        m = true[s, hi] - true[s, lo] + (0 if neutral else HFA) + RNG.normal(0, SIG)
         return hi if m > 0 else lo
     for s in range(N):
         champs = {}
@@ -381,18 +411,19 @@ def nhl_odds(res, smap, N=10000):
     div = {t: smap[t]["group"] for t in ids}
     conf = {t: smap[t].get("parent") or div[t] for t in ids}
     has_div = len(set(div.values())) > len(set(conf.values()))
+    SIG, HFA = res["sigma"], res["hfa"]
     T = res["teams"]
     gp = np.array([smap[t].get("gp") or 0 for t in ids], float)
     pts0 = np.array([smap[t].get("pts") or 0 for t in ids], float)
     rating = np.array([T[t]["rating"] for t in ids])
-    tr = rating[None, :] + RNG.normal(0, 1, (N, n)) * (2.4 / np.sqrt(gp + 10))[None, :]
+    tr = rating[None, :] + RNG.normal(0, 1, (N, n)) * (SIG / np.sqrt(gp + res["k"]))[None, :]
     pts = np.tile(pts0, (N, 1))
     for i in range(n):
         rem = int(max(0, 82 - gp[i]))
         if not rem:
             continue
         for home, cnt in ((True, rem // 2), (False, rem - rem // 2)):
-            p = np.array([phi(x) for x in ((tr[:, i] + (0.2 if home else -0.2)) / 2.4)])
+            p = np.array([phi(x) for x in ((tr[:, i] + (HFA if home else -HFA)) / SIG)])
             pot = 0.5 + (p - 0.5) * 0.4                 # ~23% of games reach OT/SO, closer to a coin flip
             q = (p - 0.23 * pot) / 0.77
             reg = RNG.random((N, cnt)) >= 0.23
@@ -404,7 +435,7 @@ def nhl_odds(res, smap, N=10000):
     confs = sorted(set(conf.values()))
 
     def series(hi, lo, s):
-        pa = phi((tr[s, hi] - tr[s, lo] + 0.2) / 2.4); pb = phi((tr[s, hi] - tr[s, lo] - 0.2) / 2.4)
+        pa = phi((tr[s, hi] - tr[s, lo] + HFA) / SIG); pb = phi((tr[s, hi] - tr[s, lo] - HFA) / SIG)
         a = b = 0
         for home in (1, 1, 0, 0, 1, 0, 1):
             if a == 4 or b == 4:
