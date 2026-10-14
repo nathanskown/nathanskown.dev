@@ -17,6 +17,7 @@ import pathlib
 import tempfile
 import time
 import zipfile
+from datetime import date
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
@@ -24,7 +25,7 @@ import pandas as pd
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 4          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 5          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -142,11 +143,20 @@ def _figi(cusips):
 
 
 def _shares_history(cik):
-    """[(end, shares)] from the cover-page share count; largest class when a filer reports several."""
-    j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/dei/EntityCommonStockSharesOutstanding.json")
+    """[(end, shares)]: the cover-page share count (largest class when several are reported); companies that
+    only report it by share class fall back to quarterly weighted-average diluted shares (all classes)."""
     by_end = {}
-    for f in (j.get("units") or {}).get("shares", []):
-        by_end[f["end"]] = max(by_end.get(f["end"], 0), f["val"])
+    try:
+        j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/dei/EntityCommonStockSharesOutstanding.json")
+        for f in (j.get("units") or {}).get("shares", []):
+            by_end[f["end"]] = max(by_end.get(f["end"], 0), f["val"])
+    except Exception:  # noqa: BLE001 - tag not reported without a class dimension
+        pass
+    if not by_end:
+        j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding.json")
+        for f in (j.get("units") or {}).get("shares", []):
+            if f.get("start") and 80 <= (date.fromisoformat(f["end"]) - date.fromisoformat(f["start"])).days <= 100:
+                by_end[f["end"]] = f["val"]
     return sorted(by_end.items())
 
 
