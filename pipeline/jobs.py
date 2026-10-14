@@ -197,9 +197,25 @@ def quote_page(sym, info, mem, spx_weekly, cal):
             var = sum((x - mx) ** 2 for x in xs)
             beta = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / var if var else None
     fin = attempt(f"sec facts {sym}", sec.financials, cik, default=None) if cik else None
+    sub = attempt(f"sec filings {sym}", sec.submissions, cik, default=None) if cik else None
+    filings = sec.recent_filings(sub) if sub else []
     shares = fin["shares"][-1][1] if fin and fin["shares"] else None
-    mcap = price * shares if price and shares else None
-    pe = price / fin["epsTTM"] if fin and fin.get("epsTTM") and fin["epsTTM"] > 0 and price else None
+    mcap_shares, eps_ttm, class_shares = shares, (fin or {}).get("epsTTM"), None
+    if info.get("shareClass") and filings:
+        # multi-class company: this ticker is one class, so ownership % uses that class's count,
+        # while market cap and P/E use every class on an as-converted basis
+        cov = attempt(f"cover shares {sym}", sec.cover_shares, cik, filings, default=None)
+        if cov:
+            hit = [v for k, v in cov["classes"].items() if info["shareClass"].lower() in k.lower()]
+            class_shares = hit[0] if hit else None
+            record(f"cover shares {sym}", bool(hit), n=len(cov["classes"]),
+                   note=f"as of {cov['asOf']}: " + ", ".join(f"{k or 'total'}={v:,.0f}" for k, v in cov["classes"].items()))
+        ratio = info.get("classRatio", 1)
+        mcap_shares = fin["diluted"] * ratio if fin and fin.get("diluted") else None
+        eps_ttm = eps_ttm / ratio if eps_ttm else None
+        shares = class_shares
+    mcap = price * mcap_shares if price and mcap_shares else None
+    pe = price / eps_ttm if eps_ttm and eps_ttm > 0 and price else None
     quarters = []
     if fin:
         qs = fin["quarters"]
@@ -214,8 +230,6 @@ def quote_page(sym, info, mem, spx_weekly, cal):
                              "gm": r(x["gp"] / x["rev"] * 100 if x.get("gp") and x.get("rev") else None, 1),
                              "op": r(x["op"] / 1e6 if x.get("op") else None, 1), "ni": r(x["ni"] / 1e6 if x.get("ni") else None, 1),
                              "eps": r(x["eps"], 2)})
-    sub = attempt(f"sec filings {sym}", sec.submissions, cik, default=None) if cik else None
-    filings = sec.recent_filings(sub) if sub else []
     ins = attempt(f"form 4 {sym}", sec.insiders, cik, filings, default=[]) if cik else []
     cutoff = ds(today() - timedelta(days=365))
     yr = [x for x in ins or [] if (x.get("date") or x["filed"]) >= cutoff]
@@ -236,7 +250,7 @@ def quote_page(sym, info, mem, spx_weekly, cal):
             "updated": now_iso(), "quote": q, "charts": charts,
             "stats": {"mcap": r(mcap, 0), "pe": r(pe, 1), "divYield": r(div_ttm / price * 100, 2) if price and div_ttm else 0,
                       "hi52": q["hi52"], "lo52": q["lo52"], "avgVol3m": r(statistics.mean(vols), 0) if vols else None,
-                      "beta": r(beta, 2), "shares": shares, "epsTTM": fin.get("epsTTM") if fin else None},
+                      "beta": r(beta, 2), "shares": shares, "epsTTM": r(eps_ttm, 2)},
             "ytd": r(ytd, 2), "y1": r(y1, 2), "fin": quarters, "insider": insider, "holders5": holders5, "index": idx,
             "news": [{"title": n["title"], "link": n["link"], "published": n["published"]} for n in news[:6]],
             "next": nxt, "eightK": eight_k, "peers": info.get("peers", []), "cik": cik}
@@ -696,8 +710,9 @@ def quarterly(max_sets=9):
         blob = attempt(f"13F set {url.rsplit('/', 1)[-1]}", get, url, kind="bytes", timeout=300)
         if not blob:
             continue
-        out, iss, fl = sec.holdings_from_zip(blob, set(cusips))
+        out, iss, fl, dropped = sec.holdings_from_zip(blob, set(cusips))
         del blob
+        record(f"13F rows dropped (bad units) {url.rsplit('/', 1)[-1]}", True, n=dropped)
         for key, val in out.items():
             if key not in rec or val["filed"] > rec[key]["filed"]:
                 rec[key] = val
@@ -716,15 +731,24 @@ def quarterly(max_sets=9):
         try:
             cik = tick.get(sym, (None,))[0]
             fin = sec.financials(cik) if cik else {"shares": []}
+            qpage = read(f"quotes/{sym}.json") or {}
+            class_so = (qpage.get("stats") or {}).get("shares") if UNIVERSE[sym].get("shareClass") else None
+
+            def so_at(p):
+                return class_so or sec.shares_at(fin, p)
             per = {p: {} for p in periods}
             names = {}
             for (mcik, p), v in rec.items():
                 if p in per and cu in v["pos"]:
-                    per[p][mcik] = v["pos"][cu]
+                    sh = v["pos"][cu]
+                    so_p = so_at(p)
+                    if so_p and sh > 0.3 * so_p:  # no 13F filer holds 30% of these; it's a data-entry error
+                        continue
+                    per[p][mcik] = sh
                     names[mcik] = v["name"]
             trend = []
             for p in periods:
-                so = sec.shares_at(fin, p)
+                so = so_at(p)
                 tot = sum(per[p].values())
                 trend.append({"p": p, "inst": r(tot / so * 100, 1) if so else None, "holders": len(per[p]), "shares": tot, "so": so})
             L, P = periods[-1], periods[-2]

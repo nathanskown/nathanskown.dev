@@ -2,6 +2,7 @@
 import csv
 import io
 import re
+import statistics
 import xml.etree.ElementTree as ET
 import zipfile
 from collections import defaultdict
@@ -81,22 +82,53 @@ def financials(cik):
     gaap = facts.get("facts", {}).get("us-gaap", {})
     out = {}
     for key, tags in TAGS.items():
-        best = {}
+        merged = {}  # companies switch tags over the years: merge them, earlier tags in the list win a tie
         for tag in tags:
             units = gaap.get(tag, {}).get("units", {})
             vals = units.get("USD/shares" if key == "eps" else "USD") or []
-            qs = _quarters(vals)
-            if len(qs) > len(best) or (qs and best and max(qs) > max(best)):
-                best = qs
-        out[key] = best
-    ends = sorted(out["rev"] or out["ni"], reverse=True)[:8]
+            for end, val in _quarters(vals).items():
+                merged.setdefault(end, val)
+        out[key] = merged
+    ends = sorted(set(out["rev"]) | set(out["ni"]), reverse=True)[:8]
     quarters = [{"end": e, **{k: out[k].get(e) for k in TAGS}} for e in sorted(ends)]
-    shares = []
+    shares = defaultdict(int)
     for f in facts.get("facts", {}).get("dei", {}).get("EntityCommonStockSharesOutstanding", {}).get("units", {}).get("shares", []):
-        shares.append((f["end"], f["val"]))
-    shares.sort()
+        shares[f["end"]] = max(shares[f["end"]], f["val"])
+    diluted = None
+    for tag in ("WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"):
+        qs = _quarters(gaap.get(tag, {}).get("units", {}).get("shares") or [])
+        if qs:
+            diluted = qs[max(qs)]
+            break
     eps4 = [q["eps"] for q in quarters[-4:] if q["eps"] is not None]
-    return {"quarters": quarters, "shares": shares[-12:], "epsTTM": r(sum(eps4), 3) if len(eps4) == 4 else None}
+    return {"quarters": quarters, "shares": sorted(shares.items())[-12:], "diluted": diluted,
+            "epsTTM": r(sum(eps4), 3) if len(eps4) == 4 else None}
+
+
+def cover_shares(cik, filings):
+    """Shares outstanding by share class, read from the cover page of the latest 10-Q/10-K (inline XBRL).
+    The SEC's company-facts API drops class-level values, so multi-class companies need this."""
+    f = next((x for x in filings if x["form"] in ("10-Q", "10-K")), None)
+    if not f:
+        raise RuntimeError("no 10-Q/10-K on file")
+    doc = get(filing_url(cik, f["accessionNumber"], f["primaryDocument"]), kind="text", timeout=60)
+    ctx = {}
+    for m in re.finditer(r'<xbrli:context[^>]*id="([^"]+)"(.*?)</xbrli:context>', doc, re.S):
+        mem = re.search(r'<xbrldi:explicitMember[^>]*>([^<]+)</xbrldi:explicitMember>', m.group(2))
+        ctx[m.group(1)] = mem.group(1).strip() if mem else ""
+    out = {}
+    for m in re.finditer(r'<ix:nonFraction([^>]*name="dei:EntityCommonStockSharesOutstanding"[^>]*)>(.*?)</ix:nonFraction>', doc, re.S):
+        attrs, txt = m.group(1), re.sub(r"<[^>]+>", "", m.group(2))
+        c = re.search(r'contextRef="([^"]+)"', attrs)
+        sc = re.search(r'scale="(-?\d+)"', attrs)
+        try:
+            val = float(txt.replace(",", "").strip()) * 10 ** int(sc.group(1) if sc else 0)
+        except ValueError:
+            continue
+        out[ctx.get(c.group(1), "") if c else ""] = val
+    if not out:
+        raise RuntimeError("no cover-page share counts found")
+    return {"asOf": f["reportDate"] or f["filingDate"], "classes": out}
 
 
 def shares_at(fin, day):
@@ -218,7 +250,7 @@ def holdings_from_zip(blob, cusips):
         subs[row["ACCESSION_NUMBER"]] = (int(row["CIK"]), period, filed)
     names = {row["ACCESSION_NUMBER"]: row.get("FILINGMANAGER_NAME", "") for row in _tsv(zf, "COVERPAGE.TSV")
              if row["ACCESSION_NUMBER"] in subs}
-    pos = defaultdict(lambda: defaultdict(float))
+    rows = []
     issuer = {}
     for row in _tsv(zf, "INFOTABLE.TSV"):
         cu = (row.get("CUSIP") or "").upper()
@@ -227,10 +259,25 @@ def holdings_from_zip(blob, cusips):
         if (row.get("PUTCALL") or "").strip() or (row.get("SSHPRNAMTTYPE") or "SH").upper() != "SH":
             continue
         try:
-            pos[row["ACCESSION_NUMBER"]][cu] += float(row["SSHPRNAMT"])
+            rows.append((row["ACCESSION_NUMBER"], cu, float(row["SSHPRNAMT"]), float(row.get("VALUE") or 0)))
         except ValueError:
             continue
         issuer.setdefault(cu, row.get("NAMEOFISSUER"))
+    # Filers sometimes key shares in the wrong unit (off by 1000x). The dollar value usually stays right,
+    # so a row whose value/shares is far from the median price that quarter is dropped.
+    px = defaultdict(list)
+    for acc, cu, sh, val in rows:
+        if sh > 0 and val > 0:
+            px[(cu, subs[acc][1])].append(val / sh)
+    med = {k: statistics.median(v) for k, v in px.items() if len(v) >= 20}
+    pos = defaultdict(lambda: defaultdict(float))
+    dropped = 0
+    for acc, cu, sh, val in rows:
+        m = med.get((cu, subs[acc][1]))
+        if m and sh > 0 and val > 0 and not (m / 3 < val / sh < m * 3):
+            dropped += 1
+            continue
+        pos[acc][cu] += sh
     out = {}
     for acc, held in pos.items():
         cik, period, filed = subs[acc]
@@ -240,4 +287,4 @@ def holdings_from_zip(blob, cusips):
     filers = defaultdict(set)  # every manager that filed for a period, holders or not
     for cik, period, _ in subs.values():
         filers[period].add(cik)
-    return out, issuer, filers
+    return out, issuer, filers, dropped
