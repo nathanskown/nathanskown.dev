@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nathan Skown · NSKN Terminal</title>
+<meta name="description" content="A personal terminal for market analysis and sports.">
+<meta name="theme-color" content="#020402">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<div class="nk t-green" id="root">
+
+<header>
+<div class="nk-title">
+<span class="nk-brand">1-NSKN</span>
+<span class="nk-chip nk-hide-sm">Main Menu</span>
+<span class="nk-chip nk-hide-sm">NATHAN SKOWN &lt;PERSON&gt;</span>
+<span class="nk-chip nk-hide-sm">HOME</span>
+<span class="nk-spacer"></span>
+<span class="nk-live"><span class="nk-dot"></span>LIVE</span>
+<span class="nk-dim">CHI <span data-bind="chiTime">--:--:--</span></span>
+</div>
+
+<div class="nk-help">
+<div><span class="nk-inv">&lt;HELP&gt;</span> for explanation.</div>
+<div class="nk-help2"><span class="nk-help-txt">&lt;MENU&gt; to return · type a function, then press &lt;GO&gt;</span><span class="nk-last">LAST › <span data-bind="last">NONE</span></span></div>
+</div>
+
+<div class="nk-cmdwrap">
+<form class="nk-cmd" id="cmdForm">
+<label for="nk-cmd-in" class="nk-prompt">NSKN ›</label>
+<input id="nk-cmd-in" class="nk-input" type="text" placeholder="TYPE HELP, THEN GO" autocomplete="off" spellcheck="false" enterkeyhint="go">
+<button type="submit" class="nk-go">GO</button>
+</form>
+<div class="nk-drawer" id="drawer" role="log" aria-live="polite" hidden>
+<div class="nk-drawer-h"><span>CONSOLE</span><button type="button" class="nk-x" data-action="closeDrawer" aria-label="Close console">ESC ✕</button></div>
+<div id="drawerLines"></div>
+</div>
+</div>
+
+<div class="nk-fbar">
+<span class="nk-fbar-title">Search NSKN</span>
+<button type="button" class="nk-fkey" data-cmd="HELP">91) Actions</button>
+<button type="button" class="nk-fkey" data-go="contact">92) Contact NSKN</button>
+<span class="nk-spacer"></span>
+<span class="nk-fbar-right">NSKN Terminal</span>
+</div>
+<div class="nk-sub">
+<span>Personal Terminal (NSKN)</span>
+<span class="nk-dim nk-hide-sm">95) Sections · MARKET ANALYSIS / SPORTS</span>
+<span class="nk-spacer"></span>
+<span class="nk-tag">nathanskown.dev</span>
+</div>
+</header>
+
+<main class="nk-main">
+
+<nav class="nk-side" aria-label="Site">
+<div class="nk-sh">Navigate</div>
+<button type="button" class="nk-nav" data-go="overview"><span class="nk-num">1)</span>Overview</button>
+<a class="nk-nav" href="/finance/"><span class="nk-num">2)</span>Market Analysis</a>
+<a class="nk-nav" href="/sports/"><span class="nk-num">3)</span>Sports</a>
+<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">4)</span>Morning Digest</button>
+<button type="button" class="nk-nav" data-go="about"><span class="nk-num">5)</span>About</button>
+<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">6)</span>Contact</button>
+<div class="nk-sh nk-hide-sm">System</div>
+<div class="nk-sys nk-hide-sm">
+<button type="button" class="nk-nav" data-cmd="HELP"><span class="nk-num">90)</span>Help</button>
+<button type="button" class="nk-nav" data-cmd="WHOAMI"><span class="nk-num">93)</span>Who am I</button>
+<button type="button" class="nk-nav" data-cmd="REBOOT"><span class="nk-num">98)</span>Reboot</button>
+<button type="button" class="nk-nav" data-cmd="CLEAR"><span class="nk-num">99)</span>Clear</button>
+</div>
+<p class="nk-tip nk-hide-sm">Type <span class="nk-hi">HELP</span> in the command line and press <span class="nk-k">GO</span> for every function.</p>
+</nav>
+
+<section class="nk-center" aria-label="Home">
+<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim">Page 1 of 1</span></div>
+
+<div class="nk-hero" id="hero">
+<canvas class="nk-canvas" id="surface" aria-hidden="true"></canvas>
+<div class="nk-hero-in">
+<div class="nk-kicker">NSKN &lt;PERSON&gt; · Personal Terminal</div>
+<h1 class="nk-name" id="name" aria-label="Nathan Skown"><span aria-hidden="true" id="nameA">NATHAN</span><span aria-hidden="true" id="nameB">SKOWN</span></h1>
+<p class="nk-typed"><span class="nk-gt">&gt;</span> <span id="typed"></span><span class="nk-caret" aria-hidden="true"></span></p>
+<p class="nk-meta">Markets · Sports · Data<span class="nk-sep">//</span>Personal project · est. 2026</p>
+
+<div class="nk-secs">
+<a class="nk-sec" id="secMkt" href="/finance/">
+<span class="nk-sec-top"><span class="nk-num">2)</span><span class="nk-k">MKT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-t">MARKET<br>ANALYSIS</span>
+<span class="nk-sec-d">Dashboard · headlines · quotes · ownership · earnings · macro · IPOs</span>
+<span class="nk-sec-viz"><span class="nk-sec-chips"><span>WEI</span><span>TOP</span><span>DES</span><span>HDS</span><span>ERN</span><span>ECO</span><span>IPO</span></span></span>
+<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+</a>
+<a class="nk-sec" id="secSprt" href="/sports/">
+<span class="nk-sec-top"><span class="nk-num">3)</span><span class="nk-k">SPRT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-t">SPORTS</span>
+<span class="nk-sec-d">Scores · schedules · game previews &amp; recaps · team pages</span>
+<span class="nk-sec-viz"><span class="nk-sec-chips"><span>SCOR</span><span>GAME</span><span>TEAM</span></span></span>
+<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+</a>
+<button type="button" class="nk-dg" id="secDgst" data-go="digest">
+<span class="nk-dg-k"><span class="nk-num">4)</span><span class="nk-k">DGST</span></span>
+<span class="nk-dg-main"><span class="nk-dg-t">DETROIT + MSU MORNING DIGEST</span><span class="nk-dg-d">Free · in your inbox every morning at 5:15 AM CT</span></span>
+<span class="nk-dg-go">SUBSCRIBE <span class="nk-k">GO</span></span>
+</button>
+</div>
+</div>
+<div class="nk-fig">FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT</div>
+</div>
+
+<div class="nk-screen" id="panel" hidden>
+<div class="nk-ph"><h2 id="panelTitle"></h2><button type="button" class="nk-x" data-go="overview">CLOSE ✕</button></div>
+
+<div data-panel="about" hidden>
+<dl class="nk-kv">
+<dt>NAME</dt><dd>NATHAN SKOWN</dd>
+<dt>HOME BASE</dt><dd>CHICAGO, IL</dd>
+<dt>ALMA MATER</dt><dd>MICHIGAN STATE UNIVERSITY</dd>
+<dt>INTERESTS</dt><dd>MARKETS · SPORTS · DATA</dd>
+<dt>THIS SITE</dt><dd>A PERSONAL TERMINAL FOR MARKET ANALYSIS &amp; SPORTS</dd>
+</dl>
+<p class="nk-note">A personal project. Every page here is a work in progress.</p>
+</div>
+
+<div data-panel="contact" hidden>
+<dl class="nk-kv">
+<dt>EMAIL</dt><dd><span class="nk-todo">[ ADD EMAIL ]</span></dd>
+<dt>LINKEDIN</dt><dd><span class="nk-todo">[ ADD URL ]</span></dd>
+<dt>GITHUB</dt><dd><a href="https://github.com/nathanskown">github.com/nathanskown</a></dd>
+</dl>
+<p class="nk-note">More channels coming soon.</p>
+</div>
+
+<div data-panel="digest" hidden>
+<div class="nk-dgp">
+<dl class="nk-kv">
+<dt>COVERS</dt><dd>LIONS · TIGERS · PISTONS · RED WINGS · MSU FOOTBALL, BASKETBALL &amp; HOCKEY</dd>
+<dt>WHEN</dt><dd>EVERY MORNING · 5:15 AM CT</dd>
+<dt>INSIDE</dt><dd>FRESH NEWS · INJURY REPORTS · STANDINGS · GAME-DAY MATCHUPS &amp; LINES · THIS DAY IN HISTORY</dd>
+<dt>COST</dt><dd>FREE</dd>
+<dt>LEAVE ANYTIME</dt><dd>REPLY "UNSUBSCRIBE" TO ANY EDITION</dd>
+</dl>
+<ol class="nk-steps">
+<li>Tap SUBSCRIBE. Your email app opens with everything filled in.</li>
+<li>Hit send.</li>
+<li>You're added automatically before the next morning's edition, with a welcome note.</li>
+</ol>
+<div class="nk-cta-row">
+<a class="nk-cta" href="mailto:skownclaude@agentmail.to?subject=SUBSCRIBE&amp;body=Sign%20me%20up%20for%20the%20Detroit%20%2B%20MSU%20Morning%20Digest.">SUBSCRIBE <span class="nk-k">GO</span></a>
+<span class="nk-dim">Signs up the address you send from.</span>
+</div>
+<p class="nk-note">No email app on this device? Send any message with the subject <span class="nk-hi">SUBSCRIBE</span> to <span class="nk-hi">skownclaude@agentmail.to</span>.</p>
+</div>
+</div>
+</div>
+</section>
+
+<aside class="nk-rail" aria-label="Indicators">
+<div class="nk-rp">
+<div class="nk-rh"><span>World Clocks</span><span class="nk-dim">Local</span></div>
+<div id="clocks"></div>
+</div>
+<div class="nk-rp">
+<div class="nk-rh"><span>Site Stats</span><span class="nk-dim">Build v26.10</span></div>
+<dl class="nk-kvs">
+<dt>SECTIONS</dt><dd>2</dd>
+<dt>MARKET ANALYSIS</dt><dd>COMING SOON</dd>
+<dt>SPORTS</dt><dd>COMING SOON</dd>
+<dt>MORNING DIGEST</dt><dd>DAILY · 5:15 AM CT</dd>
+<dt>STATUS</dt><dd>LIVE · V1</dd>
+</dl>
+</div>
+<div class="nk-rp">
+<div class="nk-rh"><span>Changelog</span><span class="nk-dim">Newest first</span></div>
+<div class="nk-log"><span class="nk-log-d">10.13</span><span>nathanskown.dev goes live</span></div>
+<div class="nk-log"><span class="nk-log-d">10.13</span><span>Morning Digest signups open</span></div>
+<div class="nk-log"><span class="nk-log-d">10.13</span><span>Market Analysis moves to an amber terminal look</span></div>
+<div class="nk-log"><span class="nk-log-d">10.13</span><span>Sports: dashboard, 4 game pages, 7 team pages designed</span></div>
+<div class="nk-log"><span class="nk-log-d">10.13</span><span>First page: a stock quote mockup</span></div>
+</div>
+<div class="nk-rp">
+<div class="nk-rh"><span>Session</span><span class="nk-dim">You</span></div>
+<dl class="nk-kvs">
+<dt>TIME ZONE</dt><dd data-bind="tz">—</dd>
+<dt>VIEWPORT</dt><dd data-bind="viewport">—</dd>
+<dt>UPTIME</dt><dd data-bind="uptime">00:00:00</dd>
+<dt>BUILD</dt><dd>v26.10</dd>
+</dl>
+</div>
+</aside>
+
+</main>
+
+<footer>
+<div class="nk-tape" aria-label="System log">
+<span class="nk-tape-l">SYS LOG</span>
+<div class="nk-tape-win"><div class="nk-tape-track" id="tape"></div></div>
+</div>
+<div class="nk-status">
+<span><span class="nk-hi">●</span> LINK nathanskown.dev</span>
+<span>2 SECTIONS · MORNING DIGEST</span>
+<span>SESSION <span data-bind="uptime">00:00:00</span></span>
+<span>© 2026 NATHAN SKOWN</span>
+</div>
+</footer>
+
+<div class="nk-crt" aria-hidden="true"></div>
+<div class="nk-vig" aria-hidden="true"></div>
+<div class="nk-sweep" aria-hidden="true"></div>
+
+<div class="nk-boot" id="boot" hidden>
+<div class="nk-boot-in">
+<div id="bootLines"></div>
+<div class="nk-bar"><div class="nk-bar-fill" id="bootBar" style="width:0%"></div></div>
+<div class="nk-boot-foot"><span class="nk-boot-ready" id="bootReady"></span><button type="button" class="nk-skip" id="skipBoot">SKIP ▸</button></div>
+</div>
+</div>
+
+</div>
+<script src="/assets/landing.js" defer></script>
+</body>
+</html>
