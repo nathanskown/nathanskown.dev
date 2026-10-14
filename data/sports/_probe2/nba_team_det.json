@@ -1,0 +1,1311 @@
+{
+ "team": {
+  "abbreviation": "DET",
+  "alternateColor": "c8102e",
+  "color": "1d428a",
+  "displayName": "Detroit Pistons",
+  "franchise": {
+   "abbreviation": "DET",
+   "color": "1d428a",
+   "displayName": "Detroit Pistons",
+   "id": "8",
+   "isActive": true,
+   "location": "Detroit",
+   "name": "Pistons",
+   "shortDisplayName": "Pistons",
+   "slug": "detroit-pistons",
+   "uid": "s:40~l:46~f:8",
+   "venue": {
+    "fullName": "Little Caesars Arena",
+    "grass": false,
+    "guid": "80f8a3ce-90ab-37d2-8331-fbc62b69aa95",
+    "id": "5311",
+    "images": [
+     {
+      "alt": "",
+      "height": 1125,
+      "href": "https://a.espncdn.com/i/venues/nba/day/5311.jpg",
+      "rel": [
+       "full",
+       "day"
+      ],
+      "width": 2000
+     }
+    ],
+    "indoor": false,
+    "shortName": "Little Caesars Arena"
+   }
+  },
+  "groups": {
+   "id": "2",
+   "isConference": false,
+   "parent": {
+    "id": "5"
+   }
+  },
+  "id": "8",
+  "isActive": true,
+  "links": [
+   {
+    "href": "https://www.espn.com/nba/team/_/name/det/detroit-pistons",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "clubhouse",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Clubhouse",
+    "text": "Clubhouse"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/roster/_/name/det/detroit-pistons",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "roster",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Roster",
+    "text": "Roster"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=roster",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "roster",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Roster",
+    "text": "Roster"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/stats/_/name/det/detroit-pistons",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "stats",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Statistics",
+    "text": "Statistics"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=stats",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "stats",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Statistics",
+    "text": "Statistics"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/schedule/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "schedule",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Schedule",
+    "text": "Schedule"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=scores",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "schedule",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Schedule",
+    "text": "Schedule"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/photos/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "photos",
+     "desktop",
+     "team"
+    ],
+    "shortText": "photos",
+    "text": "photos"
+   },
+   {
+    "href": "https://www.vividseats.com/detroit-pistons-tickets--sports-nba-basketball/performer/239?wsUser=717",
+    "isExternal": true,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "tickets",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Tickets",
+    "text": "Tickets"
+   },
+   {
+    "href": "https://www.espn.com/nba/draft/teams/_/name/det/detroit-pistons",
+    "isExternal": false,
+    "isPremium": true,
+    "language": "en-US",
+    "rel": [
+     "draftpicks",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Draft Picks",
+    "text": "Draft Picks"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/transactions/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "transactions",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Transactions",
+    "text": "Transactions"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/injuries/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "injuries",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Injuries",
+    "text": "Injuries"
+   },
+   {
+    "href": "https://www.espn.com/nba/team/depth/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "depthchart",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Depth Chart",
+    "text": "Depth Chart"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=depthchart",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "depthchart",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Depth Chart",
+    "text": "Depth Chart"
+   }
+  ],
+  "location": "Detroit",
+  "logos": [
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+    "rel": [
+     "full",
+     "default"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/det.png",
+    "rel": [
+     "full",
+     "dark"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/det.png",
+    "rel": [
+     "full",
+     "scoreboard"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/det.png",
+    "rel": [
+     "full",
+     "scoreboard",
+     "dark"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_white_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_white_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_black_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_black_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_primary_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_primary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_secondary_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_secondary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_black.png",
+    "rel": [
+     "full",
+     "primary_logo_black"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_white.png",
+    "rel": [
+     "full",
+     "primary_logo_white"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_white_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_white_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_black_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_black_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_primary_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_primary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_secondary_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_secondary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_black.png",
+    "rel": [
+     "full",
+     "secondary_logo_black"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_white.png",
+    "rel": [
+     "full",
+     "secondary_logo_white"
+    ],
+    "width": 4096
+   }
+  ],
+  "name": "Pistons",
+  "nextEvent": [
+   {
+    "competitions": [
+     {
+      "attendance": 0,
+      "boxscoreAvailable": false,
+      "broadcasts": [],
+      "competitors": [
+       {
+        "homeAway": "home",
+        "id": "16",
+        "order": 0,
+        "team": {
+         "abbreviation": "MIN",
+         "displayName": "Minnesota Timberwolves",
+         "id": "16",
+         "links": [
+          {
+           "href": "https://www.espn.com/nba/team/_/name/min/minnesota-timberwolves",
+           "rel": [
+            "clubhouse",
+            "desktop",
+            "team"
+           ],
+           "text": "Clubhouse"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/roster/_/name/min/minnesota-timberwolves",
+           "rel": [
+            "roster",
+            "desktop",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:16&section=roster",
+           "rel": [
+            "roster",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/stats/_/name/min/minnesota-timberwolves",
+           "rel": [
+            "stats",
+            "desktop",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:16&section=stats",
+           "rel": [
+            "stats",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/schedule/_/name/min",
+           "rel": [
+            "schedule",
+            "desktop",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:16&section=scores",
+           "rel": [
+            "schedule",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/photos/_/name/min",
+           "rel": [
+            "photos",
+            "desktop",
+            "team"
+           ],
+           "text": "photos"
+          },
+          {
+           "href": "https://www.vividseats.com/minnesota-timberwolves-tickets--sports-nba-basketball/performer/553?wsUser=717",
+           "rel": [
+            "tickets",
+            "desktop",
+            "team"
+           ],
+           "text": "Tickets"
+          },
+          {
+           "href": "https://www.espn.com/nba/draft/teams/_/name/min/minnesota-timberwolves",
+           "rel": [
+            "draftpicks",
+            "desktop",
+            "team"
+           ],
+           "text": "Draft Picks"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/transactions/_/name/min",
+           "rel": [
+            "transactions",
+            "desktop",
+            "team"
+           ],
+           "text": "Transactions"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/injuries/_/name/min",
+           "rel": [
+            "injuries",
+            "desktop",
+            "team"
+           ],
+           "text": "Injuries"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/depth/_/name/min",
+           "rel": [
+            "depthchart",
+            "desktop",
+            "team"
+           ],
+           "text": "Depth Chart"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:16&section=depthchart",
+           "rel": [
+            "depthchart",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Depth Chart"
+          }
+         ],
+         "location": "Minnesota",
+         "logos": [
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500/min.png",
+           "rel": [
+            "full",
+            "default"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/min.png",
+           "rel": [
+            "full",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/min.png",
+           "rel": [
+            "full",
+            "scoreboard"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/min.png",
+           "rel": [
+            "full",
+            "scoreboard",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_black.png",
+           "rel": [
+            "full",
+            "primary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/primary_logo_white.png",
+           "rel": [
+            "full",
+            "primary_logo_white"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_black.png",
+           "rel": [
+            "full",
+            "secondary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/13f727cb-254d-b484-a337-93fcc0047add/logos/secondary_logo_white.png",
+           "rel": [
+            "full",
+            "secondary_logo_white"
+           ],
+           "width": 4096
+          }
+         ],
+         "shortDisplayName": "Timberwolves"
+        },
+        "type": "team"
+       },
+       {
+        "homeAway": "away",
+        "id": "8",
+        "order": 1,
+        "team": {
+         "abbreviation": "DET",
+         "displayName": "Detroit Pistons",
+         "id": "8",
+         "links": [
+          {
+           "href": "https://www.espn.com/nba/team/_/name/det/detroit-pistons",
+           "rel": [
+            "clubhouse",
+            "desktop",
+            "team"
+           ],
+           "text": "Clubhouse"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/roster/_/name/det/detroit-pistons",
+           "rel": [
+            "roster",
+            "desktop",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=roster",
+           "rel": [
+            "roster",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/stats/_/name/det/detroit-pistons",
+           "rel": [
+            "stats",
+            "desktop",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=stats",
+           "rel": [
+            "stats",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/schedule/_/name/det",
+           "rel": [
+            "schedule",
+            "desktop",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=scores",
+           "rel": [
+            "schedule",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/photos/_/name/det",
+           "rel": [
+            "photos",
+            "desktop",
+            "team"
+           ],
+           "text": "photos"
+          },
+          {
+           "href": "https://www.vividseats.com/detroit-pistons-tickets--sports-nba-basketball/performer/239?wsUser=717",
+           "rel": [
+            "tickets",
+            "desktop",
+            "team"
+           ],
+           "text": "Tickets"
+          },
+          {
+           "href": "https://www.espn.com/nba/draft/teams/_/name/det/detroit-pistons",
+           "rel": [
+            "draftpicks",
+            "desktop",
+            "team"
+           ],
+           "text": "Draft Picks"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/transactions/_/name/det",
+           "rel": [
+            "transactions",
+            "desktop",
+            "team"
+           ],
+           "text": "Transactions"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/injuries/_/name/det",
+           "rel": [
+            "injuries",
+            "desktop",
+            "team"
+           ],
+           "text": "Injuries"
+          },
+          {
+           "href": "https://www.espn.com/nba/team/depth/_/name/det",
+           "rel": [
+            "depthchart",
+            "desktop",
+            "team"
+           ],
+           "text": "Depth Chart"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46~t:8&section=depthchart",
+           "rel": [
+            "depthchart",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Depth Chart"
+          }
+         ],
+         "location": "Detroit",
+         "logos": [
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+           "rel": [
+            "full",
+            "default"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/det.png",
+           "rel": [
+            "full",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/det.png",
+           "rel": [
+            "full",
+            "scoreboard"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/det.png",
+           "rel": [
+            "full",
+            "scoreboard",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_black.png",
+           "rel": [
+            "full",
+            "primary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/primary_logo_white.png",
+           "rel": [
+            "full",
+            "primary_logo_white"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_black.png",
+           "rel": [
+            "full",
+            "secondary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/4e096981-dc02-51d0-3dcd-2468fcc1e22d/logos/secondary_logo_white.png",
+           "rel": [
+            "full",
+            "secondary_logo_white"
+           ],
+           "width": 4096
+          }
+         ],
+         "shortDisplayName": "Pistons"
+        },
+        "type": "team"
+       }
+      ],
+      "date": "2026-10-15T00:00Z",
+      "id": "401914125",
+      "neutralSite": false,
+      "notes": [],
+      "status": {
+       "clock": 0.0,
+       "displayClock": "0.0",
+       "period": 0,
+       "type": {
+        "completed": false,
+        "description": "Scheduled",
+        "detail": "Wed, October 14th at 8:00 PM EDT",
+        "id": "1",
+        "name": "STATUS_SCHEDULED",
+        "shortDetail": "10/14 - 8:00 PM EDT",
+        "state": "pre"
+       }
+      },
+      "tickets": [
+       {
+        "description": "NBA Preseason - Detroit Pistons at Minnesota Timberwolves",
+        "id": "7430209",
+        "links": [
+         {
+          "href": "https://www.vividseats.com/minnesota-timberwolves-tickets-target-center-10-14-2026--sports-nba-basketball/production/7430209?wsUser=717",
+          "rel": [
+           "tickets",
+           "desktop",
+           "event"
+          ]
+         },
+         {
+          "href": "https://www.vividseats.com/target-center-tickets/venue/1663?wsUser=717",
+          "rel": [
+           "tickets",
+           "desktop",
+           "venue"
+          ]
+         }
+        ],
+        "maxPrice": 1233.0,
+        "numberAvailable": 176,
+        "startingPrice": 18.0,
+        "summary": "Tickets as low as $18",
+        "totalPostings": 56
+       }
+      ],
+      "ticketsAvailable": true,
+      "timeValid": true,
+      "type": {
+       "abbreviation": "STD",
+       "id": "1",
+       "slug": "standard",
+       "text": "Standard",
+       "type": "standard"
+      },
+      "venue": {
+       "address": {
+        "city": "Minneapolis",
+        "state": "MN"
+       },
+       "fullName": "Target Center"
+      }
+     }
+    ],
+    "date": "2026-10-15T00:00Z",
+    "id": "401914125",
+    "links": [
+     {
+      "href": "https://www.espn.com/nba/game/_/gameId/401914125/pistons-timberwolves",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "summary",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Summary",
+      "text": "Gamecast"
+     },
+     {
+      "href": "sportscenter://x-callback-url/showGame?sportName=basketball&leagueAbbrev=nba&gameId=401914125",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "summary",
+       "sportscenter",
+       "app",
+       "event"
+      ],
+      "shortText": "Summary",
+      "text": "Gamecast"
+     },
+     {
+      "href": "https://www.espn.com/nba/game/_/gameId/401914125",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "now",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Now",
+      "text": "Now"
+     },
+     {
+      "href": "https://www.espn.com/nba/odds/_/gameId/401914125",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "odds",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Odds",
+      "text": "Odds"
+     },
+     {
+      "href": "https://m.espn.com/nba/odds/_/gameId/401914125",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "odds",
+       "mobile",
+       "event"
+      ],
+      "shortText": "Odds",
+      "text": "Odds"
+     }
+    ],
+    "name": "Detroit Pistons at Minnesota Timberwolves",
+    "season": {
+     "displayName": "2026-27",
+     "year": 2027
+    },
+    "seasonType": {
+     "abbreviation": "pre",
+     "id": "1",
+     "name": "Preseason",
+     "type": 1
+    },
+    "shortName": "DET @ MIN",
+    "timeValid": true
+   }
+  ],
+  "record": {
+   "items": [
+    {
+     "description": "Overall Record",
+     "stats": [
+      {
+       "name": "wins",
+       "value": 0.0
+      },
+      {
+       "name": "losses",
+       "value": 0.0
+      },
+      {
+       "name": "ties",
+       "value": 0.0
+      },
+      {
+       "name": "OTWins",
+       "value": 0.0
+      },
+      {
+       "name": "OTLosses",
+       "value": 0.0
+      },
+      {
+       "name": "points",
+       "value": 0.0
+      },
+      {
+       "name": "pointsFor",
+       "value": 0.0
+      },
+      {
+       "name": "pointsAgainst",
+       "value": 0.0
+      },
+      {
+       "name": "avgPointsFor",
+       "value": 0.0
+      },
+      {
+       "name": "avgPointsAgainst",
+       "value": 0.0
+      },
+      {
+       "name": "gamesPlayed",
+       "value": 0.0
+      },
+      {
+       "name": "winPercent",
+       "value": 0.0
+      },
+      {
+       "name": "leagueWinPercent",
+       "value": 0.0
+      },
+      {
+       "name": "divisionWins",
+       "value": 0.0
+      },
+      {
+       "name": "divisionLosses",
+       "value": 0.0
+      },
+      {
+       "name": "divisionTies",
+       "value": 0.0
+      },
+      {
+       "name": "divisionWinPercent",
+       "value": 0.0
+      },
+      {
+       "name": "streak",
+       "value": 0.0
+      },
+      {
+       "name": "playoffSeed",
+       "value": 0.0
+      },
+      {
+       "name": "gamesBehind",
+       "value": 0.0
+      },
+      {
+       "name": "conferenceWins",
+       "value": 0.0
+      },
+      {
+       "name": "conferenceLosses",
+       "value": 0.0
+      },
+      {
+       "name": "conferenceTies",
+       "value": 0.0
+      },
+      {
+       "name": "homeWins",
+       "value": 0.0
+      },
+      {
+       "name": "homeLosses",
+       "value": 0.0
+      },
+      {
+       "name": "homeTies",
+       "value": 0.0
+      },
+      {
+       "name": "roadWins",
+       "value": 0.0
+      },
+      {
+       "name": "roadLosses",
+       "value": 0.0
+      },
+      {
+       "name": "roadTies",
+       "value": 0.0
+      },
+      {
+       "name": "gamesAhead",
+       "value": 0.0
+      }
+     ],
+     "summary": "0-0",
+     "type": "total"
+    }
+   ]
+  },
+  "shortDisplayName": "Pistons",
+  "slug": "detroit-pistons",
+  "uid": "s:40~l:46~t:8"
+ }
+}
