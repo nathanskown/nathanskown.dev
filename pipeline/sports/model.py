@@ -36,7 +36,7 @@ PARAMS = {
     "ncaab": dict(hfa=3.0, sigma=11.0, k=6, cap=40, minGp=3, unit="points"),
     "ncaah": dict(hfa=0.25, sigma=2.4, k=6, cap=None, minGp=3, unit="goals"),
 }
-CACHE_VERSION = 2          # bump to force a full rescan after a scan fix
+CACHE_VERSION = 3          # bump to force a full rescan after a scan fix
 POOL = "_other"            # opponents outside the covered division (FCS, non-D-I) share one rating
 RNG = np.random.default_rng()
 
@@ -72,7 +72,7 @@ def _scan_espn(lg, si, cache):
     """Bring the cached season up to date. Week leagues re-read unfinished weeks; day leagues
     read each calendar date once it is final."""
     L = LEAGUES[lg]
-    base = {"limit": "1000"}
+    base = {"limit": "300"}         # ESPN ignores larger limits and falls back to 25
     if L.get("groups"):
         base["groups"] = L["groups"]
     ev = cache["events"]
