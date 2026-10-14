@@ -36,18 +36,24 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests==2.32.3
-      - name: Fetch data
+      - name: Fetch and commit data, one job at a time
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           CRON: ${{ github.event.schedule }}
           RUN_13F: ${{ inputs.run_13f && '1' || '0' }}
-        run: python -m pipeline.run auto
-      - name: Commit data
         run: |
           git config user.name "finance-data-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/finance
-          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
-          git commit -m "data: refresh finance data"
-          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && exit 0; sleep 5; done
-          exit 1
+          commit() {
+            git add data/finance
+            if git diff --cached --quiet; then echo "no changes after $1"; return 0; fi
+            git commit -q -m "data: refresh finance data ($1)"
+            for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q && return 0; sleep 5; done
+            return 1
+          }
+          for job in $(python -m pipeline.run plan); do
+            echo "::group::$job"
+            python -m pipeline.run "$job" || echo "job $job exited with an error"
+            echo "::endgroup::"
+            commit "$job"
+          done

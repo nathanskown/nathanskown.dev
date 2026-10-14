@@ -28,6 +28,9 @@ def pick():
 
 def main():
     which = sys.argv[1:] or ["auto"]
+    if which == ["plan"]:  # the workflow asks which jobs to run, then runs and commits each one
+        print(" ".join(pick()))
+        return
     if which == ["auto"]:
         which = pick()
     status = read("status.json", {}) or {}
