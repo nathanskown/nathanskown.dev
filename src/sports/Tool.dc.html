@@ -63,8 +63,28 @@
 <sc-if value="{{soon}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Status">
 <div class="t-ph"><h2>Status</h2><span class="dim">Build queue</span></div>
-<div class="t-pb"><span class="t-tag">UNDER CONSTRUCTION</span><p class="dim" style="margin: 8px 0 0">This page is planned but not built yet. Scores, teams, games, the simulator, playoff odds, injuries and the method page are live.</p></div>
+<div class="t-pb"><span class="t-tag">UNDER CONSTRUCTION</span><p class="dim" style="margin: 8px 0 0">This page is planned but not built yet. Below is what it will cover; the related pages linked below are live now.</p></div>
 </section>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 16px; margin-top: 16px">
+<section class="t-panel" aria-label="Planned panels">
+<div class="t-ph"><h2>What this page will show</h2><span class="dim">Planned</span></div>
+<div class="t-pb">
+<sc-for list="{{plan.items}}" as="pi" hint-placeholder-count="4">
+<div style="padding: 10px 0; border-bottom: 1px solid var(--line2, #123)"><div class="hi" style="font-weight: 500">{{pi.h}}</div><div class="dim" style="font-size: 13px; margin-top: 2px">{{pi.d}}</div></div>
+</sc-for>
+</div>
+</section>
+<section class="t-panel" aria-label="Data and related pages">
+<div class="t-ph"><h2>How it will work</h2><span class="dim">Data</span></div>
+<div class="t-pb">
+<p class="dim" style="margin: 0 0 14px; font-size: 13px; line-height: 1.6">{{plan.data}}</p>
+<div class="dim" style="font-size: 12px; letter-spacing: .1em; margin-bottom: 8px">LIVE NOW</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{plan.links}}" as="pl" hint-placeholder-count="3"><a href="{{pl.href}}" class="t-chip" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px">{{pl.t}} →</a></sc-for>
+</div>
+</div>
+</section>
+</div>
 </sc-if>
 
 <sc-if value="{{isSim}}" hint-placeholder-val="{{false}}">
@@ -261,10 +281,34 @@ class Component extends DCLogic {
     var fk = {}; Object.keys(TOOLS).forEach(function (k) { fk[k] = 't-fkey' + (k === key ? ' is-on' : ''); });
     var idx = {}; (((S.index || {}).leagues || {})[lg] || []).forEach(function (t) { idx[t.id] = t; });
     var live = { Simulator: 1, Odds: 1, Injuries: 1, TrackRecord: 1, Methodology: 1 };
+    var PLANS = {
+      Spots: { items: [
+        { h: 'Rest and back-to-backs', d: 'Days of rest for both teams before every game, with NBA and NHL back-to-backs flagged.' },
+        { h: 'Short weeks and long layoffs', d: 'Thursday games after a Sunday, Monday-to-Sunday turnarounds and games after a bye.' },
+        { h: 'Road trips and travel', d: 'Games deep into a road trip or after cross-country travel and time-zone changes.' },
+        { h: 'Look-ahead and letdown spots', d: 'Games sandwiched before a rivalry or marquee opponent, and right after one.' },
+        { h: 'How each spot has played out', d: 'Results for each spot against the house model\'s expected margin, so you can see which ones actually matter.' }],
+        data: 'Built from the ESPN schedules this section already reads, scored against the house model\'s expected margin for each game. Every spot is tagged before kickoff, so nothing is fitted after the fact.',
+        links: [{ t: 'Scores', href: 'Main.dc.html' }, { t: 'Game center', href: 'Game.dc.html' }, { t: 'Matchup simulator', href: 'Simulator.dc.html' }] },
+      LuckWatch: { items: [
+        { h: 'Record vs. point differential', d: 'Each team\'s win total compared with what its scoring margin predicts (a Pythagorean expectation).' },
+        { h: 'Close-game record', d: 'Wins and losses in one-score games, where results tend to even out over time.' },
+        { h: 'Record vs. house rating', d: 'Teams whose standings position is well above or below where their rating puts them.' },
+        { h: 'Due for a correction', d: 'A short list of the teams most likely to regress, up or down, over the rest of the season.' }],
+        data: 'Uses the final scores behind the house model and its team ratings. A team flagged here is not called good or bad; its record just doesn\'t match how it has played so far.',
+        links: [{ t: 'Playoff odds', href: 'Odds.dc.html' }, { t: 'All teams', href: 'Teams.dc.html' }, { t: 'Method', href: 'Methodology.dc.html' }] },
+      Schedule: { items: [
+        { h: 'Strength of schedule played', d: 'Average house rating of every opponent a team has faced, ranked league-wide.' },
+        { h: 'Strength of schedule remaining', d: 'The same measure for games still to play, so you can see who has it easier from here.' },
+        { h: 'Hardest and easiest stretches', d: 'The toughest run of upcoming games for each team, by date.' },
+        { h: 'Home and road split', d: 'How many tough games each team still has to play away from home.' }],
+        data: 'Opponent ratings come from the house model, which is refreshed throughout the day; remaining games come from ESPN schedules. Team pages already show strength of schedule played in their profile panel.',
+        links: [{ t: 'Playoff odds', href: 'Odds.dc.html' }, { t: 'All teams', href: 'Teams.dc.html' }, { t: 'Method', href: 'Methodology.dc.html' }] }
+    };
     var tabsFor = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
     var lgTabs = tabsFor.map(function (k) { return { label: k === 'all' ? 'All' : SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
       pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, simA: null, simH: null }); self.loadLeague(k); } }; });
-    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, soon: !live[key], tag: live[key] ? 'LIVE DATA' : 'COMING SOON',
+    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, soon: !live[key], plan: PLANS[key] || { items: [], data: '', links: [] }, tag: live[key] ? 'LIVE DATA' : 'COMING SOON',
       showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord' };
     var m = S.models[lg];
     var pct = function (p) { return p === undefined || p === null ? '—' : p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
