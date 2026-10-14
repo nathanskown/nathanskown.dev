@@ -5,7 +5,7 @@ on:
     - cron: "17 * * * *"    # hourly: standings, injuries, house model
     - cron: "41 10 * * *"   # daily (5:41 AM CT in summer): teams index, stat leaders, then everything hourly
   push:
-    branches: [main, sports-live-data]
+    branches: [main]
     paths:
       - "pipeline/sports/**"
       - ".github/workflows/refresh-sports.yml"
