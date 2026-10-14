@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>All teams</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0;background:#020607}</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="/">1-NSKN</a>
+<span class="t-chip t-hide-sm">Sports Menu</span>
+<span class="t-chip t-hide-sm">TEAMS &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">ALL TIMES CT</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Every NFL, MLB, NHL and NBA team, all of FBS, D-I men's basketball and men's college hockey</span>
+</div>
+<form class="t-cmd" data-cmd>
+<label for="teamsSearch" class="t-prompt">NSKN ›</label>
+<input id="teamsSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+</form>
+<nav class="t-fbar" aria-label="Sports pages">
+<span class="t-fbar-title">Sports</span>
+<a class="t-fkey" href="Main.dc.html">1) Scores</a>
+<a class="t-fkey is-on" href="#" aria-current="page">2) Teams</a>
+<a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
+<a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
+<a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
+<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="/">Home</a>
+</nav>
+<div class="t-sub">
+<span>All Teams (TEAMS)</span>
+<span class="dim">{{todayLabel}}</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">{{statusTag}}</span>
+</div>
+</header>
+
+<main class="s-wrap">
+
+<section aria-label="Filter" style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0">{{title}}</h1>
+<div class="s-tabs" role="group" aria-label="League">
+<sc-for list="{{tabs}}" as="b" hint-placeholder-count="7"><button type="button" class="{{b.cls}}" aria-pressed="{{b.on}}" onClick="{{b.pick}}">{{b.label}} <span class="dim">{{b.n}}</span></button></sc-for>
+</div>
+<div style="max-width: 520px">
+<label for="teamFilter" class="sr">Filter teams</label>
+<input id="teamFilter" class="s-input" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="Filter by name, city or conference (searches every league)" autocomplete="off">
+</div>
+<div class="s-note">{{note}}</div>
+</section>
+
+<sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{emptyText}}</div></sc-if>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; align-items: start">
+<sc-for list="{{groups}}" as="G" hint-placeholder-count="6">
+<section class="t-panel" aria-label="{{G.name}}">
+<div class="t-ph"><h2>{{G.name}}</h2><span class="dim">{{G.sub}}</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<table class="s-tbl">
+<thead><tr><th scope="col">Team</th><th scope="col">Record</th><th scope="col">{{G.rCol}}</th></tr></thead>
+<tbody>
+<sc-for list="{{G.teams}}" as="r" hint-placeholder-count="5">
+<tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy"><span>{{r.name}}</span></a> <span class="dim">{{r.tag}}</span></th><td>{{r.rec}}</td><td class="dim">{{r.rating}}</td></tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+</sc-for>
+</div>
+
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
+<span>Teams and standings: ESPN public API, refreshed hourly · House rating: points (goals, runs) better than an average team · {{updated}}</span>
+<span>Built by Nathan Skown</span>
+</div>
+</footer>
+
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"lg":{"editor":"text","default":"nfl"},"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { q: '', models: {}, standings: {} }; }
+  componentDidMount() {
+    var self = this;
+    var lg = String(this.state.lg || this.props.lg || 'nfl').toLowerCase();
+    if (!SD.LEAGUES[lg] || !SD.LEAGUES[lg].teams) lg = 'nfl';
+    this.setState({ lg: lg });
+    SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () { self.setState({ err: true }); });
+    SD.data('status.json').then(function (x) { self.setState({ status: x }); }, function () {});
+    this.loadLeague(lg);
+  }
+  loadLeague(lg) {
+    var self = this;
+    if (!this.state.models[lg]) SD.data('model/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[lg] = m; self.setState({ models: o }); }, function () {});
+    if (!this.state.standings[lg]) SD.data('standings/' + lg + '.json').then(function (s) {
+      var by = {}, i = 0; s.groups.forEach(function (g) { g.teams.forEach(function (r) { by[r.id] = Object.assign({ _pos: i++ }, r); }); });
+      var o = Object.assign({}, self.state.standings); o[lg] = by; self.setState({ standings: o });
+    }, function () {});
+  }
+  renderVals() {
+    var S = this.state, self = this, lg = S.lg || 'nfl', all = (S.index || {}).leagues || {};
+    var LG = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
+    var q = (S.q || '').trim().toLowerCase();
+    var tabs = LG.map(function (k) {
+      return { label: SD.LEAGUES[k].short, n: all[k] ? all[k].length : '', on: k === lg && !q ? 'true' : 'false', cls: 's-tab' + (k === lg && !q ? ' is-on' : ''),
+        pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, q: '' }); self.loadLeague(k); } };
+    });
+    var row = function (k, t) {
+      var st = (S.standings[k] || {})[t.id], m = S.models[k], mt = m && m.teams ? m.teams[t.id] : null;
+      var ok = mt && (mt.gp >= (m.minGp || 0) || mt.prior !== undefined);
+      return { name: t.short && k.indexOf('ncaa') === 0 ? t.loc || t.short : t.name, href: SD.teamHref(k, t.id), logo: t.logo || '', tag: q ? SD.LEAGUES[k].short : '',
+        rec: st ? (st.overall || [st.w, st.l].join('-')) : '', rating: ok ? (mt.rating > 0 ? '+' : '') + mt.rating.toFixed(1) : '' };
+    };
+    var groups = [];
+    if (q) {
+      var hits = [];
+      LG.forEach(function (k) { (all[k] || []).forEach(function (t) {
+        var hay = [t.name, t.loc, t.nick, t.abbr, t.group].join(' ').toLowerCase();
+        if (hay.indexOf(q) >= 0) hits.push([k, t]);
+      }); });
+      if (hits.length) groups.push({ name: hits.length + ' matches', sub: 'all leagues', rCol: 'Rating', teams: hits.slice(0, 120).map(function (h) { return row(h[0], h[1]); }) });
+    } else {
+      var by = {}, order = [];
+      (all[lg] || []).forEach(function (t) { var g = t.group || 'Other'; if (!by[g]) { by[g] = []; order.push(g); } by[g].push(t); });
+      order.sort(function (a, b) { return a === 'Other' ? 1 : b === 'Other' ? -1 : a < b ? -1 : 1; });
+      groups = order.map(function (g) {
+        var st = S.standings[lg] || {}, pos = function (t) { return st[t.id] ? st[t.id]._pos : 1e6; };
+        var ts = by[g].slice().sort(function (a, b) { return pos(a) - pos(b) || (a.name < b.name ? -1 : 1); });
+        var parent = by[g][0].parent || '';
+        return { name: g, sub: parent.replace(/ Conference$/, '').replace('American Football', 'AFC').replace('National Football', 'NFC'), rCol: 'Rating',
+          teams: ts.map(function (t) { return row(lg, t); }) };
+      });
+    }
+    var L = SD.LEAGUES[lg];
+    return {
+      tabs: tabs, q: S.q, groups: groups, onQ: function (e) { self.setState({ q: e.target.value }); },
+      title: q ? 'Team search' : L.label + ' teams', statusTag: S.index ? 'LIVE DATA' : (S.err ? 'DATA UNAVAILABLE' : 'LOADING…'),
+      note: q ? '' : (all[lg] ? all[lg].length + ' teams. Grouped by ' + (lg.indexOf('ncaa') === 0 ? 'conference' : 'division') + '. Rating is the house model’s margin against an average team; blank until a team has played enough games.' : ''),
+      empty: !!S.index && !groups.length, emptyText: q ? 'No team matches “' + S.q + '”.' : 'No teams in this league’s index yet.',
+      updated: S.status && S.status.updated ? 'Updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>

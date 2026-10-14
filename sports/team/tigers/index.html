@@ -13,218 +13,242 @@
 <body>
 <div id="app"></div>
 <noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
-<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Game.dc.html":"/sports/game/football/","GameBaseball.dc.html":"/sports/game/baseball/","GameBasketball.dc.html":"/sports/game/basketball/","GameHockey.dc.html":"/sports/game/hockey/","Team.dc.html":"/sports/team/lions/","TeamTigers.dc.html":"/sports/team/tigers/","TeamPistons.dc.html":"/sports/team/pistons/","TeamRedWings.dc.html":"/sports/team/red-wings/","TeamMSUFootball.dc.html":"/sports/team/msu-football/","TeamMSUBasketball.dc.html":"/sports/team/msu-basketball/","TeamMSUHockey.dc.html":"/sports/team/msu-hockey/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Spots.dc.html":"/sports/spots/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["Sports Menu"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["TEAM <GO>"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES CT"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"class":"t-inv"},"c":["<HELP>"]}," for explanation."]},{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Jump to a section below \u00b7 arrows open game pages"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"teamSearch","class":"t-prompt"},"c":["NSKN \u203a"]},{"t":"input","a":{"id":"teamSearch","class":"t-input","type":"search","placeholder":"TEAM, PAGE CODE OR HOME","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["2) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["3) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Spots.dc.html"},"c":["4) Spots"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"LuckWatch.dc.html"},"c":["6) Luck watch"]},{"t":"a","a":{"class":"t-fkey","href":"Schedule.dc.html"},"c":["7) Schedule str."]},{"t":"a","a":{"class":"t-fkey","href":"TrackRecord.dc.html"},"c":["8) Track record"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["9) Method"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"nav","a":{"class":"t-sub2","aria-label":"Teams and games"},"c":[{"t":"span","a":{"class":"t-sl"},"c":["TEAMS"]},{"t":"a","a":{"class":"{{navCls.Team}}","href":"Team.dc.html"},"c":["LIONS"]},{"t":"a","a":{"class":"{{navCls.TeamTigers}}","href":"TeamTigers.dc.html"},"c":["TIGERS"]},{"t":"a","a":{"class":"{{navCls.TeamPistons}}","href":"TeamPistons.dc.html"},"c":["PISTONS"]},{"t":"a","a":{"class":"{{navCls.TeamRedWings}}","href":"TeamRedWings.dc.html"},"c":["RED WINGS"]},{"t":"a","a":{"class":"{{navCls.TeamMSUFootball}}","href":"TeamMSUFootball.dc.html"},"c":["MSU FB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUBasketball}}","href":"TeamMSUBasketball.dc.html"},"c":["MSU BB"]},{"t":"a","a":{"class":"{{navCls.TeamMSUHockey}}","href":"TeamMSUHockey.dc.html"},"c":["MSU HKY"]},{"t":"span","a":{"class":"t-sl"},"c":["GAMES"]},{"t":"a","a":{"class":"{{navCls.Game}}","href":"Game.dc.html"},"c":["NFL"]},{"t":"a","a":{"class":"{{navCls.GameBaseball}}","href":"GameBaseball.dc.html"},"c":["MLB"]},{"t":"a","a":{"class":"{{navCls.GameBasketball}}","href":"GameBasketball.dc.html"},"c":["NBA"]},{"t":"a","a":{"class":"{{navCls.GameHockey}}","href":"GameHockey.dc.html"},"c":["NHL"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Team Page (TEAM)"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["SAMPLE DATA \u00b7 [BRACKETS] = FILLS IN FROM THE FEED"]}]}]},{"t":"div","a":{"style":"{{t.bandStyle}}"},"c":[{"t":"div","a":{"style":"max-width: 1240px; margin: 0 auto; padding: 28px 24px 26px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: center; justify-content: space-between"},"c":[{"t":"div","a":{"style":"display: flex; gap: 20px; align-items: center; flex-wrap: wrap"},"c":[{"t":"span","a":{"role":"img","aria-label":"{{t.logoLabel}}","style":"{{t.badge}}"},"c":["{{t.abbr}}"]},{"t":"div","a":{},"c":[{"t":"nav","a":{"aria-label":"Breadcrumb","style":"font-size: 12.5px; color: #5CC7D1"},"c":[{"t":"a","a":{"href":"Main.dc.html","style":"color: #EAFDFF; text-decoration: none"},"c":["Sports"]}," \u203a {{t.lgShort}}"]},{"t":"h1","a":{"style":"margin: 2px 0 0; font-size: 34px; line-height: 1.1; font-weight: 600; color: #EAFDFF; letter-spacing: -0.01em"},"c":["{{t.name}}"]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-top: 8px"},"c":[{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: #EAFDFF"},"c":["{{t.rec}}"]},{"t":"span","a":{"style":"font-size: 14px; color: #66E6F2"},"c":["{{t.standing}}"]}]},{"t":"div","a":{"style":"font-size: 13px; color: #5CC7D1; margin-top: 4px"},"c":["{{t.lg}} \u00b7 {{t.coach}} \u00b7 {{t.venue}}"]}]}]},{"t":"div","a":{"style":"flex: 0 1 340px; min-width: 260px; padding: 16px 18px; border-radius: 0; background: rgba(0,0,0,0.45)"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; color: #5CC7D1"},"c":["NEXT UP"]},{"t":"div","a":{"style":"color: #EAFDFF; font-size: 15px; font-weight: 500; margin-top: 2px"},"c":["{{t.next}}"]},{"t":"sc-if","a":{"value":"{{t.hasNextHref}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"a","a":{"href":"{{t.nextHref}}","style":"display: inline-flex; align-items: center; height: 40px; margin-top: 8px; padding: 0 14px; border-radius: 0; background: #66E6F2; color: #000000; text-shadow: none; font-size: 13.5px; font-weight: 600; text-decoration: none"},"c":["{{t.nextLink}} \u2192"]}]}]}]}]},{"t":"main","a":{"style":"max-width: 1240px; margin: 0 auto; padding: 20px 24px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px"},"c":[{"t":"nav","a":{"aria-label":"On this page","style":"display: flex; flex-wrap: wrap; gap: 6px"},"c":[{"t":"a","a":{"href":"#profile","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["Power profile"]},{"t":"a","a":{"href":"#results","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["Results & schedule"]},{"t":"a","a":{"href":"#standings","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["Standings & outlook"]},{"t":"a","a":{"href":"#roster","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["Injuries & roster"]},{"t":"a","a":{"href":"#background","style":"display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 0; background: #041012; color: #EAFDFF; font-size: 13.5px; text-decoration: none"},"c":["Background"]}]},{"t":"section","a":{"class":"t-card","id":"profile","aria-label":"Power profile","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Power profile"]},{"t":"span","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["How good is this team, really?"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 14px"},"c":[{"t":"sc-for","a":{"list":"{{t.profile}}","as":"p","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["{{p.k}}"]},{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: {{p.color}}; margin-top: 2px"},"c":["{{p.v}}"]},{"t":"div","a":{"style":"font-size: 12.5px; color: #3C9AA3"},"c":["{{p.s}}"]}]}]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; align-items: stretch"},"c":[{"t":"div","a":{"style":"flex: 2 1 420px; min-width: 0; background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"span","a":{"style":"font-size: 14px; font-weight: 600; color: #C8F7FC"},"c":["Margin by game"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["Oldest \u2192 newest"]}]},{"t":"sc-if","a":{"value":"{{t.hasMargins}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"role":"img","aria-label":"{{t.marginAria}}","style":"display: flex; gap: 10px; align-items: stretch; height: 150px; margin-top: 12px"},"c":[{"t":"sc-for","a":{"list":"{{t.margins}}","as":"mg","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"style":"flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center"},"c":[{"t":"div","a":{"style":"flex: 1 1 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid #1B4A50"},"c":[{"t":"div","a":{"style":"{{mg.up}}"},"c":[]}]},{"t":"div","a":{"style":"flex: 1 1 0; width: 100%; display: flex; align-items: flex-start; justify-content: center"},"c":[{"t":"div","a":{"style":"{{mg.down}}"},"c":[]}]}]}]}]},{"t":"div","a":{"style":"display: flex; gap: 10px; margin-top: 6px"},"c":[{"t":"sc-for","a":{"list":"{{t.margins}}","as":"mg","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"style":"flex: 1 1 0; min-width: 0; text-align: center; font-family: 'IBM Plex Mono', monospace"},"c":[{"t":"span","a":{"style":"display: block; font-size: 12.5px; color: {{mg.color}}; font-weight: 600"},"c":["{{mg.label}}"]},{"t":"span","a":{"style":"display: block; font-size: 11px; color: #3C9AA3"},"c":["{{mg.opp}}"]}]}]}]}]},{"t":"sc-if","a":{"value":"{{t.noMargins}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"height: 150px; display: flex; align-items: center; justify-content: center; color: #3C9AA3; font-size: 13.5px; text-align: center; padding: 0 20px"},"c":["{{t.noMarginText}}"]}]}]},{"t":"div","a":{"style":"flex: 1 1 280px; min-width: 0; background: #061416; border-radius: 0; padding: 14px 16px"},"c":[{"t":"div","a":{"style":"font-size: 14px; font-weight: 600; color: #C8F7FC"},"c":["Splits"]},{"t":"sc-for","a":{"list":"{{t.splits}}","as":"sp","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"color: #5CC7D1"},"c":["{{sp.k}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: #C8F7FC"},"c":["{{sp.v}}"]}]}]},{"t":"div","a":{"style":"font-size: 14px; font-weight: 600; color: #C8F7FC; margin-top: 14px"},"c":["Schedule difficulty"]},{"t":"sc-for","a":{"list":"{{t.sos}}","as":"so","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"style":"padding: 8px 0"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 13px"},"c":[{"t":"span","a":{"style":"color: #5CC7D1"},"c":["{{so.k}}"]},{"t":"span","a":{"style":"font-family: 'IBM Plex Mono', monospace; color: #C8F7FC"},"c":["{{so.v}}"]}]},{"t":"div","a":{"aria-hidden":"true","style":"height: 6px; border-radius: 0; background: #0A1F22; margin-top: 6px; overflow: hidden"},"c":[{"t":"div","a":{"style":"{{so.bar}}"},"c":[]}]},{"t":"div","a":{"style":"font-size: 11.5px; color: #3C9AA3; margin-top: 3px"},"c":["{{so.n}}"]}]}]}]}]}]},{"t":"div","a":{"id":"results","style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","aria-label":"Recent results","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.recentTitle}}"]},{"t":"sc-for","a":{"list":"{{t.recent}}","as":"r","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"style":"display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"width: 48px; flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #3C9AA3"},"c":["{{r.d}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"span","a":{"style":"display: block; color: #C8F7FC"},"c":["{{r.opp}}"]},{"t":"sc-if","a":{"value":"{{r.hasNote}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"style":"display: block; font-size: 12px; color: #3C9AA3"},"c":["{{r.note}}"]}]}]},{"t":"span","a":{"style":"{{r.resStyle}}"},"c":["{{r.res}}"]},{"t":"span","a":{"style":"width: 66px; flex: none; text-align: right; font-family: 'IBM Plex Mono', monospace; color: #C8F7FC"},"c":["{{r.score}}"]},{"t":"sc-if","a":{"value":"{{r.hasHref}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"a","a":{"href":"{{r.href}}","aria-label":"Game page","style":"flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 0; background: #0C2A2E; color: #EAFDFF; text-decoration: none"},"c":["\u2192"]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"Schedule","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.upTitle}}"]}]},{"t":"sc-for","a":{"list":"{{t.upcoming}}","as":"u","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"style":"display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"width: 48px; flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #3C9AA3"},"c":["{{u.d}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"span","a":{"style":"display: block; color: #C8F7FC"},"c":["{{u.opp}}"]},{"t":"sc-if","a":{"value":"{{u.hasNote}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"style":"display: block; font-size: 12px; color: #3C9AA3"},"c":["{{u.note}}"]}]}]},{"t":"sc-if","a":{"value":"{{u.hasOppRec}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"style":"flex: none; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #4FB8C2"},"c":["{{u.oppRec}}"]}]},{"t":"span","a":{"style":"flex: none; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #C8F7FC; min-width: 64px"},"c":["{{u.time}}"]},{"t":"sc-if","a":{"value":"{{u.hasHref}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"a","a":{"href":"{{u.href}}","aria-label":"Game preview","style":"flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 0; background: #0C2A2E; color: #EAFDFF; text-decoration: none"},"c":["\u2192"]}]}]}]}]}]},{"t":"div","a":{"id":"standings","style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","aria-label":"Standings","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.stTitle}}"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["{{t.stNote}}"]}]},{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"color: #3C9AA3; font-size: 12px"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Team"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 8px"},"c":["{{t.stCol1}}"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 8px"},"c":["{{t.stCol2}}"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{t.standings}}","as":"s","hint-placeholder-count":"5"},"c":[{"t":"tr","a":{"style":"{{s.rowStyle}}"},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; font-weight: 500; padding: 10px 8px; border-top: 1px solid #0A1F22"},"c":["{{s.n}}"]},{"t":"td","a":{"style":"text-align: right; padding: 10px 8px; border-top: 1px solid #0A1F22; font-family: 'IBM Plex Mono', monospace"},"c":["{{s.a}}"]},{"t":"td","a":{"style":"text-align: right; padding: 10px 8px; border-top: 1px solid #0A1F22; font-family: 'IBM Plex Mono', monospace; color: #4FB8C2"},"c":["{{s.b}}"]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"Outlook","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Outlook"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["Model probabilities \u00b7 [PROVIDER]"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 12px"},"c":[{"t":"sc-for","a":{"list":"{{t.odds}}","as":"o","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 10px 12px"},"c":[{"t":"div","a":{"style":"font-size: 12px; color: #4FB8C2"},"c":["{{o.k}}"]},{"t":"div","a":{"style":"font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; color: #C8F7FC"},"c":["{{o.v}}"]}]}]}]},{"t":"h3","a":{"style":"margin: 16px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4FB8C2"},"c":["THE HONEST TAKE"]},{"t":"p","a":{"style":"margin: 0; font-size: 14.5px; line-height: 1.65; color: #66E6F2"},"c":["{{t.outlook}}"]}]}]},{"t":"div","a":{"id":"roster","style":"display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start"},"c":[{"t":"section","a":{"class":"t-card","aria-label":"Injuries","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.injTitle}}"]},{"t":"span","a":{"style":"font-size: 12px; color: #3C9AA3"},"c":["Via [INJURY FEED]"]}]},{"t":"table","a":{"style":"border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"style":"color: #3C9AA3; font-size: 12px"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 0"},"c":["Player"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Injury"]},{"t":"th","a":{"scope":"col","style":"text-align: left; font-weight: 500; padding: 6px 8px"},"c":["Status"]},{"t":"th","a":{"scope":"col","style":"text-align: right; font-weight: 500; padding: 6px 0"},"c":["Impact"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{t.injuries}}","as":"ij","hint-placeholder-count":"3"},"c":[{"t":"tr","a":{},"c":[{"t":"td","a":{"style":"padding: 10px 0; border-top: 1px solid #0A1F22; color: #C8F7FC"},"c":["[PLAYER] ",{"t":"span","a":{"style":"color: #3C9AA3"},"c":["\u00b7 [POS]"]}]},{"t":"td","a":{"style":"padding: 10px 8px; border-top: 1px solid #0A1F22"},"c":["[INJURY]"]},{"t":"td","a":{"style":"padding: 10px 8px; border-top: 1px solid #0A1F22; color: #FF8A80"},"c":["[STATUS]"]},{"t":"td","a":{"style":"padding: 10px 0; border-top: 1px solid #0A1F22; text-align: right; font-family: 'IBM Plex Mono', monospace"},"c":["{{ij.s}}"]}]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"Stat leaders","style":"flex: 1 1 400px; min-width: 0; background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.ldTitle}}"]},{"t":"sc-for","a":{"list":"{{t.leaders}}","as":"l","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"width: 110px; flex: none; font-size: 12.5px; color: #4FB8C2"},"c":["{{l.k}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0; color: #C8F7FC"},"c":["{{l.p}}"]},{"t":"span","a":{"style":"flex: none; font-family: 'IBM Plex Mono', monospace; color: #66E6F2"},"c":["{{l.v}}"]}]}]}]}]},{"t":"section","a":{"class":"t-card","aria-label":"{{t.keyTitle}}","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline"},"c":[{"t":"h2","a":{"style":"margin: 0 0 6px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["{{t.keyTitle}}"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 24px"},"c":[{"t":"sc-for","a":{"list":"{{t.keys}}","as":"k","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0A1F22; font-size: 14px"},"c":[{"t":"span","a":{"style":"color: #C8F7FC"},"c":["{{k.k}}"]},{"t":"span","a":{"style":"color: #4FB8C2; text-align: right"},"c":["{{k.v}}"]}]}]}]}]},{"t":"section","a":{"class":"t-card","id":"background","aria-label":"Background","style":"background: #041012; border-radius: 0; padding: 20px"},"c":[{"t":"h2","a":{"style":"margin: 0 0 10px; font-size: 17px; font-weight: 600; color: #C8F7FC"},"c":["Background"]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px"},"c":[{"t":"sc-for","a":{"list":"{{t.bg}}","as":"b","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"background: #061416; border-radius: 0; padding: 12px 14px"},"c":[{"t":"div","a":{"style":"font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; color: #3C9AA3; text-transform: uppercase"},"c":["{{b.k}}"]},{"t":"div","a":{"style":"color: #C8F7FC; font-size: 14px; margin-top: 2px"},"c":["{{b.v}}"]}]}]}]}]}]},{"t":"footer","a":{"style":"border-top: 1px solid #12363B; background: #010405"},"c":[{"t":"div","a":{"style":"max-width: 1240px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #3C9AA3; font-size: 12.5px"},"c":[{"t":"span","a":{},"c":["Scores, standings and schedules via [DATA PROVIDER] \u00b7 Logos via [LOGO PROVIDER] \u00b7 Injuries via [INJURY FEED] \u00b7 All times Central"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
+<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Teams.dc.html":"/sports/teams/","Team.dc.html":"/sports/team/","Game.dc.html":"/sports/game/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Spots.dc.html":"/sports/spots/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["Sports Menu"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["TEAM <GO>"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES CT"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"class":"t-inv"},"c":["<HELP>"]}," for explanation."]},{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Type any team name above \u00b7 every team and game links through"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"teamSearch","class":"t-prompt"},"c":["NSKN \u203a"]},{"t":"input","a":{"id":"teamSearch","class":"t-input","type":"search","placeholder":"ANY TEAM, PAGE CODE OR HOME","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey","href":"Teams.dc.html"},"c":["2) Teams"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["3) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["4) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["6) Method"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"nav","a":{"class":"t-sub2","aria-label":"Favorite teams and leagues"},"c":[{"t":"span","a":{"class":"t-sl"},"c":["MY TEAMS"]},{"t":"sc-for","a":{"list":"{{favs}}","as":"f","hint-placeholder-count":"7"},"c":[{"t":"a","a":{"class":"{{f.cls}}","href":"{{f.href}}"},"c":["{{f.label}}"]}]},{"t":"span","a":{"class":"t-sl"},"c":["ALL TEAMS"]},{"t":"sc-for","a":{"list":"{{lgLinks}}","as":"f","hint-placeholder-count":"7"},"c":[{"t":"a","a":{"class":"{{f.cls}}","href":"{{f.href}}"},"c":["{{f.label}}"]}]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Team Page (TEAM)"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["{{statusTag}}"]}]}]},{"t":"sc-if","a":{"value":"{{missing}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"main","a":{"class":"s-wrap"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{missingText}} ",{"t":"a","a":{"href":"Teams.dc.html"},"c":["Browse all teams \u2192"]}]}]}]},{"t":"sc-if","a":{"value":"{{ok}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"s-band","style":"{{t.bandStyle}}"},"c":[{"t":"div","a":{"class":"s-hero"},"c":[{"t":"div","a":{"style":"display: flex; gap: 18px; align-items: center; min-width: 0"},"c":[{"t":"sc-if","a":{"value":"{{t.logo}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"img","a":{"class":"s-hero-logo","src":"{{t.logo}}","alt":"{{t.logoAlt}}"},"c":[]}]},{"t":"div","a":{"style":"min-width: 0"},"c":[{"t":"nav","a":{"aria-label":"Breadcrumb","style":"font-size: 12.5px","class":"dim"},"c":[{"t":"a","a":{"href":"Main.dc.html"},"c":["Sports"]}," \u203a ",{"t":"a","a":{"href":"{{t.lgHref}}"},"c":["{{t.lgLabel}}"]},{"t":"sc-if","a":{"value":"{{t.group}}","hint-placeholder-val":"{{true}}"},"c":[" \u203a {{t.group}}"]}]},{"t":"h1","a":{"style":"margin: 4px 0 0"},"c":["{{t.name}}"]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 8px"},"c":[{"t":"span","a":{"class":"big","style":"font-size: 34px; color: var(--wh)"},"c":["{{t.record}}"]},{"t":"span","a":{"class":"hi"},"c":["{{t.standing}}"]}]},{"t":"sc-if","a":{"value":"{{t.rankLine}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"dim","style":"margin-top: 2px"},"c":["{{t.rankLine}}"]}]}]}]},{"t":"div","a":{"class":"s-next"},"c":[{"t":"div","a":{"class":"t-th"},"c":["{{next.title}}"]},{"t":"div","a":{"style":"color: var(--wh); font-size: 15px; margin-top: 4px"},"c":["{{next.line}}"]},{"t":"sc-if","a":{"value":"{{next.sub}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 12.5px"},"c":["{{next.sub}}"]}]},{"t":"sc-if","a":{"value":"{{next.prob}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"hi","style":"font-size: 13px; margin-top: 4px"},"c":["{{next.prob}}"]}]},{"t":"sc-if","a":{"value":"{{next.href}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"a","a":{"class":"s-btn","style":"margin-top: 10px","href":"{{next.href}}"},"c":["{{next.cta}} \u2192"]}]}]}]}]},{"t":"main","a":{"class":"s-wrap"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Profile"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["1)"]},"Profile"]},{"t":"span","a":{"class":"dim"},"c":["{{profileNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"class":"s-grid"},"c":[{"t":"sc-for","a":{"list":"{{profile}}","as":"p","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"class":"s-stat"},"c":[{"t":"div","a":{"class":"k"},"c":["{{p.k}}"]},{"t":"div","a":{"class":"v","style":"{{p.style}}"},"c":["{{p.v}}"]},{"t":"div","a":{"class":"s"},"c":["{{p.s}}"]}]}]}]},{"t":"sc-if","a":{"value":"{{hasMargins}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"style":"margin-top: 14px"},"c":[{"t":"div","a":{"class":"t-th","style":"display: flex; justify-content: space-between"},"c":[{"t":"span","a":{},"c":["Margin by game"]},{"t":"span","a":{},"c":["oldest \u2192 newest"]}]},{"t":"div","a":{"role":"img","aria-label":"{{marginAria}}","style":"display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px"},"c":[{"t":"sc-for","a":{"list":"{{margins}}","as":"mg","hint-placeholder-count":"8"},"c":[{"t":"a","a":{"href":"{{mg.href}}","title":"{{mg.title}}","style":"flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column"},"c":[{"t":"span","a":{"style":"flex: 1 1 0; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line)"},"c":[{"t":"span","a":{"style":"{{mg.up}}"},"c":[]}]},{"t":"span","a":{"style":"flex: 1 1 0; display: flex; align-items: flex-start; justify-content: center"},"c":[{"t":"span","a":{"style":"{{mg.down}}"},"c":[]}]}]}]}]}]}]}]}]},{"t":"div","a":{"class":"s-cols"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Results"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["2)"]},"Results"]},{"t":"span","a":{"class":"dim"},"c":["{{resNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{noResults}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{noResultsText}}"]}]},{"t":"sc-for","a":{"list":"{{results}}","as":"g","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"class":"s-game"},"c":[{"t":"span","a":{"class":"d"},"c":["{{g.d}}"]},{"t":"span","a":{"class":"o"},"c":[{"t":"span","a":{"class":"dim"},"c":["{{g.at}}"]}," ",{"t":"a","a":{"href":"{{g.oppHref}}"},"c":["{{g.opp}}"]},{"t":"sc-if","a":{"value":"{{g.note}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"class":"n"},"c":["{{g.note}}"]}]}]},{"t":"span","a":{"class":"{{g.resCls}}"},"c":["{{g.res}}"]},{"t":"span","a":{"class":"r","style":"min-width: 62px"},"c":["{{g.score}}"]},{"t":"a","a":{"class":"s-go","href":"{{g.href}}","aria-label":"{{g.aria}}"},"c":["\u2192"]}]}]},{"t":"sc-if","a":{"value":"{{moreResults}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"button","a":{"type":"button","class":"s-tab","style":"margin-top: 10px","onclick":"{{toggleRes}}"},"c":["{{moreResultsLabel}}"]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Schedule"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["3)"]},"Schedule"]},{"t":"span","a":{"class":"dim"},"c":["{{upNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{noUpcoming}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{noUpcomingText}}"]}]},{"t":"sc-for","a":{"list":"{{upcoming}}","as":"g","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"class":"s-game"},"c":[{"t":"span","a":{"class":"d"},"c":["{{g.d}}"]},{"t":"span","a":{"class":"o"},"c":[{"t":"span","a":{"class":"dim"},"c":["{{g.at}}"]}," ",{"t":"a","a":{"href":"{{g.oppHref}}"},"c":["{{g.opp}}"]},{"t":"span","a":{"class":"n"},"c":["{{g.note}}"]}]},{"t":"span","a":{"class":"r","style":"min-width: 62px"},"c":["{{g.prob}}"]},{"t":"a","a":{"class":"s-go","href":"{{g.href}}","aria-label":"{{g.aria}}"},"c":["\u2192"]}]}]},{"t":"sc-if","a":{"value":"{{moreUpcoming}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"button","a":{"type":"button","class":"s-tab","style":"margin-top: 10px","onclick":"{{toggleUp}}"},"c":["{{moreUpcomingLabel}}"]}]}]}]}]},{"t":"div","a":{"class":"s-cols"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Standings"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["4)"]},"{{st.title}}"]},{"t":"a","a":{"class":"dim","href":"{{st.allHref}}"},"c":["All {{t.lgLabel}} teams \u2192"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{st.none}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{st.noneText}}"]}]},{"t":"sc-if","a":{"value":"{{st.has}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"s-scroll"},"c":[{"t":"table","a":{"class":"s-tbl"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"col"},"c":["Team"]},{"t":"sc-for","a":{"list":"{{st.cols}}","as":"c","hint-placeholder-count":"5"},"c":[{"t":"th","a":{"scope":"col"},"c":["{{c}}"]}]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{st.rows}}","as":"r","hint-placeholder-count":"5"},"c":[{"t":"tr","a":{"class":"{{r.cls}}"},"c":[{"t":"th","a":{"scope":"row","class":"l"},"c":[{"t":"a","a":{"class":"s-team","href":"{{r.href}}"},"c":[{"t":"img","a":{"class":"s-logo","src":"{{r.logo}}","alt":"","loading":"lazy"},"c":[]},"{{r.name}}"]}]},{"t":"sc-for","a":{"list":"{{r.cells}}","as":"c","hint-placeholder-count":"5"},"c":[{"t":"td","a":{},"c":["{{c}}"]}]}]}]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Outlook"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["5)"]},"Outlook"]},{"t":"span","a":{"class":"dim"},"c":["House model"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{hasOdds}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"s-grid"},"c":[{"t":"sc-for","a":{"list":"{{odds}}","as":"o","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"class":"s-stat"},"c":[{"t":"div","a":{"class":"k"},"c":["{{o.k}}"]},{"t":"div","a":{"class":"v"},"c":["{{o.v}}"]},{"t":"div","a":{"class":"s"},"c":["{{o.s}}"]}]}]}]}]},{"t":"p","a":{"class":"s-note","style":"margin: 12px 0 0"},"c":["{{outlookNote}}"]},{"t":"p","a":{"class":"s-note","style":"margin: 8px 0 0"},"c":[{"t":"a","a":{"href":"Methodology.dc.html"},"c":["How the house model works \u2192"]}]}]}]}]},{"t":"div","a":{"class":"s-cols"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Injuries"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["6)"]},"Injury report"]},{"t":"span","a":{"class":"dim"},"c":["{{injNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{noInj}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{noInjText}}"]}]},{"t":"sc-if","a":{"value":"{{hasInj}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"s-scroll"},"c":[{"t":"table","a":{"class":"s-tbl"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"col"},"c":["Player"]},{"t":"th","a":{"scope":"col","class":"l"},"c":["Injury"]},{"t":"th","a":{"scope":"col","class":"l"},"c":["Status"]},{"t":"th","a":{"scope":"col"},"c":["Est. return"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{inj}}","as":"i","hint-placeholder-count":"4"},"c":[{"t":"tr","a":{},"c":[{"t":"td","a":{},"c":["{{i.name}} ",{"t":"span","a":{"class":"dim"},"c":["{{i.pos}}"]}]},{"t":"td","a":{"class":"l"},"c":["{{i.part}}"]},{"t":"td","a":{"class":"l","style":"{{i.style}}"},"c":["{{i.status}}"]},{"t":"td","a":{},"c":["{{i.ret}}"]}]}]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Leaders"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["7)"]},"{{ldTitle}}"]},{"t":"span","a":{"class":"dim"},"c":["{{ldNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{noLeaders}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{noLeadersText}}"]}]},{"t":"sc-for","a":{"list":"{{leaders}}","as":"l","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"class":"s-game"},"c":[{"t":"span","a":{"class":"dim","style":"width: 140px; flex: none; font-size: 12px"},"c":["{{l.k}}"]},{"t":"span","a":{"class":"o hi"},"c":["{{l.p}} ",{"t":"span","a":{"class":"dim"},"c":["{{l.pos}}"]}]},{"t":"span","a":{"class":"r"},"c":["{{l.v}}"]}]}]}]}]}]},{"t":"sc-if","a":{"value":"{{hasAbout}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"About"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":[{"t":"span","a":{"class":"t-pn"},"c":["8)"]},"About"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"class":"s-grid"},"c":[{"t":"sc-for","a":{"list":"{{about}}","as":"b","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"class":"s-stat"},"c":[{"t":"div","a":{"class":"k"},"c":["{{b.k}}"]},{"t":"div","a":{"class":"hi","style":"margin-top: 2px"},"c":["{{b.v}}"]}]}]}]}]}]}]}]}]},{"t":"footer","a":{"class":"t-foot"},"c":[{"t":"div","a":{"style":"max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px","class":"dim"},"c":[{"t":"span","a":{},"c":["Schedules, scores, standings, injuries and leaders: ESPN public API \u00b7 Ratings, projections and odds: house model \u00b7 {{updated}} \u00b7 All times Central"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
 <script src="/assets/dc-runtime.js"></script>
+<script src="/assets/sports-data.js"></script>
 <script>
 class Component extends DCLogic {
-  renderVals() {
-    var NAVON = '' + ({ lions: 'Team', tigers: 'TeamTigers', pistons: 'TeamPistons', redwings: 'TeamRedWings', msufb: 'TeamMSUFootball', msubb: 'TeamMSUBasketball', msuhky: 'TeamMSUHockey' })[this.props.teamId || 'lions'] + '';
-    var navCls = {};
-    ['Team', 'TeamTigers', 'TeamPistons', 'TeamRedWings', 'TeamMSUFootball', 'TeamMSUBasketball', 'TeamMSUHockey', 'Game', 'GameBaseball', 'GameBasketball', 'GameHockey'].forEach(function (n) { navCls[n] = 't-chipl' + (n === NAVON ? ' is-on' : ''); });
-    var P = '[—]';
-    var TEAMS = {
-      lions: {
-        abbr: 'DET', name: 'Detroit Lions', c1: '#0076B6', c2: '#EAFDFF', lgShort: 'NFL', lg: 'NFL · NFC North', rec: '3–2', standing: '3rd in NFC North · 2 games behind Minnesota',
-        coach: 'Coach Dan Campbell', venue: 'Ford Field',
-        next: 'Week 7 bye, then Sun 10/25 vs Green Bay · 3:25 PM CT', nextHref: 'Game.dc.html', nextLink: 'Game preview',
-        profile: [['Points per game', '32.8', 'Lg ≈ 23 · 31+ in four of five', 'pos'], ['Net yards per play', '+0.30', 'Offense 5.93 · defense allows 5.63', 'flat'], ['Pythagorean wins', '2.8', '3 actual: about where they should be', 'flat'], ['Turnover margin', '+4', '1 giveaway in 5 games will regress', 'pos']],
-        margins: [['NO', 1], ['BUF', -10], ['NYJ', 7], ['CAR', -6], ['ARI', 24]],
-        splits: [['Home', '2–0'], ['Road', '1–2'], ['One-score games', '2–1'], ['vs. teams .500 or better', '0–2']],
-        sos: [['Opponents so far', '.417', '10–14 combined · softest slate in the division', 0.417], ['Remaining opponents', '.525', '31–28 combined · two vs. Minnesota', 0.525]],
-        recentTitle: 'Recent results',
-        recent: [['10/11', 'at Arizona', 'W', '45–21', 'Game.dc.html?sport=football&mode=1', ''], ['10/4', 'at Carolina', 'L', '26–32', '', 'Sunday Night Football'], ['9/27', 'vs NY Jets', 'W', '31–24', '', ''], ['9/17', 'at Buffalo', 'L', '31–41', '', 'Thursday Night Football'], ['9/13', 'vs New Orleans', 'W', '31–30', '', 'Overtime']],
-        upTitle: 'Upcoming',
-        upcoming: [['10/25', 'vs Green Bay', '3:25 PM', 'Game.dc.html', 'After the Week 7 bye', '3–2'], ['11/1', 'vs Minnesota', '12:00 PM', '', '', '5–0'], ['11/8', 'at Miami', '12:00 PM', '', '', '0–5'], ['11/15', 'vs New England', '8:30 AM', '', '', '3–2'], ['11/22', 'vs Tampa Bay', '12:00 PM', '', '', '1–4'], ['11/26', 'vs Chicago', '12:00 PM', '', 'Thanksgiving', '3–2']],
-        stTitle: 'NFC North', stNote: 'Current', stCol1: 'W–L', stCol2: 'Pct',
-        standings: [['Minnesota Vikings', '5–0', '1.000'], ['Green Bay Packers', '3–2', '.600'], ['Detroit Lions', '3–2', '.600', true], ['Chicago Bears', '3–2', '.600']],
-        odds: [['Make playoffs', '[XX%]'], ['Win NFC North', '[XX%]'], ['No. 1 seed', '[XX%]']],
-        outlook: 'The offense is the real thing: 32.8 points a game and 31 or more in four of five. The defense isn’t. It allows 29.6 a game and has given up 30-plus three times. The scoreboard also flatters them: +16 in points but only +0.30 yards per play, with one giveaway all year. They’re 0–2 against teams at .500 or better, and the schedule gets harder from here (.525). Green Bay and Minnesota at home after the bye decide whether this is a division contender or a wild-card team.',
-        injTitle: 'Injury report', injuries: ['[±X.X pts]', '[±X.X pts]', '[±X.X pts]'],
-        ldTitle: 'Season leaders', leaders: [['Passing', 'Jared Goff', '[YDS · TD · INT]'], ['Rushing', 'Jahmyr Gibbs', '[YDS · TD]'], ['Receiving', 'Amon-Ra St. Brown', '[REC · YDS · TD]'], ['Sacks', '[PLAYER]', '[SACKS]']],
-        keyTitle: 'Key players',
-        keys: [['Jared Goff', 'QB · 3 TD, 0 INT vs ARI'], ['Jahmyr Gibbs', 'RB · rushing TDs in four of five games'], ['Amon-Ra St. Brown', 'WR · TDs vs NO, NYJ and BUF'], ['Jameson Williams', 'WR · 2 TD vs ARI'], ['Sam LaPorta', 'TE · TDs vs BUF, CAR and ARI'], ['Jake Bates', 'K · 4/4 FG at CAR, long 54']],
-        bg: [['Founded', '1930 as the Portsmouth Spartans · Detroit since 1934'], ['NFL championships', '4 (1935, 1952, 1953, 1957)'], ['Super Bowl appearances', 'None'], ['Recent division titles', 'NFC North 2023, 2024'], ['Stadium', 'Ford Field (opened 2002) · indoors'], ['Owner', 'Sheila Ford Hamp']]
-      },
-      tigers: {
-        abbr: 'DET', name: 'Detroit Tigers', c1: '#0C2340', c2: '#FA4616', lgShort: 'MLB', lg: 'MLB · AL Central', rec: '76–86', standing: '4th in AL Central · 9 games back · Eliminated',
-        coach: 'Manager A.J. Hinch', venue: 'Comerica Park',
-        next: 'Offseason · Opening Day 2027 [DATE]', nextHref: '', nextLink: '',
-        profile: [['Final win %', '.469', '11th of 15 in the AL', 'neg'], ['Games behind', '9.0', 'Cleveland won the Central at 85–77', 'neg'], ['Run differential', '[±XX]', 'The best read on true quality', 'flat'], ['Pythagorean W–L', '[XX–XX]', 'Expected record from runs', 'flat']],
-        margins: [], noMarginText: 'Season complete. Per-game run margins load from the provider.',
-        splits: [['Home', '[W–L]'], ['Road', '[W–L]'], ['One-run games', '[W–L]'], ['vs. AL Central', '[W–L]']],
-        sos: [['2026 opponents', P, '[COMBINED W–L]', 0], ['2027 projected', P, '[COMBINED W–L]', 0]],
-        recentTitle: 'Final games of 2026',
-        recent: [['[DATE]', '[OPPONENT]', '', '[SCORE]', '', ''], ['[DATE]', '[OPPONENT]', '', '[SCORE]', '', ''], ['[DATE]', '[OPPONENT]', '', '[SCORE]', '', '']],
-        upTitle: 'Offseason calendar',
-        upcoming: [['Now', 'World Series', '[DATES]', '', 'Tigers eliminated', ''], ['[DATE]', 'Free agency opens', '', '', '', ''], ['Dec', 'Winter Meetings', '[DATES]', '', '', ''], ['Feb', 'Pitchers & catchers report', '[DATE]', '', '', ''], ['Mar', 'Opening Day 2027', '[DATE]', '', '', '']],
-        stTitle: 'AL Central', stNote: '2026 final', stCol1: 'W–L', stCol2: 'GB',
-        standings: [['Cleveland Guardians', '85–77', '—'], ['Chicago White Sox', '84–78', '1.0'], ['Minnesota Twins', '77–85', '8.0'], ['Detroit Tigers', '76–86', '9.0', true], ['Kansas City Royals', '69–93', '16.0']],
-        odds: [['2026 postseason', 'Eliminated'], ['2027 projected wins', '[XX]'], ['2027 playoff odds', '[XX%]']],
-        outlook: 'A clear step back. 76–86 was only good for fourth in a weak Central, nine games behind a Cleveland team that won the division with just 85 wins. After postseason trips in 2024 and 2025, this offseason has to show whether 2026 was a blip or the window closing.',
-        injTitle: 'Injured list', injuries: ['[±X.X WAR]', '[±X.X WAR]', '[±X.X WAR]'],
-        ldTitle: '2026 leaders', leaders: [['Batting avg', '[PLAYER]', '[.XXX]'], ['Home runs', '[PLAYER]', '[HR]'], ['OPS', '[PLAYER]', '[.XXX]'], ['ERA', '[PLAYER]', '[ERA]'], ['Strikeouts', '[PLAYER]', '[K]'], ['WAR', '[PLAYER]', '[X.X]']],
-        keyTitle: 'Offseason questions',
-        keys: [['Free agents', '[PLAYERS]'], ['Arbitration-eligible', '[PLAYERS]'], ['Top prospects', '[PLAYERS]'], ['Payroll room', '[$XXM]']],
-        bg: [['Founded', '1901 · American League charter member'], ['World Series titles', '4 (1935, 1945, 1968, 1984)'], ['AL pennants', '11 (most recent 2012)'], ['Ballpark', 'Comerica Park (opened 2000)']]
-      },
-      pistons: {
-        abbr: 'DET', name: 'Detroit Pistons', c1: '#C8102E', c2: '#EAFDFF', lgShort: 'NBA', lg: 'NBA · East · Central', rec: '0–0', standing: 'Last season: 60 wins, No. 1 seed in the East',
-        coach: 'Coach J.B. Bickerstaff', venue: 'Little Caesars Arena',
-        next: 'Tue 10/20 vs Boston · 2:00 PM CT · Opening night', nextHref: 'GameBasketball.dc.html', nextLink: 'Game preview',
-        profile: [['2025–26 wins', '60', 'First 60-win season in two decades', 'pos'], ['Playoff exit', 'R2 · G7', 'Lost at home to Cleveland', 'neg'], ['Net rating (2025–26)', '[+X.X]', 'Points per 100 possessions', 'flat'], ['Returning minutes', '[XX%]', 'Stewart, T. Harris, LeVert gone', 'flat']],
-        margins: [], noMarginText: 'Season tips Tuesday, Oct 20. Game-by-game margins fill in from here.',
-        splits: [['Home (2025–26)', '[W–L]'], ['Road (2025–26)', '[W–L]'], ['Clutch games', '[W–L]'], ['vs. East top 6', '[W–L]']],
-        sos: [['First 15 games', P, 'Opponents’ 2025–26 win %', 0], ['Full season', P, 'Projected', 0]],
-        recentTitle: 'Recent results',
-        recent: [['May', 'vs Cleveland', 'L', '[SCORE]', '', 'East semifinals, Game 7'], ['[DATE]', '[OPPONENT]', '', '[SCORE]', '', 'Preseason'], ['[DATE]', '[OPPONENT]', '', '[SCORE]', '', 'Preseason']],
-        upTitle: 'Upcoming',
-        upcoming: [['10/20', 'vs Boston', '2:00 PM', 'GameBasketball.dc.html', 'Opening night', ''], ['10/23', 'at Miami', '7:00 PM', '', '', ''], ['10/25', 'at Philadelphia', '6:30 PM', '', '', ''], ['10/27', 'at New York', '7:00 PM', '', '', ''], ['10/28', 'vs Charlotte', '6:00 PM', '', 'Back-to-back', ''], ['10/30', 'at Brooklyn', '6:30 PM', '', '', '']],
-        stTitle: 'Central Division', stNote: '2026–27 · preseason', stCol1: 'W–L', stCol2: 'GB',
-        standings: [['Detroit Pistons', '0–0', '—', true], ['Cleveland Cavaliers', '0–0', '—'], ['Milwaukee Bucks', '0–0', '—'], ['Indiana Pacers', '0–0', '—'], ['Chicago Bulls', '0–0', '—']],
-        odds: [['Make playoffs', '[XX%]'], ['Win Central', '[XX%]'], ['Projected wins', '[XX]']],
-        outlook: 'The bar is a 60-win season and a No. 1 seed, and that team still lost a Game 7 at home in the second round. Since then, Isaiah Stewart, Tobias Harris and Caris LeVert are gone. Cade Cunningham and Ausar Thompson give Detroit a high floor, but outside projections expect some regression. Matching 60 wins would be a surprise. Anything short of the conference finals will feel like a step back. Four of the first six are on the road, including a back-to-back on 10/27–28.',
-        injTitle: 'Injury report', injuries: ['[±X.X net]', '[±X.X net]', '[±X.X net]'],
-        ldTitle: 'Season leaders', leaders: [['Points', 'Cade Cunningham', '[PPG]'], ['Rebounds', '[PLAYER]', '[RPG]'], ['Assists', 'Cade Cunningham', '[APG]'], ['Steals', 'Ausar Thompson', '[SPG]']],
-        keyTitle: 'Offseason moves',
-        keys: [['John Collins', 'Signed · 3 years'], ['Isaiah Joe', 'Acquired from OKC for picks'], ['Taurean Prince', 'Acquired in LeVert trade (MIL)'], ['Gary Harris', 'Acquired in LeVert trade (MIL)'], ['Kevin Huerter', 'Re-signed · 3 years, $27M'], ['Ausar Thompson', 'Extension reported: 5 years, $155M'], ['Isaiah Stewart', 'Departed'], ['Tobias Harris', 'Departed'], ['Caris LeVert', 'Traded to Milwaukee']],
-        bg: [['Founded', '1941 as the Fort Wayne Zollner Pistons · Detroit since 1957'], ['NBA titles', '3 (1989, 1990, 2004)'], ['Arena', 'Little Caesars Arena (since 2017)'], ['Franchise cornerstone', 'Cade Cunningham']]
-      },
-      redwings: {
-        abbr: 'DET', name: 'Detroit Red Wings', c1: '#CE1126', c2: '#EAFDFF', lgShort: 'NHL', lg: 'NHL · East · Atlantic', rec: '1–3–1', standing: '8th in the Atlantic · 3 points',
-        coach: 'Coach Todd McLellan', venue: 'Little Caesars Arena',
-        next: 'Tonight vs New Jersey · 5:00 PM CT', nextHref: 'GameHockey.dc.html', nextLink: 'Game preview',
-        profile: [['Goal differential', '−4', '10 for · 14 against', 'neg'], ['Pythagorean win %', '.338', 'GF² ÷ (GF² + GA²)', 'neg'], ['Opponents’ win %', '.704', 'Hardest early slate in the Atlantic', 'flat'], ['One-goal games', '0–2', 'Includes the shootout loss', 'neg']],
-        margins: [['NYR', -2], ['WPG', -1], ['OTT', 2], ['SEA', -3], ['MTL', -0.5, 'SO']],
-        splits: [['Home', '1–3'], ['Road', '0–0–1'], ['vs. teams .500 or better', '1–3–1'], ['Times shut out', '2']],
-        sos: [['Opponents so far', '.704', '19–8 combined', 0.704], ['Next six opponents', '.333', '11–22 combined · the schedule eases', 0.333]],
-        recentTitle: 'Recent results',
-        recent: [['10/10', 'at Montreal', 'L', '0–1', 'GameHockey.dc.html?sport=hockey&mode=1', 'Shootout'], ['10/9', 'vs Seattle', 'L', '3–6', '', ''], ['10/6', 'vs Ottawa', 'W', '5–3', '', ''], ['10/4', 'vs Winnipeg', 'L', '2–3', '', ''], ['10/2', 'vs NY Rangers', 'L', '0–2', '', 'Season opener']],
-        upTitle: 'Upcoming',
-        upcoming: [['10/13', 'vs New Jersey', '5:00 PM', 'GameHockey.dc.html', 'Tonight · NJ on a back-to-back', '2–3'], ['10/15', 'vs Philadelphia', '6:30 PM', '', '', '0–5'], ['10/17', 'vs San Jose', '6:00 PM', '', '', '3–2'], ['10/20', 'at Seattle', '8:40 PM', '', 'Western road trip begins', '4–2'], ['10/22', 'at Vancouver', '9:00 PM', '', '', '2–5'], ['10/24', 'at Calgary', '9:00 PM', '', '', '0–5']],
-        stTitle: 'Atlantic Division', stNote: 'OT losses not shown', stCol1: 'W', stCol2: 'L',
-        standings: [['Ottawa Senators', '5', '1'], ['Tampa Bay Lightning', '4', '1'], ['Boston Bruins', '4', '2'], ['Toronto Maple Leafs', '3', '2'], ['Buffalo Sabres', '3', '3'], ['Florida Panthers', '2', '2'], ['Montreal Canadiens', '2', '2'], ['Detroit Red Wings', '1', '3', true]],
-        odds: [['Make playoffs', '[XX%]'], ['Projected points', '[XX]'], ['Win Atlantic', '[XX%]']],
-        outlook: 'A bad start: 1–3–1, last in the Atlantic, ten goals in five games and shut out twice. Context helps a little. Those five opponents are a combined 19–8, the toughest early schedule in the division. The next six (New Jersey, Philadelphia, San Jose, Seattle, Vancouver, Calgary) are 11–22. If Detroit doesn’t bank points in this stretch, the slow start stops being about the schedule.',
-        injTitle: 'Injury report', injuries: ['[±X.X g]', '[±X.X g]', '[±X.X g]'],
-        ldTitle: 'Season leaders', leaders: [['Goals', '[PLAYER]', '[G]'], ['Points', '[PLAYER]', '[PTS]'], ['Shots', 'Alex DeBrincat', '[SOG]'], ['Save %', 'Daniil Tarasov', '[.XXX]']],
-        keyTitle: 'Key players',
-        keys: [['Dylan Larkin', 'C · Captain'], ['Alex DeBrincat', 'RW · 7 shots at MTL'], ['Moritz Seider', 'D · 6 hits, 6 blocks at MTL'], ['Daniil Tarasov', 'G · 30 saves through OT at MTL'], ['Axel Sandin-Pellikka', 'D'], ['Emmitt Finnie', 'F'], ['Michael Brandsegg-Nygård', 'F']],
-        bg: [['Founded', '1926 as the Detroit Cougars'], ['Stanley Cups', '11 (most recent 2008)'], ['Arena', 'Little Caesars Arena (since 2017)'], ['League status', 'Original Six franchise']]
-      },
-      msufb: {
-        abbr: 'MSU', name: 'Michigan State Football', c1: '#18453B', c2: '#EAFDFF', lgShort: 'NCAAF', lg: 'NCAA Football · Big Ten', rec: '2–4', standing: '0–3 Big Ten · four straight losses',
-        coach: 'Coach [HEAD COACH]', venue: 'Spartan Stadium',
-        next: 'Sat 10/17 vs Northwestern · 11:00 AM CT', nextHref: '', nextLink: '',
-        profile: [['Point differential', '−26', '128 for · 154 against', 'neg'], ['Pythagorean wins', '2.4 of 6', 'Only slightly unlucky. Still bad', 'neg'], ['Margin, last 4', '−16.0', 'Per game · outscored 127–63', 'neg'], ['vs. power opponents', '0–4', 'Wins came against Toledo and EMU', 'neg']],
-        margins: [['TOL', 10], ['EMU', 28], ['ND', -17], ['NEB', -18], ['WIS', -28], ['ILL', -1]],
-        splits: [['Home', '2–2'], ['Road', '0–2'], ['One-score games', '0–1'], ['Big Ten', '0–3']],
-        sos: [['Opponents so far', P, '[COMBINED W–L]', 0], ['Remaining', P, 'Includes Michigan, Oregon, Washington', 0]],
-        recentTitle: 'Recent results',
-        recent: [['10/10', 'vs Illinois', 'L', '37–38', 'Game.dc.html?sport=football&mode=2', 'OT · failed 2-pt try for the win'], ['10/3', 'at Wisconsin', 'L', '3–31', '', ''], ['9/26', 'vs Nebraska', 'L', '13–31', '', ''], ['9/19', 'at Notre Dame', 'L', '10–27', '', ''], ['9/12', 'vs Eastern Michigan', 'W', '35–7', '', ''], ['9/4', 'vs Toledo', 'W', '30–20', '', '']],
-        upTitle: 'Remaining schedule',
-        upcoming: [['10/17', 'vs Northwestern', '11:00 AM', '', '', ''], ['10/24', 'at UCLA', 'TBD', '', '', ''], ['11/7', 'at Michigan', 'TBD', '', 'Paul Bunyan Trophy', ''], ['11/14', 'vs Washington', 'TBD', '', '', ''], ['11/20', 'vs Oregon', '7:00 PM', '', 'Friday night', ''], ['11/28', 'at Rutgers', 'TBD', '', '', '']],
-        stTitle: 'Big Ten', stNote: 'Conference · overall', stCol1: 'Big Ten', stCol2: 'Overall',
-        standings: [['[TEAM]', P, P], ['[TEAM]', P, P], ['[TEAM]', P, P], ['…', '', ''], ['Michigan State', '0–3', '2–4', true]],
-        odds: [['Bowl eligible', '[XX%]'], ['Projected wins', '[X.X]'], ['Beat Michigan', '[XX%]']],
-        outlook: 'This is a bad team right now. Four straight losses, 0–3 in the Big Ten, and the only wins came against Toledo and Eastern Michigan. They’ve lost the last four by an average of 16 points. The Illinois game was the most encouraging and the most painful: a 17-point comeback, then a failed two-point try in overtime. Bowl eligibility requires going 4–2 with Michigan, Oregon and Washington still on the schedule. Realistically, this ends somewhere around 4–8.',
-        injTitle: 'Injury report', injuries: ['[±X.X pts]', '[±X.X pts]', '[±X.X pts]'],
-        ldTitle: 'Season leaders', leaders: [['Passing', 'A. Milivojevic', '[YDS · TD · INT]'], ['Rushing', 'J. Patterson', '[YDS · TD]'], ['Receiving', '[PLAYER]', '[REC · YDS]'], ['Tackles', '[PLAYER]', '[TKL]']],
-        keyTitle: 'Key players',
-        keys: [['A. Milivojevic', 'QB · 23/27, 215 yds, 2 TD vs ILL'], ['J. Patterson', 'RB · 4 total TD vs ILL'], ['F. Moore', 'WR · 24-yd TD vs ILL'], ['L. Boyd', 'K · 42-yd FG vs ILL']],
-        bg: [['Program since', '1896'], ['National titles (claimed)', '6 (1951, 1952, 1955, 1957, 1965, 1966)'], ['Stadium', 'Spartan Stadium (opened 1923)'], ['Rivalry trophies', 'Paul Bunyan (Michigan) · Megaphone (Notre Dame)']]
-      },
-      msubb: {
-        abbr: 'MSU', name: 'Michigan State Basketball', c1: '#18453B', c2: '#EAFDFF', lgShort: 'NCAAB', lg: 'NCAA Men’s Basketball · Big Ten', rec: '0–0', standing: 'Preseason · top 10 in early rankings',
-        coach: 'Coach Tom Izzo (32nd season)', venue: 'Breslin Center',
-        next: 'Sun 10/25 at Marquette · exhibition', nextHref: '', nextLink: '',
-        profile: [['2025–26 record', '27–8', '15–5 Big Ten, tied for 2nd', 'pos'], ['NCAA finish', 'Sweet 16', 'Lost 67–63 to No. 2 seed UConn', 'flat'], ['Early rankings', 'No. 1–8', 'USA Today 1 · CBS 6 · ESPN 8', 'pos'], ['Adj. efficiency margin', '[+XX.X]', 'Preseason projection', 'flat']],
-        margins: [], noMarginText: 'Season opens Nov 2 vs Quinnipiac. Margins fill in game by game.',
-        splits: [['Home (2025–26)', '[W–L]'], ['Away / neutral', '[W–L]'], ['Quad 1 (2025–26)', '[W–L]'], ['Close games', '[W–L]']],
-        sos: [['Non-conference', P, 'Duke (Chicago) and at Tennessee in November', 0], ['Full schedule', P, 'Billed as Izzo’s toughest ever', 0]],
-        recentTitle: 'How 2025–26 ended',
-        recent: [['Mar', 'vs UConn', 'L', '63–67', '', 'NCAA Sweet 16'], ['Mar', 'vs Louisville', 'W', '[SCORE]', '', 'NCAA second round'], ['Mar', 'vs North Dakota State', 'W', '[SCORE]', '', 'NCAA first round'], ['Mar', 'vs UCLA', 'L', '[SCORE]', '', 'Big Ten tournament quarterfinal']],
-        upTitle: 'Upcoming',
-        upcoming: [['10/25', 'at Marquette', 'TBA', '', 'Exhibition · Fiserv Forum', ''], ['TBA', 'vs UConn', 'TBA', '', 'Exhibition', ''], ['11/2', 'vs Quinnipiac', 'TBA', '', 'Season opener', ''], ['11/10', 'vs Duke', 'TBA', '', 'Champions Classic · United Center, Chicago', ''], ['11/17', 'at Tennessee', 'TBA', '', '', '']],
-        stTitle: 'Big Ten', stNote: 'Preseason', stCol1: 'Big Ten', stCol2: 'Overall',
-        standings: [['Michigan State', '0–0', '0–0', true], ['[TEAM]', '0–0', '0–0'], ['[TEAM]', '0–0', '0–0'], ['[TEAM]', '0–0', '0–0']],
-        odds: [['Make NCAA tournament', '[XX%]'], ['Win Big Ten', '[XX%]'], ['Reach Final Four', '[XX%]']],
-        outlook: 'Expectations are high, and on paper they’re earned. Fears is a real star at point guard, and early rankings have the Spartans anywhere from No. 1 to No. 8. The question is up front: Jaxon Kohler and Carson Cooper are gone, so a lot rides on 7-foot-2 transfer Anton Bonke and a freshman class. It’s also the toughest schedule of Izzo’s career, with Duke in Chicago and a trip to Tennessee in November, so expect an early loss or two.',
-        injTitle: 'Injury report', injuries: ['[±X.X pts]', '[±X.X pts]'],
-        ldTitle: 'Season leaders', leaders: [['Points', '[PLAYER]', '[PPG]'], ['Rebounds', '[PLAYER]', '[RPG]'], ['Assists', 'Jeremy Fears Jr.', '[APG]'], ['3-pt %', '[PLAYER]', '[XX%]']],
-        keyTitle: 'Roster changes',
-        keys: [['Jeremy Fears Jr.', 'Returning · withdrew from NBA draft'], ['Anton Bonke', 'In · 7-2 C, transfer from Charlotte'], ['Carlos Medlock Jr.', 'In · freshman PG'], ['Julius Avent', 'In · freshman PF'], ['Jasiah Jervis', 'In · freshman SG'], ['Ethan Taylor', 'In · freshman C'], ['Jaxon Kohler', 'Out · graduated'], ['Carson Cooper', 'Out · graduated'], ['Divine Ugochukwu', 'Out · transferred to LSU']],
-        bg: [['National titles', '2 (1979, 2000)'], ['Final Fours under Izzo', '8'], ['Arena', 'Breslin Center (opened 1989)'], ['Head coach since', '1995 · Tom Izzo']]
-      },
-      msuhky: {
-        abbr: 'MSU', name: 'Michigan State Hockey', c1: '#18453B', c2: '#EAFDFF', lgShort: 'NCAAH', lg: 'NCAA Men’s Hockey · Big Ten', rec: '2–0–0', standing: 'Big Ten play opens Nov 12 at Notre Dame',
-        coach: 'Coach Adam Nightingale', venue: 'Munn Ice Arena',
-        next: 'Sat 10/17 at RIT · 6:05 PM CT', nextHref: '', nextLink: '',
-        profile: [['Goal differential', '+8', '11 for · 3 against', 'pos'], ['Goals per game', '5.5', 'Two games: tiny sample', 'pos'], ['Goals against per game', '1.5', '', 'pos'], ['National rank', '[RANK]', '[POLL]', 'flat']],
-        margins: [['NMU', 4], ['NMU', 4]],
-        splits: [['Home', '2–0'], ['Road', '0–0'], ['Big Ten', '0–0–0'], ['Exhibition', 'W 5–2 vs BC']],
-        sos: [['Opponents so far', P, 'Northern Michigan (two games)', 0], ['October–November', P, 'UNH, North Dakota, BU, Notre Dame, Michigan', 0]],
-        recentTitle: 'Recent results',
-        recent: [['10/11', 'vs Northern Michigan', 'W', '5–1', '', ''], ['10/9', 'vs Northern Michigan', 'W', '6–2', '', 'Season opener'], ['10/2', 'vs Boston College', 'W', '5–2', '', 'Exhibition']],
-        upTitle: 'Upcoming',
-        upcoming: [['10/17', 'at RIT', '6:05 PM', '', '', ''], ['10/23', 'at New Hampshire', '6:00 PM', '', '', ''], ['10/24', 'at New Hampshire', '6:00 PM', '', '', ''], ['10/31', 'vs North Dakota', '7:07 PM', '', 'U.S. Hockey Hall of Fame Game · Austin, TX', ''], ['11/6', 'vs Boston University', '6:00 PM', '', '', ''], ['11/12', 'at Notre Dame', '6:00 PM', '', 'Big Ten opener', ''], ['11/20', 'at Michigan', 'TBA', '', '', ''], ['11/21', 'vs Michigan', 'TBA', '', '', '']],
-        stTitle: 'Big Ten', stNote: 'Conference play not started', stCol1: 'Big Ten', stCol2: 'Overall',
-        standings: [['Michigan State', '0–0–0', '2–0–0', true], ['Michigan', '0–0–0', P], ['Minnesota', '0–0–0', P], ['Notre Dame', '0–0–0', P], ['Ohio State', '0–0–0', P], ['Penn State', '0–0–0', P], ['Wisconsin', '0–0–0', P]],
-        odds: [['Make NCAA tournament', '[XX%]'], ['Win Big Ten', '[XX%]'], ['Reach Frozen Four', '[XX%]']],
-        outlook: 'A clean start: outscored Northern Michigan 11–3 in a two-game sweep, plus an exhibition win over Boston College. It’s early, and the opponent was soft. The real read comes from the road trip to New Hampshire, North Dakota in Austin, and a November with Boston University, Notre Dame and Michigan.',
-        injTitle: 'Injury report', injuries: ['[±X.X g]', '[±X.X g]'],
-        ldTitle: 'Season leaders', leaders: [['Goals', '[PLAYER]', '[G]'], ['Points', '[PLAYER]', '[PTS]'], ['Save %', '[GOALIE]', '[.XXX]'], ['Plus/minus', '[PLAYER]', '[+X]']],
-        keyTitle: 'Schedule highlights',
-        keys: [['vs North Dakota', 'Oct 31 · Austin, TX (Hall of Fame Game)'], ['vs Boston University', 'Nov 6–7 · Munn Ice Arena'], ['at Notre Dame', 'Nov 12–13 · Big Ten opener'], ['Michigan home-and-home', 'Nov 20 (away) · Nov 21 (home)']],
-        bg: [['NCAA titles', '3 (1966, 1986, 2007)'], ['Arena', 'Munn Ice Arena'], ['Conference', 'Big Ten'], ['Head coach', 'Adam Nightingale (since 2022)']]
+  constructor(props) { super(props); this.state = { loading: true, showAllRes: false, showAllUp: false }; }
+
+  componentDidMount() {
+    var s = this.state, lg = String(s.lg || this.props.lg || '').toLowerCase(), id = String(s.id || this.props.id || '');
+    if (!lg || !id || !SD.LEAGUES[lg] || !SD.LEAGUES[lg].teams) { this.setState({ loading: false, bad: true }); return; }
+    this.lg = lg; this.tid = id;
+    var self = this, pro = ['nfl', 'mlb', 'nhl', 'nba'].indexOf(lg) >= 0;
+    var soft = function (p) { return p.then(function (x) { return x; }, function () { return null; }); };
+    Promise.all([soft(SD.data('teams.json')), soft(SD.data('model/' + lg + '.json')), soft(SD.data('standings/' + lg + '.json')),
+      pro ? soft(SD.data('injuries/' + lg + '.json')) : null, pro ? soft(SD.data('leaders/' + lg + '.json')) : null, soft(SD.data('status.json'))])
+      .then(function (r) {
+        self.setState({ index: r[0], model: r[1], standings: r[2], injuries: r[3], leadersData: r[4], status: r[5] });
+        return self.loadSchedule();
+      });
+  }
+  componentWillUnmount() { clearTimeout(this.timer); }
+
+  loadSchedule() {
+    var self = this, lg = this.lg, id = this.tid, m = this.state.model;
+    var base = m && m.season ? { season: m.season } : {};
+    var get = function (st) { return SD.schedule(lg, id, Object.assign({ seasontype: st }, base)).then(function (x) { return x; }, function () { return null; }); };
+    return Promise.all([get(2), get(3)]).then(function (r) {
+      var reg = r[0], post = r[1];
+      if (!reg && !post) { self.setState({ loading: false, schedErr: true }); return; }
+      var seen = {}, games = [];
+      [reg, post].forEach(function (x) { (x ? x.games : []).forEach(function (g) { if (!seen[g.id]) { seen[g.id] = 1; games.push(g); } }); });
+      games.sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+      var head = (post && post.games.length && post.team.record) ? post.team : (reg || post).team;
+      self.setState({ loading: false, sched: { team: head, regTeam: (reg || post).team, games: games, bye: (reg || {}).bye } });
+      var live = games.some(function (g) { return g.state === 'in'; });
+      clearTimeout(self.timer);
+      self.timer = setTimeout(function () { self.loadSchedule(); }, live ? 60000 : 600000);
+      var last = games.filter(function (g) { return g.done; }).pop();
+      if (last && !self.state.lastSummary && !(self.state.leadersData && self.state.leadersData.teams && self.state.leadersData.teams[id])) {
+        SD.summary(lg, last.id).then(function (sm) { self.setState({ lastSummary: sm, lastGame: last }); }, function () {});
       }
+    });
+  }
+
+  renderVals() {
+    var S = this.state, lg = this.lg || String(S.lg || this.props.lg || ''), id = this.tid || String(S.id || this.props.id || '');
+    var L = SD.LEAGUES[lg] || {};
+    var FAVS = [['nfl', '8', 'LIONS'], ['mlb', '6', 'TIGERS'], ['nba', '8', 'PISTONS'], ['nhl', '5', 'RED WINGS'], ['ncaaf', '127', 'MSU FB'], ['ncaab', '127', 'MSU BB'], ['ncaah', '127', 'MSU HKY']];
+    var favs = FAVS.map(function (f) { return { label: f[2], href: SD.teamHref(f[0], f[1]), cls: 't-chipl' + (f[0] === lg && f[1] === id ? ' is-on' : '') }; });
+    var lgLinks = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, href: 'Teams.dc.html?lg=' + k, cls: 't-chipl' + (k === lg ? ' is-on' : '') }; });
+    var base = { favs: favs, lgLinks: lgLinks, updated: S.status && S.status.updated ? 'Data files updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : 'Live data' };
+    if (S.bad) return Object.assign(base, { missing: true, ok: false, statusTag: 'NO TEAM SELECTED', missingText: 'Pick a team to see its page.' });
+    if (S.schedErr && !S.index) return Object.assign(base, { missing: true, ok: false, statusTag: 'FEED UNAVAILABLE', missingText: 'The live feed did not respond. Try again in a minute.' });
+
+    var idx = ((S.index || {}).leagues || {})[lg] || [];
+    var me = idx.filter(function (x) { return x.id === id; })[0] || {};
+    var sched = S.sched || null, st = sched ? sched.team : {};
+    var model = S.model, mt = model && model.teams ? model.teams[id] : null;
+    var teamN = model && model.teams ? Object.keys(model.teams).length : 0;
+    var color = '#' + String(me.color || (st.color || '#12363B')).replace('#', '');
+    var pick = function (g) { return g.opp || {}; };
+    var name = me.name || st.name || (S.loading ? 'Loading…' : 'Team ' + id);
+    if (typeof document !== 'undefined' && name && !S.loading) document.title = name + ' · NSKN Terminal';
+
+    // standings row for this team
+    var group = null, row = null;
+    ((S.standings || {}).groups || []).forEach(function (g) { g.teams.forEach(function (r) { if (r.id === id) { group = g; row = r; } }); });
+
+    var sign = function (v, d) { if (v === null || v === undefined || isNaN(v)) return '—'; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d === undefined ? 1 : d); };
+    var pct = function (p) { return p === null || p === undefined ? '—' : (p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'); };
+    var unit = model ? model.unit : (L.unit || 'pts');
+    var enough = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
+
+    var t = {
+      name: name, logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
+      group: me.group || (group ? group.name : ''),
+      record: st.record || (row && row.overall) || (S.loading ? '' : '0-0'),
+      standing: st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || '',
+      bandStyle: 'background: linear-gradient(180deg, ' + color + '55 0%, #020607 100%);',
+      rankLine: mt && enough(mt) ? 'House rating ' + sign(mt.rating) + ' ' + unit + ' vs. an average team · No. ' + mt.rank + ' of ' + teamN : ''
     };
 
-    var id = this.props.teamId || 'lions';
-    var d = TEAMS[id] || TEAMS.lions;
-    var resStyle = function (r) {
-      var bg = r === 'W' ? '#1F3A2C' : (r === 'L' ? '#3D2219' : '#0A1F22');
-      var fg = r === 'W' ? '#86EFAC' : (r === 'L' ? '#FF8A80' : '#23565C');
-      return 'flex: none; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; border-radius: 0; font-family: \'IBM Plex Mono\', monospace; font-size: 12px; font-weight: 600; background: ' + bg + '; color: ' + fg + ';';
+    // games
+    var games = sched ? sched.games : [];
+    var now = Date.now();
+    var dlabel = function (iso) { return F.day(iso); };
+    var gameRow = function (g) {
+      var o = pick(g), at = g.neutral ? 'vs' : (g.home ? 'vs' : 'at');
+      var note = [g.season && !/regular/i.test(g.season) ? g.season : '', g.week && L.sport === 'football' ? 'Week ' + String(g.week).replace(/^Week\s*/i, '') : '', g.neutral ? 'Neutral site' : ''].filter(Boolean).join(' · ');
+      return { d: dlabel(g.start), at: at, opp: o.name || o.short || 'TBD', oppHref: o.href || '#', href: g.href, aria: 'Game page: ' + (g.home ? '' : 'at ') + (o.name || ''), note: note, g: g, o: o };
     };
-    var tone = { pos: '#86EFAC', neg: '#FF8A80', flat: '#C8F7FC' };
-    var mx = 1; (d.margins || []).forEach(function (m) { mx = Math.max(mx, Math.abs(m[1])); });
-    var margins = (d.margins || []).map(function (m) {
-      var v = m[1], h = Math.max(4, Math.abs(v) / mx * 100);
-      return {
-        opp: m[0], label: m[2] ? m[2] : ((v > 0 ? '+' : (v < 0 ? '−' : '')) + Math.abs(v)),
-        color: v > 0 ? '#86EFAC' : '#FF8A80',
-        up: v > 0 ? 'width: 60%; max-width: 44px; height: ' + h.toFixed(0) + '%; border-radius: 0 0 0; background: #4ADE80;' : 'display: none;',
-        down: v < 0 ? 'width: 60%; max-width: 44px; height: ' + h.toFixed(0) + '%; border-radius: 0 0 4px 4px; background: #FF5F56;' : 'display: none;'
-      };
+    var done = games.filter(function (g) { return g.done || g.state === 'post'; });
+    var live = games.filter(function (g) { return g.state === 'in'; });
+    var up = games.filter(function (g) { return g.state === 'pre' && !g.done; });
+    var resultsAll = live.concat(done.slice().reverse()).map(function (g) {
+      var r = gameRow(g);
+      r.res = g.state === 'in' ? 'LIVE' : (g.result || '·');
+      r.resCls = 's-res ' + (g.state === 'in' ? 'x' : (g.result || 'x'));
+      r.score = g.score || g.detail || '';
+      if (g.state === 'in') r.note = (g.detail || 'In progress') + (r.note ? ' · ' + r.note : '');
+      else if (g.score === '' && g.detail) r.note = g.detail;
+      return r;
     });
-    var t = {
-      abbr: d.abbr, name: d.name, lgShort: d.lgShort, lg: d.lg, rec: d.rec, standing: d.standing, coach: d.coach, venue: d.venue,
-      logoLabel: d.name + ' logo',
-      badge: 'display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: 0; background: ' + d.c1 + '; color: ' + d.c2 + '; font-family: \'IBM Plex Mono\', monospace; font-size: 26px; font-weight: 600; box-shadow: 0 0 0 3px rgba(255,255,255,0.12), 0 12px 32px rgba(0,0,0,0.45);',
-      bandStyle: 'background: linear-gradient(180deg, ' + d.c1 + '33 0%, #020607 100%); border-bottom: 1px solid #12363B;',
-      next: d.next, nextHref: d.nextHref || '#', nextLink: d.nextLink, hasNextHref: !!d.nextHref,
-      profile: d.profile.map(function (x) { return { k: x[0], v: x[1], s: x[2], color: tone[x[3]] || '#C8F7FC' }; }),
-      margins: margins, hasMargins: margins.length > 0, noMargins: margins.length === 0, noMarginText: d.noMarginText || '',
-      marginAria: 'Bar chart of game margins: ' + (d.margins || []).map(function (m) { return m[0] + ' ' + m[1]; }).join(', '),
-      splits: d.splits.map(function (x) { return { k: x[0], v: x[1] }; }),
-      sos: d.sos.map(function (x) { return { k: x[0], v: x[1], n: x[2], bar: 'height: 6px; width: ' + Math.round((x[3] || 0) * 100) + '%; background: ' + d.c1 + '; border-radius: 0;' }; }),
-      recentTitle: d.recentTitle, upTitle: d.upTitle,
-      recent: d.recent.map(function (x) { return { d: x[0], opp: x[1], res: x[2] || '·', score: x[3], href: x[4] || '#', hasHref: !!x[4], note: x[5], hasNote: !!x[5], resStyle: resStyle(x[2]) }; }),
-      upcoming: d.upcoming.map(function (x) { return { d: x[0], opp: x[1], time: x[2], href: x[3] || '#', hasHref: !!x[3], note: x[4], hasNote: !!x[4], oppRec: x[5], hasOppRec: !!x[5] }; }),
-      stTitle: d.stTitle, stNote: d.stNote, stCol1: d.stCol1, stCol2: d.stCol2,
-      standings: d.standings.map(function (x) { return { n: x[0], a: x[1], b: x[2], rowStyle: x[3] ? 'color: #EAFDFF; background: ' + d.c1 + '2E; box-shadow: inset 3px 0 0 ' + d.c1 + ';' : 'color: #66E6F2;' }; }),
-      odds: d.odds.map(function (x) { return { k: x[0], v: x[1] }; }),
-      outlook: d.outlook,
-      injTitle: d.injTitle, injuries: d.injuries.map(function (s) { return { s: s }; }),
-      ldTitle: d.ldTitle, leaders: d.leaders.map(function (x) { return { k: x[0], p: x[1], v: x[2] }; }),
-      keyTitle: d.keyTitle, keys: d.keys.map(function (x) { return { k: x[0], v: x[1] }; }),
-      bg: d.bg.map(function (x) { return { k: x[0], v: x[1] }; })
+    var results = S.showAllRes ? resultsAll : resultsAll.slice(0, 8);
+    var upAll = up.map(function (g) {
+      var r = gameRow(g), o = r.o;
+      var p = model ? SD.project(model, g.home ? o.id : id, g.home ? id : o.id, g.neutral) : null;
+      var mo = model && model.teams ? model.teams[o.id] : null;
+      var useP = p && enough(mt) && enough(mo);
+      r.prob = useP ? Math.round((g.home ? p.pHome : p.pAway) * 100) + '%' : '';
+      var tm = /T00:00Z$|T0[45]:00Z$/.test(g.start) && g.detail && /TBD|TBA/i.test(g.detail) ? 'TBD' : F.time(g.start);
+      r.note = [tm, g.tv, r.note].filter(Boolean).join(' · ');
+      return r;
+    });
+    var upcoming = S.showAllUp ? upAll : upAll.slice(0, 8);
+
+    // next game card
+    var nx = live[0] || up[0];
+    var next = { title: 'NEXT UP', line: S.loading ? 'Loading schedule…' : 'No games scheduled', sub: '', prob: '', href: '', cta: 'Game preview' };
+    if (nx) {
+      var nr = gameRow(nx), o2 = nr.o;
+      next.title = nx.state === 'in' ? 'LIVE NOW' : 'NEXT UP';
+      next.line = (nx.home || nx.neutral ? 'vs ' : 'at ') + (o2.name || 'TBD');
+      next.sub = nx.state === 'in' ? (nx.score + ' · ' + nx.detail) : [new Date(nx.start).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric' }), F.time(nx.start) + ' CT', nx.tv].filter(Boolean).join(' · ');
+      var pp = model ? SD.project(model, nx.home ? o2.id : id, nx.home ? id : o2.id, nx.neutral) : null;
+      var mo2 = model && model.teams ? model.teams[o2.id] : null;
+      if (pp && nx.state !== 'in' && enough(mt) && enough(mo2)) {
+        var mine = nx.home ? pp.pHome : pp.pAway, mm = nx.home ? pp.margin : -pp.margin;
+        next.prob = 'House model: ' + Math.round(mine * 100) + '% to win · projected margin ' + sign(mm) + ' ' + unit;
+      }
+      next.href = nx.href; next.cta = nx.state === 'in' ? 'Live game page' : 'Game preview';
+    } else if (sched && sched.bye) {
+      next.sub = 'Bye week ' + sched.bye.number;
+    }
+
+    // margins chart (completed games, oldest first, last 16)
+    var mg = done.filter(function (g) { return g.score && g.me && g.opp; }).slice(-16);
+    var mx = 1; var diffs = mg.map(function (g) { var d = Number(g.me.score) - Number(g.opp.score); mx = Math.max(mx, Math.abs(d)); return d; });
+    var margins = mg.map(function (g, i) {
+      var d = diffs[i], h = Math.max(4, Math.abs(d) / mx * 100);
+      return { href: g.href, title: (g.home ? 'vs ' : 'at ') + (g.opp.abbr || g.opp.name) + ' ' + g.score + ' (' + F.day(g.start) + ')',
+        up: d > 0 ? 'display: block; width: 70%; height: ' + h.toFixed(0) + '%; background: var(--up)' : 'display: none',
+        down: d < 0 ? 'display: block; width: 70%; height: ' + h.toFixed(0) + '%; background: var(--dn)' : (d === 0 ? 'display: block; width: 70%; height: 3px; background: var(--dim)' : 'display: none') };
+    });
+
+    // profile tiles
+    var profile = [];
+    if (mt) {
+      var ok = enough(mt);
+      profile.push({ k: 'House rating', v: ok ? sign(mt.rating) : '—', s: ok ? unit + ' vs. average · No. ' + mt.rank + ' of ' + teamN : 'Shows after ' + model.minGp + ' games', style: mt.rating > 0.05 ? 'color: var(--up)' : mt.rating < -0.05 ? 'color: var(--dn)' : '' });
+      if (mt.mov !== undefined) profile.push({ k: 'Avg margin', v: sign(mt.mov), s: unit + ' per game · ' + mt.gp + ' games', style: '' });
+      if (mt.sos !== undefined) profile.push({ k: 'Opponent strength', v: sign(mt.sos), s: 'Avg rating of teams played', style: '' });
+      if (mt.prior !== undefined && !mt.gp) profile.push({ k: 'Starting point', v: sign(mt.prior), s: 'From last season (see method)', style: '' });
+    }
+    if (row) {
+      [['Home', row.home], ['Road', row.road], [lg.indexOf('ncaa') === 0 ? 'Conference' : 'vs. Conference', row.conf], ['vs. Division', row.div], ['Last 10', row.l10], ['Streak', row.streak]]
+        .forEach(function (x) { if (x[1] && x[1] !== '-') profile.push({ k: x[0], v: String(x[1]).split(',')[0], s: '', style: '' }); });
+    }
+    if (!profile.length) profile.push({ k: 'Record', v: t.record || '—', s: S.loading ? 'Loading…' : 'No games yet this season', style: '' });
+
+    // standings table
+    var stv = { title: group ? group.name : 'Standings', allHref: 'Teams.dc.html?lg=' + lg, has: false, none: false, noneText: '', cols: [], rows: [] };
+    if (group) {
+      var cols, cells;
+      if (lg === 'nhl') { cols = ['GP', 'W', 'L', 'OTL', 'PTS', 'DIFF']; cells = function (r) { return [r.gp, r.w, r.l, r.otl, r.pts, r.diff]; }; }
+      else if (lg === 'nfl') { cols = ['W', 'L', 'T', 'PCT', 'DIFF', 'STRK']; cells = function (r) { return [r.w, r.l, r.t || 0, r.pct !== undefined ? Number(r.pct).toFixed(3).replace(/^0/, '') : '', r.diff, r.streak]; }; }
+      else if (lg.indexOf('ncaa') === 0) { cols = ['CONF', 'OVERALL', 'HOME', 'AWAY', 'STRK']; cells = function (r) { return [r.conf, r.overall, r.home, r.road, r.streak]; }; }
+      else { cols = ['W', 'L', 'PCT', 'GB', 'L10', 'STRK']; cells = function (r) { return [r.w, r.l, r.pct !== undefined ? Number(r.pct).toFixed(3).replace(/^0/, '') : '', r.gb, r.l10, r.streak]; }; }
+      stv.cols = cols; stv.has = true;
+      stv.rows = group.teams.map(function (r) { return { name: r.short || r.name, logo: r.logo || '', href: SD.teamHref(lg, r.id), cls: r.id === id ? 'me' : '', cells: cells(r).map(function (c) { return c === undefined || c === null || c === '-' ? '—' : String(c); }) }; });
+    } else { stv.none = true; stv.noneText = S.standings ? 'This team is not in the current standings file.' : 'Standings load from the hourly data refresh.'; }
+
+    // outlook
+    var odds = [], on = model && model.odds ? model.odds[id] : null, outlookNote;
+    if (on) {
+      if (lg === 'nfl') odds = [{ k: 'Make playoffs', v: pct(on.playoff), s: '' }, { k: 'Win division', v: pct(on.div), s: '' }, { k: 'No. 1 seed', v: pct(on.seed1), s: '' }, { k: 'Win Super Bowl', v: pct(on.title), s: '' }, { k: 'Projected wins', v: on.wins.toFixed(1), s: '80% range ' + on.w10 + '–' + on.w90 }];
+      else odds = [{ k: 'Make playoffs', v: pct(on.playoff), s: '' }].concat(on.div !== undefined ? [{ k: 'Win division', v: pct(on.div), s: '' }] : []).concat([{ k: 'Win conference', v: pct(on.conf), s: '' }, { k: 'Win Stanley Cup', v: pct(on.title), s: '' }, { k: 'Projected points', v: on.pts.toFixed(0), s: '80% range ' + on.p10 + '–' + on.p90 }]);
+      outlookNote = model.oddsBasis;
+    } else if (!model) outlookNote = 'The house model file has not loaded.';
+    else if (lg === 'nfl' || lg === 'nhl') outlookNote = 'Season simulations are not available right now (' + (model.oddsBasis || 'not run') + ').';
+    else outlookNote = 'Season simulations run for the NFL and NHL. For ' + (L.label || lg) + ', the house model gives a rating and a win probability for each game (see the schedule).';
+    if (model && model.basis) outlookNote += ' Ratings: ' + model.basis;
+
+    // injuries
+    var injRows = S.injuries && S.injuries.teams ? (S.injuries.teams[id] || []) : null;
+    var stCol = function (s) { return /out|reserve|suspen/i.test(s || '') ? 'color: var(--dn)' : /doubt|question|day/i.test(s || '') ? 'color: #ffd166' : ''; };
+    var inj = (injRows || []).filter(function (i) { return !/^active$/i.test(i.status || ''); }).map(function (i) { return { name: i.name, pos: i.pos || '', part: [i.side, i.part].filter(Boolean).join(' ') || '—', status: i.status || '—', style: stCol(i.status), ret: i.ret ? F.day(i.ret) : '—' }; });
+    var pro = ['nfl', 'mlb', 'nhl', 'nba'].indexOf(lg) >= 0;
+    var injNote = pro ? 'ESPN injury feed' : '';
+    var noInjText = !pro ? 'ESPN does not publish injury reports for college teams, so there is no free feed to show here.' : (injRows === null ? 'Injury report loads from the hourly data refresh.' : 'No injuries listed.');
+
+    // leaders
+    var ld = S.leadersData && S.leadersData.teams ? S.leadersData.teams[id] : null, leaders = [], ldTitle = 'Season leaders', ldNote = '', noLeadersText = '';
+    if (ld) {
+      leaders = ld.map(function (x) { return { k: x.label, p: x.athlete.name, pos: x.athlete.pos || '', v: x.value }; });
+      ldNote = S.leadersData.current ? 'Season ' + S.leadersData.season : 'Last season (' + S.leadersData.season + ') · current season not started';
+    } else if (S.lastSummary) {
+      var mineL = (S.lastSummary.leaders || []).filter(function (x) { return x.team === id; })[0];
+      if (mineL) {
+        ldTitle = 'Last game leaders';
+        ldNote = (S.lastGame.home ? 'vs ' : 'at ') + ((S.lastGame.opp || {}).abbr || '') + ' · ' + F.day(S.lastGame.start);
+        leaders = mineL.cats.map(function (c) { return { k: c.cat, p: c.name, pos: '', v: c.line }; });
+      }
+    }
+    if (!leaders.length) noLeadersText = S.loading ? 'Loading…' : (pro ? 'Leaders load from the daily data refresh.' : 'No completed games with box scores yet.');
+
+    // about (curated history for the site's own teams)
+    var ABOUT = {
+      'nfl:8': [['Founded', '1930 as the Portsmouth Spartans · Detroit since 1934'], ['NFL championships', '4 (1935, 1952, 1953, 1957)'], ['Super Bowl appearances', 'None'], ['Stadium', 'Ford Field (opened 2002)']],
+      'mlb:6': [['Founded', '1901 · American League charter member'], ['World Series titles', '4 (1935, 1945, 1968, 1984)'], ['AL pennants', '11 (most recent 2012)'], ['Ballpark', 'Comerica Park (opened 2000)']],
+      'nba:8': [['Founded', '1941 as the Fort Wayne Zollner Pistons · Detroit since 1957'], ['NBA titles', '3 (1989, 1990, 2004)'], ['Arena', 'Little Caesars Arena (since 2017)']],
+      'nhl:5': [['Founded', '1926 as the Detroit Cougars'], ['Stanley Cups', '11 (most recent 2008)'], ['Arena', 'Little Caesars Arena (since 2017)'], ['League status', 'Original Six franchise']],
+      'ncaaf:127': [['Program since', '1896'], ['National titles (claimed)', '6 (1951, 1952, 1955, 1957, 1965, 1966)'], ['Stadium', 'Spartan Stadium (opened 1923)'], ['Rivalry trophies', 'Paul Bunyan (Michigan) · Megaphone (Notre Dame)']],
+      'ncaab:127': [['National titles', '2 (1979, 2000)'], ['Arena', 'Breslin Center (opened 1989)'], ['Head coach since 1995', 'Tom Izzo']],
+      'ncaah:127': [['NCAA titles', '3 (1966, 1986, 2007)'], ['Arena', 'Munn Ice Arena'], ['Conference', 'Big Ten']]
     };
-    return {
-      navCls: navCls, t: t };
+    var about = (ABOUT[lg + ':' + id] || []).map(function (x) { return { k: x[0], v: x[1] }; });
+
+    return Object.assign(base, {
+      ok: true, missing: false, statusTag: S.loading ? 'LOADING…' : (live.length ? 'LIVE GAME' : 'LIVE DATA'), t: t, next: next,
+      profile: profile, profileNote: mt && model ? 'House rating from ' + (model.games || 'all') + ' games this season' : '',
+      margins: margins, hasMargins: margins.length > 1, marginAria: 'Bar chart of game margins: ' + diffs.join(', '),
+      results: results, noResults: !S.loading && !resultsAll.length, noResultsText: S.schedErr ? 'The live schedule feed did not respond.' : 'No completed games yet this season.',
+      resNote: done.length ? done.length + ' played' : '', moreResults: resultsAll.length > 8, moreResultsLabel: S.showAllRes ? 'Show fewer' : 'Show all ' + resultsAll.length,
+      toggleRes: () => this.setState({ showAllRes: !S.showAllRes }),
+      upcoming: upcoming, noUpcoming: !S.loading && !upAll.length, noUpcomingText: S.schedErr ? 'The live schedule feed did not respond.' : 'No upcoming games on the schedule.',
+      upNote: model && upAll.length ? 'Right column: house win probability' : '', moreUpcoming: upAll.length > 8, moreUpcomingLabel: S.showAllUp ? 'Show fewer' : 'Show all ' + upAll.length,
+      toggleUp: () => this.setState({ showAllUp: !S.showAllUp }),
+      st: stv, odds: odds, hasOdds: odds.length > 0, outlookNote: outlookNote,
+      inj: inj, hasInj: inj.length > 0, noInj: !inj.length, noInjText: noInjText, injNote: injNote,
+      leaders: leaders, noLeaders: !leaders.length, noLeadersText: noLeadersText, ldTitle: ldTitle, ldNote: ldNote,
+      about: about, hasAbout: about.length > 0
+    });
   }
 }
-DC.mount(Component, {"teamId": {"default": "tigers"}, "$preview": {"width": 1440, "height": 3400}});
+DC.mount(Component, {"lg": {"default": "mlb"}, "id": {"default": "6"}, "$preview": {"width": 1440, "height": 3000}});
 </script>
 </body>
 </html>

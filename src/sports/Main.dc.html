@@ -23,231 +23,136 @@
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
-<span class="dim t-hide-sm">Follow your teams · pick a league · tap a Detroit or MSU game for its page</span>
+<span class="dim t-hide-sm">Follow any team · pick a league · every game and team opens its own page</span>
 </div>
 <form class="t-cmd" data-cmd>
 <label for="sportSearch" class="t-prompt">NSKN ›</label>
-<input id="sportSearch" class="t-input" type="search" placeholder="TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+<input id="sportSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
 </form>
 <nav class="t-fbar" aria-label="Sports pages">
 <span class="t-fbar-title">Sports</span>
 <a class="t-fkey is-on" href="#" aria-current="page">1) Scores</a>
-<a class="t-fkey" href="Simulator.dc.html">2) Simulator</a>
-<a class="t-fkey" href="Odds.dc.html">3) Playoff odds</a>
-<a class="t-fkey" href="Spots.dc.html">4) Spots</a>
+<a class="t-fkey" href="Teams.dc.html">2) Teams</a>
+<a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
+<a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="LuckWatch.dc.html">6) Luck watch</a>
-<a class="t-fkey" href="Schedule.dc.html">7) Schedule str.</a>
-<a class="t-fkey" href="TrackRecord.dc.html">8) Track record</a>
-<a class="t-fkey" href="Methodology.dc.html">9) Method</a>
+<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
-<nav class="t-sub2" aria-label="Teams and games">
-<span class="t-sl">TEAMS</span>
-<a class="{{navCls.Team}}" href="Team.dc.html">LIONS</a>
-<a class="{{navCls.TeamTigers}}" href="TeamTigers.dc.html">TIGERS</a>
-<a class="{{navCls.TeamPistons}}" href="TeamPistons.dc.html">PISTONS</a>
-<a class="{{navCls.TeamRedWings}}" href="TeamRedWings.dc.html">RED WINGS</a>
-<a class="{{navCls.TeamMSUFootball}}" href="TeamMSUFootball.dc.html">MSU FB</a>
-<a class="{{navCls.TeamMSUBasketball}}" href="TeamMSUBasketball.dc.html">MSU BB</a>
-<a class="{{navCls.TeamMSUHockey}}" href="TeamMSUHockey.dc.html">MSU HKY</a>
-<span class="t-sl">GAMES</span>
-<a class="{{navCls.Game}}" href="Game.dc.html">NFL</a>
-<a class="{{navCls.GameBaseball}}" href="GameBaseball.dc.html">MLB</a>
-<a class="{{navCls.GameBasketball}}" href="GameBasketball.dc.html">NBA</a>
-<a class="{{navCls.GameHockey}}" href="GameHockey.dc.html">NHL</a>
+<nav class="t-sub2" aria-label="Favorite teams">
+<span class="t-sl">MY TEAMS</span>
+<sc-for list="{{favs}}" as="f" hint-placeholder-count="7"><a class="t-chipl" href="{{f.href}}">{{f.label}}</a></sc-for>
+<span class="t-sl">ALL TEAMS</span>
+<a class="t-chipl" href="Teams.dc.html">BROWSE ›</a>
 </nav>
 <div class="t-sub">
 <span>Scores &amp; Schedule (SCOR)</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-tag">SAMPLE DATA · TEAMS ARE EXAMPLES</span>
+<span class="t-tag">{{statusTag}}</span>
 </div>
 </header>
 
-<main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+<main class="s-wrap">
 
-<section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
+<section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
 <div>
-<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #C8F7FC">Scores &amp; schedule</h1>
-<div style="color: #4FB8C2; font-size: 14px; margin-top: 4px">Tuesday, October 13, 2026 · All times Central</div>
+<h1 style="margin: 0">Scores &amp; schedule</h1>
+<div class="dim" style="margin-top: 6px">{{dayLine}}</div>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
-<span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 0; background: #061416; border: 1px solid #12363B; font-size: 13.5px"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 0; background: #FF5F56"></span>14 tennis matches live</span>
-<span style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 0; background: #0C2A2E; border: 1px solid #2A7C85; font-size: 13.5px">Tonight: ALCS Game 2 · 15 NHL games · 9 UCL matches</span>
+<div class="s-tabs" role="group" aria-label="Day">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="3"><button type="button" class="{{d.cls}}" aria-pressed="{{d.on}}" onClick="{{d.pick}}">{{d.label}}</button></sc-for>
 </div>
 </section>
 
-<section class="t-card" aria-label="My teams" style="background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px">
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 12px">
-<div>
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #C8F7FC">My teams</h2>
-<div style="color: #3C9AA3; font-size: 12.5px">Follow any team to pin its latest result and next game here. Saved in this browser.</div>
-</div>
-<div style="flex: 1 1 280px; max-width: 420px">
+<section class="t-panel" aria-label="My teams">
+<div class="t-ph"><h2><span class="t-pn">1)</span>My teams</h2><span class="dim">Saved in this browser</span></div>
+<div class="t-pb">
+<div style="max-width: 520px">
 <label for="teamAdd" class="sr">Add a team to follow</label>
-<input id="teamAdd" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="Add a team: Lions, Arsenal, Rays…" autocomplete="off" style="width: 100%; box-sizing: border-box; height: 44px; padding: 0 14px; border-radius: 0; border: 1px solid #2A7C85; background: #061416; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px">
-</div>
+<input id="teamAdd" class="s-input" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="Follow any team: Lions, Spartans, Gonzaga…" autocomplete="off">
 </div>
 <sc-if value="{{hasResults}}" hint-placeholder-val="{{false}}">
-<div role="group" aria-label="Matching teams" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px">
-<sc-for list="{{results}}" as="t" hint-placeholder-count="4">
-<button type="button" onClick="{{t.add}}" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border-radius: 0; border: 1px solid #12363B; background: #0C2A2E; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; cursor: pointer"><span style="color: #C8F7FC; font-weight: 600">+</span>{{t.name}}<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #4FB8C2">{{t.lg}}</span></button>
-</sc-for>
+<div role="group" aria-label="Matching teams" class="s-tabs" style="margin-top: 8px">
+<sc-for list="{{results}}" as="t" hint-placeholder-count="4"><button type="button" class="s-tab" onClick="{{t.add}}">+ {{t.name}} <span class="dim">{{t.lg}}</span></button></sc-for>
 </div>
 </sc-if>
-<sc-if value="{{noMatch}}" hint-placeholder-val="{{false}}">
-<div style="font-size: 13px; color: #4FB8C2; margin-bottom: 12px">No teams match “{{q}}” in this week’s schedule.</div>
-</sc-if>
-<sc-if value="{{noFollows}}" hint-placeholder-val="{{true}}">
-<div style="padding: 16px; border-radius: 0; border: 1px dashed #1B4A50; color: #4FB8C2; font-size: 13.5px; text-align: center">You’re not following any teams yet. Search above to add one, and its games will be highlighted across the page.</div>
-</sc-if>
+<sc-if value="{{noMatch}}" hint-placeholder-val="{{false}}"><div class="dim" style="margin-top: 8px">No team matches “{{q}}”.</div></sc-if>
+<sc-if value="{{noFollows}}" hint-placeholder-val="{{true}}"><div class="s-empty" style="margin-top: 10px">You’re not following any teams yet. Search above to add one. Its last result and next game show up here, and its games are highlighted below.</div></sc-if>
 <sc-if value="{{hasFollows}}" hint-placeholder-val="{{false}}">
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; margin-top: 10px">
 <sc-for list="{{mine}}" as="m" hint-placeholder-count="3">
-<div style="padding: 10px 6px 12px 14px; border-radius: 0; background: #0C2A2E; border: 1px solid #2A7C85">
+<div class="s-card" style="border-color: var(--a)">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px">
-<span style="min-width: 0">
-<a href="{{m.href}}" style="font-weight: 600; color: #C8F7FC; font-size: 14px">{{m.team}}</a>
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #4FB8C2; margin-left: 6px">{{m.lg}}</span>
-</span>
-<button type="button" onClick="{{m.remove}}" aria-label="{{m.removeLabel}}" style="flex: none; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 0; background: transparent; color: #4FB8C2; cursor: pointer"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2 L12 12 M12 2 L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"></path></svg></button>
+<a class="s-team" href="{{m.href}}"><img class="s-logo" src="{{m.logo}}" alt="">{{m.name}}</a>
+<button type="button" onClick="{{m.remove}}" aria-label="{{m.removeLabel}}" style="flex: none; width: 40px; height: 40px; border: 0; background: transparent; color: var(--dim); cursor: pointer">✕</button>
 </div>
-<div style="font-size: 13px"><span style="color: #3C9AA3">Last </span><span style="{{m.lastStyle}}">{{m.last}}</span></div>
-<div style="font-size: 13px"><span style="color: #3C9AA3">Next </span><span style="color: #C8F7FC">{{m.next}}</span></div>
+<div style="font-size: 12.5px"><span class="dim">Last </span><a href="{{m.lastHref}}" style="{{m.lastStyle}}">{{m.last}}</a></div>
+<div style="font-size: 12.5px"><span class="dim">Next </span><a href="{{m.nextHref}}">{{m.next}}</a></div>
 </div>
 </sc-for>
 </div>
 </sc-if>
+</div>
 </section>
 
-<nav aria-label="Leagues" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; background: #041012; border: 1px solid #12363B; border-radius: 0">
-<sc-for list="{{chips}}" as="c" hint-placeholder-count="10">
-<button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.btnStyle}}">{{c.label}}</button>
-</sc-for>
+<nav aria-label="Leagues" class="s-tabs">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="10"><button type="button" class="{{c.cls}}" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}<sc-if value="{{c.live}}" hint-placeholder-val="{{false}}"> <span class="s-live">●</span></sc-if></button></sc-for>
 </nav>
 
-<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
-
-<div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-<sc-for list="{{leagues}}" as="L" hint-placeholder-count="4">
-<section class="t-card" aria-label="{{L.name}}" style="background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px">
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px">
-<div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
-<h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #C8F7FC">{{L.name}}</h2>
-<span style="color: #4FB8C2; font-size: 13px">{{L.sub}}</span>
-</div>
-<sc-if value="{{L.showMore}}" hint-placeholder-val="{{true}}">
-<button type="button" onClick="{{L.open}}" style="height: 36px; padding: 0 12px; border-radius: 0; border: 1px solid #12363B; background: #061416; color: #C8F7FC; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; cursor: pointer">All {{L.short}} · {{L.total}} games</button>
-</sc-if>
-</div>
-<sc-for list="{{L.groups}}" as="G" hint-placeholder-count="2">
-<h3 style="margin: 16px 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4FB8C2; text-transform: uppercase">{{G.label}}</h3>
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px">
-<sc-for list="{{G.games}}" as="g" hint-placeholder-count="3">
-<div style="{{g.cardStyle}}">
-<a href="{{g.href}}" aria-label="{{g.aria}}" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 32px; margin: -4px -6px 0; padding: 0 6px; border-radius: 0; font-size: 12px; text-decoration: none">
-<span style="{{g.statusStyle}}">{{g.status}}</span>
-<span style="color: #3C9AA3; text-align: right">{{g.tag}}<sc-if value="{{g.hasHref}}" hint-placeholder-val="{{false}}"> <span aria-hidden="true" style="color: #C8F7FC">›</span></sc-if></span>
-</a>
-<sc-if value="{{g.hasTitle}}" hint-placeholder-val="{{false}}">
-<a href="{{g.href}}" style="font-size: 15px; font-weight: 600; color: #C8F7FC; text-decoration: none">{{g.title}}</a>
-</sc-if>
+<div class="s-cols">
+<div style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{boards}}" as="B" hint-placeholder-count="4">
+<section class="t-panel" aria-label="{{B.name}}">
+<div class="t-ph"><h2>{{B.name}}</h2><span class="dim">{{B.sub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{B.msg}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{B.msg}}</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px">
+<sc-for list="{{B.games}}" as="g" hint-placeholder-count="6">
+<div class="s-card" style="{{g.cardStyle}}">
+<sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>
 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
-<a href="{{r.href}}" aria-label="{{r.aria}}" style="display: flex; align-items: center; gap: 10px; min-height: 36px; margin: 0 -6px; padding: 0 6px; border-radius: 0; text-decoration: none">
-<span style="{{r.abbrStyle}}">{{r.abbr}}</span>
-<span style="{{r.nameStyle}}">{{r.name}}</span>
-<span style="{{r.scoreStyle}}">{{r.score}}</span>
-</a>
+<div class="s-line" style="min-height: 28px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 11.5px">{{r.rec}}</span></a><span style="{{r.scoreStyle}}">{{r.score}}</span></div>
 </sc-for>
-<sc-if value="{{g.hasProb}}" hint-placeholder-val="{{false}}">
-<div>
-<div aria-hidden="true" style="display: flex; height: 5px; border-radius: 0; overflow: hidden; gap: 2px; margin-top: 2px">
-<sc-for list="{{g.probSegs}}" as="p" hint-placeholder-count="2"><div style="{{p.style}}"></div></sc-for>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 4px">
+<span style="{{g.stStyle}}">{{g.status}}</span>
+<sc-if value="{{g.href}}" hint-placeholder-val="{{true}}"><a class="s-go" href="{{g.href}}" aria-label="{{g.aria}}" style="width: auto; padding: 0 10px; height: 32px; font-size: 12px">{{g.cta}} →</a></sc-if>
 </div>
-<div style="font-size: 11.5px; color: #3C9AA3; margin-top: 4px; font-family: 'IBM Plex Mono', monospace">Win prob. {{g.probText}}</div>
-</div>
-</sc-if>
-<sc-if value="{{g.hasNote}}" hint-placeholder-val="{{false}}">
-<div style="font-size: 12px; color: #4FB8C2">{{g.note}}</div>
-</sc-if>
-<sc-if value="{{g.hasHref}}" hint-placeholder-val="{{false}}">
-<a href="{{g.href}}" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 32px; font-size: 12.5px; font-weight: 500; color: #C8F7FC">{{g.hrefLabel}}</a>
-</sc-if>
+<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 11.5px; margin-top: 2px">{{g.note}}</div></sc-if>
 </div>
 </sc-for>
 </div>
-</sc-for>
+<sc-if value="{{B.more}}" hint-placeholder-val="{{false}}"><button type="button" class="s-tab" style="margin-top: 10px" onClick="{{B.showAll}}">{{B.moreLabel}}</button></sc-if>
+</div>
 </section>
 </sc-for>
 </div>
 
-<aside aria-label="Today and standings" style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-
-<section class="t-card" aria-label="Today's slate" style="background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #C8F7FC">Today's slate</h2>
-<sc-for list="{{slate}}" as="s" hint-placeholder-count="8">
-<div style="display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid #0B2427; font-size: 13.5px">
-<span style="{{s.timeStyle}}">{{s.t}}</span>
-<span style="flex: 1 1 auto; min-width: 0">
-<span style="display: block; color: #C8F7FC">{{s.e}}</span>
-<span style="display: block; font-size: 12px; color: #3C9AA3">{{s.lg}}</span>
-</span>
+<aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<section class="t-panel" aria-label="House ratings">
+<div class="t-ph"><h2>{{power.title}}</h2><a class="dim" href="{{power.allHref}}">All teams →</a></div>
+<div class="t-pb">
+<sc-if value="{{power.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{power.noneText}}</div></sc-if>
+<table class="s-tbl"><tbody>
+<sc-for list="{{power.rows}}" as="r" hint-placeholder-count="10"><tr><td class="dim" style="width: 28px">{{r.rank}}</td><td class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a></td><td class="hi">{{r.rating}}</td></tr></sc-for>
+</tbody></table>
+<p class="s-note" style="margin: 8px 0 0">{{power.note}}</p>
 </div>
-</sc-for>
 </section>
-
-<section class="t-card" aria-label="MLB postseason" style="background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #C8F7FC">MLB postseason</h2>
-<sc-for list="{{series}}" as="x" hint-placeholder-count="2">
-<div style="padding: 10px 12px; border-radius: 0; background: #061416; border: 1px solid #12363B; margin-bottom: 8px">
-<div style="display: flex; justify-content: space-between; font-size: 12px; color: #4FB8C2"><span style="font-weight: 600; letter-spacing: 0.06em">{{x.round}}</span><span>Best of 7</span></div>
-<div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px">
-<span style="color: #C8F7FC; font-weight: 600">{{x.lead}}</span>
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #C8F7FC">{{x.wins}}</span>
+<section class="t-panel" aria-label="Browse">
+<div class="t-ph"><h2>Browse every team</h2></div>
+<div class="t-pb" style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{browse}}" as="b" hint-placeholder-count="7"><a class="t-chipl" href="{{b.href}}">{{b.label}} <span class="dim" style="margin-left: 6px">{{b.n}}</span></a></sc-for>
 </div>
-<div style="font-size: 12.5px; color: #C8F7FC">{{x.next}}</div>
-</div>
-</sc-for>
 </section>
-
-<section class="t-card" aria-label="NFL standings" style="background: #041012; border: 1px solid #12363B; border-radius: 0; padding: 18px">
-<div style="display: flex; justify-content: space-between; align-items: baseline">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #C8F7FC">NFL standings · {{divName}}</h2>
-<span style="color: #3C9AA3; font-size: 12px">Current</span>
-</div>
-<div role="group" aria-label="Division" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 10px">
-<sc-for list="{{divs}}" as="dv" hint-placeholder-count="8">
-<button type="button" onClick="{{dv.pick}}" aria-pressed="{{dv.pressed}}" style="{{dv.btnStyle}}">{{dv.label}}</button>
-</sc-for>
-</div>
-<table style="width: 100%; font-size: 13.5px; margin-top: 6px">
-<thead>
-<tr style="color: #4FB8C2; font-size: 12px">
-<th scope="col" style="text-align: left; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B">Team</th>
-<th scope="col" style="text-align: right; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B">W–L</th>
-<th scope="col" style="text-align: right; font-weight: 500; padding: 6px 0; border-bottom: 1px solid #12363B">Pct</th>
-</tr>
-</thead>
-<tbody>
-<sc-for list="{{nfcn}}" as="n" hint-placeholder-count="4">
-<tr style="{{n.rowStyle}}">
-<th scope="row" style="text-align: left; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #0B2427">{{n.t}}</th>
-<td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #0B2427; font-family: 'IBM Plex Mono', monospace">{{n.wl}}</td>
-<td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #0B2427; font-family: 'IBM Plex Mono', monospace; color: #4FB8C2">{{n.pct}}</td>
-</tr>
-</sc-for>
-</tbody>
-</table>
-</section>
-
 </aside>
 </div>
+
 </main>
 
-<footer style="border-top: 1px solid #12363B; background: #000000">
-<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #3C9AA3; font-size: 12.5px">
-<span>Scores and schedules via [DATA PROVIDER] · Win probabilities via [DATA PROVIDER] · All times Central</span>
+<footer class="t-foot">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
+<span>Scores and schedules: ESPN public API (cached about 30 seconds) · Win probabilities: house model · No betting lines · All times Central</span>
 <span>Built by Nathan Skown</span>
 </div>
 </footer>
@@ -255,464 +160,165 @@
 <div class="t-crt" aria-hidden="true"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3000}}'>
 class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lg: 'all', day: 0, q: '', boards: {}, models: {}, follows: [], fsched: {} }; }
+
   componentDidMount() {
-    try {
-      var saved = JSON.parse(window.localStorage.getItem('skown.sports.follows') || '[]');
-      if (Array.isArray(saved) && saved.length) this.setState({ follows: saved });
-    } catch (e) {}
+    var self = this, lg = String(this.state.lg || 'all').toLowerCase();
+    if (lg !== 'all' && !SD.LEAGUES[lg]) lg = 'all';
+    var follows = [];
+    try { follows = JSON.parse(window.localStorage.getItem('skown.sports.follows.v2') || '[]'); } catch (e) {}
+    if (!Array.isArray(follows)) follows = [];
+    this.setState({ lg: lg, follows: follows });
+    SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
+    this.refresh();
+    follows.forEach(function (f) { self.loadFollow(f); });
+  }
+  componentWillUnmount() { clearTimeout(this.timer); }
+
+  ymd(off) {
+    var d = new Date(Date.now() + off * 86400000);
+    var p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+    var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
+    return g('year') + g('month') + g('day');
+  }
+  leaguesShown() { return this.state.lg === 'all' ? SD.ORDER : [this.state.lg]; }
+  refresh() {
+    var self = this, day = this.state.day || 0;
+    var list = this.leaguesShown();
+    var jobs = list.map(function (lg) {
+      var L = SD.LEAGUES[lg], p = {};
+      if (day !== 0 && !L.kind) p.dates = self.ymd(day);
+      return SD.scores(lg, p).then(function (b) { return [lg, b]; }, function () { return [lg, { err: true, events: [] }]; });
+    });
+    list.forEach(function (lg) { if (SD.LEAGUES[lg].teams && !self.state.models[lg]) SD.data('model/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[lg] = m; self.setState({ models: o }); }, function () {}); });
+    Promise.all(jobs).then(function (rs) {
+      var boards = Object.assign({}, self.state.boards);
+      rs.forEach(function (r) { boards[r[0] + ':' + day] = r[1]; });
+      self.setState({ boards: boards, loaded: true });
+      var live = rs.some(function (r) { return (r[1].events || []).some(function (e) { return e.state === 'in' || (e.matches || []).some(function (m) { return m.state === 'in'; }); }); });
+      clearTimeout(self.timer); self.timer = setTimeout(function () { self.refresh(); }, live ? 30000 : 300000);
+    });
+  }
+  loadFollow(f) {
+    var self = this;
+    SD.schedule(f.lg, f.id).then(function (s) { var o = Object.assign({}, self.state.fsched); o[f.lg + ':' + f.id] = s; self.setState({ fsched: o }); }, function () {});
   }
   saveFollows(list) {
-    this.setState({ follows: list });
-    try { window.localStorage.setItem('skown.sports.follows', JSON.stringify(list)); } catch (e) {}
+    this.setState({ follows: list, q: '' });
+    try { window.localStorage.setItem('skown.sports.follows.v2', JSON.stringify(list)); } catch (e) {}
   }
+
   renderVals() {
-    var NAVON = '';
-    var navCls = {};
-    ['Team', 'TeamTigers', 'TeamPistons', 'TeamRedWings', 'TeamMSUFootball', 'TeamMSUBasketball', 'TeamMSUHockey', 'Game', 'GameBaseball', 'GameBasketball', 'GameHockey'].forEach(function (n) { navCls[n] = 't-chipl' + (n === NAVON ? ' is-on' : ''); });
-    var self = this;
-    var st = this.state || {};
-    var lg = st.lg || 'all';
-    var follows = st.follows || [];
-    var q = st.q || '';
-    var CAP = 3;
+    var S = this.state, self = this, idx = (S.index || {}).leagues || {}, day = S.day || 0;
+    var info = {}; Object.keys(idx).forEach(function (k) { idx[k].forEach(function (t) { info[k + ':' + t.id] = t; }); });
+    var FAVS = [['nfl', '8', 'LIONS'], ['mlb', '6', 'TIGERS'], ['nba', '8', 'PISTONS'], ['nhl', '5', 'RED WINGS'], ['ncaaf', '127', 'MSU FB'], ['ncaab', '127', 'MSU BB'], ['ncaah', '127', 'MSU HKY']];
+    var favs = FAVS.map(function (f) { return { label: f[2], href: SD.teamHref(f[0], f[1]) }; });
+    var followed = {}; S.follows.forEach(function (f) { followed[f.lg + ':' + f.id] = 1; });
 
-    var mk = function (rows, status, o) {
-      o = o || {};
-      var final = status.indexOf('Final') === 0;
-      var live = !!o.live;
-      var win = (o.win !== undefined) ? o.win : -1;
-      if (win === -1 && final && typeof rows[0][2] === 'number' && typeof rows[1][2] === 'number' && rows[0][2] !== rows[1][2]) {
-        win = rows[0][2] > rows[1][2] ? 0 : 1;
-      }
-      var mine = false;
-      var outRows = rows.map(function (r, k) {
-        var c = win === -1 ? '#66E6F2' : (win === k ? '#C8F7FC' : '#3C9AA3');
-        var w = win === k ? '600' : '400';
-        return {
-          abbr: r[0], name: r[1], score: r[2] === undefined ? '' : String(r[2]),
-          abbrStyle: (r[0] ? 'display: inline-block;' : 'display: none;') + ' width: 46px; flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 13px; font-weight: 600; color: ' + (win === -1 ? '#C8F7FC' : c) + ';',
-          nameStyle: 'flex: 1 1 auto; min-width: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ' + c + '; font-weight: ' + w + ';',
-          scoreStyle: 'flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 15px; font-weight: ' + (win === k ? '600' : '500') + '; color: ' + c + ';'
-        };
-      });
-      var probSegs = [], probText = '';
-      if (o.prob) {
-        var cols = ['#66E6F2', '#1B4A50', '#23565C'];
-        probSegs = o.prob.map(function (p, k) { return { style: 'flex: ' + p[1] + '; background: ' + cols[k] + ';' }; });
-        probText = o.prob.map(function (p) { return p[0] + ' ' + Math.round(p[1]) + '%'; }).join(' · ');
-      }
-      return {
-        rows: outRows, status: live ? '● LIVE · ' + status : status, tag: o.tag || '',
-        title: o.title || '', hasTitle: !!o.title,
-        note: o.note || '', hasNote: !!o.note,
-        hasProb: !!o.prob, probSegs: probSegs, probText: probText,
-        href: o.href || '#', hasHref: !!o.href, hrefLabel: o.hrefLabel || 'Game page →', win: win,
-        mine: mine, live: live, raw: rows, statusRaw: status, isFinal: final, home: (o.home === undefined ? -1 : o.home),
-        statusStyle: 'font-weight: 600; letter-spacing: 0.02em; color: ' + (live ? '#FF5F56' : (final ? '#4FB8C2' : '#C8F7FC')) + ';',
-        cardStyle: 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 0; background: ' + (mine ? '#0C2A2E' : '#061416') + '; border: 1px solid ' + (mine ? '#66E6F2' : '#12363B') + ';'
-      };
-    };
-    // US convention: away on top, home below
-    var us = function (a, an, as, h, hn, hs, status, o) { o = o || {}; o.home = 1; return mk([[a, an, as], [h, hn, hs]], status, o); };
-    // Soccer convention: home on top
-    var fc = function (h, hn, hs, a, an, as, status, o) { o = o || {}; o.home = 0; return mk([[h, hn, hs], [a, an, as]], status, o); };
-    var ev = function (title, place, status, o) { o = o || {}; o.title = title; return mk([['', place, '']], status, o); };
-    var tn = function (p1, s1, p2, s2, status, o) { return mk([['', p1, s1], ['', p2, s2]], status, o); };
-
-    var data = [
-      { id: 'nfl', name: 'NFL', short: 'NFL', sub: 'Week 6 final · Week 7 ahead', groups: [
-        { label: 'Week 6 · Final', games: [
-          us('DET', 'Lions', 45, 'ARI', 'Cardinals', 21, 'Final', { tag: 'Sun', href: 'Game.dc.html?sport=football&mode=1' }),
-          us('BUF', 'Bills', 37, 'LA', 'Rams', 34, 'Final', { tag: 'MNF' }),
-          us('BAL', 'Ravens', 30, 'ATL', 'Falcons', 23, 'Final', { tag: 'SNF' }),
-          us('SF', '49ers', 32, 'SEA', 'Seahawks', 29, 'Final', { tag: 'Sun' }),
-          us('CHI', 'Bears', 7, 'GB', 'Packers', 31, 'Final', { tag: 'Sun' }),
-          us('MIN', 'Vikings', 23, 'NO', 'Saints', 13, 'Final', { tag: 'Sun' }),
-          us('DEN', 'Broncos', 23, 'LAC', 'Chargers', 17, 'Final', { tag: 'Sun' }),
-          us('LV', 'Raiders', 17, 'NE', 'Patriots', 45, 'Final', { tag: 'Sun' }),
-          us('CIN', 'Bengals', 31, 'MIA', 'Dolphins', 24, 'Final', { tag: 'Sun' }),
-          us('IND', 'Colts', 22, 'PIT', 'Steelers', 34, 'Final', { tag: 'Sun' }),
-          us('HOU', 'Texans', 26, 'TEN', 'Titans', 3, 'Final', { tag: 'Sun' }),
-          us('NYG', 'Giants', 27, 'WAS', 'Commanders', 27, 'Final/OT', { tag: 'Sun · Tie' }),
-          us('CLE', 'Browns', 12, 'NYJ', 'Jets', 17, 'Final', { tag: 'Sun' }),
-          us('PHI', 'Eagles', 17, 'JAC', 'Jaguars', 19, 'Final', { tag: 'Sun' }),
-          us('TB', 'Buccaneers', 24, 'DAL', 'Cowboys', 16, 'Final', { tag: 'TNF' })
-        ] },
-        { label: 'Week 7 · Upcoming', games: [
-          us('SEA', 'Seahawks', '', 'DEN', 'Broncos', '', 'Thu 7:15 PM', { tag: 'TNF', prob: [['SEA', 58.7], ['DEN', 41.3]] }),
-          us('HOU', 'Texans', '', 'JAC', 'Jaguars', '', 'Sun 8:30 AM', { prob: [['HOU', 42.7], ['JAC', 57.3]] }),
-          us('CHI', 'Bears', '', 'ATL', 'Falcons', '', 'Sun 12:00 PM', { prob: [['CHI', 61.5], ['ATL', 38.5]] }),
-          us('BAL', 'Ravens', '', 'CLE', 'Browns', '', 'Sun 12:00 PM', { prob: [['BAL', 66.9], ['CLE', 33.1]] }),
-          us('CAR', 'Panthers', '', 'PHI', 'Eagles', '', 'Sun 12:00 PM', { prob: [['CAR', 48.7], ['PHI', 51.3]] }),
-          us('PIT', 'Steelers', '', 'TB', 'Buccaneers', '', 'Sun 12:00 PM', { prob: [['PIT', 55.5], ['TB', 44.5]] }),
-          us('TEN', 'Titans', '', 'IND', 'Colts', '', 'Sun 12:00 PM', { prob: [['TEN', 25.6], ['IND', 74.4]] }),
-          us('NO', 'Saints', '', 'NYG', 'Giants', '', 'Sun 12:00 PM', { prob: [['NO', 51.2], ['NYG', 48.8]] }),
-          us('NYJ', 'Jets', '', 'NE', 'Patriots', '', 'Sun 12:00 PM', { prob: [['NYJ', 24.5], ['NE', 75.5]] }),
-          us('ARI', 'Cardinals', '', 'LA', 'Rams', '', 'Sun 3:05 PM', { prob: [['ARI', 13], ['LA', 87]] }),
-          us('LAC', 'Chargers', '', 'KC', 'Chiefs', '', 'Sun 3:25 PM'),
-          us('BUF', 'Bills', '', 'LV', 'Raiders', '', 'Sun 3:25 PM'),
-          us('DAL', 'Cowboys', '', 'GB', 'Packers', '', 'Sun 7:20 PM', { tag: 'SNF' }),
-          us('WAS', 'Commanders', '', 'SF', '49ers', '', 'Mon 7:15 PM', { tag: 'MNF' })
-        ] }
-      ] },
-      { id: 'mlb', name: 'MLB', short: 'MLB', sub: 'League Championship Series', groups: [
-        { label: 'Today & upcoming', games: [
-          us('CLE', 'Guardians', '', 'TB', 'Rays', '', 'Tonight 7:00 PM', { tag: 'ALCS · G2', note: 'CLE leads 1–0', prob: [['CLE', 44.9], ['TB', 55.1]], href: 'GameBaseball.dc.html' }),
-          us('MIL', 'Brewers', '', 'LAD', 'Dodgers', '', 'Wed 7:00 PM', { tag: 'NLCS · G3', note: 'MIL leads 2–0', prob: [['MIL', 38.3], ['LAD', 61.7]] }),
-          us('TB', 'Rays', '', 'CLE', 'Guardians', '', 'Thu 5:00 PM', { tag: 'ALCS · G3' }),
-          us('MIL', 'Brewers', '', 'LAD', 'Dodgers', '', 'Thu 8:00 PM', { tag: 'NLCS · G4', prob: [['MIL', 38.3], ['LAD', 61.7]] }),
-          us('TB', 'Rays', '', 'CLE', 'Guardians', '', 'Fri 5:00 PM', { tag: 'ALCS · G4' }),
-          us('LAD', 'Dodgers', '', 'MIL', 'Brewers', '', 'Fri 8:00 PM', { tag: 'NLCS · G5', note: 'If necessary' })
-        ] },
-        { label: 'Recent · Final', games: [
-          us('CLE', 'Guardians', 7, 'TB', 'Rays', 3, 'Final', { tag: 'ALCS · G1 · Mon' }),
-          us('LAD', 'Dodgers', 4, 'MIL', 'Brewers', 7, 'Final', { tag: 'NLCS · G2 · Mon', href: 'GameBaseball.dc.html?sport=baseball&mode=1' }),
-          us('LAD', 'Dodgers', 1, 'MIL', 'Brewers', 2, 'Final', { tag: 'NLCS · G1 · Sun' })
-        ] }
-      ] },
-      { id: 'nhl', name: 'NHL', short: 'NHL', sub: '15 games tonight', groups: [
-        { label: 'Tonight', games: [
-          us('NJ', 'Devils', '', 'DET', 'Red Wings', '', '5:00 PM', { prob: [['NJ', 50.2], ['DET', 49.8]], href: 'GameHockey.dc.html' }),
-          us('FLA', 'Panthers', '', 'CBJ', 'Blue Jackets', '', '5:15 PM', { prob: [['FLA', 45.9], ['CBJ', 54.1]] }),
-          us('BUF', 'Sabres', '', 'MTL', 'Canadiens', '', '5:30 PM', { prob: [['BUF', 41.6], ['MTL', 58.4]] }),
-          us('WSH', 'Capitals', '', 'CAR', 'Hurricanes', '', '5:45 PM', { prob: [['WSH', 42], ['CAR', 58]] }),
-          us('SEA', 'Kraken', '', 'PHI', 'Flyers', '', '6:00 PM', { prob: [['SEA', 48.3], ['PHI', 51.7]] }),
-          us('TB', 'Lightning', '', 'NYR', 'Rangers', '', '6:15 PM', { prob: [['TB', 58.7], ['NYR', 41.3]] }),
-          us('STL', 'Blues', '', 'OTT', 'Senators', '', '6:30 PM', { prob: [['STL', 49.5], ['OTT', 50.5]] }),
-          us('VAN', 'Canucks', '', 'NYI', 'Islanders', '', '6:45 PM', { prob: [['VAN', 34.4], ['NYI', 65.6]] }),
-          us('PIT', 'Penguins', '', 'CHI', 'Blackhawks', '', '7:00 PM', { prob: [['PIT', 58], ['CHI', 42]] }),
-          us('MIN', 'Wild', '', 'WPG', 'Jets', '', '7:15 PM', { prob: [['MIN', 50.3], ['WPG', 49.7]] }),
-          us('COL', 'Avalanche', '', 'DAL', 'Stars', '', '7:30 PM'),
-          us('VGK', 'Golden Knights', '', 'NSH', 'Predators', '', '7:45 PM'),
-          us('TOR', 'Maple Leafs', '', 'UTA', 'Mammoth', '', '8:00 PM'),
-          us('CGY', 'Flames', '', 'ANA', 'Ducks', '', '8:45 PM'),
-          us('EDM', 'Oilers', '', 'LA', 'Kings', '', '9:30 PM')
-        ] },
-        { label: 'Recent · Final', games: [
-          us('DET', 'Red Wings', 0, 'MTL', 'Canadiens', 1, 'Final/SO', { tag: 'Sat', href: 'GameHockey.dc.html?sport=hockey&mode=1' }),
-          us('VGK', 'Golden Knights', 2, 'MIN', 'Wild', 4, 'Final', { tag: 'Mon' }),
-          us('OTT', 'Senators', 4, 'NJ', 'Devils', 1, 'Final', { tag: 'Mon' }),
-          us('FLA', 'Panthers', 3, 'BUF', 'Sabres', 5, 'Final', { tag: 'Mon' })
-        ] }
-      ] },
-      { id: 'ncaaf', name: 'College football', short: 'NCAAF', sub: 'Week 7 · Two games tonight', groups: [
-        { label: 'Upcoming', games: [
-          us('DEL', 'Delaware', '', 'MTU', 'Middle Tennessee', '', 'Tonight 6:00 PM', { prob: [['DEL', 51.2], ['MTU', 48.8]] }),
-          us('FIU', 'FIU', '', 'JVST', 'Jacksonville St.', '', 'Tonight 7:00 PM', { prob: [['FIU', 42.9], ['JVST', 57.1]] }),
-          us('NW', 'Northwestern', '', 'MSU', 'Michigan State', '', 'Sat 11:00 AM'),
-          us('FLA', 'Florida', '', 'TEX', 'Texas', '', 'Sat 11:00 AM'),
-          us('KU', 'Kansas', '', 'KSU', 'Kansas State', '', 'Sat 11:00 AM'),
-          us('WASH', 'Washington', '', 'PUR', 'Purdue', '', 'Fri 7:00 PM'),
-          us('ECU', 'East Carolina', '', 'UAB', 'UAB', '', 'Thu 6:30 PM', { prob: [['ECU', 65.4], ['UAB', 34.6]] }),
-          us('KENN', 'Kennesaw St.', '', 'MOSU', 'Missouri St.', '', 'Wed 6:30 PM', { prob: [['KENN', 58.9], ['MOSU', 41.1]] })
-        ] },
-        { label: 'Saturday · Final', games: [
-          us('ILL', 'Illinois', 38, 'MSU', 'Michigan State', 37, 'Final/OT', { tag: 'Sat', href: 'Game.dc.html?sport=football&mode=2' }),
-          us('UGA', 'Georgia', 20, 'ALA', 'Alabama', 17, 'Final', { tag: 'Sat' }),
-          us('USC', 'USC', 31, 'PSU', 'Penn State', 23, 'Final', { tag: 'Sat' }),
-          us('LSU', 'LSU', 34, 'UK', 'Kentucky', 35, 'Final', { tag: 'Sat' }),
-          us('MINN', 'Minnesota', 13, 'PUR', 'Purdue', 41, 'Final', { tag: 'Sat' }),
-          us('KU', 'Kansas', 24, 'UTAH', 'Utah', 41, 'Final', { tag: 'Sat' }),
-          us('BSU', 'Boise State', 38, 'FRES', 'Fresno State', 31, 'Final', { tag: 'Sat' }),
-          us('JMU', 'James Madison', 27, 'GASO', 'Georgia Southern', 24, 'Final', { tag: 'Sat' })
-        ] }
-      ] },
-      { id: 'nba', name: 'NBA', short: 'NBA', sub: 'Regular season tips Tuesday, Oct 20', groups: [
-        { label: 'Opening week', games: [
-          us('BOS', 'Celtics', '', 'DET', 'Pistons', '', 'Tue 10/20 · 2:00 PM', { tag: 'Opening night', prob: [['BOS', 46.8], ['DET', 53.2]], href: 'GameBasketball.dc.html' }),
-          us('PHI', '76ers', '', 'NYK', 'Knicks', '', 'Tue 10/20 · 6:00 PM', { tag: 'Opening night', prob: [['PHI', 35.3], ['NYK', 64.7]] }),
-          us('OKC', 'Thunder', '', 'SAS', 'Spurs', '', 'Tue 10/20 · 8:30 PM', { tag: 'Opening night', prob: [['OKC', 45.5], ['SAS', 54.5]] }),
-          us('GSW', 'Warriors', '', 'LAL', 'Lakers', '', 'Wed 10/21 · 9:00 PM'),
-          us('MIN', 'Timberwolves', '', 'MIA', 'Heat', '', 'Wed 10/21 · 6:30 PM', { prob: [['MIN', 47.5], ['MIA', 52.5]] }),
-          us('CLE', 'Cavaliers', '', 'PHI', '76ers', '', 'Thu 10/22 · 6:00 PM')
-        ] }
-      ] },
-      { id: 'ncaab', name: 'College basketball', short: 'NCAAB', sub: 'Season begins in November', groups: [
-        { label: 'Coming up', games: [
-          ev('Men’s season tip-off', '[OPENING DATE] · Full schedule loads when the season starts', '[DATE]', { tag: 'NCAA D-I' }),
-          ev('Women’s season tip-off', '[OPENING DATE] · Full schedule loads when the season starts', '[DATE]', { tag: 'NCAA D-I' })
-        ] }
-      ] },
-      { id: 'soccer', name: 'Soccer', short: 'soccer', sub: 'Champions League today · Premier League · MLS', groups: [
-        { label: 'UEFA Champions League · Today', games: [
-          fc('RCL', 'Lens', '', 'SPO', 'Sporting CP', '', '11:45 AM', { tag: 'Matchday 2', prob: [['RCL', 38.3], ['SPO', 35.2], ['Draw', 26.5]] }),
-          fc('SBH', 'Sabah', '', 'SLA', 'Slavia Prague', '', '11:45 AM', { tag: 'Matchday 2', prob: [['SBH', 25.3], ['SLA', 49.9], ['Draw', 24.8]] }),
-          fc('ARS', 'Arsenal', '', 'LIL', 'Lille', '', '2:00 PM', { tag: 'Matchday 2', prob: [['ARS', 81.9], ['LIL', 6.1], ['Draw', 12]] }),
-          fc('ATM', 'Atlético Madrid', '', 'MUN', 'Manchester United', '', '2:00 PM', { tag: 'Matchday 2', prob: [['ATM', 50.9], ['MUN', 24], ['Draw', 25.1]] }),
-          fc('GAL', 'Galatasaray', '', 'BAR', 'Barcelona', '', '2:00 PM', { tag: 'Matchday 2', prob: [['GAL', 10.4], ['BAR', 76.6], ['Draw', 13]] }),
-          fc('INT', 'Inter', '', 'BRU', 'Club Brugge', '', '2:00 PM', { tag: 'Matchday 2', prob: [['INT', 79.1], ['BRU', 8.3], ['Draw', 12.6]] }),
-          fc('RBL', 'RB Leipzig', '', 'PSV', 'PSV Eindhoven', '', '2:00 PM', { tag: 'Matchday 2', prob: [['RBL', 63.1], ['PSV', 18.8], ['Draw', 18.1]] }),
-          fc('VIK', 'Viking', '', 'BMU', 'Bayern Munich', '', '2:00 PM', { tag: 'Matchday 2', prob: [['VIK', 5.2], ['BMU', 86.7], ['Draw', 8.1]] }),
-          fc('VIL', 'Villarreal', '', 'NAP', 'Napoli', '', '2:00 PM', { tag: 'Matchday 2', prob: [['VIL', 45.6], ['NAP', 28.5], ['Draw', 25.9]] })
-        ] },
-        { label: 'Premier League · Final', games: [
-          fc('LFC', 'Liverpool', 0, 'MCI', 'Manchester City', 3, 'Final', { tag: 'Sun' }),
-          fc('CFC', 'Chelsea', 5, 'BOU', 'Bournemouth', 1, 'Final', { tag: 'Sat' }),
-          fc('ARS', 'Arsenal', 2, 'LEE', 'Leeds United', 1, 'Final', { tag: 'Sat' }),
-          fc('MUN', 'Manchester United', 1, 'TOT', 'Tottenham', 1, 'Final', { tag: 'Sat' }),
-          fc('COV', 'Coventry City', 4, 'NEW', 'Newcastle', 1, 'Final', { tag: 'Mon' }),
-          fc('CRY', 'Crystal Palace', 3, 'NFO', 'Nottingham Forest', 1, 'Final', { tag: 'Sun' }),
-          fc('AVL', 'Aston Villa', 2, 'BRE', 'Brentford', 2, 'Final', { tag: 'Sat' }),
-          fc('IPS', 'Ipswich Town', 2, 'FUL', 'Fulham', 1, 'Final', { tag: 'Sat' }),
-          fc('SUN', 'Sunderland', 0, 'BRI', 'Brighton', 2, 'Final', { tag: 'Sat' }),
-          fc('HUL', 'Hull City', 2, 'EVE', 'Everton', 2, 'Final', { tag: 'Sun' })
-        ] },
-        { label: 'Premier League · This weekend', games: [
-          fc('EVE', 'Everton', '', 'CFC', 'Chelsea', '', 'Sat 6:30 AM', { prob: [['EVE', 30.3], ['CFC', 44.2], ['Draw', 25.5]] }),
-          fc('BRE', 'Brentford', '', 'LFC', 'Liverpool', '', 'Sat 9:00 AM', { prob: [['BRE', 39.8], ['LFC', 34.8], ['Draw', 25.4]] }),
-          fc('MCI', 'Manchester City', '', 'IPS', 'Ipswich Town', '', 'Sat 9:00 AM', { prob: [['MCI', 79.6], ['IPS', 7.8], ['Draw', 12.6]] }),
-          fc('FUL', 'Fulham', '', 'HUL', 'Hull City', '', 'Sat 9:00 AM', { prob: [['FUL', 55.6], ['HUL', 20.5], ['Draw', 23.9]] }),
-          fc('NEW', 'Newcastle', '', 'AVL', 'Aston Villa', '', 'Sat 11:30 AM', { prob: [['NEW', 43], ['AVL', 31.4], ['Draw', 25.6]] }),
-          fc('LEE', 'Leeds United', '', 'MUN', 'Manchester United', '', 'Sun 8:00 AM', { prob: [['LEE', 38.9], ['MUN', 35], ['Draw', 26.1]] }),
-          fc('BRI', 'Brighton', '', 'CRY', 'Crystal Palace', '', 'Sun 8:00 AM', { prob: [['BRI', 62], ['CRY', 17.1], ['Draw', 20.9]] }),
-          fc('BOU', 'Bournemouth', '', 'SUN', 'Sunderland', '', 'Sun 8:00 AM', { prob: [['BOU', 46.4], ['SUN', 26.9], ['Draw', 26.7]] }),
-          fc('NFO', 'Nottingham Forest', '', 'ARS', 'Arsenal', '', 'Sun 10:30 AM', { prob: [['NFO', 17], ['ARS', 59.6], ['Draw', 23.4]] }),
-          fc('TOT', 'Tottenham', '', 'COV', 'Coventry City', '', 'Mon 2:00 PM', { prob: [['TOT', 65.1], ['COV', 15.3], ['Draw', 19.6]] })
-        ] },
-        { label: 'MLS · Wednesday', games: [
-          fc('CHI', 'Chicago Fire', '', 'PHI', 'Philadelphia Union', '', 'Wed 7:30 PM', { prob: [['CHI', 38.9], ['PHI', 36.6], ['Draw', 24.5]] }),
-          fc('MIA', 'Inter Miami', '', 'NYC', 'NYCFC', '', 'Wed 6:30 PM', { prob: [['MIA', 63.7], ['NYC', 17.8], ['Draw', 18.5]] }),
-          fc('CIN', 'FC Cincinnati', '', 'NE', 'New England', '', 'Wed 6:30 PM', { prob: [['CIN', 50.7], ['NE', 26.3], ['Draw', 23]] }),
-          fc('CLB', 'Columbus Crew', '', 'CLT', 'Charlotte FC', '', 'Wed 6:30 PM', { prob: [['CLB', 47.4], ['CLT', 28], ['Draw', 24.6]] }),
-          fc('NSH', 'Nashville SC', '', 'SKC', 'Sporting KC', '', 'Wed 7:30 PM', { prob: [['NSH', 78.7], ['SKC', 8.8], ['Draw', 12.5]] }),
-          fc('STL', 'St. Louis City', '', 'VAN', 'Vancouver', '', 'Wed 7:30 PM', { prob: [['STL', 41.7], ['VAN', 33.5], ['Draw', 24.8]] })
-        ] },
-        { label: 'MLS · Weekend final', games: [
-          fc('STL', 'St. Louis City', 6, 'LA', 'LA Galaxy', 2, 'Final', { tag: 'Sun' }),
-          fc('NE', 'New England', 0, 'SEA', 'Seattle Sounders', 3, 'Final', { tag: 'Sat' }),
-          fc('ATX', 'Austin FC', 1, 'NSH', 'Nashville SC', 4, 'Final', { tag: 'Sat' }),
-          fc('RBNY', 'NY Red Bulls', 4, 'SD', 'San Diego FC', 1, 'Final', { tag: 'Sat' }),
-          fc('ORL', 'Orlando City', 3, 'CLB', 'Columbus Crew', 2, 'Final', { tag: 'Sat' }),
-          fc('SKC', 'Sporting KC', 3, 'POR', 'Portland', 3, 'Final', { tag: 'Sat' })
-        ] }
-      ] },
-      { id: 'tennis', name: 'Tennis', short: 'tennis', sub: 'ATP Challenger & WTA 125 · Live', groups: [
-        { label: 'Live now', games: [
-          tn('Laura Mair', '6 2 5', 'Lucrezia Stefanini', '3 6 4', 'Set 3', { live: true, tag: 'WTA 125 Rovereto' }),
-          tn('Luca Nardi', '4 3', 'August Holmgren', '6 3', 'Set 2', { live: true, tag: 'Challenger Olbia' }),
-          tn('Pierre-Hugues Herbert', '6 2', 'Norbert Gombos', '3 2', 'Set 2', { live: true, tag: 'Challenger Roanne' }),
-          tn('Max Wiskandt', '0 7 1', 'Miguel Damas', '6 5 0', 'Set 3', { live: true, tag: 'Challenger Catania' }),
-          tn('Marco Trungelliti', '2', 'Thiago Monteiro', '1', 'Set 1', { live: true, tag: 'Challenger Maia' }),
-          tn('Elsa Jacquemot', '2', 'Teodora Kostovic', '2', 'Set 1', { live: true, tag: 'WTA 125 Rovereto' })
-        ] },
-        { label: 'Completed today', games: [
-          tn('Pedro Vives Marcos', '6 6', 'Marco Cecchinato', '4 4', 'Final', { win: 0, tag: 'Challenger Catania' }),
-          tn('Polona Hercog', '6 6', 'Madalena Matias', '0 0', 'Final', { win: 0, tag: 'WTA 125 Lisbon' }),
-          tn('Jan Kumstat', '7 7', 'Edas Butvilas', '6 6', 'Final', { win: 0, tag: 'Challenger Olbia' }),
-          tn('Guiomar Maristany', '6 6', 'Gina Feistel', '2 3', 'Final', { win: 0, tag: 'WTA 125 Lisbon' })
-        ] },
-        { label: 'Tour level', games: [
-          ev('[ATP & WTA TOUR EVENTS THIS WEEK]', '[CITY] · [SURFACE] · Draws and order of play', '[DATES]', { tag: 'ATP / WTA' })
-        ] }
-      ] },
-      { id: 'golf', name: 'Golf', short: 'golf', sub: 'PGA Tour · FedEx Cup Fall', groups: [
-        { label: 'PGA Tour schedule', games: [
-          ev('Baycurrent Classic', 'Yokohama Country Club · Japan', 'Final', { tag: 'Last week', note: 'Winner [WINNER] · [SCORE]' }),
-          ev('Bermuda Championship', 'Port Royal Golf Course · Southampton, Bermuda', 'Oct 21–25', { tag: 'Next up' }),
-          ev('Mexico Open', 'Vallarta, Mexico', 'Oct 29 – Nov 1'),
-          ev('World Wide Technology Championship', 'El Cardonal at Diamante · Los Cabos', 'Nov 5–8'),
-          ev('Good Good Championship', 'Austin, Texas · Inaugural event', 'Nov 11–15'),
-          ev('RSM Classic', 'Sea Island Golf Club · St. Simons Island, GA', 'Nov 19–22', { tag: 'Fall finale' })
-        ] },
-        { label: 'Leaderboard', games: [
-          ev('Live leaderboard', 'Appears during tournament weeks · Pos, player, to par, thru, today', '[EVENT WEEK]', { tag: 'PGA / LPGA / LIV / DP World' })
-        ] }
-      ] }
-    ];
-
-    var chipsDef = [{ id: 'all', label: 'All' }].concat(data.map(function (d) { return { id: d.id, label: d.short === 'soccer' ? 'Soccer' : (d.short === 'tennis' ? 'Tennis' : (d.short === 'golf' ? 'Golf' : d.short)) }; }));
-    var chips = chipsDef.map(function (c) {
-      var on = c.id === lg;
-      return {
-        label: c.label, pressed: on ? 'true' : 'false',
-        pick: function () { self.setState({ lg: c.id }); },
-        btnStyle: 'height: 44px; padding: 0 16px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, ui-monospace, monospace; font-size: 14px; font-weight: 500; ' + (on ? 'background: #66E6F2; color: #000000; text-shadow: none;' : 'background: transparent; color: #4FB8C2;')
-      };
+    // follow search
+    var q = (S.q || '').trim().toLowerCase(), results = [];
+    if (q.length >= 2) {
+      Object.keys(idx).forEach(function (k) { idx[k].forEach(function (t) {
+        if (followed[k + ':' + t.id] || results.length >= 12) return;
+        if ([t.name, t.loc, t.nick, t.abbr].join(' ').toLowerCase().indexOf(q) >= 0)
+          results.push({ name: t.name, lg: SD.LEAGUES[k].short, add: function () { var f = { lg: k, id: t.id, name: t.name }; self.saveFollows(S.follows.concat([f])); self.loadFollow(f); } });
+      }); });
+    }
+    var mine = S.follows.map(function (f) {
+      var t = info[f.lg + ':' + f.id] || {}, s = S.fsched[f.lg + ':' + f.id], last = null, next = null;
+      if (s) { s.games.forEach(function (g) { if (g.done) last = g; else if (!next && g.state !== 'post') next = g; }); }
+      var opp = function (g) { return (g.home || g.neutral ? 'vs ' : 'at ') + (g.opp.abbr || g.opp.short || 'TBD'); };
+      return { name: t.name || f.name, logo: t.logo || '', href: SD.teamHref(f.lg, f.id), removeLabel: 'Stop following ' + (t.name || f.name),
+        remove: function () { self.saveFollows(S.follows.filter(function (x) { return !(x.lg === f.lg && x.id === f.id); })); },
+        last: last ? (last.result ? last.result + ' ' : '') + last.score + ' ' + opp(last) : (s ? '—' : 'Loading…'), lastHref: last ? last.href : '#',
+        lastStyle: last && last.result === 'W' ? 'color: var(--up)' : last && last.result === 'L' ? 'color: var(--dn)' : '',
+        next: next ? (next.state === 'in' ? 'LIVE ' + next.score + ' ' : F.day(next.start) + ' ' + F.time(next.start) + ' ') + opp(next) : (s ? 'None scheduled' : ''), nextHref: next ? next.href : '#' };
     });
 
-    var TEAMPAGE = { 'nfl:DET': 'Team.dc.html', 'mlb:DET': 'TeamTigers.dc.html', 'nhl:DET': 'TeamRedWings.dc.html', 'nba:DET': 'TeamPistons.dc.html', 'ncaaf:MSU': 'TeamMSUFootball.dc.html', 'ncaab:MSU': 'TeamMSUBasketball.dc.html' };
-    var TEAMTPL = '#';
-    var GAMEPAGE = { nfl: 'Game.dc.html', ncaaf: 'Game.dc.html', mlb: 'GameBaseball.dc.html', nhl: 'GameHockey.dc.html', nba: 'GameBasketball.dc.html', ncaab: 'GameBasketball.dc.html' };
-    var W = '#EAFDFF';
-    var COLORS = {
-      'nfl:ARI': ['#97233F', W], 'nfl:ATL': ['#A71930', W], 'nfl:BAL': ['#241773', W], 'nfl:BUF': ['#00338D', W], 'nfl:CAR': ['#0085CA', W], 'nfl:CHI': ['#0B162A', '#C83803'],
-      'nfl:CIN': ['#FB4F14', '#000000'], 'nfl:CLE': ['#311D00', '#FF3C00'], 'nfl:DAL': ['#003594', W], 'nfl:DEN': ['#FB4F14', '#002244'], 'nfl:DET': ['#0076B6', W], 'nfl:GB': ['#203731', '#FFB612'],
-      'nfl:HOU': ['#03202F', '#A71930'], 'nfl:IND': ['#002C5F', W], 'nfl:JAC': ['#006778', '#D7A22A'], 'nfl:KC': ['#E31837', '#FFB81C'], 'nfl:LV': ['#000000', '#A5ACAF'], 'nfl:LAC': ['#0080C6', '#FFC20E'],
-      'nfl:LA': ['#003594', '#FFD100'], 'nfl:MIA': ['#008E97', W], 'nfl:MIN': ['#4F2683', '#FFC62F'], 'nfl:NE': ['#002244', '#C60C30'], 'nfl:NO': ['#D3BC8D', '#101820'], 'nfl:NYG': ['#0B2265', W],
-      'nfl:NYJ': ['#125740', W], 'nfl:PHI': ['#004C54', W], 'nfl:PIT': ['#FFB612', '#101820'], 'nfl:SF': ['#AA0000', '#B3995D'], 'nfl:SEA': ['#002244', '#69BE28'], 'nfl:TB': ['#D50A0A', W],
-      'nfl:TEN': ['#0C2340', '#4B92DB'], 'nfl:WAS': ['#5A1414', '#FFB612'],
-      'mlb:CLE': ['#00385D', W], 'mlb:TB': ['#092C5C', '#8FBCE6'], 'mlb:MIL': ['#12284B', '#FFC52F'], 'mlb:LAD': ['#005A9C', W],
-      'nhl:NJ': ['#000000', '#E8344A'], 'nhl:DET': ['#CE1126', W], 'nhl:FLA': ['#C8102E', '#B9975B'], 'nhl:CBJ': ['#002654', W], 'nhl:BUF': ['#003087', '#FFB81C'], 'nhl:MTL': ['#AF1E2D', W],
-      'nhl:WSH': ['#041E42', '#C8102E'], 'nhl:CAR': ['#CC0000', W], 'nhl:SEA': ['#001628', '#99D9D9'], 'nhl:PHI': ['#F74902', '#000000'], 'nhl:TB': ['#002868', W], 'nhl:NYR': ['#0038A8', W],
-      'nhl:STL': ['#002F87', '#FCB514'], 'nhl:OTT': ['#C52032', W], 'nhl:VAN': ['#00205B', W], 'nhl:NYI': ['#00539B', '#F47D30'], 'nhl:PIT': ['#FCB514', '#000000'], 'nhl:CHI': ['#CF0A2C', W],
-      'nhl:MIN': ['#154734', W], 'nhl:WPG': ['#041E42', W], 'nhl:COL': ['#6F263D', W], 'nhl:DAL': ['#006847', W], 'nhl:VGK': ['#B4975A', '#333F42'], 'nhl:NSH': ['#FFB81C', '#041E42'],
-      'nhl:TOR': ['#00205B', W], 'nhl:UTA': ['#0B162A', '#6CACE4'], 'nhl:CGY': ['#C8102E', '#F1BE48'], 'nhl:ANA': ['#F47A38', '#000000'], 'nhl:EDM': ['#041E42', '#FF4C00'], 'nhl:LA': ['#041012', '#A2AAAD'],
-      'nhl:BOS': ['#041012', '#FFB81C'], 'nhl:SJ': ['#006D75', W],
-      'nba:BOS': ['#007A33', W], 'nba:DET': ['#C8102E', W], 'nba:PHI': ['#006BB6', W], 'nba:NYK': ['#006BB6', '#F58426'], 'nba:OKC': ['#007AC1', '#EF3B24'], 'nba:SAS': ['#041012', '#C4CED4'],
-      'nba:GSW': ['#1D428A', '#FFC72C'], 'nba:LAL': ['#552583', '#FDB927'], 'nba:MIN': ['#0C2340', '#78BE20'], 'nba:MIA': ['#98002E', W], 'nba:CLE': ['#860038', '#FDBB30'],
-      'ncaaf:MSU': ['#18453B', W], 'ncaaf:ILL': ['#E84A27', '#13294B']
-    };
-    // Followed teams: key = leagueId:abbr. Highlight their games and build the team catalog.
-    var lgLabel = {};
-    chipsDef.forEach(function (c) { lgLabel[c.id] = c.label; });
-    var catalog = [], seen = {};
-    data.forEach(function (d) {
-      d.groups.forEach(function (G) {
-        G.games.forEach(function (g) {
-          var hit = false;
-          g.raw.forEach(function (r) {
-            if (!r[0] || r[0].charAt(0) === '[') return;
-            var key = d.id + ':' + r[0];
-            if (follows.indexOf(key) >= 0) hit = true;
-            if (!seen[key]) { seen[key] = true; catalog.push({ key: key, abbr: r[0], name: r[1], lg: lgLabel[d.id], lgId: d.id }); }
-          });
-          g.mine = hit;
-          // Logo slot: provider logo in production; team-color monogram until then.
-          g.raw.forEach(function (r, k) {
-            if (!r[0] || !g.rows[k]) return;
-            var c = COLORS[d.id + ':' + r[0]];
-            var lose = g.win !== -1 && g.win !== k;
-            g.rows[k].abbrStyle = 'display: inline-flex; align-items: center; justify-content: center; flex: none; width: 42px; height: 24px; border-radius: 0; font-family: \'IBM Plex Mono\', monospace; font-size: 11.5px; font-weight: 600; background: ' + (c ? c[0] : '#0B2427') + '; color: ' + (c ? c[1] : '#C8F7FC') + '; opacity: ' + (lose ? '0.5' : '1') + ';';
-          });
-          // Every team name links to its team page; every card links to its game page.
-          g.rows.forEach(function (row, k) {
-            var ab = g.raw[k] && g.raw[k][0];
-            row.href = TEAMPAGE[d.id + ':' + ab] || TEAMTPL;
-            row.aria = row.name + (ab ? ' team page' : ' player page');
-          });
-          g.hrefLabel = 'Game page →';
-          g.aria = g.hasHref ? 'Open game page: ' + g.raw.map(function (r) { return r[1]; }).join(' vs ') + ', ' + g.statusRaw : undefined;
-          g.cardStyle = 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 0; background: ' + (hit ? '#0C2A2E' : '#061416') + '; border: 1px solid ' + (hit ? '#66E6F2' : '#12363B') + ';';
+    // league chips
+    var liveIn = function (b) { return b && (b.events || []).some(function (e) { return e.state === 'in' || (e.matches || []).some(function (m) { return m.state === 'in'; }); }); };
+    var chips = ['all'].concat(SD.ORDER).map(function (k) {
+      return { label: k === 'all' ? 'ALL' : SD.LEAGUES[k].short, on: S.lg === k ? 'true' : 'false', cls: 's-tab' + (S.lg === k ? ' is-on' : ''), live: k !== 'all' && liveIn(S.boards[k + ':' + day]),
+        pick: function () { history.replaceState(null, '', k === 'all' ? location.pathname : '?lg=' + k); self.setState({ lg: k }); setTimeout(function () { self.refresh(); }, 0); } };
+    });
+    var days = [[-1, 'Yesterday'], [0, 'Today'], [1, 'Tomorrow']].map(function (d) {
+      return { label: d[1], on: day === d[0] ? 'true' : 'false', cls: 's-tab' + (day === d[0] ? ' is-on' : ''), pick: function () { self.setState({ day: d[0] }); setTimeout(function () { self.refresh(); }, 0); } };
+    });
+
+    // scoreboards
+    var all = S.lg === 'all', CAP = 4, liveN = 0;
+    var stStyle = function (st) { return st === 'in' ? 'color: var(--dn); font-weight: 600; font-size: 12.5px' : 'color: var(--dim); font-size: 12.5px'; };
+    var rankSt = { 'in': 0, pre: 1, post: 2 };
+    var boards = [];
+    this.leaguesShown().forEach(function (lg) {
+      var L = SD.LEAGUES[lg], b = S.boards[lg + ':' + day], model = S.models[lg];
+      var B = { name: L.label, sub: '', games: [], msg: '', more: false, moreLabel: '', showAll: function () { self.setState({ lg: lg }); history.replaceState(null, '', '?lg=' + lg); } };
+      if (!b) { B.msg = 'Loading…'; boards.push(B); return; }
+      if (b.err) { B.msg = 'The live feed did not respond. It retries automatically.'; boards.push(B); return; }
+      var cards = [];
+      if (L.kind === 'golf') {
+        b.events.forEach(function (e) {
+          cards.push({ title: e.name, rows: e.players.slice(0, 5).map(function (p) { return { name: p.pos + ' ' + p.name, rec: p.thru, href: '#', style: '', score: p.score, scoreStyle: 'color: var(--hi)' }; }),
+            status: e.detail, stStyle: stStyle(e.state), href: '', note: '', cardStyle: '', live: e.state === 'in', st: e.state, start: e.start });
         });
-      });
-    });
-    var summarize = function (t) {
-      var last = null, next = null;
-      data.forEach(function (d) {
-        if (d.id !== t.lgId) return;
-        d.groups.forEach(function (G) {
-          G.games.forEach(function (g) {
-            var idx = g.raw[0][0] === t.abbr ? 0 : (g.raw[1] && g.raw[1][0] === t.abbr ? 1 : -1);
-            if (idx < 0) return;
-            var opp = g.raw[1 - idx];
-            var where = (g.home === idx) ? 'vs ' : 'at ';
-            if (g.isFinal && !last) {
-              var ts = g.raw[idx][2], os = opp[2];
-              last = { text: (ts > os ? 'W ' : (ts < os ? 'L ' : 'T ')) + ts + '–' + os + ' ' + where + opp[0], res: ts > os ? 1 : (ts < os ? -1 : 0) };
-            } else if (!g.isFinal && !next) {
-              next = g.statusRaw + ' ' + where + opp[0];
-            }
-          });
+      } else if (L.kind === 'tennis') {
+        b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
+          cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi)' }; }),
+            status: m.state === 'pre' ? F.time(m.start) + ' CT' : m.detail, stStyle: stStyle(m.state), href: '', note: e.name + ' · ' + m.round, cardStyle: '', live: m.state === 'in', st: m.state, start: m.start });
+        }); });
+      } else {
+        b.events.forEach(function (e) {
+          var pre = e.state === 'pre', fol = followed[lg + ':' + e.away.id] || followed[lg + ':' + e.home.id];
+          var p = pre && model ? SD.project(model, e.away.id, e.home.id, e.neutral) : null;
+          var MA = model && model.teams ? model.teams[e.away.id] : null, MH = model && model.teams ? model.teams[e.home.id] : null;
+          var en = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
+          var note = p && en(MA) && en(MH) ? 'House: ' + (p.pHome >= 0.5 ? e.home.abbr + ' ' + Math.round(p.pHome * 100) : e.away.abbr + ' ' + Math.round(p.pAway * 100)) + '% to win' : '';
+          if (e.note) note = e.note + (note ? ' · ' + note : '');
+          var row = function (t) {
+            var won = e.done && t.winner, lost = e.done && !t.winner && (e.away.winner || e.home.winner);
+            var lg2 = info[lg + ':' + t.id] || {};
+            return { name: (t.rank ? t.rank + ' ' : '') + (lg.indexOf('ncaa') === 0 ? (t.loc || t.short) : t.short), rec: pre ? t.record : '', logo: lg2.logo || '', href: t.href || '#',
+              style: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : '', score: pre ? '' : t.score,
+              scoreStyle: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
+          };
+          cards.push({ title: '', rows: [row(e.away), row(e.home)],
+            status: pre ? F.time(e.start) + ' CT' + (day !== 0 || !sameDay(e.start) ? ' · ' + F.day(e.start) : '') + (e.tv ? ' · ' + e.tv : '') : e.detail,
+            stStyle: stStyle(e.state), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note,
+            cardStyle: fol ? 'border-color: var(--a); background: var(--band)' : '', live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });
-      });
-      return { last: last, next: next };
-    };
-    var byKey = {};
-    catalog.forEach(function (t) { byKey[t.key] = t; });
-    var mine = follows.filter(function (k) { return byKey[k]; }).map(function (k) {
-      var t = byKey[k], s = summarize(t);
-      return {
-        team: t.name, lg: t.lg,
-        href: ({ 'nfl:DET': 'Team.dc.html', 'mlb:DET': 'TeamTigers.dc.html', 'nhl:DET': 'TeamRedWings.dc.html', 'nba:DET': 'TeamPistons.dc.html', 'ncaaf:MSU': 'TeamMSUFootball.dc.html', 'ncaab:MSU': 'TeamMSUBasketball.dc.html' })[k] || '#',
-        last: s.last ? s.last.text : 'No recent result',
-        next: s.next || 'Nothing scheduled this week',
-        lastStyle: 'font-weight: 500; color: ' + (!s.last ? '#4FB8C2' : (s.last.res > 0 ? '#4ADE80' : (s.last.res < 0 ? '#FF5F56' : '#66E6F2'))) + ';',
-        removeLabel: 'Stop following ' + t.name,
-        remove: function () { self.saveFollows(follows.filter(function (x) { return x !== k; })); }
-      };
+      }
+      cards.sort(function (a, b) { return ((b.fol ? 1 : 0) - (a.fol ? 1 : 0)) || (rankSt[a.st] - rankSt[b.st]) || (a.start < b.start ? -1 : 1); });
+      var nLive = cards.filter(function (c) { return c.live; }).length; liveN += nLive;
+      B.sub = [nLive ? nLive + ' live' : '', cards.length ? cards.length + (L.kind === 'golf' ? ' event' : (L.kind === 'tennis' ? ' matches' : ' games')) : '', b.week ? 'Week ' + b.week : ''].filter(Boolean).join(' · ');
+      if (!cards.length) B.msg = 'No ' + L.label + ' ' + (L.kind === 'golf' ? 'events' : 'games') + ' ' + (day === 0 ? 'on the current slate.' : (day < 0 ? 'yesterday.' : 'tomorrow.'));
+      B.games = all ? cards.slice(0, CAP) : cards;
+      if (all && cards.length > CAP) { B.more = true; B.moreLabel = 'All ' + cards.length + ' ' + L.short + ' →'; }
+      if (all && !cards.length) return;  // keep the all-sports view short
+      boards.push(B);
     });
-    var ql = q.trim().toLowerCase();
-    var results = !ql ? [] : catalog.filter(function (t) {
-      return follows.indexOf(t.key) < 0 && (t.name.toLowerCase().indexOf(ql) >= 0 || t.abbr.toLowerCase() === ql || t.lg.toLowerCase() === ql);
-    }).slice(0, 8).map(function (t) {
-      return { name: t.name, lg: t.lg, add: function () { self.saveFollows(follows.concat([t.key])); self.setState({ q: '' }); } };
-    });
+    function sameDay(iso) { return F.day(iso) === F.day(new Date().toISOString()); }
+    if (all && S.loaded && !boards.length) boards.push({ name: 'Nothing on', sub: '', games: [], msg: 'No games in any league ' + (day === 0 ? 'right now.' : 'on that day.') });
 
-    var rank = function (g) { return (g.mine ? 0 : 2) + (g.live ? 0 : 1); };
-    var leagues = data.filter(function (d) { return lg === 'all' || d.id === lg; }).map(function (d) {
-      var total = 0;
-      var groups = d.groups.map(function (G) {
-        total += G.games.length;
-        var games = G.games;
-        if (lg === 'all') {
-          games = games.map(function (g, i) { return { g: g, i: i }; })
-            .sort(function (a, b) { return (rank(a.g) - rank(b.g)) || (a.i - b.i); })
-            .slice(0, CAP).map(function (x) { return x.g; });
-        }
-        return { label: G.label, games: games };
-      });
-      if (lg === 'all') groups = groups.slice(0, 2);
-      return {
-        name: d.name, sub: d.sub, short: d.short, total: total,
-        showMore: lg === 'all',
-        open: function () { self.setState({ lg: d.id }); },
-        groups: groups
-      };
-    });
+    // power ratings sidebar
+    var plg = S.lg !== 'all' && SD.LEAGUES[S.lg].teams ? S.lg : 'nfl', pm = S.models[plg];
+    var power = { title: SD.LEAGUES[plg].short + ' house ratings', allHref: 'Teams.dc.html?lg=' + plg, rows: [], none: false, noneText: '', note: '' };
+    if (pm && pm.teams) {
+      var ids = Object.keys(pm.teams).filter(function (k) { var t = pm.teams[k]; return t.gp >= (pm.minGp || 0) || t.prior !== undefined; });
+      ids.sort(function (a, b) { return pm.teams[b].rating - pm.teams[a].rating; });
+      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating > 0 ? '+' : '') + pm.teams[k].rating.toFixed(1) }; });
+      power.none = !power.rows.length; power.noneText = 'Not enough games yet this season.';
+      power.note = 'Margin vs. an average team on a neutral field, in ' + pm.unit + '.';
+    } else { power.none = true; power.noneText = 'Loading…'; }
+    var browse = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, n: idx[k] ? idx[k].length : '', href: 'Teams.dc.html?lg=' + k }; });
 
-    var slateDef = [
-      { t: 'Live', e: '14 matches in progress', lg: 'Tennis · ATP Challenger, WTA 125', live: true },
-      { t: '11:45 AM', e: 'Lens v Sporting CP · Sabah v Slavia Prague', lg: 'UEFA Champions League' },
-      { t: '2:00 PM', e: 'Arsenal v Lille · Atlético v Man United + 5 more', lg: 'UEFA Champions League' },
-      { t: '5:00 PM', e: 'NHL slate begins · 15 games through 9:30 PM', lg: 'NHL' },
-      { t: '6:00 PM', e: 'Delaware at Middle Tennessee', lg: 'College football' },
-      { t: '7:00 PM', e: 'Guardians at Rays · ALCS Game 2', lg: 'MLB · CLE leads 1–0' },
-      { t: '7:00 PM', e: 'FIU at Jacksonville State', lg: 'College football' }
-    ];
-    var slate = slateDef.map(function (s) {
-      return { t: s.t, e: s.e, lg: s.lg, timeStyle: 'width: 66px; flex: none; font-family: \'IBM Plex Mono\', monospace; font-size: 12.5px; padding-top: 1px; color: ' + (s.live ? '#FF5F56' : (s.mine ? '#EAFDFF' : '#C8F7FC')) + '; font-weight: ' + (s.live || s.mine ? '600' : '400') + ';' };
-    });
-
-    var divData = [
-      { id: 'afce', label: 'AFC E', name: 'AFC East', t: [['NE', 'Bills', 4, 1, 'BUF'], ['', 'Patriots', 3, 2, 'NE'], ['', 'Jets', 2, 3, 'NYJ'], ['', 'Dolphins', 0, 5, 'MIA']] },
-      { id: 'afcn', label: 'AFC N', name: 'AFC North', t: [['', 'Ravens', 4, 1, 'BAL'], ['', 'Browns', 3, 2, 'CLE'], ['', 'Steelers', 3, 2, 'PIT'], ['', 'Bengals', 3, 2, 'CIN']] },
-      { id: 'afcs', label: 'AFC S', name: 'AFC South', t: [['', 'Jaguars', 4, 1, 'JAC'], ['', 'Colts', 2, 3, 'IND'], ['', 'Texans', 1, 4, 'HOU'], ['', 'Titans', 0, 5, 'TEN']] },
-      { id: 'afcw', label: 'AFC W', name: 'AFC West', t: [['', 'Chiefs', 4, 0, 'KC'], ['', 'Broncos', 3, 2, 'DEN'], ['', 'Raiders', 3, 2, 'LV'], ['', 'Chargers', 0, 5, 'LAC']] },
-      { id: 'nfce', label: 'NFC E', name: 'NFC East', t: [['', 'Giants', 3, 1, 'NYG'], ['', 'Eagles', 2, 3, 'PHI'], ['', 'Cowboys', 2, 3, 'DAL'], ['', 'Commanders', 1, 3, 'WAS']] },
-      { id: 'nfcn', label: 'NFC N', name: 'NFC North', t: [['', 'Vikings', 5, 0, 'MIN'], ['', 'Packers', 3, 2, 'GB'], ['', 'Lions', 3, 2, 'DET'], ['', 'Bears', 3, 2, 'CHI']] },
-      { id: 'nfcs', label: 'NFC S', name: 'NFC South', t: [['', 'Panthers', 2, 2, 'CAR'], ['', 'Falcons', 2, 3, 'ATL'], ['', 'Buccaneers', 1, 4, 'TB'], ['', 'Saints', 1, 4, 'NO']] },
-      { id: 'nfcw', label: 'NFC W', name: 'NFC West', t: [['', '49ers', 5, 0, 'SF'], ['', 'Seahawks', 3, 2, 'SEA'], ['', 'Rams', 2, 3, 'LA'], ['', 'Cardinals', 1, 4, 'ARI']] }
-    ];
-    var divId = st.div || 'afce';
-    var curDiv = divData.filter(function (d) { return d.id === divId; })[0] || divData[0];
-    var divs = divData.map(function (d) {
-      var on = d.id === curDiv.id;
-      return {
-        label: d.label, pressed: on ? 'true' : 'false',
-        pick: function () { self.setState({ div: d.id }); },
-        btnStyle: 'height: 44px; padding: 0 4px; border-radius: 0; cursor: pointer; font-family: \'IBM Plex Mono\', monospace; font-size: 12px; font-weight: 500; border: 1px solid ' + (on ? '#66E6F2' : '#12363B') + '; ' + (on ? 'background: #66E6F2; color: #000000; text-shadow: none;' : 'background: #061416; color: #4FB8C2;')
-      };
-    });
-    var nfcn = curDiv.t.map(function (r) {
-      var gp = r[2] + r[3];
-      var pct = gp ? (r[2] / gp) : 0;
-      var pctStr = pct === 1 ? '1.000' : pct.toFixed(3).replace(/^0/, '');
-      var fol = follows.indexOf('nfl:' + r[4]) >= 0;
-      return { t: r[1], wl: r[2] + '–' + r[3], pct: pctStr, rowStyle: fol ? 'color: #C8F7FC; background: #0C2A2E;' : 'color: #66E6F2;' };
-    });
-
+    var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     return {
-      navCls: navCls,
-      chips: chips,
-      leagues: leagues,
-      mine: mine,
-      q: q,
-      onQ: function (e) { self.setState({ q: e.target.value }); },
-      results: results,
-      hasResults: results.length > 0,
-      noMatch: ql.length > 0 && results.length === 0,
-      hasFollows: mine.length > 0,
-      noFollows: mine.length === 0,
-      divs: divs,
-      divName: curDiv.name,
-      slate: slate,
-      series: [
-        { round: 'ALCS', lead: 'Guardians lead Rays', wins: '1–0', next: 'Game 2 tonight · 7:00 PM at TB' },
-        { round: 'NLCS', lead: 'Brewers lead Dodgers', wins: '2–0', next: 'Game 3 Wed · 7:00 PM at LAD' }
-      ],
-      nfcn: nfcn
+      favs: favs, q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
+      mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
+      dayLine: dl + ' · All times Central' + (liveN ? ' · ' + liveN + ' live now' : ''),
+      statusTag: !S.loaded ? 'LOADING…' : (liveN ? 'LIVE · AUTO-REFRESH' : 'LIVE DATA')
     };
   }
 }

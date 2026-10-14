@@ -1,0 +1,48 @@
+name: Refresh sports data
+
+on:
+  schedule:
+    - cron: "17 * * * *"    # hourly: standings, injuries, house model
+    - cron: "41 10 * * *"   # daily (5:41 AM CT in summer): teams index, stat leaders, then everything hourly
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/sports/**"
+      - ".github/workflows/refresh-sports.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sports-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3 numpy==2.1.3
+      - name: Fetch and commit data
+        env:
+          # Optional. When set, college football results come from CollegeFootballData instead of ESPN.
+          CFBD_KEY: ${{ secrets.CFBD_KEY }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          git config user.name "sports-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="${GITHUB_REF_NAME}"
+          for job in $(python -m pipeline.sports.run plan); do
+            echo "::group::$job"
+            python -m pipeline.sports.run "$job" || echo "job $job exited with an error"
+            echo "::endgroup::"
+            git add data/sports
+            if git diff --cached --quiet; then echo "no changes after $job"; continue; fi
+            git commit -q -m "data: refresh sports data ($job)"
+            for i in 1 2 3; do git pull -q --rebase -X theirs origin "$branch" && git push -q origin "HEAD:$branch" && break; sleep 5; done
+          done
