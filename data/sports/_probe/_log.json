@@ -1,0 +1,370 @@
+{
+ "nfl_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+  "status": 200,
+  "bytes": 254232,
+  "ms": 102,
+  "cors": "*",
+  "cache": "max-age=2"
+ },
+ "nfl_scoreboard_wk5": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20261011",
+  "status": 200,
+  "bytes": 117614,
+  "ms": 83,
+  "cors": "*",
+  "cache": "max-age=9"
+ },
+ "nfl_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams",
+  "status": 200,
+  "bytes": 148848,
+  "ms": 91,
+  "cors": null,
+  "cache": "max-age=254"
+ },
+ "nfl_team_det": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/det",
+  "status": 200,
+  "bytes": 23853,
+  "ms": 100,
+  "cors": null,
+  "cache": "max-age=1"
+ },
+ "nfl_team_det_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/det/schedule",
+  "status": 200,
+  "bytes": 275209,
+  "ms": 82,
+  "cors": "*",
+  "cache": "max-age=10"
+ },
+ "nfl_team_det_roster": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/det/roster",
+  "status": 200,
+  "bytes": 375094,
+  "ms": 99,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nfl_team_det_injuries": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/det/injuries",
+  "status": 200,
+  "bytes": 2,
+  "ms": 97,
+  "cors": "*",
+  "cache": "max-age=10"
+ },
+ "nfl_injuries": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+  "status": 200,
+  "bytes": 8748503,
+  "ms": 48,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nfl_standings": {
+  "url": "https://site.api.espn.com/apis/v2/sports/football/nfl/standings",
+  "status": 200,
+  "bytes": 157388,
+  "ms": 80,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nfl_leaders_core": {
+  "url": "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/types/2/teams/8/leaders",
+  "status": 200,
+  "bytes": 42455,
+  "ms": 480,
+  "cors": "*",
+  "cache": "max-age=900, stale-while-revalidate=7200"
+ },
+ "nfl_team_stats_web": {
+  "url": "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/teams/8/statistics",
+  "status": 404,
+  "bytes": 12,
+  "ms": 212,
+  "cors": null,
+  "cache": null
+ },
+ "mlb_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20261012",
+  "status": 200,
+  "bytes": 50806,
+  "ms": 79,
+  "cors": "*",
+  "cache": "max-age=6"
+ },
+ "mlb_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams",
+  "status": 200,
+  "bytes": 134837,
+  "ms": 76,
+  "cors": null,
+  "cache": "max-age=236"
+ },
+ "mlb_team_det_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/teams/det/schedule",
+  "status": 200,
+  "bytes": 543,
+  "ms": 88,
+  "cors": "*",
+  "cache": "max-age=10"
+ },
+ "mlb_standings": {
+  "url": "https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings",
+  "status": 200,
+  "bytes": 264515,
+  "ms": 82,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nhl_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20261013",
+  "status": 200,
+  "bytes": 473814,
+  "ms": 219,
+  "cors": "*",
+  "cache": "max-age=2"
+ },
+ "nhl_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams",
+  "status": 200,
+  "bytes": 136961,
+  "ms": 38,
+  "cors": null,
+  "cache": "max-age=35"
+ },
+ "nhl_team_det_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/det/schedule",
+  "status": 200,
+  "bytes": 1174588,
+  "ms": 92,
+  "cors": "*",
+  "cache": "max-age=5"
+ },
+ "nhl_injuries": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/injuries",
+  "status": 200,
+  "bytes": 1333055,
+  "ms": 109,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nhl_standings": {
+  "url": "https://site.api.espn.com/apis/v2/sports/hockey/nhl/standings",
+  "status": 200,
+  "bytes": 202553,
+  "ms": 105,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "nba_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+  "status": 200,
+  "bytes": 87027,
+  "ms": 57,
+  "cors": "*",
+  "cache": "max-age=3"
+ },
+ "nba_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams",
+  "status": 200,
+  "bytes": 134851,
+  "ms": 86,
+  "cors": null,
+  "cache": "max-age=276"
+ },
+ "nba_team_det_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/det/schedule",
+  "status": 200,
+  "bytes": 54576,
+  "ms": 80,
+  "cors": "*",
+  "cache": "max-age=3"
+ },
+ "nba_standings": {
+  "url": "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings",
+  "status": 200,
+  "bytes": 164251,
+  "ms": 83,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaaf_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&dates=20261010",
+  "status": 200,
+  "bytes": 742193,
+  "ms": 86,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaaf_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?groups=80&limit=300",
+  "status": 200,
+  "bytes": 813564,
+  "ms": 79,
+  "cors": null,
+  "cache": "max-age=1"
+ },
+ "ncaaf_team_msu_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/127/schedule",
+  "status": 200,
+  "bytes": 347113,
+  "ms": 78,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaaf_team_msu": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/127",
+  "status": 200,
+  "bytes": 18812,
+  "ms": 75,
+  "cors": null,
+  "cache": "max-age=212"
+ },
+ "ncaaf_standings": {
+  "url": "https://site.api.espn.com/apis/v2/sports/football/college-football/standings?group=80",
+  "status": 200,
+  "bytes": 2587313,
+  "ms": 89,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaab_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?groups=50&limit=500",
+  "status": 200,
+  "bytes": 1472631,
+  "ms": 100,
+  "cors": null,
+  "cache": "max-age=1"
+ },
+ "ncaab_team_msu_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/127/schedule",
+  "status": 200,
+  "bytes": 574,
+  "ms": 79,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaab_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50",
+  "status": 200,
+  "bytes": 15149,
+  "ms": 89,
+  "cors": "*",
+  "cache": "max-age=10"
+ },
+ "ncaah_teams": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/mens-college-hockey/teams?limit=200",
+  "status": 200,
+  "bytes": 239486,
+  "ms": 200,
+  "cors": null,
+  "cache": "max-age=300"
+ },
+ "ncaah_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/mens-college-hockey/scoreboard?dates=20261010",
+  "status": 200,
+  "bytes": 70301,
+  "ms": 87,
+  "cors": "*",
+  "cache": "max-age=1"
+ },
+ "ncaah_team_msu_schedule": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/mens-college-hockey/teams/msu/schedule",
+  "status": 200,
+  "bytes": 271339,
+  "ms": 136,
+  "cors": "*",
+  "cache": "max-age=10"
+ },
+ "epl_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard",
+  "status": 200,
+  "bytes": 64805,
+  "ms": 55,
+  "cors": "*",
+  "cache": "max-age=4"
+ },
+ "ucl_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard",
+  "status": 200,
+  "bytes": 128008,
+  "ms": 27,
+  "cors": "*",
+  "cache": "max-age=8"
+ },
+ "mls_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard",
+  "status": 200,
+  "bytes": 191367,
+  "ms": 29,
+  "cors": "*",
+  "cache": "max-age=8"
+ },
+ "golf_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard",
+  "status": 200,
+  "bytes": 13589,
+  "ms": 81,
+  "cors": "*",
+  "cache": "max-age=7"
+ },
+ "atp_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard",
+  "status": 200,
+  "bytes": 385205,
+  "ms": 123,
+  "cors": "*",
+  "cache": "max-age=6"
+ },
+ "wta_scoreboard": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard",
+  "status": 200,
+  "bytes": 601188,
+  "ms": 34,
+  "cors": "*",
+  "cache": "max-age=2"
+ },
+ "nhlapi_standings": {
+  "url": "https://api-web.nhle.com/v1/standings/now",
+  "status": 200,
+  "bytes": 58048,
+  "ms": 177,
+  "cors": null,
+  "cache": "no-transform, max-age=14, s-maxage=14"
+ },
+ "nhlapi_score": {
+  "url": "https://api-web.nhle.com/v1/score/2026-10-12",
+  "status": 200,
+  "bytes": 24521,
+  "ms": 120,
+  "cors": null,
+  "cache": "no-transform, max-age=19, s-maxage=19"
+ },
+ "mlbapi_standings": {
+  "url": "https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2026",
+  "status": 200,
+  "bytes": 80986,
+  "ms": 125,
+  "cors": "*",
+  "cache": "max-age=60, public, stale-while-revalidate=30, stale-if-error=86400"
+ },
+ "mlbapi_hitting": {
+  "url": "https://statsapi.mlb.com/api/v1/teams/stats?season=2026&sportId=1&group=hitting&stats=season",
+  "status": 200,
+  "bytes": 21475,
+  "ms": 60,
+  "cors": "*",
+  "cache": "max-age=60, public, stale-while-revalidate=30, stale-if-error=86400"
+ },
+ "nflverse_games": {
+  "url": "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv",
+  "status": 200,
+  "bytes": 2184485,
+  "ms": 73,
+  "cors": "*",
+  "cache": "max-age=300"
+ }
+}

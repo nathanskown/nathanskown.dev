@@ -1,0 +1,1581 @@
+{
+ "team": {
+  "abbreviation": "DET",
+  "alternateColor": "bbbbbb",
+  "color": "0076b6",
+  "displayName": "Detroit Lions",
+  "franchise": {
+   "abbreviation": "DET",
+   "color": "0076b6",
+   "displayName": "Detroit Lions",
+   "id": "8",
+   "isActive": true,
+   "location": "Detroit",
+   "name": "Lions",
+   "nickname": "Lions",
+   "shortDisplayName": "Lions",
+   "slug": "detroit-lions",
+   "uid": "s:20~l:28~f:8",
+   "venue": {
+    "address": {
+     "city": "Detroit",
+     "country": "USA",
+     "state": "MI",
+     "zipCode": "48226"
+    },
+    "fullName": "Ford Field",
+    "grass": false,
+    "guid": "3a82e243-5f64-3ce4-bdaf-49367fb55391",
+    "id": "3727",
+    "images": [
+     {
+      "alt": "",
+      "height": 1125,
+      "href": "https://a.espncdn.com/i/venues/nfl/day/3727.jpg",
+      "rel": [
+       "full",
+       "day"
+      ],
+      "width": 2000
+     },
+     {
+      "alt": "",
+      "height": 1125,
+      "href": "https://a.espncdn.com/i/venues/nfl/day/interior/3727.jpg",
+      "rel": [
+       "full",
+       "day",
+       "interior"
+      ],
+      "width": 2000
+     }
+    ],
+    "indoor": true
+   }
+  },
+  "groups": {
+   "id": "7",
+   "isConference": true,
+   "parent": {
+    "id": "9"
+   }
+  },
+  "id": "8",
+  "isActive": true,
+  "links": [
+   {
+    "href": "https://www.espn.com/nfl/team/_/name/det/detroit-lions",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "clubhouse",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Clubhouse",
+    "text": "Clubhouse"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/roster/_/name/det/detroit-lions",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "roster",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Roster",
+    "text": "Roster"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=roster",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "roster",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Roster",
+    "text": "Roster"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/stats/_/name/det/detroit-lions",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "stats",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Statistics",
+    "text": "Statistics"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=stats",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "stats",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Statistics",
+    "text": "Statistics"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/schedule/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "schedule",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Schedule",
+    "text": "Schedule"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=scores",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "schedule",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Schedule",
+    "text": "Schedule"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/photos/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "photos",
+     "desktop",
+     "team"
+    ],
+    "shortText": "photos",
+    "text": "photos"
+   },
+   {
+    "href": "https://www.vividseats.com/detroit-lions-tickets--sports-nfl-football/performer/238?wsUser=717",
+    "isExternal": true,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "tickets",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Tickets",
+    "text": "Tickets"
+   },
+   {
+    "href": "https://www.espn.com/nfl/draft/teams/_/name/det/detroit-lions",
+    "isExternal": false,
+    "isPremium": true,
+    "language": "en-US",
+    "rel": [
+     "draftpicks",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Draft Picks",
+    "text": "Draft Picks"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/transactions/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "transactions",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Transactions",
+    "text": "Transactions"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/injuries/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "injuries",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Injuries",
+    "text": "Injuries"
+   },
+   {
+    "href": "https://www.espn.com/nfl/team/depth/_/name/det",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "depthchart",
+     "desktop",
+     "team"
+    ],
+    "shortText": "Depth Chart",
+    "text": "Depth Chart"
+   },
+   {
+    "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=depthchart",
+    "isExternal": false,
+    "isPremium": false,
+    "language": "en-US",
+    "rel": [
+     "depthchart",
+     "sportscenter",
+     "app",
+     "team"
+    ],
+    "shortText": "Depth Chart",
+    "text": "Depth Chart"
+   }
+  ],
+  "location": "Detroit",
+  "logos": [
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nfl/500/det.png",
+    "rel": [
+     "full",
+     "default"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/det.png",
+    "rel": [
+     "full",
+     "dark"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/det.png",
+    "rel": [
+     "full",
+     "scoreboard"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/scoreboard/det.png",
+    "rel": [
+     "full",
+     "scoreboard",
+     "dark"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 500,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/grayscale.png",
+    "rel": [
+     "full",
+     "grayscale"
+    ],
+    "width": 500
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_white_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_white_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_black_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_black_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_primary_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_primary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_secondary_color.png",
+    "rel": [
+     "full",
+     "primary_logo_on_secondary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_black.png",
+    "rel": [
+     "full",
+     "primary_logo_black"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_white.png",
+    "rel": [
+     "full",
+     "primary_logo_white"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_white_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_white_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_black_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_black_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_primary_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_primary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_secondary_color.png",
+    "rel": [
+     "full",
+     "secondary_logo_on_secondary_color"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_black.png",
+    "rel": [
+     "full",
+     "secondary_logo_black"
+    ],
+    "width": 4096
+   },
+   {
+    "alt": "",
+    "height": 4096,
+    "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_white.png",
+    "rel": [
+     "full",
+     "secondary_logo_white"
+    ],
+    "width": 4096
+   }
+  ],
+  "name": "Lions",
+  "nextEvent": [
+   {
+    "competitions": [
+     {
+      "attendance": 60968,
+      "boxscoreAvailable": true,
+      "broadcasts": [
+       {
+        "lang": "en",
+        "market": {
+         "id": "1",
+         "type": "National"
+        },
+        "media": {
+         "darkLogo": "https://a.espncdn.com/guid/1567408b-ad27-3efd-94cb-b42a34de57e6/logos/default-dark.png",
+         "logo": "https://a.espncdn.com/guid/1567408b-ad27-3efd-94cb-b42a34de57e6/logos/default.png",
+         "shortName": "Fox"
+        },
+        "region": "us",
+        "type": {
+         "id": "1",
+         "shortName": "TV"
+        }
+       }
+      ],
+      "competitors": [
+       {
+        "homeAway": "home",
+        "id": "22",
+        "order": 0,
+        "record": [
+         {
+          "abbreviation": "Game",
+          "description": "Overall Record",
+          "displayName": "Record Year To Date",
+          "displayValue": "1-4",
+          "id": "369",
+          "shortDisplayName": "YTD",
+          "type": "total"
+         },
+         {
+          "description": "Home Record",
+          "displayName": "Home",
+          "displayValue": "0-2",
+          "id": "13",
+          "shortDisplayName": "HOME",
+          "type": "home"
+         },
+         {
+          "description": "Away Record",
+          "displayName": "Road",
+          "displayValue": "1-2",
+          "id": "14",
+          "shortDisplayName": "AWAY",
+          "type": "road"
+         }
+        ],
+        "score": {
+         "displayValue": "21",
+         "value": 21.0
+        },
+        "team": {
+         "abbreviation": "ARI",
+         "displayName": "Arizona Cardinals",
+         "id": "22",
+         "links": [
+          {
+           "href": "https://www.espn.com/nfl/team/_/name/ari/arizona-cardinals",
+           "rel": [
+            "clubhouse",
+            "desktop",
+            "team"
+           ],
+           "text": "Clubhouse"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/roster/_/name/ari/arizona-cardinals",
+           "rel": [
+            "roster",
+            "desktop",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:22&section=roster",
+           "rel": [
+            "roster",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/stats/_/name/ari/arizona-cardinals",
+           "rel": [
+            "stats",
+            "desktop",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:22&section=stats",
+           "rel": [
+            "stats",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/schedule/_/name/ari",
+           "rel": [
+            "schedule",
+            "desktop",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:22&section=scores",
+           "rel": [
+            "schedule",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/photos/_/name/ari",
+           "rel": [
+            "photos",
+            "desktop",
+            "team"
+           ],
+           "text": "photos"
+          },
+          {
+           "href": "https://www.vividseats.com/arizona-cardinals-tickets--sports-nfl-football/performer/40?wsUser=717",
+           "rel": [
+            "tickets",
+            "desktop",
+            "team"
+           ],
+           "text": "Tickets"
+          },
+          {
+           "href": "https://www.espn.com/nfl/draft/teams/_/name/ari/arizona-cardinals",
+           "rel": [
+            "draftpicks",
+            "desktop",
+            "team"
+           ],
+           "text": "Draft Picks"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/transactions/_/name/ari",
+           "rel": [
+            "transactions",
+            "desktop",
+            "team"
+           ],
+           "text": "Transactions"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/injuries/_/name/ari",
+           "rel": [
+            "injuries",
+            "desktop",
+            "team"
+           ],
+           "text": "Injuries"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/depth/_/name/ari",
+           "rel": [
+            "depthchart",
+            "desktop",
+            "team"
+           ],
+           "text": "Depth Chart"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:22&section=depthchart",
+           "rel": [
+            "depthchart",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Depth Chart"
+          }
+         ],
+         "location": "Arizona",
+         "logos": [
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png",
+           "rel": [
+            "full",
+            "default"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/ari.png",
+           "rel": [
+            "full",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/ari.png",
+           "rel": [
+            "full",
+            "scoreboard"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/scoreboard/ari.png",
+           "rel": [
+            "full",
+            "scoreboard",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/grayscale.png",
+           "rel": [
+            "full",
+            "grayscale"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_black.png",
+           "rel": [
+            "full",
+            "primary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/primary_logo_white.png",
+           "rel": [
+            "full",
+            "primary_logo_white"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_black.png",
+           "rel": [
+            "full",
+            "secondary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/8fc7b962-95e1-3cb8-6a7d-b499de9ad546/logos/secondary_logo_white.png",
+           "rel": [
+            "full",
+            "secondary_logo_white"
+           ],
+           "width": 4096
+          }
+         ],
+         "nickname": "Cardinals",
+         "shortDisplayName": "Cardinals"
+        },
+        "type": "team",
+        "winner": false
+       },
+       {
+        "homeAway": "away",
+        "id": "8",
+        "order": 1,
+        "record": [
+         {
+          "abbreviation": "Game",
+          "description": "Overall Record",
+          "displayName": "Record Year To Date",
+          "displayValue": "3-2",
+          "id": "369",
+          "shortDisplayName": "YTD",
+          "type": "total"
+         },
+         {
+          "description": "Home Record",
+          "displayName": "Home",
+          "displayValue": "2-0",
+          "id": "13",
+          "shortDisplayName": "HOME",
+          "type": "home"
+         },
+         {
+          "description": "Away Record",
+          "displayName": "Road",
+          "displayValue": "1-2",
+          "id": "14",
+          "shortDisplayName": "AWAY",
+          "type": "road"
+         }
+        ],
+        "score": {
+         "displayValue": "45",
+         "value": 45.0
+        },
+        "team": {
+         "abbreviation": "DET",
+         "displayName": "Detroit Lions",
+         "id": "8",
+         "links": [
+          {
+           "href": "https://www.espn.com/nfl/team/_/name/det/detroit-lions",
+           "rel": [
+            "clubhouse",
+            "desktop",
+            "team"
+           ],
+           "text": "Clubhouse"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/roster/_/name/det/detroit-lions",
+           "rel": [
+            "roster",
+            "desktop",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=roster",
+           "rel": [
+            "roster",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Roster"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/stats/_/name/det/detroit-lions",
+           "rel": [
+            "stats",
+            "desktop",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=stats",
+           "rel": [
+            "stats",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Statistics"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/schedule/_/name/det",
+           "rel": [
+            "schedule",
+            "desktop",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=scores",
+           "rel": [
+            "schedule",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Schedule"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/photos/_/name/det",
+           "rel": [
+            "photos",
+            "desktop",
+            "team"
+           ],
+           "text": "photos"
+          },
+          {
+           "href": "https://www.vividseats.com/detroit-lions-tickets--sports-nfl-football/performer/238?wsUser=717",
+           "rel": [
+            "tickets",
+            "desktop",
+            "team"
+           ],
+           "text": "Tickets"
+          },
+          {
+           "href": "https://www.espn.com/nfl/draft/teams/_/name/det/detroit-lions",
+           "rel": [
+            "draftpicks",
+            "desktop",
+            "team"
+           ],
+           "text": "Draft Picks"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/transactions/_/name/det",
+           "rel": [
+            "transactions",
+            "desktop",
+            "team"
+           ],
+           "text": "Transactions"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/injuries/_/name/det",
+           "rel": [
+            "injuries",
+            "desktop",
+            "team"
+           ],
+           "text": "Injuries"
+          },
+          {
+           "href": "https://www.espn.com/nfl/team/depth/_/name/det",
+           "rel": [
+            "depthchart",
+            "desktop",
+            "team"
+           ],
+           "text": "Depth Chart"
+          },
+          {
+           "href": "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:8&section=depthchart",
+           "rel": [
+            "depthchart",
+            "sportscenter",
+            "app",
+            "team"
+           ],
+           "text": "Depth Chart"
+          }
+         ],
+         "location": "Detroit",
+         "logos": [
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500/det.png",
+           "rel": [
+            "full",
+            "default"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/det.png",
+           "rel": [
+            "full",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/det.png",
+           "rel": [
+            "full",
+            "scoreboard"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/i/teamlogos/nfl/500-dark/scoreboard/det.png",
+           "rel": [
+            "full",
+            "scoreboard",
+            "dark"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 500,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/grayscale.png",
+           "rel": [
+            "full",
+            "grayscale"
+           ],
+           "width": 500
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "primary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_black.png",
+           "rel": [
+            "full",
+            "primary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/primary_logo_white.png",
+           "rel": [
+            "full",
+            "primary_logo_white"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_white_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_white_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_black_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_black_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_primary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_primary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_on_secondary_color.png",
+           "rel": [
+            "full",
+            "secondary_logo_on_secondary_color"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_black.png",
+           "rel": [
+            "full",
+            "secondary_logo_black"
+           ],
+           "width": 4096
+          },
+          {
+           "alt": "",
+           "height": 4096,
+           "href": "https://a.espncdn.com/guid/56caffee-178d-f6f2-a076-b277486b8c32/logos/secondary_logo_white.png",
+           "rel": [
+            "full",
+            "secondary_logo_white"
+           ],
+           "width": 4096
+          }
+         ],
+         "nickname": "Lions",
+         "shortDisplayName": "Lions"
+        },
+        "type": "team",
+        "winner": true
+       }
+      ],
+      "date": "2026-10-11T20:25Z",
+      "id": "401872991",
+      "neutralSite": false,
+      "notes": [],
+      "status": {
+       "clock": 0.0,
+       "displayClock": "0:00",
+       "isTBDFlex": false,
+       "period": 4,
+       "type": {
+        "completed": true,
+        "description": "Final",
+        "detail": "Final",
+        "id": "3",
+        "name": "STATUS_FINAL",
+        "shortDetail": "Final",
+        "state": "post"
+       }
+      },
+      "ticketsAvailable": false,
+      "timeValid": true,
+      "type": {
+       "abbreviation": "STD",
+       "id": "1",
+       "slug": "standard",
+       "text": "Standard",
+       "type": "standard"
+      },
+      "venue": {
+       "address": {
+        "city": "Glendale",
+        "country": "USA",
+        "state": "AZ",
+        "zipCode": "85305"
+       },
+       "fullName": "State Farm Stadium"
+      }
+     }
+    ],
+    "date": "2026-10-11T20:25Z",
+    "id": "401872991",
+    "links": [
+     {
+      "href": "https://www.espn.com/nfl/game/_/gameId/401872991/lions-cardinals",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "summary",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Summary",
+      "text": "Gamecast"
+     },
+     {
+      "href": "sportscenter://x-callback-url/showGame?sportName=football&leagueAbbrev=nfl&gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "summary",
+       "sportscenter",
+       "app",
+       "event"
+      ],
+      "shortText": "Summary",
+      "text": "Gamecast"
+     },
+     {
+      "href": "https://www.espn.com/nfl/game/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "now",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Now",
+      "text": "Now"
+     },
+     {
+      "href": "https://www.espn.com/nfl/matchup?gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "teamstats",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Team Stats",
+      "text": "Team Stats"
+     },
+     {
+      "href": "https://www.espn.com/nfl/boxscore/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "boxscore",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Box Score",
+      "text": "Box Score"
+     },
+     {
+      "href": "sportscenter://x-callback-url/showGame?sportName=football&leagueAbbrev=nfl&gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "boxscore",
+       "sportscenter",
+       "app",
+       "event"
+      ],
+      "shortText": "Box Score",
+      "text": "Box Score"
+     },
+     {
+      "href": "https://www.espn.com/nfl/game/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "gamecast",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Gamecast",
+      "text": "Gamecast"
+     },
+     {
+      "href": "http://m.espn.com/nfl/gamecast?gameId=401872991&action=summary",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "gamecast",
+       "mobile",
+       "event"
+      ],
+      "shortText": "Gamecast",
+      "text": "Gamecast"
+     },
+     {
+      "href": "sportscenter://x-callback-url/showGame?sportName=football&leagueAbbrev=nfl&gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "gamecast",
+       "sportscenter",
+       "app",
+       "event"
+      ],
+      "shortText": "Gamecast",
+      "text": "Gamecast"
+     },
+     {
+      "href": "https://www.espn.com/nfl/recap?gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "recap",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Recap",
+      "text": "Recap"
+     },
+     {
+      "href": "https://www.espn.com/nfl/playbyplay/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "pbp",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Play-by-Play",
+      "text": "Play-by-Play"
+     },
+     {
+      "href": "https://www.espn.com/nfl/video?gameId=401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "videos",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Videos",
+      "text": "Videos"
+     },
+     {
+      "href": "https://fantasy.espn.com/football/welcome?addata=nfl_gamecast_ffl2026",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "fantasy",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Play Fantasy Football",
+      "text": "Play Fantasy Football"
+     },
+     {
+      "href": "https://www.espn.com/nfl/odds/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "odds",
+       "desktop",
+       "event"
+      ],
+      "shortText": "Odds",
+      "text": "Odds"
+     },
+     {
+      "href": "https://m.espn.com/nfl/odds/_/gameId/401872991",
+      "isExternal": false,
+      "isPremium": false,
+      "language": "en-US",
+      "rel": [
+       "odds",
+       "mobile",
+       "event"
+      ],
+      "shortText": "Odds",
+      "text": "Odds"
+     }
+    ],
+    "name": "Detroit Lions at Arizona Cardinals",
+    "season": {
+     "displayName": "2026",
+     "year": 2026
+    },
+    "seasonType": {
+     "abbreviation": "reg",
+     "id": "2",
+     "name": "Regular Season",
+     "type": 2
+    },
+    "shortName": "DET @ ARI",
+    "timeValid": true,
+    "week": {
+     "number": 5,
+     "text": "Week 5"
+    }
+   }
+  ],
+  "nickname": "Lions",
+  "record": {
+   "items": [
+    {
+     "stats": [
+      {
+       "name": "OTLosses",
+       "value": 0.0
+      },
+      {
+       "name": "OTWins",
+       "value": 1.0
+      },
+      {
+       "name": "avgPointsAgainst",
+       "value": 29.600000381469727
+      },
+      {
+       "name": "avgPointsFor",
+       "value": 32.79999923706055
+      },
+      {
+       "name": "differential",
+       "value": 16.0
+      },
+      {
+       "name": "divisionWinPercent",
+       "value": 0.0
+      },
+      {
+       "name": "gamesBehind",
+       "value": 0.0
+      },
+      {
+       "name": "gamesPlayed",
+       "value": 5.0
+      },
+      {
+       "name": "leagueWinPercent",
+       "value": 0.6666666865348816
+      },
+      {
+       "name": "losses",
+       "value": 2.0
+      },
+      {
+       "name": "playoffSeed",
+       "value": 6.0
+      },
+      {
+       "name": "pointDifferential",
+       "value": 16.0
+      },
+      {
+       "name": "points",
+       "value": 0.5
+      },
+      {
+       "name": "pointsAgainst",
+       "value": 148.0
+      },
+      {
+       "name": "pointsFor",
+       "value": 164.0
+      },
+      {
+       "name": "streak",
+       "value": 1.0
+      },
+      {
+       "name": "ties",
+       "value": 0.0
+      },
+      {
+       "name": "winPercent",
+       "value": 0.6000000238418579
+      },
+      {
+       "name": "wins",
+       "value": 3.0
+      },
+      {
+       "name": "divisionLosses",
+       "value": 0.0
+      },
+      {
+       "name": "divisionRecord"
+      },
+      {
+       "name": "divisionTies",
+       "value": 0.0
+      },
+      {
+       "name": "divisionWins",
+       "value": 0.0
+      },
+      {
+       "name": "lockedDivRank",
+       "value": 0.0
+      }
+     ],
+     "summary": "3-2",
+     "type": "total"
+    },
+    {
+     "description": "Home Record",
+     "stats": [
+      {
+       "name": "wins",
+       "value": 2.0
+      },
+      {
+       "name": "losses",
+       "value": 0.0
+      },
+      {
+       "name": "ties",
+       "value": 0.0
+      },
+      {
+       "name": "winPercent",
+       "value": 1.0
+      },
+      {
+       "name": "OTLosses",
+       "value": 0.0
+      }
+     ],
+     "summary": "2-0",
+     "type": "home"
+    },
+    {
+     "description": "Away Record",
+     "stats": [
+      {
+       "name": "wins",
+       "value": 1.0
+      },
+      {
+       "name": "losses",
+       "value": 2.0
+      },
+      {
+       "name": "ties",
+       "value": 0.0
+      },
+      {
+       "name": "winPercent",
+       "value": 0.3333333432674408
+      },
+      {
+       "name": "OTLosses",
+       "value": 0.0
+      }
+     ],
+     "summary": "1-2",
+     "type": "road"
+    }
+   ]
+  },
+  "shortDisplayName": "Lions",
+  "slug": "detroit-lions",
+  "uid": "s:20~l:28~t:8"
+ }
+}
