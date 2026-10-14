@@ -19,6 +19,7 @@ const feeds = [
   ["schedule", "nfl", "8"], ["schedule", "nhl", "5"], ["schedule", "nba", "8"], ["schedule", "mlb", "6"], ["schedule", "ncaaf", "127"],
 ];
 let bad = 0;
+const lines = [];
 for (const [fn, lg, id] of feeds) {
  try {
   const L = SD.LEAGUES[lg];
@@ -35,7 +36,7 @@ for (const [fn, lg, id] of feeds) {
   const same = a === b;
   if (!same) bad++;
   const rawLen = JSON.stringify(raw).length, trimLen = JSON.stringify(trimmed).length;
-  console.log(`::notice title=${same ? "same" : "DIFFERENT"} ${fn} ${lg}${id ? " " + id : ""}::raw ${rawLen}B -> trimmed ${trimLen}B (${Math.round(100 - trimLen / rawLen * 100)}% smaller); live proxy ${live.status} ${liveBody.length}B x-trim=${live.headers.get("x-trim")}`);
+  lines.push(`${same ? "same" : "DIFFERENT"} ${fn} ${lg}${id ? " " + id : ""}: ${rawLen}>${trimLen}B (-${Math.round(100 - trimLen / rawLen * 100)}%) live ${live.status} ${liveBody.length}B trim=${live.headers.get("x-trim")}`);
   if (!same) {
     for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) { console.log(`::warning title=diff ${lg}::` + a.slice(Math.max(0, i - 60), i + 60) + " || " + b.slice(Math.max(0, i - 60), i + 60)); break; }
   }
@@ -43,4 +44,5 @@ for (const [fn, lg, id] of feeds) {
   console.log(`::warning title=could not check ${fn} ${lg}${id ? " " + id : ""}::${String(e && e.stack || e).slice(0, 300).replace(/\n/g, " ")}`);
  }
 }
+console.log(`::notice title=ESPN trim check (${feeds.length - bad}/${feeds.length} identical)::` + lines.join(" ; "));
 if (bad) { console.log(`::error::${bad} feed(s) render differently after trimming`); process.exit(1); }

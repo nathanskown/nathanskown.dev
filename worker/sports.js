@@ -32,13 +32,15 @@ const KEEP = new Set(("events week season byeWeek team id date endDate name shor
   "abbreviation shortDisplayName location color alternateColor recordSummary standingSummary athlete position thru order").split(" "));
 const TRIM = [/\/scoreboard$/, /\/teams\/[a-z0-9]+\/schedule$/];
 const TRIM_MAX = 1500000; // bytes: above this, pass through untrimmed (CPU limit)
-const TRIM_VERSION = 1;    // bump when KEEP changes: new edge-cache namespace
+const TRIM_VERSION = 2;   // bump when KEEP changes: new edge-cache namespace
+
+const WHOLE = new Set(["season"]); // passed to the page as-is, so kept whole
 
 export function prune(o) {
   if (Array.isArray(o)) return o.map(prune);
   if (o && typeof o === "object") {
     const out = {};
-    for (const k in o) if (KEEP.has(k)) out[k] = prune(o[k]);
+    for (const k in o) if (KEEP.has(k)) out[k] = WHOLE.has(k) ? o[k] : prune(o[k]);
     return out;
   }
   return o;
