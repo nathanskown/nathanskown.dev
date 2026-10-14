@@ -274,7 +274,8 @@ def holdings_from_zip(blob, cusips):
     dropped = 0
     for acc, cu, sh, val in rows:
         m = med.get((cu, subs[acc][1]))
-        if m and sh > 0 and val > 0 and not (m / 3 < val / sh < m * 3):
+        # some filers still report value in thousands; their share counts are fine
+        if m and sh > 0 and val > 0 and not (m / 3 < val / sh < m * 3) and not (m / 3 < val * 1000 / sh < m * 3):
             dropped += 1
             continue
         pos[acc][cu] += sh

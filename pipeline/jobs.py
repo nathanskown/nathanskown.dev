@@ -215,7 +215,13 @@ def quote_page(sym, info, mem, spx_weekly, cal):
         eps_ttm = eps_ttm / ratio if eps_ttm else None
         shares = class_shares
     mcap = price * mcap_shares if price and mcap_shares else None
+    nxt = next((x for x in cal if x["sym"] == sym and x["date"] >= ds(today())), None)
+    if mcap is None and nxt and nxt.get("mcap"):
+        mcap = nxt["mcap"]  # Nasdaq's figure, when SEC per-share data only exists by share class
     pe = price / eps_ttm if eps_ttm and eps_ttm > 0 and price else None
+    ni4 = [q["ni"] for q in (fin or {}).get("quarters", [])[-4:] if q.get("ni") is not None]
+    if pe is None and mcap and len(ni4) == 4 and sum(ni4) > 0:
+        pe = mcap / sum(ni4)  # market cap over trailing net income: same ratio, no per-share data needed
     quarters = []
     if fin:
         qs = fin["quarters"]
@@ -243,7 +249,6 @@ def quote_page(sym, info, mem, spx_weekly, cal):
     news = attempt(f"news {sym}", mi.feed, f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={sym}&region=US&lang=en-US", default=[]) or []
     idx = [{"name": "S&P 500", "member": sym in mem.get("sp500", [])}, {"name": "S&P MidCap 400", "member": sym in mem.get("sp400", [])},
            {"name": "S&P SmallCap 600", "member": sym in mem.get("sp600", [])}]
-    nxt = next((x for x in cal if x["sym"] == sym and x["date"] >= ds(today())), None)
     eight_k = [{"date": f["filingDate"], "items": f.get("items"), "url": sec.filing_url(cik, f["accessionNumber"], f["primaryDocument"])}
                for f in filings if f["form"] == "8-K"][:6]
     return {"sym": sym, "name": q["name"] or title, "exch": q["exch"], "sector": mem.get("sectors", {}).get(sym) or (sub or {}).get("sicDescription"),
@@ -702,7 +707,7 @@ def daily():
 # QUARTERLY: 13F ownership
 # =====================================================================================
 
-OWNERSHIP_VERSION = 2  # bump when the 13F logic changes so the next push rebuilds ownership
+OWNERSHIP_VERSION = 3  # bump when the 13F logic changes so the next push rebuilds ownership
 
 
 def quarterly(max_sets=9):
