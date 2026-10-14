@@ -21,7 +21,8 @@ def pick():
             return ["quarterly"]
         return ["market"]
     want = ["market", "daily"]
-    if os.environ.get("RUN_13F") == "1" or not read("ownership/index.json"):
+    own = read("ownership/index.json") or {}
+    if os.environ.get("RUN_13F") == "1" or own.get("v") != jobs.OWNERSHIP_VERSION:
         want.append("quarterly")
     return want
 

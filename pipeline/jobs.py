@@ -702,6 +702,9 @@ def daily():
 # QUARTERLY: 13F ownership
 # =====================================================================================
 
+OWNERSHIP_VERSION = 2  # bump when the 13F logic changes so the next push rebuilds ownership
+
+
 def quarterly(max_sets=9):
     links = sec.dataset_links()
     cusips = {v["cusip"].upper(): k for k, v in UNIVERSE.items() if v.get("cusip")}
@@ -801,4 +804,4 @@ def quarterly(max_sets=9):
             record(f"13F {sym}", True, n=hold, note=f"cusip {cu} = {issuer.get(cu)}")
         except Exception as e:  # noqa: BLE001
             record(f"13F {sym}", False, error=f"{type(e).__name__}: {str(e)[:200]}")
-    write("ownership/index.json", {"updated": now_iso(), "periods": periods, "tickers": done})
+    write("ownership/index.json", {"updated": now_iso(), "v": OWNERSHIP_VERSION, "periods": periods, "tickers": done})
