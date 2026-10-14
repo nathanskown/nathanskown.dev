@@ -220,7 +220,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section aria-label="Sources" style="font-size: 12.5px; color: #A87933; line-height: 1.6">
-Sources: {{sourceList}}. Refreshed hourly in market hours, twice a day on weekends. Headlines link to the original; full articles stay on the publisher's site.
+Sources: {{sourceList}}. New items appear within about a minute while this page is open; the archive is saved hourly in market hours, twice a day on weekends. Headlines link to the original; full articles stay on the publisher's site.
 </section>
 
 </aside>
@@ -242,17 +242,38 @@ class Component extends DCLogic {
         var known = st.known || {};
         var unseen = st.unseen || 0;
         if (st.items) j.items.forEach(function (h) { if (!known[h.link]) unseen++; });
-        var k2 = {}; j.items.forEach(function (h) { k2[h.link] = 1; });
-        self.setState({ data: j, items: j.items, known: k2, unseen: unseen });
+        var k2 = Object.assign({}, known); j.items.forEach(function (h) { k2[h.link] = 1; });
+        var inJ = {}; j.items.forEach(function (h) { inJ[h.link] = 1; });
+        /* keep items the Worker added since the last hourly file */
+        var keep = (st.items || []).filter(function (h) { return !inJ[h.link] && h.firstSeen && Date.now() - new Date(h.firstSeen).getTime() < 7200000; });
+        var merged = keep.concat(j.items).sort(function (a, b) { return a.published < b.published ? 1 : -1; });
+        self.setState({ data: j, items: merged, known: k2, unseen: unseen });
       }).catch(function () { self.setState({ err: true }); });
     };
+    /* fresher items from the Worker (its own RSS fetch, ~1 min cache); merged under the hourly file's items */
+    var pullLive = function () {
+      if ((self.state || {}).paused || document.hidden) return;
+      fetch('/api/live?part=news').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (lv) {
+        var st = self.state || {};
+        if (!st.items || !lv.items || !lv.items.length) return;
+        var known = Object.assign({}, st.known || {});
+        var unseen = st.unseen || 0;
+        var add = lv.items.filter(function (h) { return !known[h.link]; });
+        if (!add.length) return;
+        add.forEach(function (h) { known[h.link] = 1; unseen++; });
+        var items = add.concat(st.items).sort(function (a, b) { return a.published < b.published ? 1 : -1; }).slice(0, 500);
+        self.setState({ items: items, known: known, unseen: unseen });
+      }).catch(function () {});
+    };
     pull();
+    setTimeout(pullLive, 2500);
+    this.timerLive = setInterval(pullLive, 60000);
     ['config', 'macro', 'earnings'].forEach(function (k) {
       DC.load('/data/finance/' + k + '.json').then(function (j) { var o = {}; o[k] = j; self.setState(o); }).catch(function () {});
     });
     this.timer = setInterval(pull, 60000);
   }
-  componentWillUnmount() { clearInterval(this.timer); try { document.title = 'Live headlines · NSKN Terminal'; } catch (e) {} }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.timerLive); try { document.title = 'Live headlines · NSKN Terminal'; } catch (e) {} }
   componentDidUpdate() {
     var n = (this.state && this.state.unseen) || 0;
     try { document.title = (n ? '(' + n + ') ' : '') + 'Live headlines · NSKN Terminal'; } catch (e) {}

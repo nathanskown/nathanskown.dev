@@ -355,7 +355,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
-<span>Prices: Yahoo Finance · Yields: U.S. Treasury · Economic data: FRED · Earnings: Nasdaq · Delayed, refreshed hourly in market hours</span>
+<span>Prices: Yahoo Finance · Yields: U.S. Treasury · Economic data: FRED · Earnings: Nasdaq · Delayed quotes, refreshed about every minute while this page is open</span>
 <span>Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
@@ -373,8 +373,31 @@ class Component extends DCLogic {
     this.timer = setInterval(function () {
       DC.load('/data/finance/dashboard.json').then(function (j) { self.setState({ dashboard: j }); }).catch(function () {});
     }, 300000);
+    /* faster overlay: the Worker re-fetches prices about every minute; if it fails the hourly file stays on screen */
+    var live = function (part) {
+      if (document.hidden) return;
+      fetch('/api/live?part=' + part).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
+        if (j.error) return;
+        var d = Object.assign({}, (self.state || {}).dashboard || {});
+        if (part === 'tiles') {
+          if (!j.tiles || !j.tiles.length) return;
+          var nm = {}; (d.watch || []).forEach(function (w) { nm[w.sym] = w.name; });
+          d.tiles = j.tiles; d.asOf = j.asOf || d.asOf;
+          if (j.sectors && j.sectors.length) d.sectors = j.sectors;
+          if (j.watch && j.watch.length) d.watch = j.watch.map(function (w) { w.name = nm[w.sym] || w.name; return w; });
+        } else {
+          if (!j.movers || !j.movers.gainers.length) return;
+          d.movers = j.movers; d.breadth = j.breadth;
+        }
+        d.updated = j.updated;
+        self.setState({ dashboard: d });
+      }).catch(function () {});
+    };
+    this.liveT = setInterval(function () { live('tiles'); }, 60000);
+    this.liveM = setInterval(function () { live('movers'); }, 120000);
+    setTimeout(function () { live('tiles'); live('movers'); }, 1500);
   }
-  componentWillUnmount() { clearInterval(this.timer); }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.liveT); clearInterval(this.liveM); }
   renderVals() {
     var UP = '#4ade80', DN = '#ff5f56';
     var st = this.state || {};
