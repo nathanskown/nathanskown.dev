@@ -80,7 +80,7 @@
 <sc-if value="{{noMatch}}" hint-placeholder-val="{{false}}"><div class="dim" style="margin-top: 8px">No team matches “{{q}}”.</div></sc-if>
 <sc-if value="{{noFollows}}" hint-placeholder-val="{{true}}"><div class="s-empty" style="margin-top: 10px">You’re not following any teams yet. Search above to add one. Its last result and next game show up here, and its games are highlighted below.</div></sc-if>
 <sc-if value="{{hasFollows}}" hint-placeholder-val="{{false}}">
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; margin-top: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; margin-top: 10px">
 <sc-for list="{{mine}}" as="m" hint-placeholder-count="3">
 <div class="s-card" style="border-color: var(--a)">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px">
@@ -107,7 +107,7 @@
 <div class="t-ph"><h2>{{B.name}}</h2><span class="dim">{{B.sub}}</span></div>
 <div class="t-pb">
 <sc-if value="{{B.msg}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{B.msg}}</div></sc-if>
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{B.games}}" as="g" hint-placeholder-count="6">
 <div class="s-card" style="{{g.cardStyle}}">
 <sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>

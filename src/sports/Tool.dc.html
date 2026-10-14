@@ -71,7 +71,7 @@
 <section class="t-panel" aria-label="Matchup">
 <div class="t-ph"><h2>Matchup</h2><span class="dim">{{sim.note}}</span></div>
 <div class="t-pb">
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; align-items: end">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 10px; align-items: end">
 <label><span class="t-th">Away team</span><select class="s-input" onChange="{{sim.onAway}}"><sc-for list="{{sim.optsA}}" as="o" hint-placeholder-count="4"><option value="{{o.id}}" selected="{{o.sel}}">{{o.name}}</option></sc-for></select></label>
 <label><span class="t-th">Home team</span><select class="s-input" onChange="{{sim.onHome}}"><sc-for list="{{sim.optsH}}" as="o" hint-placeholder-count="4"><option value="{{o.id}}" selected="{{o.sel}}">{{o.name}}</option></sc-for></select></label>
 <label style="display: flex; gap: 8px; align-items: center; min-height: 44px"><input type="checkbox" onChange="{{sim.onNeutral}}" checked="{{sim.neutral}}"> Neutral site</label>
@@ -109,7 +109,7 @@
 <div class="t-pb">
 <div style="max-width: 420px; margin-bottom: 10px"><input class="s-input" type="search" value="{{inj.q}}" onChange="{{inj.onQ}}" placeholder="Filter by team, player or status" aria-label="Filter injuries"></div>
 <sc-if value="{{inj.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{inj.noneText}}</div></sc-if>
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; align-items: start">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 12px; align-items: start">
 <sc-for list="{{inj.teams}}" as="T" hint-placeholder-count="4">
 <div class="s-card">
 <a class="s-team hi" href="{{T.href}}"><img class="s-logo" src="{{T.logo}}" alt="" loading="lazy">{{T.name}}</a>

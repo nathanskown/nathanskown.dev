@@ -184,7 +184,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section aria-label="Ownership summary">
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{d.tiles}}" as="t" hint-placeholder-count="6">
 <div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{t.label}}</div>
@@ -199,7 +199,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-right: 10px">THE READ</span>{{d.read}}
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Institutional ownership trend" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership, last 8 quarters</h2>
@@ -271,7 +271,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Top buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top buyers</h2>

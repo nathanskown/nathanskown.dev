@@ -162,7 +162,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section aria-label="Scorecard">
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{score}}" as="sc" hint-placeholder-count="6">
 <div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{sc.label}}</div>
@@ -173,7 +173,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Beat rate by sector" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">EPS beat rate by sector</h2>
@@ -218,7 +218,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </div>
 <sc-if value="{{noReports}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13.5px">No S&amp;P 500 reports in the last ten days match this filter.</div></sc-if>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 12px">
 <sc-for list="{{reports}}" as="rp" hint-placeholder-count="8">
 <article style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">

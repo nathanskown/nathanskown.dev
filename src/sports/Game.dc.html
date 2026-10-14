@@ -57,7 +57,7 @@
 <div class="t-ph"><h2><span class="t-pn">1)</span>{{pick.title}}</h2><span class="dim">{{pick.note}}</span></div>
 <div class="t-pb">
 <sc-if value="{{pick.empty}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{pick.emptyText}}</div></sc-if>
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{pick.games}}" as="g" hint-placeholder-count="6">
 <a class="s-card" href="{{g.href}}">
 <div class="s-line"><span class="s-team"><img class="s-logo" src="{{g.aLogo}}" alt="">{{g.away}}</span><span class="hi">{{g.as}}</span><span class="s-team"><img class="s-logo" src="{{g.hLogo}}" alt="">{{g.home}}</span><span class="hi">{{g.hs}}</span></div>

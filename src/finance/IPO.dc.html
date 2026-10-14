@@ -152,7 +152,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section aria-label="Year to date scorecard">
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{score}}" as="sc" hint-placeholder-count="6">
 <div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{sc.label}}</div>
@@ -237,7 +237,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Monthly IPO volume" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">IPOs priced per month, {{year}}</h2>
@@ -277,7 +277,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="New S-1 filings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px">
@@ -303,7 +303,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Lockup expirations</h2>
 <span style="color: #A87933; font-size: 12.5px">Insider shares free to sell</span>
 </div>
-<table style="width: 100%; font-size: 13.5px">
+<div style="overflow-x: auto"><table style="width: 100%; font-size: 13.5px">
 <thead>
 <tr style="color: #C99442; font-size: 12px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Date</th>
@@ -324,7 +324,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </tr>
 </sc-for>
 </tbody>
-</table>
+</table></div>
 <p style="margin: 12px 0 0; font-size: 13px; color: #C99442">Estimated as 180 days after pricing, the standard lockup. Unlocks where the stock trades well above the IPO price tend to see the most insider selling.</p>
 </section>
 

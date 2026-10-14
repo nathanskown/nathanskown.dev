@@ -154,7 +154,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-panel" aria-label="Indices and assets">
 <div class="t-ph"><h2><span class="t-pn">10)</span>Indices &amp; Assets</h2><span class="dim">1D change</span></div>
-<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px">
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{tiles}}" as="t" hint-placeholder-count="10">
 <button type="button" class="{{t.cls}}" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}">
 <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px; width: 100%">
@@ -236,7 +236,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 18px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr)); gap: 18px">
 
 <section class="t-panel" aria-label="Top movers">
 <div class="t-ph"><h2><span class="t-pn">13)</span>S&amp;P 500 Movers</h2>
@@ -304,7 +304,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-panel" aria-label="Earnings calendar">
 <div class="t-ph"><h2><span class="t-pn">16)</span>Upcoming Earnings · S&amp;P 500</h2><span class="dim">Largest reporters · BMO before open · AMC after close · EPS estimate</span></div>
-<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px">
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{earnDays}}" as="ed" hint-placeholder-count="5">
 <div class="{{ed.colCls}}">
 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
@@ -354,7 +354,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 <section class="t-panel" aria-label="Prediction market odds">
 <div class="t-ph"><h2><span class="t-pn">19)</span>Prediction Market Odds</h2><span class="dim">Fed, CPI and recession · Kalshi</span></div>
-<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px 28px; padding-top: 4px">
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 4px 28px; padding-top: 4px">
 <sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
 <div class="t-row" style="padding: 9px 0">
 <div style="font-size: 11px; letter-spacing: .1em; color: #a87933; text-transform: uppercase">{{od.group}}</div>

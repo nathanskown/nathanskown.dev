@@ -206,7 +206,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section aria-label="Key statistics">
 <h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Key statistics</h2>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{stats}}" as="s" hint-placeholder-count="8">
 <div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{s.label}}</div>
@@ -283,7 +283,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="flex: 1 1 300px; min-width: 0; font-size: 13.5px; color: #FFD89D">{{activistText}}</div>
 </div>
 </sc-if>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 10px; margin-bottom: 16px">
 <sc-for list="{{insTiles}}" as="it" hint-placeholder-count="4">
 <div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">{{it.k}}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: {{it.color}}">{{it.v}}</div></div>
 </sc-for>
@@ -334,7 +334,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Index membership</h2>
 <span style="color: #A87933; font-size: 12.5px">S&amp;P index lists · passive ownership from 13F filings</span>
 </div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{indexes}}" as="ix" hint-placeholder-count="3">
 <div style="background: #0E0A05; border: 1px solid #382811; padding: 12px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center"><span style="color: #FFD89D">{{ix.n}}</span><span style="{{ix.statusStyle}}">{{ix.status}}</span></div>
 </sc-for>

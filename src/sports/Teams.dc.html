@@ -63,7 +63,7 @@
 
 <sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{emptyText}}</div></sc-if>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; align-items: start">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 14px; align-items: start">
 <sc-for list="{{groups}}" as="G" hint-placeholder-count="6">
 <section class="t-panel" aria-label="{{G.name}}">
 <div class="t-ph"><h2>{{G.name}}</h2><span class="dim">{{G.sub}}</span></div>
