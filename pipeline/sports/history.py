@@ -20,7 +20,7 @@ HISTORY = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]
 SEASONS = 5                                  # how many completed seasons to keep
 WEEKS = {"nfl": range(1, 19), "ncaaf": range(0, 16)}
 # regular-season window by league as (month, day) in the starting and ending calendar year
-WINDOW = {"nhl": ((10, 1), (4, 20)), "nba": ((10, 15), (4, 15)), "ncaab": ((11, 1), (3, 12)), "ncaah": ((10, 1), (3, 25))}
+WINDOW = {"nhl": ((10, 1), (4, 30)), "nba": ((10, 15), (4, 15)), "ncaab": ((11, 1), (3, 12)), "ncaah": ((10, 1), (3, 25))}
 RANGE_DAYS = {"nhl": 7, "nba": 7, "ncaah": 7, "ncaab": 1}      # days per request (ncaab has too many games per week)
 
 

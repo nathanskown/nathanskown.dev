@@ -24,10 +24,11 @@ from . import model as M
 from .common import now_iso, read, write
 
 LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]
-MIN_GAIN = 0.0005          # log-loss improvement needed on the held-out season to adopt new settings
+MIN_GAIN = 0.0005          # log-loss improvement needed on the held-out season to adopt new settings...
+MIN_Z = 1.5                # ...and it must be at least this many standard errors (paired, game by game)
 GRID = {
-    "k": [0.4, 0.7, 1.0, 1.6, 2.5, 4.0],            # multiples of the current k
-    "carry": [0.0, 0.2, 0.35, 0.5, 0.65, 0.8],
+    "k": [0.4, 0.7, 1.0, 1.6, 2.5, 4.0, 6.0, 10.0],  # multiples of the current k
+    "carry": [0.0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1.0],
     "hfa": [0.5, 0.75, 1.0, 1.25, 1.5],             # multiples of the current home edge
     "cap": {"ncaaf": [21, 28, 35, 45, None], "ncaab": [25, 30, 40, 60, None]},
 }
@@ -114,9 +115,10 @@ def replay(S, n, p, prior, pool):
     return proj
 
 
-def metrics(proj, actual):
+def metrics(proj, actual, sigma=None):
+    """sigma defaults to the spread of these errors; pass a sigma fit elsewhere to score honestly out of sample."""
     err = actual - proj
-    sigma = float(math.sqrt(np.mean(err ** 2)))
+    sigma = sigma or float(math.sqrt(np.mean(err ** 2)))
     p = 0.5 * (1 + np.vectorize(math.erf)(proj / sigma / math.sqrt(2)))
     p = np.clip(p, 1e-4, 1 - 1e-4)
     res = np.where(actual > 0, 1.0, np.where(actual < 0, 0.0, 0.5))
@@ -124,12 +126,12 @@ def metrics(proj, actual):
     dec = actual != 0
     hits = ((p >= 0.5) == (res == 1.0))[dec]
     home = res.mean()
-    return {"n": int(len(actual)), "sigma": round(sigma, 3), "logloss": float(ll.mean()),
+    return {"ll": ll, "n": int(len(actual)), "sigma": round(sigma, 3), "logloss": float(ll.mean()),
             "brier": float(((p - res) ** 2).mean()), "acc": float(hits.mean()) if dec.any() else None,
             "homeBrier": float(((home - res) ** 2).mean()), "mae": float(np.abs(err).mean())}
 
 
-def evaluate(seasons, years, n, p, pool):
+def evaluate(seasons, years, n, p, pool, sigma=None):
     """Pooled metrics over `years`, each using last season's ratings as its prior."""
     projs, acts = [], []
     for y in years:
@@ -139,7 +141,7 @@ def evaluate(seasons, years, n, p, pool):
             prior = np.where(seen, p["carry"] * R, 0.0)
         projs.append(replay(seasons[y], n, p, prior, pool))
         acts.append(seasons[y].m)
-    return metrics(np.concatenate(projs), np.concatenate(acts))
+    return metrics(np.concatenate(projs), np.concatenate(acts), sigma)
 
 
 def search(seasons, years, n, start, ref_params, pool, lg):
@@ -190,24 +192,29 @@ def tune(lg):
     train, hold = years[:-1], years[-1]
     default = dict(base)
     fit, _ = search(seasons, train, n, default, default, pool, lg)
-    d_hold = evaluate(seasons, [hold], n, default, pool)
-    f_hold = evaluate(seasons, [hold], n, fit, pool)
     d_train = evaluate(seasons, train, n, default, pool)
     f_train = evaluate(seasons, train, n, fit, pool)
-    gain = d_hold["logloss"] - f_hold["logloss"]
-    adopt = gain >= MIN_GAIN and fit != default
+    # the held-out season is scored with the spread measured on the training seasons, as it would be live
+    d_hold = evaluate(seasons, [hold], n, default, pool, d_train["sigma"])
+    f_hold = evaluate(seasons, [hold], n, fit, pool, f_train["sigma"])
+    diff = d_hold["ll"] - f_hold["ll"]
+    gain = float(diff.mean())
+    z = gain / (float(diff.std(ddof=1)) / math.sqrt(len(diff))) if len(diff) > 2 and diff.std() > 0 else 0.0
+    adopt = gain >= MIN_GAIN and z >= MIN_Z and fit != default
     params = dict(fit)
     if adopt:
         # refit on every season now that the check passed, then re-measure for the record
         params, _ = search(seasons, years, n, fit, default, pool, lg)
     allm = evaluate(seasons, years, n, params, pool)
     sigma = allm["sigma"]
+    for m in (d_train, f_train, d_hold, f_hold, allm):
+        m.pop("ll", None)
     out = {"adopt": bool(adopt), "params": dict(params, sigma=sigma) if adopt else None, "default": default, "fit": fit,
-           "holdout": hold, "train": train, "gain": round(gain, 5),
+           "holdout": hold, "train": train, "gain": round(gain, 5), "z": round(z, 2),
            "metrics": {"default_train": d_train, "fit_train": f_train, "default_holdout": d_hold, "fit_holdout": f_hold, "final_all": allm}}
     if not adopt:
-        out["reason"] = ("no setting set beat the current ones on the held-out season by " + str(MIN_GAIN)
-                         if fit != default else "current settings were already the best on the grid")
+        out["reason"] = (f"the best fit did not beat the current settings clearly enough on the held-out season (gain {gain:.4f}, z {z:.1f}; "
+                         f"needs {MIN_GAIN} and z {MIN_Z})" if fit != default else "current settings were already the best on the grid")
     return out
 
 
@@ -223,7 +230,7 @@ def job_tune():
             out[lg] = prev.get(lg) or {"adopt": False, "reason": f"error: {e}"[:160]}
         t = out[lg]
         m = t.get("metrics", {})
-        brief[lg] = ({"adopt": t["adopt"], "gain": t.get("gain"), "fit": t.get("fit"),
+        brief[lg] = ({"adopt": t["adopt"], "gain": t.get("gain"), "z": t.get("z"), "fit": t.get("fit"),
                       "holdout_ll": [round(m["default_holdout"]["logloss"], 4), round(m["fit_holdout"]["logloss"], 4)]}
                      if m else t.get("reason"))
     write("model/tuned.json", out)
