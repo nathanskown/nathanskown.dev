@@ -32,6 +32,8 @@ jobs:
         env:
           # Optional. When set, college football results come from CollegeFootballData instead of ESPN.
           CFBD_KEY: ${{ secrets.CFBD_KEY }}
+          # Optional. When set, the daily run saves betting-market lines from The Odds API (free plan: 500 credits a month).
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           CRON: ${{ github.event.schedule }}
         run: |
           git config user.name "sports-data-bot"

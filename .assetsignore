@@ -17,3 +17,4 @@ data/finance/ipo_cache.json
 data/sports/model/_games_*
 data/sports/track/_picks_*
 data/sports/history/*
+data/sports/odds/*
