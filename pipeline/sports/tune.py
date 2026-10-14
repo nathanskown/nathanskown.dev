@@ -9,9 +9,9 @@ probabilities fit what happened).
              season's rating is kept), home edge, and for college the margin cap
   not searched   sigma, which is simply the spread of projection errors (the maximum-likelihood value)
 
-Honesty check: the settings are fit on every stored season except the newest, then scored on that
-newest season, which they never saw. They are adopted only if they beat the current settings there by a
-clear margin; otherwise the current settings stay. model/tuned.json records both sets of numbers.
+Honesty check: for each of the newest two seasons the settings are fit on the seasons before it, then scored on
+that season, which they never saw. They are adopted only if they beat the current settings across both by a
+clear margin (a paired test, game by game); otherwise the current settings stay. model/tuned.json records both sets of numbers.
 
 The search is coordinate-wise (one setting at a time, two passes) on a coarse grid, so it cannot
 overfit much, and every season's contribution is equal-weighted per game."""
@@ -189,32 +189,46 @@ def tune(lg):
     same = (lambda h, a: bool(group.get(h)) and group.get(h) == group.get(a)) if base.get("divHfa") is not None else (lambda h, a: False)
     seasons = {y: Season(g, ix, norm, same) for y, g in hist.items()}
     n = len(ids)
-    train, hold = years[:-1], years[-1]
     default = dict(base)
-    fit, _ = search(seasons, train, n, default, default, pool, lg)
-    d_train = evaluate(seasons, train, n, default, pool)
-    f_train = evaluate(seasons, train, n, fit, pool)
-    # the held-out season is scored with the spread measured on the training seasons, as it would be live
-    d_hold = evaluate(seasons, [hold], n, default, pool, d_train["sigma"])
-    f_hold = evaluate(seasons, [hold], n, fit, pool, f_train["sigma"])
-    diff = d_hold["ll"] - f_hold["ll"]
-    gain = float(diff.mean())
-    z = gain / (float(diff.std(ddof=1)) / math.sqrt(len(diff))) if len(diff) > 2 and diff.std() > 0 else 0.0
-    adopt = gain >= MIN_GAIN and z >= MIN_Z and fit != default
+    # Rolling check: for each of the newest two seasons, fit on the seasons before it and score it. The
+    # sigma used on the held-out season is the one measured on the training seasons, as it would be live.
+    folds = years[-2:] if len(years) >= 4 else years[-1:]
+    diffs, rec = [], []
+    for hold in folds:
+        train = [y for y in years if y < hold]
+        fit, _ = search(seasons, train, n, default, default, pool, lg)
+        d_train = evaluate(seasons, train, n, default, pool)
+        f_train = evaluate(seasons, train, n, fit, pool)
+        d_hold = evaluate(seasons, [hold], n, default, pool, d_train["sigma"])
+        f_hold = evaluate(seasons, [hold], n, fit, pool, f_train["sigma"])
+        diff = d_hold["ll"] - f_hold["ll"]
+        diffs.append(diff)
+        for m in (d_train, f_train, d_hold, f_hold):
+            m.pop("ll", None)
+        rec.append({"holdout": hold, "train": train, "fit": fit, "gain": round(float(diff.mean()), 5),
+                    "default_train": d_train, "fit_train": f_train, "default_holdout": d_hold, "fit_holdout": f_hold})
+    pooled = np.concatenate(diffs)
+    gain = float(pooled.mean())
+    sd = float(pooled.std(ddof=1)) if len(pooled) > 2 else 0.0
+    z = gain / (sd / math.sqrt(len(pooled))) if sd > 0 else 0.0
+    last = rec[-1]
+    fit = last["fit"]
+    adopt = gain >= MIN_GAIN and z >= MIN_Z and rec[-1]["gain"] > 0 and fit != default
     params = dict(fit)
     if adopt:
-        # refit on every season now that the check passed, then re-measure for the record
+        # refit on every season now that the check passed
         params, _ = search(seasons, years, n, fit, default, pool, lg)
     allm = evaluate(seasons, years, n, params, pool)
     sigma = allm["sigma"]
-    for m in (d_train, f_train, d_hold, f_hold, allm):
-        m.pop("ll", None)
+    allm.pop("ll", None)
     out = {"adopt": bool(adopt), "params": dict(params, sigma=sigma) if adopt else None, "default": default, "fit": fit,
-           "holdout": hold, "train": train, "gain": round(gain, 5), "z": round(z, 2),
-           "metrics": {"default_train": d_train, "fit_train": f_train, "default_holdout": d_hold, "fit_holdout": f_hold, "final_all": allm}}
+           "holdout": last["holdout"], "train": last["train"], "gain": round(gain, 5), "z": round(z, 2), "games": int(len(pooled)),
+           "folds": [{"holdout": r["holdout"], "gain": r["gain"], "fit": r["fit"]} for r in rec],
+           "metrics": {"default_train": last["default_train"], "fit_train": last["fit_train"], "default_holdout": last["default_holdout"],
+                       "fit_holdout": last["fit_holdout"], "final_all": allm}}
     if not adopt:
-        out["reason"] = (f"the best fit did not beat the current settings clearly enough on the held-out season (gain {gain:.4f}, z {z:.1f}; "
-                         f"needs {MIN_GAIN} and z {MIN_Z})" if fit != default else "current settings were already the best on the grid")
+        out["reason"] = (f"the best fit did not beat the current settings clearly enough on held-out seasons (gain {gain:.4f}, z {z:.1f} "
+                         f"over {len(pooled)} games; needs {MIN_GAIN} and z {MIN_Z})" if fit != default else "current settings were already the best on the grid")
     return out
 
 
