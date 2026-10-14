@@ -8,7 +8,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/api/quote") return handleQuote(request, ctx);
-    if (url.pathname.startsWith("/api/espn/")) return handleEspn(request);
+    if (url.pathname.startsWith("/api/espn/")) return handleEspn(request, ctx);
     if (url.pathname === "/api/live") return handleLive(request, env, ctx);
     return env.ASSETS.fetch(request); // falls through to 404.html for unknown paths
   },

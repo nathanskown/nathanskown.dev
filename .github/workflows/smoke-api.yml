@@ -64,6 +64,10 @@ jobs:
           site /data/finance/tickers.json
           site /data/finance/dashboard.json
           site /no-such-page/
+      - name: Check the ESPN trim changes nothing the pages show
+        run: |
+          sleep 60
+          node tools/verify-espn-trim.mjs
       - name: Check the sports proxy
         run: |
           for path in "site/v2/sports/football/nfl/scoreboard" "site/v2/sports/football/college-football/scoreboard?groups=80&limit=300" \

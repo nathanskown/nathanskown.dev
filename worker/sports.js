@@ -3,10 +3,11 @@
 //   /api/espn/site/v2/sports/football/nfl/scoreboard      -> https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard
 //   /api/espn/v2/sports/hockey/nhl/standings?level=3      -> https://site.api.espn.com/apis/v2/sports/hockey/nhl/standings?level=3
 //
-// The Worker never parses the payload (the free plan's CPU limit is tight and some responses are
-// over 1 MB); pages normalize it in the browser with assets/sports-data.js. Only an allowlist of
-// paths and query parameters is forwarded, and every response is cached at the edge so a busy page
-// costs ESPN one request per cache window, not one per visitor.
+// Scoreboards and team schedules are trimmed here to the fields assets/sports-data.js actually reads
+// (same ESPN shape, ~85-95% smaller), and the trimmed copy is cached at the edge, so the parse runs about
+// once per cache window, not once per visitor. Very large responses skip the trim and pass straight
+// through, to stay inside the free plan's per-request CPU limit. Other routes are passed through as-is.
+// Only an allowlist of paths and query parameters is forwarded.
 
 const UPSTREAM = "https://site.api.espn.com/apis/";
 const SPORTS = "(?:football|baseball|hockey|basketball|soccer|golf|tennis)";
@@ -22,6 +23,27 @@ const ROUTES = [
   [new RegExp(`^site/v2/sports/${SPORTS}/${LEAGUE}/teams$`), 86400],
   [new RegExp(`^v2/sports/${SPORTS}/${LEAGUE}/standings$`), 900],
 ];
+// Every key the browser-side normalizers read (scores(), schedule() in assets/sports-data.js).
+// Pruning keeps these at any depth and drops everything else (logos, links, odds blobs, leaders...).
+const KEEP = new Set(("events week season byeWeek team id date endDate name shortName number text type year seasonType " +
+  "competitions groupings grouping displayName round status state completed shortDetail detail description period " +
+  "displayClock neutralSite venue fullName address city broadcasts names media broadcast notes headline series summary " +
+  "competitors homeAway winner score value displayValue records record curatedRank current linescores tiebreak " +
+  "abbreviation shortDisplayName location color alternateColor recordSummary standingSummary athlete position thru order").split(" "));
+const TRIM = [/\/scoreboard$/, /\/teams\/[a-z0-9]+\/schedule$/];
+const TRIM_MAX = 1500000; // bytes: above this, pass through untrimmed (CPU limit)
+const TRIM_VERSION = 1;   // bump when KEEP changes: new edge-cache namespace
+
+export function prune(o) {
+  if (Array.isArray(o)) return o.map(prune);
+  if (o && typeof o === "object") {
+    const out = {};
+    for (const k in o) if (KEEP.has(k)) out[k] = prune(o[k]);
+    return out;
+  }
+  return o;
+}
+
 const PARAMS = new Set(["dates", "week", "seasontype", "groups", "group", "limit", "event", "season", "level", "league"]);
 
 function json(status, body, maxAge = 0) {
@@ -35,7 +57,7 @@ function json(status, body, maxAge = 0) {
   });
 }
 
-export async function handleEspn(request) {
+export async function handleEspn(request, ctx) {
   if (request.method !== "GET" && request.method !== "HEAD") return json(405, { error: "GET only" });
   const url = new URL(request.url);
   const path = url.pathname.replace(/^\/api\/espn\//, "").replace(/\/+$/, "");
@@ -49,6 +71,13 @@ export async function handleEspn(request) {
   qs.sort(); // stable cache key
   const target = UPSTREAM + path + (qs.toString() ? "?" + qs : "");
   const ttl = route[1];
+  const trim = TRIM.some((re) => re.test(path));
+  const cache = caches.default;
+  const key = new Request(`${url.origin}/api/espn-trimmed/v${TRIM_VERSION}/${path}?${qs}`);
+  if (trim) {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+  }
 
   let up;
   try {
@@ -62,13 +91,24 @@ export async function handleEspn(request) {
   }
   if (!up.ok) return json(up.status === 404 ? 404 : 502, { error: `upstream HTTP ${up.status}` }, 30);
 
-  return new Response(up.body, {
-    status: 200,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": `public, max-age=${Math.min(ttl, 300)}`,
-      "access-control-allow-origin": "*",
-      "x-upstream": "espn",
-    },
-  });
+  const headers = {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": `public, max-age=${Math.min(ttl, 300)}`,
+    "access-control-allow-origin": "*",
+    "x-upstream": "espn",
+  };
+  const len = Number(up.headers.get("content-length") || 0);
+  if (!trim || len > TRIM_MAX) return new Response(up.body, { status: 200, headers: { ...headers, "x-trim": len ? "skipped" : "off" } });
+
+  const raw = await up.text();
+  if (raw.length > TRIM_MAX) return new Response(raw, { status: 200, headers: { ...headers, "x-trim": "skipped" } });
+  let body;
+  try {
+    body = JSON.stringify(prune(JSON.parse(raw)));
+  } catch (e) {
+    return new Response(raw, { status: 200, headers: { ...headers, "x-trim": "unparsed" } });
+  }
+  const res = new Response(body, { status: 200, headers: { ...headers, "x-trim": `${raw.length}>${body.length}` } });
+  if (ctx) ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
 }
