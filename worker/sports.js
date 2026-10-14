@@ -32,9 +32,18 @@ const KEEP = new Set(("events week season byeWeek team id date endDate name shor
   "abbreviation shortDisplayName location color alternateColor recordSummary standingSummary athlete position thru order").split(" "));
 const TRIM = [/\/scoreboard$/, /\/teams\/[a-z0-9]+\/schedule$/];
 const TRIM_MAX = 1500000; // bytes: above this, pass through untrimmed (CPU limit)
-const TRIM_VERSION = 2;   // bump when KEEP changes: new edge-cache namespace
+const TRIM_VERSION = 3;   // bump when KEEP changes: new edge-cache namespace
 
 const WHOLE = new Set(["season"]); // passed to the page as-is, so kept whole
+
+// tennis scoreboards carry every draw; the pages show singles only
+export function slim(path, j) {
+  const t = prune(j);
+  if (path.includes("/tennis/") && Array.isArray(t.events)) {
+    for (const e of t.events) if (Array.isArray(e.groupings)) e.groupings = e.groupings.filter((g) => /singles/i.test((g.grouping || {}).displayName || ""));
+  }
+  return t;
+}
 
 export function prune(o) {
   if (Array.isArray(o)) return o.map(prune);
@@ -106,7 +115,7 @@ export async function handleEspn(request, ctx) {
   if (raw.length > TRIM_MAX) return new Response(raw, { status: 200, headers: { ...headers, "x-trim": "skipped" } });
   let body;
   try {
-    body = JSON.stringify(prune(JSON.parse(raw)));
+    body = JSON.stringify(slim(path, JSON.parse(raw)));
   } catch (e) {
     return new Response(raw, { status: 200, headers: { ...headers, "x-trim": "unparsed" } });
   }

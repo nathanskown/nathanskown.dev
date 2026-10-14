@@ -3,7 +3,7 @@
 // and on the trimmed copy, and compares the results. Then reports what the live proxy actually serves.
 // Run in CI: node tools/verify-espn-trim.mjs
 import { readFileSync } from "node:fs";
-import { prune } from "../worker/sports.js";
+import { slim } from "../worker/sports.js";
 
 globalThis.window = {};
 let payload = null;
@@ -26,7 +26,7 @@ for (const [fn, lg, id] of feeds) {
   let path = `site/v2/sports/${L.sport}/${L.slug}/` + (fn === "scores" ? "scoreboard" : `teams/${id}/schedule`);
   const q = fn === "scores" && L.groups ? `?groups=${L.groups}` + (["ncaaf", "ncaab"].includes(lg) ? "&limit=300" : "") : (["ncaah"].includes(lg) ? "?limit=300" : "");
   const raw = await (await realFetch(`https://site.api.espn.com/apis/${path}${q}`)).json();
-  const trimmed = prune(raw);
+  const trimmed = slim(path, raw);
   payload = raw;
   const a = JSON.stringify(fn === "scores" ? await SD.scores(lg) : await SD.schedule(lg, id));
   payload = trimmed;
