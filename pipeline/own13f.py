@@ -18,14 +18,16 @@ import tempfile
 import time
 import zipfile
 from datetime import date
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 
+from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 5          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 6          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -150,10 +152,16 @@ def _shares_history(cik):
         j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/dei/EntityCommonStockSharesOutstanding.json")
         for f in (j.get("units") or {}).get("shares", []):
             by_end[f["end"]] = max(by_end.get(f["end"], 0), f["val"])
-    except Exception:  # noqa: BLE001 - tag not reported without a class dimension
-        pass
+    except RuntimeError as e:  # 404: tag not reported without a class dimension; anything else is retried
+        if "HTTP 404" not in str(e):
+            raise
     if not by_end:
-        j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding.json")
+        try:
+            j = get(f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/WeightedAverageNumberOfDilutedSharesOutstanding.json")
+        except RuntimeError as e:
+            if "HTTP 404" in str(e):
+                return []
+            raise
         for f in (j.get("units") or {}).get("shares", []):
             if f.get("start") and 80 <= (date.fromisoformat(f["end"]) - date.fromisoformat(f["start"])).days <= 100:
                 by_end[f["end"]] = f["val"]
@@ -206,9 +214,25 @@ def build(max_sets=9, force=False):
 
     # shares outstanding, threaded but paced to SEC's limit by net.get
     ciks = {s: tick[s][0] for s in best if s in tick}
-    with ThreadPoolExecutor(6) as ex:
-        hist = dict(zip(ciks, ex.map(lambda c: attempt_quiet(_shares_history, c), ciks.values())))
-    record("13F shares outstanding", True, n=sum(1 for h in hist.values() if h), note=f"{len(ciks)} companies queried")
+    errs = Counter()
+
+    def fetch(c):
+        try:
+            return _shares_history(c)
+        except Exception as e:  # noqa: BLE001
+            errs[str(e)[:60]] += 1
+            return None
+    with ThreadPoolExecutor(4) as ex:
+        hist = dict(zip(ciks, ex.map(fetch, ciks.values())))
+    retry = [s for s, h in hist.items() if h is None]
+    if retry:  # second, slower pass for anything that errored (rate limits, timeouts)
+        time.sleep(30)
+        netmod._dead.clear()
+        for s in retry:
+            hist[s] = fetch(ciks[s])
+            time.sleep(0.2)
+    record("13F shares outstanding", True, n=sum(1 for h in hist.values() if h),
+           note=f"{len(ciks)} companies queried, {len(retry)} retried; errors: {dict(errs.most_common(4))}")
 
     agg_ix = agg.set_index(["cusip", "period"])
     cur_all = det[det["period"] == L].groupby("cusip")
