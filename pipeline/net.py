@@ -26,6 +26,8 @@ SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to"
 PACE = {"sec.gov": 0.15, "data.sec.gov": 0.15, "api.nasdaq.com": 0.4, "query1.finance.yahoo.com": 0.15,
         "query2.finance.yahoo.com": 0.15, "api.stlouisfed.org": 0.1, "fred.stlouisfed.org": 0.2}
 _last = {}
+_dead = {}  # host -> consecutive failed calls; after BREAK the host fails fast for the rest of the run
+BREAK = 3
 SESSION = requests.Session()
 
 STATUS = {}
@@ -50,8 +52,10 @@ def headers_for(url):
     return {"User-Agent": BROWSER_UA, "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9"}
 
 
-def get(url, params=None, kind="json", tries=3, timeout=30, stream=False):
+def get(url, params=None, kind="json", tries=3, timeout=20, stream=False):
     host = _host(url)
+    if _dead.get(host, 0) >= BREAK:
+        raise RuntimeError(f"{host} skipped: {BREAK} straight failures this run")
     for key, gap in PACE.items():
         if host.endswith(key):
             wait = _last.get(key, 0) + gap - time.time()
@@ -68,13 +72,16 @@ def get(url, params=None, kind="json", tries=3, timeout=30, stream=False):
                 time.sleep(2 * (attempt + 1) ** 2)
                 continue
             if r.status_code != 200:
+                if r.status_code in (401, 403):  # blocked, not just a missing document
+                    _dead[host] = _dead.get(host, 0) + 1
                 raise RuntimeError(f"HTTP {r.status_code} for {url[:120]}")
-            if stream:
-                return r
-            return r.json() if kind == "json" else (r.content if kind == "bytes" else r.text)
+            out = r if stream else (r.json() if kind == "json" else (r.content if kind == "bytes" else r.text))
+            _dead[host] = 0
+            return out
         except (requests.RequestException, ValueError) as e:
             err = f"{type(e).__name__}: {str(e)[:160]}"
             time.sleep(1.5 * (attempt + 1))
+    _dead[host] = _dead.get(host, 0) + 1
     raise RuntimeError(err or f"failed {url[:120]}")
 
 
