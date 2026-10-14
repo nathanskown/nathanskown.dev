@@ -838,7 +838,7 @@ def digest():
                 shift = (g, m)
     if shift and abs(shift[1]["pct"] - shift[1]["prev"]) >= 3:
         g, m = shift
-        top.append({"lead": f"Biggest odds move: {g['title']} — {m['label']}.", "rest": f"{m['prev']:.0f}% → {m['pct']:.0f}% since the start of the day."})
+        top.append({"lead": f"Biggest odds move: {g.get('event') or g['title']} — {m['label']}.", "rest": f"{m['prev']:.0f}% → {m['pct']:.0f}% since the start of the day."})
     if news:
         top.append({"lead": "Top headline:", "rest": news[0]["title"]})
     write("digest.json", {"updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,

@@ -374,9 +374,9 @@ class Component extends DCLogic {
     });
     var odds = [];
     (D.odds || []).forEach(function (g) {
-      (g.markets || []).slice().sort(function (a, b) { return b.pct - a.pct; }).slice(0, 3).forEach(function (m) {
+      (g.markets || []).slice().sort(function (a, b) { return Math.abs(a.pct - 50) - Math.abs(b.pct - 50); }).slice(0, 3).forEach(function (m) {
         var d = m.prev === null || m.prev === undefined ? null : m.pct - m.prev;
-        odds.push({ group: g.title, q: m.label, v: Math.round(m.pct) + '%',
+        odds.push({ group: g.event || g.title, q: m.label, v: Math.round(m.pct) + '%',
                     bar: 'height: 6px; background: #ffb84d; box-shadow: 0 0 8px rgba(255,184,77,.5); width: ' + Math.max(1, Math.min(100, m.pct)) + '%;',
                     prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + ' pts vs. prior day (' + Math.round(m.prev) + '%)') });
       });
