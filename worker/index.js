@@ -1,0 +1,11 @@
+// Site entry point on Cloudflare Workers. Static files (pages, data JSON) are served straight
+// from the assets upload; only requests that match no file reach this code.
+import { handleQuote } from "./quote.js";
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname === "/api/quote") return handleQuote(request, ctx);
+    return env.ASSETS.fetch(request); // falls through to 404.html for unknown paths
+  },
+};

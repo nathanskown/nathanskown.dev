@@ -1,4 +1,4 @@
-// On-demand quote data for any US-listed ticker, served at /api/quote.
+// On-demand quote data for any US-listed ticker, served at /api/quote (routed from worker/index.js).
 //   /api/quote?part=price&sym=AAPL           Yahoo prices, charts, stats, news       (cached 15 min)
 //   /api/quote?part=fin&cik=320193           SEC XBRL quarterly financials, shares   (cached 12 h)
 //   /api/quote?part=filings&cik=320193       SEC Form 4, 13D/G, 8-K                   (cached 1 h)
@@ -320,8 +320,9 @@ async function partFilings(cik) {
 }
 
 // ---------------------------------------------------------------- handler
-export async function onRequestGet(context) {
-  const url = new URL(context.request.url);
+export async function handleQuote(request, ctx) {
+  if (request.method !== "GET") return json({ error: "GET only" }, 405);
+  const url = new URL(request.url);
   const part = url.searchParams.get("part") || "";
   const sym = (url.searchParams.get("sym") || "").toUpperCase();
   const cik = url.searchParams.get("cik") || "";
@@ -337,7 +338,7 @@ export async function onRequestGet(context) {
   try {
     const body = part === "price" ? await partPrice(sym) : part === "fin" ? await partFin(+cik) : await partFilings(+cik);
     const res = json(body, 200, TTL[part]);
-    context.waitUntil(cache.put(key, res.clone()));
+    ctx.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
     return json({ error: String(e && e.message || e).slice(0, 200) }, 502);

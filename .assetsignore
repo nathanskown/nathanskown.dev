@@ -1,0 +1,16 @@
+# files in the repo that should not be published as part of the site
+.git
+.github
+.gitignore
+.assetsignore
+wrangler.jsonc
+worker
+pipeline
+tools
+src
+README.md
+**/__pycache__
+data/finance/cusip_map.json
+data/finance/earnings_cache.json
+data/finance/ipo_cache.json
+.git/
