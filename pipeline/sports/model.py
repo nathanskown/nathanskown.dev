@@ -206,6 +206,24 @@ def _nba_prior(year):
     return out
 
 
+def context(lg, smap=None, members=None):
+    """Pieces shared by the live model and the track-record backtest: each team's division or
+    conference, the home edge for a game, and how outside teams collapse into the pooled rating."""
+    P = PARAMS[lg]
+    smap = smap if smap is not None else _standings_map(lg)
+    members = members if members is not None else set(_members(lg))
+    group = {t: smap.get(t, {}).get("group") for t in members}
+
+    def hfa_fn(g):
+        if P.get("divHfa") is not None and group.get(g["h"]) and group.get(g["h"]) == group.get(g["a"]):
+            return P["divHfa"]
+        return P["hfa"]
+
+    def norm_id(t):
+        return t if (t in members or not members) else POOL
+    return group, hfa_fn, norm_id
+
+
 def build(lg):
     global RNG
     P = PARAMS[lg]
@@ -230,15 +248,7 @@ def build(lg):
         events, source = games(lg, si)
         res["source"] = source
         played = [g for g in events.values() if g["done"] and g["hs"] is not None and g["as"] is not None]
-        group = {t: smap.get(t, {}).get("group") for t in members}
-
-        def hfa_fn(g):
-            if P.get("divHfa") is not None and group.get(g["h"]) and group.get(g["h"]) == group.get(g["a"]):
-                return P["divHfa"]
-            return P["hfa"]
-
-        def norm_id(t):
-            return t if (t in members or not members) else POOL
+        group, hfa_fn, norm_id = context(lg, smap, members)
         results = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in played]
         results = [r for r in results if r[0] != r[1]]
         prior = {}

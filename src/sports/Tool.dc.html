@@ -121,6 +121,59 @@
 </section>
 </sc-if>
 
+<sc-if value="{{isTrack}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Live record">
+<div class="t-ph"><h2>{{trk.title}}</h2><span class="dim">{{trk.sub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{trk.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{trk.noneText}}</div></sc-if>
+<sc-if value="{{trk.has}}" hint-placeholder-val="{{true}}">
+<div class="s-grid">
+<sc-for list="{{trk.cards}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
+</div>
+<h3 style="margin: 16px 0 6px; font-size: 14px">Calibration</h3>
+<div class="s-scroll"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Model’s favorite had</th><th scope="col">Games</th><th scope="col">Expected to win</th><th scope="col">Actually won</th></tr></thead>
+<tbody><sc-for list="{{trk.cal}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td></tr></sc-for></tbody>
+</table></div>
+</sc-if>
+<p class="s-note" style="margin: 10px 0 0">{{trk.note}}</p>
+</div>
+</section>
+<section class="t-panel" aria-label="Graded picks">
+<div class="t-ph"><h2>Latest graded picks</h2><span class="dim">{{trk.recentSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{trk.noRecent}}" hint-placeholder-val="{{false}}"><div class="s-empty">Nothing graded yet. Picks are graded after the final.</div></sc-if>
+<div class="s-scroll"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Game</th><th scope="col">Date</th><th scope="col">Pick</th><th scope="col">Win prob.</th><th scope="col">Final</th><th scope="col">Result</th></tr></thead>
+<tbody><sc-for list="{{trk.recent}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a> <span class="dim">{{r.lg}}</span></th><td>{{r.date}}</td><td>{{r.pick}}</td><td>{{r.prob}}</td><td>{{r.final}}</td><td style="{{r.style}}">{{r.res}}</td></tr></sc-for></tbody>
+</table></div>
+</div>
+</section>
+<section class="t-panel" aria-label="Pending picks">
+<div class="t-ph"><h2>Logged, not yet played</h2><span class="dim">{{trk.pendSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{trk.noPend}}" hint-placeholder-val="{{false}}"><div class="s-empty">No upcoming games logged right now.</div></sc-if>
+<div class="s-scroll"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Game</th><th scope="col">Kickoff (UTC)</th><th scope="col">Pick</th><th scope="col">Win prob.</th></tr></thead>
+<tbody><sc-for list="{{trk.pend}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a> <span class="dim">{{r.lg}}</span></th><td>{{r.date}}</td><td>{{r.pick}}</td><td>{{r.prob}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">A pick is refreshed every hour until the game starts, then frozen. What gets graded is the last projection made before the start.</p>
+</div>
+</section>
+<section class="t-panel" aria-label="Backtest">
+<div class="t-ph"><h2>Backtest (not a track record)</h2><span class="dim">{{trk.btSub}}</span></div>
+<div class="t-pb">
+<p class="s-note hi" style="margin: 0 0 10px">A backtest replays games that were already over and rates each one using only games played before it. It is a fair test of the method but it was run by us after the fact, so it counts for less than the live record above. Rows with fewer than 20 games are hidden because they say nothing.</p>
+<sc-if value="{{trk.btNone}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{trk.btNoneText}}</div></sc-if>
+<div class="s-scroll"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">League</th><th scope="col">Games</th><th scope="col">Picked right</th><th scope="col">Brier</th><th scope="col">Always-home Brier</th><th scope="col">Avg. miss</th><th scope="col">Bias</th><th scope="col">Span</th></tr></thead>
+<tbody><sc-for list="{{trk.bt}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.lg}}</th><td>{{r.n}}</td><td>{{r.acc}}</td><td>{{r.brier}}</td><td>{{r.home}}</td><td>{{r.mae}}</td><td>{{r.bias}}</td><td>{{r.span}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">Brier score: average squared error of the win probability, lower is better. A coin flip scores .250; always guessing the season’s home-win rate is the fairer bar. Avg. miss and bias are in the league’s scoring unit (bias above zero means home teams beat the projection on average). MLB is not logged or backtested: its ratings come from season totals, so there is no game history to replay.</p>
+</div>
+</section>
+</sc-if>
+
 <sc-if value="{{isMeth}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="The model">
 <div class="t-ph"><h2>The house model</h2><span class="dim">Applies to every league</span></div>
@@ -129,6 +182,7 @@
 <p>Early in a season a few games say little, so every rating is pulled toward a starting point (average, or for the NBA, 65% of last season’s margin) as if the team had already played <i>k</i> games at that level. That is the same idea as “SRS × games ÷ (games + k)”. College football margins are capped so a 60-point win over a weak opponent counts like a 35-point win, and teams outside the division the site covers (FCS, non-D-I) share one pooled rating.</p>
 <p>A game projection is the rating gap plus the home edge. The win probability treats the final margin as normally distributed around that projection with the league’s spread (σ below): P(home wins) = Φ((home − away + home edge) ÷ σ).</p>
 <p>Season odds replay the rest of the season 10,000 times. Each simulation draws every team’s true strength from its rating and uncertainty, plays the remaining games, seeds the playoff bracket and plays it out. NFL tiebreakers are simplified to division record, then point margin. The NHL simulation plays each team’s remaining games against a league-average opponent instead of the real schedule.</p>
+<p>The Track record page logs the model’s pick for every NFL, college football, NHL, NBA and college basketball and hockey game before it starts, freezes it at kickoff and grades it after the final. It begins empty at launch and is not back-filled. The backtest beside it replays past games using only earlier results; it is labelled separately because we ran it after the fact. MLB is not logged.</p>
 <p style="margin-bottom: 0">What it leaves out: injuries, rest, weather, lineup news and anything a betting market knows. Treat it as a well-calibrated baseline, not a forecast to bet on.</p>
 </div>
 </section>
@@ -167,13 +221,16 @@ class Component extends DCLogic {
   constructor(props) { super(props); this.state = { models: {}, injuries: {}, iq: '' }; }
   componentDidMount() {
     var self = this, key = this.props.tool;
-    var ok = key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
-    var lg = String(this.state.lg || 'nfl').toLowerCase();
-    if (ok.indexOf(lg) < 0) lg = 'nfl';
+    var ok = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
+    var lg = String(this.state.lg || (key === 'TrackRecord' ? 'all' : 'nfl')).toLowerCase();
+    if (ok.indexOf(lg) < 0) lg = key === 'TrackRecord' ? 'all' : 'nfl';
     this.setState({ lg: lg });
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
     SD.data('status.json').then(function (x) { self.setState({ status: x }); }, function () {});
-    if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
+    if (key === 'TrackRecord') {
+      SD.data('track/summary.json').then(function (x) { self.setState({ track: x }); }, function () { self.setState({ track: { err: true } }); });
+      SD.data('track/backtest.json').then(function (x) { self.setState({ back: x }); }, function () { self.setState({ back: { err: true } }); });
+    } else if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
     else this.loadLeague(lg);
   }
   loadModel(lg) {
@@ -183,6 +240,7 @@ class Component extends DCLogic {
   }
   loadLeague(lg) {
     var self = this, key = this.props.tool;
+    if (key === 'TrackRecord') return;
     if (key === 'Injuries') {
       if (!this.state.injuries[lg]) SD.data('injuries/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.injuries); o[lg] = m; self.setState({ injuries: o }); }, function () {});
     } else this.loadModel(lg);
@@ -195,18 +253,18 @@ class Component extends DCLogic {
       Injuries: ['INJ', 'Injuries', 'League-wide injury reports for the four pro leagues, refreshed hourly.'],
       LuckWatch: ['LUCK', 'Luck watch', 'Teams whose record has outrun, or lagged, their underlying numbers.'],
       Schedule: ['SOS', 'Schedule strength', 'Strength of schedule played and remaining for every team.'],
-      TrackRecord: ['TRAK', 'Track record', 'Every house-model pick, graded after the final.'],
+      TrackRecord: ['TRAK', 'Track record', 'Every house-model pick, saved before the game starts and graded after the final. The record begins empty at launch and fills one game at a time; nothing is back-filled.'],
       Methodology: ['METH', 'Methodology', 'How every rating, projection and probability in the Sports section is built, and where the data comes from.']
     };
     var S = this.state, self = this, key = TOOLS[this.props.tool] ? this.props.tool : 'Simulator', lg = S.lg || 'nfl';
     var fk = {}; Object.keys(TOOLS).forEach(function (k) { fk[k] = 't-fkey' + (k === key ? ' is-on' : ''); });
     var idx = {}; (((S.index || {}).leagues || {})[lg] || []).forEach(function (t) { idx[t.id] = t; });
-    var live = { Simulator: 1, Odds: 1, Injuries: 1, Methodology: 1 };
-    var tabsFor = key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
-    var lgTabs = tabsFor.map(function (k) { return { label: SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
+    var live = { Simulator: 1, Odds: 1, Injuries: 1, TrackRecord: 1, Methodology: 1 };
+    var tabsFor = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
+    var lgTabs = tabsFor.map(function (k) { return { label: k === 'all' ? 'All' : SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
       pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, simA: null, simH: null }); self.loadLeague(k); } }; });
     var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, soon: !live[key], tag: live[key] ? 'LIVE DATA' : 'COMING SOON',
-      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology' };
+      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord' };
     var m = S.models[lg];
     var pct = function (p) { return p === undefined || p === null ? '—' : p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
 
@@ -265,6 +323,64 @@ class Component extends DCLogic {
       var n = tl.reduce(function (s, t) { return s + t.list.length; }, 0);
       out.inj = { title: SD.LEAGUES[lg].label + ' injury report', sub: d ? n + ' players' : '', teams: tl, q: S.iq, onQ: function (e) { self.setState({ iq: e.target.value }); },
         none: !tl.length, noneText: !d ? 'Loading…' : (q ? 'Nothing matches “' + S.iq + '”.' : 'No injuries listed.') };
+    }
+    if (key === 'TrackRecord') {
+      var T = S.track, B = S.back, f3 = function (v) { return v === null || v === undefined ? '—' : (+v).toFixed(3).replace(/^0/, ''); };
+      var pc = function (v) { return v === null || v === undefined ? '—' : Math.round(v * 100) + '%'; };
+      var L = ((S.index || {}).leagues) || {};
+      var nm = function (k, id) { var t = ((L[k] || []).filter(function (x) { return x.id === id; })[0]) || {}; return { name: t.short || t.name || id, abbr: t.abbr || id }; };
+      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '' };
+      var pickRow = function (k, r, graded) {
+        var h = nm(k, r.h), a = nm(k, r.a), fav = r.p >= 0.5 ? h : a, fp = Math.max(r.p, 1 - r.p);
+        var row = { game: a.name + ' at ' + h.name + (r.n ? ' (neutral)' : ''), lg: SD.LEAGUES[k].short, href: SD.gameHref ? SD.gameHref(k, r.id) : '#', date: F.day(r.d + ':00Z'), pick: fav.abbr + ' ' + Math.abs(r.m).toFixed(1), prob: pc(fp) };
+        if (graded) {
+          var tie = r.hs === r.as, won = !tie && ((r.p >= 0.5) === (r.hs > r.as));
+          row.final = a.abbr + ' ' + r.as + ', ' + h.abbr + ' ' + r.hs; row.res = tie ? 'Tie' : won ? 'Right' : 'Wrong'; row.style = tie ? '' : won ? 'color: var(--up)' : 'color: var(--dn)';
+        } else row.date = r.d.replace('T', ' ');
+        return row;
+      };
+      if (!T) { tr.none = true; tr.noneText = 'Loading…'; }
+      else if (T.err) { tr.none = true; tr.noneText = 'The track-record file did not load. It is written by the hourly job after the first run.'; }
+      else {
+        var keys = lg === 'all' ? Object.keys(T.leagues) : [lg], st = lg === 'all' ? T.all : (T.leagues[lg] || {}).stats;
+        var pen = [], pendN = 0, prog = 0;
+        keys.forEach(function (k) { var e = T.leagues[k]; if (!e) return; pendN += e.pendingN; prog += e.inProgress;
+          e.pending.forEach(function (r) { pen.push({ d: r.d, row: pickRow(k, r, false) }); }); });
+        var recAll = []; keys.forEach(function (k) { (T.leagues[k] ? T.leagues[k].recent : []).forEach(function (r) { recAll.push({ d: r.d, row: pickRow(k, r, true) }); }); });
+        recAll.sort(function (x, y) { return x.d < y.d ? 1 : -1; }); pen.sort(function (x, y) { return x.d < y.d ? -1 : 1; });
+        tr.recent = recAll.slice(0, 40).map(function (x) { return x.row; }); tr.pend = pen.slice(0, 40).map(function (x) { return x.row; });
+        tr.noRecent = !tr.recent.length; tr.noPend = !tr.pend.length;
+        tr.sub = 'Updated ' + (T.updated ? F.day(T.updated) + ' ' + F.time(T.updated) + ' CT' : '—');
+        tr.recentSub = tr.recent.length ? 'Newest first, up to 40' : ''; tr.pendSub = pendN + ' logged' + (prog ? ', ' + prog + ' in progress' : '');
+        if (!st || !st.n) {
+          tr.none = true;
+          tr.noneText = 'Nothing graded yet. The log started when this page launched: ' + pendN + ' upcoming game' + (pendN === 1 ? ' is' : 's are') + ' saved so far, and each is graded after its final. There is no back-filled history here; the backtest below is the only past evidence.';
+        } else {
+          var small = st.n < 30;
+          tr.has = true;
+          tr.cards = [
+            { k: 'Graded picks', v: st.n, s: st.decided + ' decided' + (st.n - st.decided ? ', ' + (st.n - st.decided) + ' tied' : '') },
+            { k: 'Picked right', v: pc(st.acc), s: st.hits + ' of ' + st.decided },
+            { k: 'Brier score', v: f3(st.brier), s: 'coin flip .250 · always-home ' + f3(st.homeBrier) },
+            { k: 'Avg. miss', v: st.mae.toFixed(1), s: 'bias ' + (st.bias > 0 ? '+' : '') + st.bias.toFixed(1) + ' (home minus projection)' }
+          ];
+          tr.cal = (st.cal || []).map(function (c) { return { band: Math.round(c.lo * 100) + '–' + Math.min(100, Math.round(c.hi * 100)) + '%', n: c.n, exp: pc(c.exp), act: pc(c.act) }; });
+          tr.note = (small ? 'Only ' + st.n + ' graded picks so far, so every number here can move a lot from one game. Do not read anything into it yet. ' : '') + 'Each calibration row should land close to the pick’s stated chance; rows with a handful of games are noise.';
+        }
+        tr.note += (tr.note ? ' ' : '') + 'MLB is not logged.';
+      }
+      if (!B) { tr.btNone = true; tr.btNoneText = 'Loading…'; }
+      else if (B.err || !B.leagues) { tr.btNone = true; tr.btNoneText = 'The backtest file is not available yet. It is rebuilt once a day.'; }
+      else {
+        var ks = lg === 'all' ? Object.keys(B.leagues) : [lg];
+        tr.bt = ks.filter(function (k) { return B.leagues[k] && B.leagues[k].n >= 20; }).map(function (k) { var b = B.leagues[k];
+          return { lg: SD.LEAGUES[k].label, n: b.n, acc: pc(b.acc), brier: f3(b.brier), home: f3(b.homeBrier), mae: b.mae.toFixed(1), bias: (b.bias > 0 ? '+' : '') + b.bias.toFixed(1), span: b.from + ' to ' + b.to }; });
+        var hidden = ks.filter(function (k) { return B.leagues[k] && B.leagues[k].n < 20; }).map(function (k) { return SD.LEAGUES[k].short; });
+        tr.btSub = B.updated ? 'Rebuilt ' + F.day(B.updated) : '';
+        if (!tr.bt.length) { tr.btNone = true; tr.btNoneText = 'Not enough completed games to backtest yet.'; }
+        if (hidden.length) tr.btSub += (tr.btSub ? ' · ' : '') + 'too few games: ' + hidden.join(', ');
+      }
+      out.trk = tr;
     }
     if (key === 'Methodology') {
       out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : '—',
