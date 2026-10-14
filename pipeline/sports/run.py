@@ -8,7 +8,7 @@ import os
 import sys
 import time
 
-from . import espn, model, track
+from . import espn, history, model, track, tune
 from .common import STATUS, attempt, now_iso, read, write
 
 JOBS = {
@@ -17,6 +17,9 @@ JOBS = {
     "daily": [("standings", espn.job_standings), ("teams", espn.teams_index), ("leaders", espn.job_leaders),
               ("injuries", espn.job_injuries), ("model", model.job_model), ("track", track.job_track),
               ("backtest", track.job_backtest)],
+    # one-off, started by hand from the "Sports history and tuning" workflow
+    "history": [("history", history.job_history)],
+    "tune": [("tune", tune.job_tune), ("model", model.job_model), ("track", track.job_track), ("backtest", track.job_backtest)],
 }
 
 
