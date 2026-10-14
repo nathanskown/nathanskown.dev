@@ -132,9 +132,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </nav>
 <div class="t-sub">
 <span>Live Headlines (TOP)</span>
-<span class="dim">Tue Oct 13, 2026</span>
+<span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-tag">Sample data</span>
+<span class="t-tag">{{liveTag}}</span>
 </div>
 </header>
 
@@ -144,7 +144,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
 <h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 600; color: #FFD89D">Live headlines</h1>
 <span style="{{statusStyle}}"><span aria-hidden="true" style="{{dotStyle}}"></span>{{statusText}}</span>
-<span style="font-size: 12.5px; color: #A87933">Sample feed · new items arrive every few seconds in this mockup</span>
+<span style="font-size: 12.5px; color: #A87933">{{feedNote}}</span>
 </div>
 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
 <button type="button" onClick="{{toggleWatch}}" aria-pressed="{{watchPressed}}" style="{{watchStyle}}">Watchlist only</button>
@@ -167,7 +167,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section aria-label="Headline feed" aria-live="polite" style="flex: 999 1 600px; min-width: 0; background: #0A0704; border: 1px solid #382811; border-radius: 0; overflow: hidden">
 <sc-for list="{{items}}" as="it" hint-placeholder-count="12">
-<a href="#" style="{{it.rowStyle}}">
+<a href="{{it.link}}" target="_blank" rel="noopener" style="{{it.rowStyle}}">
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #A87933; width: 66px; flex: none; padding-top: 2px">{{it.time}}</span>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px">
@@ -188,9 +188,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
 
-<section class="t-card" aria-label="Today's top stories" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Today's top stories</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 6px">Most-covered stories across major publications</div>
+<section class="t-card" aria-label="Most-mentioned tickers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Most-mentioned tickers</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 6px">Headlines tagged with each ticker, last 24 hours</div>
 <sc-for list="{{top}}" as="ts" hint-placeholder-count="5">
 <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #A87933; width: 18px; flex: none">{{ts.rank}}</span>
@@ -210,7 +210,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-card" aria-label="Scheduled today" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Still to come today</h2>
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">On the calendar</h2>
+<sc-if value="{{noSched}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #A87933">No major releases or S&amp;P 500 earnings scheduled today.</div></sc-if>
 <sc-for list="{{sched}}" as="sc" hint-placeholder-count="4">
 <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #221909; font-size: 13.5px">
 <span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; width: 66px; flex: none">{{sc.t}}</span><span>{{sc.e}}</span>
@@ -219,7 +220,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section aria-label="Sources" style="font-size: 12.5px; color: #A87933; line-height: 1.6">
-Sources in the live version: press release wires, SEC EDGAR 8-K filings, and RSS feeds from major financial publications. Headlines link out to the original; full articles stay on the publisher's site.
+Sources: {{sourceList}}. Refreshed hourly in market hours, twice a day on weekends. Headlines link to the original; full articles stay on the publisher's site.
 </section>
 
 </aside>
@@ -233,64 +234,37 @@ Sources in the live version: press release wires, SEC EDGAR 8-K filings, and RSS
 class Component extends DCLogic {
   componentDidMount() {
     var self = this;
-    this.timer = setInterval(function () {
-      var st = self.state || {};
-      if (st.paused) return;
-      var q = st.queued === undefined ? 0 : st.queued;
-      if (q >= self.queue().length) return;
-      var now = new Date();
-      var t = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' });
-      self.setState({ queued: q + 1, arrived: (st.arrived || []).concat([{ q: q, time: t, at: Date.now() }]), unseen: (st.unseen || 0) + 1 });
-    }, 7000);
-    this.tick = setInterval(function () { self.forceUpdate(); }, 2000);
+    this.opened = Date.now();
+    var pull = function () {
+      if ((self.state || {}).paused) return;
+      DC.load('/data/finance/headlines.json').then(function (j) {
+        var st = self.state || {};
+        var known = st.known || {};
+        var unseen = st.unseen || 0;
+        if (st.items) j.items.forEach(function (h) { if (!known[h.link]) unseen++; });
+        var k2 = {}; j.items.forEach(function (h) { k2[h.link] = 1; });
+        self.setState({ data: j, items: j.items, known: k2, unseen: unseen });
+      }).catch(function () { self.setState({ err: true }); });
+    };
+    pull();
+    ['config', 'macro', 'earnings'].forEach(function (k) {
+      DC.load('/data/finance/' + k + '.json').then(function (j) { var o = {}; o[k] = j; self.setState(o); }).catch(function () {});
+    });
+    this.timer = setInterval(pull, 60000);
   }
-  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.tick); try { document.title = 'Live headlines'; } catch (e) {} }
+  componentWillUnmount() { clearInterval(this.timer); try { document.title = 'Live headlines · NSKN Terminal'; } catch (e) {} }
   componentDidUpdate() {
     var n = (this.state && this.state.unseen) || 0;
-    try { document.title = (n ? '(' + n + ') ' : '') + 'Live headlines'; } catch (e) {}
-  }
-  queue() {
-    return [
-      { type: 'Press release', tickers: ['PRSM'], h: 'Prism Semiconductor announces $2 billion share repurchase authorization', src: 'Company press release · newswire', notable: true },
-      { type: 'Publication', tickers: [], h: 'Fed officials signal openness to another quarter-point cut as inflation cools', src: 'National financial daily', notable: true },
-      { type: 'SEC filing', tickers: ['HLWY'], h: 'Halloway Machine Works 8-K: chief operating officer to depart at year end', src: 'SEC EDGAR · 8-K Item 5.02', notable: false },
-      { type: 'Publication', tickers: ['ODEN'], h: 'Oden Power and Motion said to explore sale of aftermarket parts unit, people familiar say', src: 'Wire service', notable: true },
-      { type: 'Press release', tickers: ['HRBR'], h: 'Harbor Logistics to webcast third-quarter results after market close today', src: 'Company press release · newswire', notable: false },
-      { type: 'Publication', tickers: [], h: 'Oil extends gains after supply disruption at major Gulf export terminal', src: 'Wire service', notable: false },
-      { type: 'SEC filing', tickers: ['NWND'], h: 'Northwind Industrial 8-K: board adopts shareholder rights plan after activist stake disclosure', src: 'SEC EDGAR · 8-K Item 3.03', notable: true },
-      { type: 'Press release', tickers: ['KTRA'], h: 'Kestrel Aerospace wins $640 million Air Force avionics contract', src: 'Company press release · newswire', notable: false },
-      { type: 'Publication', tickers: [], h: 'Regional bank stocks slide as commercial real estate worries resurface', src: 'Business network', notable: false },
-      { type: 'SEC filing', tickers: ['QNTL'], h: 'Quintal Software 13D: Morrow Street Advisors discloses 6.1% stake, seeks strategic review', src: 'SEC EDGAR · Schedule 13D', notable: true }
-    ];
-  }
-  base() {
-    return [
-      { time: '1:12 PM', type: 'Publication', tickers: [], h: 'Treasury yields hold near three-week lows as traders price in October cut', src: 'Financial daily', notable: false },
-      { time: '1:04 PM', type: 'Press release', tickers: ['NWND'], h: 'Northwind Industrial confirms receipt of letter from Halcyon Point Capital, says board will review', src: 'Company press release · newswire', notable: true },
-      { time: '12:51 PM', type: 'SEC filing', tickers: ['TRVS'], h: 'Travis Regional Bancorp 8-K: files investor presentation on commercial real estate exposure', src: 'SEC EDGAR · 8-K Item 7.01', notable: false },
-      { time: '12:37 PM', type: 'Publication', tickers: ['MDLN'], h: 'Meridian Apparel shares hit two-year low after holiday outlook cut', src: 'Business network', notable: false },
-      { time: '12:20 PM', type: 'Press release', tickers: [], h: 'Lumenvault sets IPO terms, seeks up to $486 million at top of range', src: 'Company press release · newswire', notable: false },
-      { time: '11:58 AM', type: 'Publication', tickers: [], h: 'Small business optimism ticks up for second month, survey shows', src: 'Wire service', notable: false },
-      { time: '11:42 AM', type: 'Publication', tickers: ['PRSM'], h: 'Chipmakers rally as data center spending forecasts move higher', src: 'National financial daily', notable: false },
-      { time: '11:20 AM', type: 'SEC filing', tickers: ['ARCO'], h: 'Arcos Homebuilders 8-K: amends credit agreement, extends maturity to 2031', src: 'SEC EDGAR · 8-K Item 1.01', notable: false },
-      { time: '10:55 AM', type: 'Press release', tickers: ['GRLN'], h: 'Greenline Rail declares quarterly dividend, raises payout 8%', src: 'Company press release · newswire', notable: false },
-      { time: '10:31 AM', type: 'Publication', tickers: ['TRVS'], h: 'Travis Regional falls 9% after loan-loss provisions jump on office loans', src: 'Wire service', notable: true },
-      { time: '9:48 AM', type: 'Publication', tickers: ['KTRA'], h: 'Kestrel Aerospace jumps after lifting full-year outlook on defense orders', src: 'Business network', notable: false },
-      { time: '7:31 AM', type: 'Publication', tickers: [], h: 'September CPI rises 0.2%, below forecasts; core holds at 3.1% annual pace', src: 'Wire service', notable: true }
-    ];
+    try { document.title = (n ? '(' + n + ') ' : '') + 'Live headlines · NSKN Terminal'; } catch (e) {}
   }
   renderVals() {
     var self = this;
     var st = this.state || {};
     var paused = !!st.paused, watchOnly = !!st.watchOnly, notableOnly = !!st.notableOnly;
     var tab = st.tab || 'all';
-    var watchList = ['NWND', 'PRSM', 'HLWY', 'ODEN', 'FNWK', 'QNTL'];
-    var q = this.queue();
-    var arrived = (st.arrived || []).slice().reverse().map(function (a) {
-      var it = q[a.q];
-      return Object.assign({}, it, { time: a.time, fresh: Date.now() - a.at < 20000, live: true });
-    });
-    var all = arrived.concat(this.base().map(function (b) { return Object.assign({}, b, { fresh: false }); }));
+    var watchList = (st.config && st.config.watchlist) || [];
+    var all = st.items || [];
+    var now = Date.now();
     var typeMap = { all: null, pr: 'Press release', sec: 'SEC filing', pub: 'Publication' };
     var counts = { all: all.length, pr: 0, sec: 0, pub: 0 };
     all.forEach(function (it) { if (it.type === 'Press release') counts.pr++; else if (it.type === 'SEC filing') counts.sec++; else counts.pub++; });
@@ -301,23 +275,42 @@ class Component extends DCLogic {
     var items = all.filter(function (it) {
       if (typeMap[tab] && it.type !== typeMap[tab]) return false;
       if (notableOnly && !it.notable) return false;
-      if (watchOnly && !it.tickers.some(function (t) { return watchList.indexOf(t) >= 0; })) return false;
+      if (watchOnly && !(it.tickers || []).some(function (t) { return watchList.indexOf(t) >= 0; })) return false;
       return true;
-    }).map(function (it) {
-      var onWatch = it.tickers.some(function (t) { return watchList.indexOf(t) >= 0; });
-      return Object.assign({}, it, {
+    }).slice(0, 120).map(function (it) {
+      var onWatch = (it.tickers || []).some(function (t) { return watchList.indexOf(t) >= 0; });
+      var fresh = now - new Date(it.firstSeen).getTime() < 2 * 3600000;
+      var pub = new Date(it.published);
+      var sameDay = pub.toDateString() === new Date().toDateString();
+      return {
+        h: it.title, link: it.link, type: it.type, tickers: it.tickers || [], notable: it.notable, fresh: fresh,
+        time: sameDay ? F.time(it.published) : F.day(it.published), src: it.source + ' · ' + F.ago(it.published),
         typeStyle: tStyle(it.type),
-        rowStyle: 'display: flex; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #221909; color: #FFB84D; ' + (it.fresh ? 'animation: arrive 4s ease-out; ' : '') + (onWatch ? 'background: #1A1309;' : '')
-      });
+        rowStyle: 'display: flex; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #221909; color: #FFB84D; ' + (fresh ? 'animation: arrive 4s ease-out; ' : '') + (onWatch ? 'background: #1A1309;' : '')
+      };
     });
     var tabDefs = [['all', 'All'], ['pub', 'Publications'], ['pr', 'Press releases'], ['sec', 'SEC filings']];
     var btn = function (on) { return 'height: 36px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;'); };
     var toggle = function (on) { return 'height: 40px; padding: 0 14px; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13.5px; ' + (on ? 'background: #261C0C; border: 1px solid #FFB84D; color: #FFD89D;' : 'background: #0E0A05; border: 1px solid #3D2C13; color: #C99442;'); };
     var unseen = st.unseen || 0;
-    var watch = watchList.map(function (t) {
-      return { t: t, c: all.filter(function (it) { return it.tickers.indexOf(t) >= 0; }).length };
+    var day = now - 86400000;
+    var mention = {};
+    all.forEach(function (h) { if (new Date(h.published).getTime() >= day) (h.tickers || []).forEach(function (t) { mention[t] = (mention[t] || 0) + 1; }); });
+    var top = Object.keys(mention).sort(function (a, b) { return mention[b] - mention[a]; }).slice(0, 6).map(function (t, i) {
+      var latest = all.filter(function (h) { return (h.tickers || []).indexOf(t) >= 0; })[0];
+      return { rank: i + 1, h: t + ' · ' + mention[t] + ' headline' + (mention[t] > 1 ? 's' : ''), meta: latest ? latest.title.slice(0, 90) : '' };
     });
+    var watch = watchList.map(function (t) { return { t: t, c: all.filter(function (it) { return (it.tickers || []).indexOf(t) >= 0; }).length }; });
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    var sched = ((st.macro || {}).calendar || []).filter(function (c) { return c.date === todayIso; }).map(function (c) { return { t: 'Today', e: c.name }; })
+      .concat(((st.earnings || {}).upcoming || []).filter(function (x) { return x.date === todayIso; }).slice(0, 5).map(function (x) { return { t: x.when, e: x.name + ' (' + x.sym + ') earnings' }; }));
+    var sources = [];
+    var feeds = (st.config || {}).feeds || {};
+    Object.keys(feeds).forEach(function (k) { sources = sources.concat(Object.keys(feeds[k])); });
+    var D = st.data || {};
     return {
+      liveTag: F.updated(D.updated),
+      feedNote: st.err ? 'Headline data is not available yet. The first refresh runs within the hour.' : (D.updated ? 'Feed refreshed ' + F.ago(D.updated) + ' · this page checks for new items every minute' : 'Loading headlines…'),
       statusText: paused ? 'Paused' : 'Live',
       statusStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 0; font-size: 12.5px; font-weight: 600; ' + (paused ? 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;' : 'background: #0D2616; border: 1px solid #1F6B3A; color: #4ADE80;'),
       dotStyle: 'width: 8px; height: 8px; border-radius: 0; background: ' + (paused ? '#664A1F' : '#4ADE80') + ';' + (paused ? '' : ' animation: pulse 1.6s infinite;'),
@@ -325,30 +318,12 @@ class Component extends DCLogic {
       togglePause: function () { self.setState({ paused: !paused }); },
       toggleWatch: function () { self.setState({ watchOnly: !watchOnly }); },
       toggleNotable: function () { self.setState({ notableOnly: !notableOnly }); },
-      watchPressed: watchOnly ? 'true' : 'false',
-      notablePressed: notableOnly ? 'true' : 'false',
-      watchStyle: toggle(watchOnly),
-      notableStyle: toggle(notableOnly),
+      watchPressed: watchOnly ? 'true' : 'false', notablePressed: notableOnly ? 'true' : 'false',
+      watchStyle: toggle(watchOnly), notableStyle: toggle(notableOnly),
       tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], pressed: t[0] === tab ? 'true' : 'false', pick: function () { self.setState({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
-      hasUnseen: unseen > 0,
-      unseenText: unseen + ' new since you last looked',
-      markSeen: function () { self.setState({ unseen: 0 }); },
-      items: items,
-      empty: items.length === 0,
-      top: [
-        { rank: 1, h: 'Softer CPI print revives bets on an October rate cut', meta: 'Covered by 9 major outlets' },
-        { rank: 2, h: 'Regional banks under pressure again on office loan losses', meta: 'Covered by 6 major outlets' },
-        { rank: 3, h: 'Activist pressure builds at mid-cap industrials', meta: 'Covered by 4 major outlets' },
-        { rank: 4, h: 'Lower-income shoppers pull back ahead of the holidays', meta: 'Covered by 4 major outlets' },
-        { rank: 5, h: 'IPO window stays open for AI and defense names', meta: 'Covered by 3 major outlets' }
-      ],
-      watch: watch,
-      sched: [
-        { t: '3:00 PM', e: 'Market close' },
-        { t: '3:05 PM', e: 'Harbor Logistics (HRBR) Q3 results' },
-        { t: '3:30 PM', e: 'Fed Governor remarks on the economic outlook' },
-        { t: '4:00 PM', e: 'Harbor Logistics earnings call' }
-      ]
+      hasUnseen: unseen > 0, unseenText: unseen + ' new since you opened this page', markSeen: function () { self.setState({ unseen: 0 }); },
+      items: items, empty: !!st.items && items.length === 0, top: top, watch: watch, sched: sched, noSched: !sched.length,
+      sourceList: sources.join(', ') || 'press wires, SEC EDGAR and financial publications'
     };
   }
 }

@@ -132,9 +132,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </nav>
 <div class="t-sub">
 <span>Q3 2026 Earnings Season (ERN)</span>
-<span class="dim">Tue Oct 13, 2026</span>
+<span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-tag">Sample data: illustrative numbers and fictional companies</span>
+<span class="t-tag">{{liveTag}}</span>
 </div>
 </header>
 
@@ -142,13 +142,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section aria-label="Season overview" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
 <div style="flex: 1 1 520px; min-width: 0">
-<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">Q3 2026 earnings season</h1>
-<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 760px">Week 2 of 6. Early reporters are beating on EPS at roughly the usual rate, but revenue beats are running well below average, and guidance is mixed. Margins are doing the work, not demand.</div>
+<h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">{{title}}</h1>
+<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 760px">{{subtitle}}</div>
 </div>
 <div style="flex: 0 1 360px; min-width: 260px">
-<div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px"><span>S&amp;P 500 reported</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">41 of 500 · 8%</span></div>
-<div aria-hidden="true" style="height: 8px; border-radius: 0; background: #241A0B; overflow: hidden"><div style="width: 8%; height: 8px; background: #FFB84D"></div></div>
-<div style="display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 14px" aria-label="Reports per week, sample" role="img">
+<div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px"><span>S&amp;P 500 reported</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{progressText}}</span></div>
+<div aria-hidden="true" style="height: 8px; border-radius: 0; background: #241A0B; overflow: hidden"><div style="{{progressBar}}"></div></div>
+<div style="display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 14px" aria-label="S&amp;P 500 reports per week" role="img">
 <sc-for list="{{weeks}}" as="wk" hint-placeholder-count="6">
 <div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 64px; justify-content: flex-end">
 <div style="{{wk.barStyle}}"></div>
@@ -156,7 +156,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </sc-for>
 </div>
-<div style="font-size: 12px; color: #A87933; margin-top: 4px">Reports per week · current week highlighted</div>
+<div style="font-size: 12px; color: #A87933; margin-top: 4px">S&amp;P 500 reports per week · current week highlighted</div>
 </div>
 </section>
 
@@ -175,86 +175,49 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Beat rate by sector" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 4px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Beat rate by sector</h2>
-<div role="group" aria-label="Beat metric" style="display: flex; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
-<sc-for list="{{metricTabs}}" as="mt" hint-placeholder-count="2">
-<button type="button" onClick="{{mt.pick}}" aria-pressed="{{mt.pressed}}" style="{{mt.btnStyle}}">{{mt.label}}</button>
-</sc-for>
-</div>
-</div>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">Share of reporters beating consensus {{metricWord}} · bright tick = 5-year average · small samples this early</div>
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">EPS beat rate by sector</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">Share of S&amp;P 500 reporters beating the consensus EPS estimate · count of reporters · small samples early in the season</div>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <sc-for list="{{sectorRows}}" as="r" hint-placeholder-count="11">
-<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 96px; align-items: center; gap: 12px; font-size: 13.5px">
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 96px; align-items: center; gap: 12px; font-size: 13.5px">
 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.n}}</span>
-<span aria-hidden="true" style="position: relative; display: block; height: 14px; border-radius: 0; background: #1A1309">
-<span style="{{r.fillStyle}}"></span>
-<span style="{{r.avgStyle}}"></span>
-</span>
+<span aria-hidden="true" style="position: relative; display: block; height: 14px; border-radius: 0; background: #1A1309"><span style="{{r.fillStyle}}"></span></span>
 <span style="font-family: 'IBM Plex Mono', monospace; text-align: right; color: {{r.color}}">{{r.label}}</span>
 </div>
 </sc-for>
 </div>
 </section>
 
-<section class="t-card" aria-label="Q3 2026 sentiment" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<section class="t-card" aria-label="Market themes" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Q3 2026 sentiment</h2>
-<span style="color: #A87933; font-size: 12.5px">Share of earnings calls citing each factor · change vs. Q2</span>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Market themes · last 7 days</h2>
+<span style="color: #A87933; font-size: 12.5px">{{themeNote}}</span>
 </div>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 14px 0 16px; padding: 12px 14px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326">
-<div>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D">NET SENTIMENT</div>
-<div style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; color: #FFD89D">+12 <span style="font-size: 14px; color: #4ADE80">▲ from +4</span></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 16px">
+<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size: 12.5px; color: #C99442">Guidance raised</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #4ADE80">{{raised}}</div><div style="font-size: 12px; color: #A87933">headlines</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size: 12.5px; color: #C99442">Guidance lowered</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #FF5F56">{{lowered}}</div><div style="font-size: 12px; color: #A87933">headlines</div></div>
 </div>
-<div style="flex: 1 1 220px; font-size: 13.5px; color: #FFB84D">Tariffs still dominate calls, but mentions are fading. The new worry is the lower-income consumer, cited by 37% of calls, up 6 points.</div>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 18px">
-<div>
-<h3 style="margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80">TAILWINDS</h3>
-<sc-for list="{{tail}}" as="t" hint-placeholder-count="5">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="6">
 <div style="padding: 7px 0">
-<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px"><span>{{t.n}}</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{t.pct}}</span></div>
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px"><span>Mentions “{{t.n}}”</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{t.pct}}</span></div>
 <div aria-hidden="true" style="height: 6px; border-radius: 0; background: #1A1309; margin-top: 4px"><div style="{{t.bar}}"></div></div>
-<div style="font-size: 12px; color: #A87933; margin-top: 2px">{{t.delta}} vs. Q2</div>
 </div>
 </sc-for>
-</div>
-<div>
-<h3 style="margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56">HEADWINDS</h3>
-<sc-for list="{{head}}" as="h" hint-placeholder-count="5">
-<div style="padding: 7px 0">
-<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px"><span>{{h.n}}</span><span style="font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{h.pct}}</span></div>
-<div aria-hidden="true" style="height: 6px; border-radius: 0; background: #1A1309; margin-top: 4px"><div style="{{h.bar}}"></div></div>
-<div style="font-size: 12px; color: #A87933; margin-top: 2px">{{h.delta}} vs. Q2</div>
-</div>
-</sc-for>
-</div>
-</div>
-<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px">
-<sc-for list="{{words}}" as="w" hint-placeholder-count="3">
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 10px 12px">
-<div style="font-size: 12.5px; color: #C99442">Calls saying “{{w.w}}”</div>
-<div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFD89D">{{w.now}}</div>
-<div style="font-size: 12px; color: #A87933">Q2: {{w.prev}}</div>
-</div>
-</sc-for>
-</div>
 </section>
 
 </div>
 
 <section aria-label="Recently reported">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFD89D">Recently reported</h2>
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #FFD89D">Recently reported · largest S&amp;P 500 companies</h2>
 <div role="group" aria-label="Filter reports" style="display: flex; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
 <sc-for list="{{filterTabs}}" as="ft" hint-placeholder-count="3">
 <button type="button" onClick="{{ft.pick}}" aria-pressed="{{ft.pressed}}" style="{{ft.btnStyle}}">{{ft.label}}</button>
 </sc-for>
 </div>
 </div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 12px">
+<sc-if value="{{noReports}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13.5px">No S&amp;P 500 reports in the last ten days match this filter.</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px">
 <sc-for list="{{reports}}" as="rp" hint-placeholder-count="8">
 <article style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
@@ -271,25 +234,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
-<div style="font-size: 12px; color: #C99442">EPS</div>
-<div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div>
-<div style="font-size: 12px; color: {{rp.epsColor}}">{{rp.epsTag}}</div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">EPS</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div><div style="font-size: 12px; color: {{rp.epsColor}}">{{rp.epsTag}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Year ago</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.ly}}</div><div style="font-size: 12px; color: {{rp.growthColor}}">{{rp.growth}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.nEst}}</div><div style="font-size: 12px; color: #A87933">{{rp.mcap}}</div></div>
 </div>
-<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
-<div style="font-size: 12px; color: #C99442">Revenue</div>
-<div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.rev}}</div>
-<div style="font-size: 12px; color: {{rp.revColor}}">{{rp.revTag}}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px">
+<a href="{{rp.newsUrl}}" target="_blank" rel="noopener" style="border: 1px solid #3D2C13; padding: 6px 10px">News ↗</a>
+<a href="{{rp.secUrl}}" target="_blank" rel="noopener" style="border: 1px solid #3D2C13; padding: 6px 10px">8-K filings ↗</a>
+<a href="{{rp.quoteHref}}" style="border: 1px solid #3D2C13; padding: 6px 10px">Quote page</a>
 </div>
-<div style="background: #0E0A05; border-radius: 0; padding: 8px 10px">
-<div style="font-size: 12px; color: #C99442">Guidance</div>
-<div style="font-size: 14px; font-weight: 600; color: {{rp.guideColor}}">{{rp.guide}}</div>
-<div style="font-size: 12px; color: #A87933">vs. prior outlook</div>
-</div>
-</div>
-<ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; line-height: 1.45">
-<sc-for list="{{rp.bullets}}" as="b" hint-placeholder-count="3"><li>{{b}}</li></sc-for>
-</ul>
 </article>
 </sc-for>
 </div>
@@ -297,20 +250,20 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming earnings</h2>
-<span style="color: #A87933; font-size: 12.5px">Implied move = options-priced one-day move · BMO before open · AMC after close</span>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming earnings · next two weeks</h2>
+<span style="color: #A87933; font-size: 12.5px">Largest S&amp;P 500 reporters each day · BMO before open · AMC after close</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 720px; font-size: 14px">
 <thead>
 <tr style="color: #C99442; font-size: 12.5px; text-align: right">
-<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Date</th>
+<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Sector</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Time</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">EPS est.</th>
-<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Rev. est.</th>
-<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">Implied move</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Analysts</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-right: 0">Mkt cap</th>
 </tr>
 </thead>
 <tbody>
@@ -321,8 +274,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <td style="text-align: left; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{u.sector}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.when}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.eps}}</td>
-<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.rev}}</td>
-<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{u.move}}</td>
+<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.nEst}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{u.mcap}}</td>
 </tr>
 </sc-for>
 </tbody>
@@ -334,7 +287,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
-<span>Estimates and results via [DATA PROVIDER] · Call themes via [TRANSCRIPT SOURCE]</span>
+<span>Earnings dates, estimates and results: Nasdaq · Sectors: S&amp;P 500 list (Wikipedia) · Price moves: Yahoo Finance · Themes: market headline feeds · Refreshed daily</span>
 <span>Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
@@ -344,124 +297,69 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3200}}'>
 class Component extends DCLogic {
-  renderVals() {
-    var UP = '#4ADE80', DN = '#FF5F56', NEU = '#FFB84D';
-    var st = this.state || {};
-    var metric = st.metric || 'eps';
-    var filt = st.filt || 'all';
+  componentDidMount() {
     var self = this;
-    var tabStyle = function (on) {
-      return 'height: 34px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;');
-    };
-    var weekData = [['10/5', 12], ['10/12', 44], ['10/19', 112], ['10/26', 168], ['11/2', 118], ['11/9', 46]];
-    var weeks = weekData.map(function (w, k) {
-      return { label: w[0], barStyle: 'width: 100%; border-radius: 0 0 0; height: ' + Math.round(w[1] / 168 * 44) + 'px; background: ' + (k === 1 ? '#FFE9C7' : '#4A3517') + ';' };
+    DC.load('/data/finance/earnings.json').then(function (j) { self.setState({ e: j }); }).catch(function () { self.setState({ err: true }); });
+    DC.load('/data/finance/quotes/index.json').then(function (j) { self.setState({ qi: j }); }).catch(function () {});
+  }
+  renderVals() {
+    var UP = '#4ADE80', DN = '#FF5F56';
+    var st = this.state || {};
+    var self = this;
+    var E = st.e || {};
+    var filt = st.filt || 'all';
+    var tracked = {};
+    ((st.qi || {}).tickers || []).forEach(function (t) { tracked[t.sym] = 1; });
+    var tabStyle = function (on) { return 'height: 34px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;'); };
+    var P = E.progress || {}, S = E.score || {}, season = E.season || {};
+    var pct = P.total ? P.reported / P.total * 100 : 0;
+    var wmax = Math.max.apply(null, (E.weeks || []).map(function (w) { return w.n; }).concat([1]));
+    var weeks = (E.weeks || []).slice(-8).map(function (w) {
+      var wd = new Date(w.week + 'T12:00:00Z');
+      return { label: (wd.getUTCMonth() + 1) + '/' + wd.getUTCDate(), barStyle: 'width: 100%; border-radius: 0; height: ' + Math.max(2, Math.round(w.n / wmax * 44)) + 'px; background: ' + (w.current ? '#FFE9C7' : '#4A3517') + ';' };
     });
-    var sectors = [
-      { n: 'Technology', eps: [4, 4], rev: [4, 4], avg: 82 },
-      { n: 'Financials', eps: [9, 11], rev: [7, 11], avg: 78 },
-      { n: 'Consumer Staples', eps: [4, 5], rev: [3, 5], avg: 76 },
-      { n: 'Industrials', eps: [6, 8], rev: [5, 8], avg: 77 },
-      { n: 'Health Care', eps: [2, 3], rev: [2, 3], avg: 81 },
-      { n: 'Materials', eps: [2, 3], rev: [1, 3], avg: 71 },
-      { n: 'Consumer Discretionary', eps: [3, 5], rev: [2, 5], avg: 75 },
-      { n: 'Communication Svcs.', eps: [1, 1], rev: [1, 1], avg: 77 },
-      { n: 'Energy', eps: [0, 1], rev: [0, 1], avg: 69 },
-      { n: 'Real Estate', eps: [0, 0], rev: [0, 0], avg: 74 },
-      { n: 'Utilities', eps: [0, 0], rev: [0, 0], avg: 66 }
+    var score = [
+      { label: 'Beat EPS estimates', value: S.beatPct === null || S.beatPct === undefined ? '—' : F.n(S.beatPct, 0) + '%', sub: (S.n || 0) + ' S&P 500 reporters so far', color: '#FFD89D' },
+      { label: 'Avg. EPS surprise', value: F.pct(S.avgSurprise, 1), sub: 'median ' + F.pct(S.medSurprise, 1), color: (S.avgSurprise || 0) >= 0 ? UP : DN },
+      { label: 'Median EPS growth', value: F.pct(S.medGrowth, 1), sub: 'vs. same quarter last year', color: (S.medGrowth || 0) >= 0 ? UP : DN },
+      { label: 'Avg. next-day move', value: F.pct(S.moveBeat, 1) + ' / ' + F.pct(S.moveMiss, 1), sub: 'on beats / on misses', color: '#FFD89D' },
+      { label: 'Reported / scheduled', value: (P.reported || 0) + ' / ' + (P.scheduled || 0), sub: 'S&P 500 companies this season', color: '#FFD89D' },
+      { label: 'Season window', value: season.label || '—', sub: season.qend ? 'quarter ended ' + F.day(season.qend) : '', color: '#FFD89D' }
     ];
-    var sectorRows = sectors.map(function (s) {
-      var v = s[metric], avg = metric === 'eps' ? s.avg : s.avg - 9;
-      var none = v[1] === 0;
-      var pct = none ? 0 : Math.round(v[0] / v[1] * 100);
-      return {
-        n: s.n,
-        label: none ? 'none yet' : pct + '% · ' + v[0] + '/' + v[1],
-        color: none ? '#A87933' : (pct >= avg ? UP : DN),
-        fillStyle: 'position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0; width: ' + pct + '%; background: ' + (pct >= avg ? '#2F9E5A' : '#B8423A') + ';',
-        avgStyle: 'position: absolute; top: -3px; bottom: -3px; width: 2px; background: #FFD89D; left: calc(' + avg + '% - 1px);'
-      };
+    var sectorRows = (E.sectors || []).filter(function (s) { return s.name !== 'Other'; }).map(function (s) {
+      var none = !s.n, p = none ? 0 : Math.round(s.beat / s.n * 100);
+      return { n: s.name, label: none ? 'none yet' : p + '% · ' + s.beat + '/' + s.n, color: none ? '#A87933' : (p >= 75 ? UP : (p >= 60 ? '#FFD89D' : DN)),
+        fillStyle: 'position: absolute; left: 0; top: 0; bottom: 0; border-radius: 0; width: ' + p + '%; background: ' + (p >= 75 ? '#2F9E5A' : (p >= 60 ? '#8A6326' : '#B8423A')) + ';' };
     });
-    var metricTabs = [{ id: 'eps', label: 'EPS' }, { id: 'rev', label: 'Revenue' }].map(function (t) {
-      return { label: t.label, pressed: t.id === metric ? 'true' : 'false', pick: function () { self.setState({ metric: t.id }); }, btnStyle: tabStyle(t.id === metric) };
-    });
-    var bar = function (p, c) { return 'height: 6px; border-radius: 0; background: ' + c + '; width: ' + Math.round(p / 70 * 100) + '%;'; };
-    var dl = function (d) { return (d > 0 ? '▲ +' : (d < 0 ? '▼ −' : '')) + Math.abs(d) + ' pts'; };
-    var tail = [['AI and data center demand', 46, 7], ['Pricing actions', 39, 2], ['Easing input costs', 27, 5], ['Lower rates and financing', 22, 9], ['Resilient high-income consumer', 20, -1]].map(function (x) {
-      return { n: x[0], pct: x[1] + '%', bar: bar(x[1], '#2F9E5A'), delta: dl(x[2]) };
-    });
-    var head = [['Tariffs and trade costs', 61, -8], ['Lower-income consumer softness', 37, 6], ['Labor and wage costs', 24, 1], ['FX translation', 18, -4], ['Customer destocking', 15, -3]].map(function (x) {
-      return { n: x[0], pct: x[1] + '%', bar: bar(x[1], '#B8423A'), delta: dl(x[2]) };
-    });
+    var TH = E.themes || {};
+    var tmax = Math.max.apply(null, (TH.terms || []).map(function (t) { return t.share; }).concat([1]));
+    var themes = (TH.terms || []).map(function (t) { return { n: t.term, pct: F.n(t.share, 1) + '% · ' + t.n, bar: 'height: 6px; border-radius: 0; background: #FFB84D; width: ' + Math.round(t.share / tmax * 100) + '%;' }; });
     var filterTabs = [{ id: 'all', label: 'All' }, { id: 'beat', label: 'Beat EPS' }, { id: 'miss', label: 'Missed EPS' }].map(function (t) {
       return { label: t.label, pressed: t.id === filt ? 'true' : 'false', pick: function () { self.setState({ filt: t.id }); }, btnStyle: tabStyle(t.id === filt) };
     });
-    var raw = [
-      { t: 'TRVS', n: 'Travis Regional Bancorp', sector: 'Financials', date: 'Oct 13 · BMO', ea: 0.94, ee: 1.06, rev: '$412M vs. $405M', rb: true, mv: -9.3, guide: 'Lowered',
-        b: ['Credit loss provisions jumped 48% YoY on commercial real estate, driving the EPS miss.', 'Net interest income rose 3% YoY, but the full-year NII outlook was trimmed for expected rate cuts.', 'Deposits grew 2% QoQ; management expects CRE stress to peak in 1H27.'] },
-      { t: 'MDLN', n: 'Meridian Apparel', sector: 'Consumer Discretionary', date: 'Oct 13 · BMO', ea: 0.27, ee: 0.31, rev: '$1.21B vs. $1.26B', rb: false, mv: -12.6, guide: 'Lowered',
-        b: ['Comparable sales fell 4% as lower-income shoppers pulled back on discretionary purchases.', 'Gross margin contracted 180 bp on tariff costs and heavier promotions.', 'Holiday-quarter revenue outlook cut about 5%; inventory up 11% YoY heading into Q4.'] },
-      { t: 'GRLN', n: 'Greenline Rail', sector: 'Industrials', date: 'Oct 12 · AMC', ea: 1.19, ee: 1.12, rev: '$2.38B vs. $2.31B', rb: true, mv: 3.4, guide: 'Raised',
-        b: ['Carloads rose 5% on intermodal and agricultural volumes.', 'Operating ratio improved 150 bp to 61.8% as the cost program ran ahead of plan.', 'Full-year EPS guidance raised; capex held flat.'] },
-      { t: 'FSTN', n: 'Fairstone Packaging', sector: 'Materials', date: 'Oct 12 · AMC', ea: 0.88, ee: 0.84, rev: '$1.64B vs. $1.67B', rb: false, mv: 2.1, guide: 'Maintained',
-        b: ['Volumes fell 2%, but price and mix added 4%, so EPS beat while revenue missed.', 'Resin cost relief lifted adjusted EBITDA margin 120 bp.', 'Reiterated full-year outlook; no recovery in industrial demand assumed.'] },
-      { t: 'SNTL', n: 'Sentinel Asset Management', sector: 'Financials', date: 'Oct 9 · BMO', ea: 11.85, ee: 11.20, rev: '$5.10B vs. $4.98B', rb: true, mv: 2.6, guide: 'N/A',
-        b: ['AUM hit a record $1.4T on $28B of net inflows, led by fixed income ETFs.', 'Performance fees rose 35% YoY on strong private credit returns.', 'Private markets fundraising tracking ahead of full-year target.'] },
-      { t: 'PCRF', n: 'Pinecrest Foods', sector: 'Consumer Staples', date: 'Oct 8 · BMO', ea: 0.72, ee: 0.70, rev: '$3.05B vs. $3.08B', rb: false, mv: -1.4, guide: 'Maintained',
-        b: ['Organic sales rose just 1%, all from price; volumes fell 2% as private label gained share.', 'Ingredient cost deflation helped gross margin expand 60 bp.', 'Kept guidance but flagged a more value-seeking shopper into the holidays.'] },
-      { t: 'ALDR', n: 'Aldridge Airlines', sector: 'Industrials', date: 'Oct 8 · BMO', ea: 1.52, ee: 1.38, rev: '$15.2B vs. $15.0B', rb: true, mv: 5.8, guide: 'Raised',
-        b: ['Premium cabin revenue grew 9% while main cabin was flat, extending the high-end versus low-end split.', 'Fuel cost per gallon fell 11% YoY, the main driver of the margin beat.', 'Q4 EPS outlook set above consensus on firm corporate travel bookings.'] },
-      { t: 'CRBL', n: 'Corbel Beverage', sector: 'Consumer Staples', date: 'Oct 7 · BMO', ea: 2.61, ee: 2.48, rev: '$2.42B vs. $2.45B', rb: false, mv: -3.0, guide: 'Lowered',
-        b: ['Depletions fell 3%; management blamed softer spending by lower-income consumers.', 'Aluminum cost relief and price increases protected margins and drove the EPS beat.', 'Cut full-year volume outlook but kept its $500M buyback pace.'] }
-    ];
-    var reports = raw.filter(function (r) {
-      return filt === 'all' || (filt === 'beat' ? r.ea >= r.ee : r.ea < r.ee);
-    }).map(function (r) {
-      var eb = r.ea >= r.ee;
-      var surprise = ((r.ea - r.ee) / r.ee * 100);
-      return {
-        t: r.t, n: r.n, sector: r.sector, date: r.date,
-        eps: '$' + r.ea.toFixed(2) + ' vs. $' + r.ee.toFixed(2),
-        epsTag: (eb ? 'Beat ' : 'Missed ') + (surprise >= 0 ? '+' : '−') + Math.abs(surprise).toFixed(1) + '%',
-        epsColor: eb ? UP : DN,
-        rev: r.rev, revTag: r.rb ? 'Beat' : 'Missed', revColor: r.rb ? UP : DN,
-        guide: r.guide, guideColor: r.guide === 'Raised' ? UP : (r.guide === 'Lowered' ? DN : NEU),
-        move: (r.mv >= 0 ? '▲ +' : '▼ −') + Math.abs(r.mv).toFixed(1) + '%', moveColor: r.mv >= 0 ? UP : DN,
-        bullets: r.b
-      };
+    var reports = (E.recent || []).filter(function (r) { return filt === 'all' || (filt === 'beat' ? r.beat : !r.beat); }).map(function (r) {
+      var g = r.lastYearEps ? (r.eps - r.lastYearEps) / Math.abs(r.lastYearEps) * 100 : null;
+      return { t: r.sym, n: r.name, sector: r.sector || '—', date: F.day(r.date) + ' · ' + r.when,
+        move: r.move === null || r.move === undefined ? '—' : F.arrow(r.move) + ' ' + F.pct(r.move, 1), moveColor: r.move === null || r.move === undefined ? '#C99442' : (r.move >= 0 ? UP : DN),
+        eps: F.usd(r.eps, 2) + ' vs. ' + F.usd(r.est, 2), epsTag: (r.beat ? 'Beat ' : 'Missed ') + F.pct(r.surprisePct, 1), epsColor: r.beat ? UP : DN,
+        ly: r.lastYearEps === null || r.lastYearEps === undefined ? '—' : F.usd(r.lastYearEps, 2), growth: g === null ? '' : F.pct(g, 1) + ' YoY', growthColor: (g || 0) >= 0 ? UP : DN,
+        nEst: r.nEst ? String(r.nEst) : '—', mcap: F.money(r.mcap, 0) + ' mkt cap',
+        newsUrl: 'https://finance.yahoo.com/quote/' + r.sym + '/news', secUrl: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + r.sym + '&type=8-K',
+        quoteHref: tracked[r.sym] ? 'Main.dc.html?sym=' + r.sym : '#' };
     });
-    var up = [
-      { date: 'Oct 13', t: 'HRBR', n: 'Harbor Logistics', sector: 'Industrials', when: 'AMC', eps: '$0.97', rev: '$1.88B', move: '±6.4%', today: true },
-      { date: 'Oct 14', t: 'CRSN', n: 'Carsten Fluid Systems', sector: 'Industrials', when: 'BMO', eps: '$0.66', rev: '$742M', move: '±5.1%' },
-      { date: 'Oct 14', t: 'PRSM', n: 'Prism Semiconductor', sector: 'Technology', when: 'AMC', eps: '$2.41', rev: '$6.12B', move: '±8.8%' },
-      { date: 'Oct 15', t: 'ODEN', n: 'Oden Power and Motion', sector: 'Industrials', when: 'BMO', eps: '$3.05', rev: '$4.40B', move: '±4.3%' },
-      { date: 'Oct 15', t: 'QNTL', n: 'Quintal Software', sector: 'Technology', when: 'AMC', eps: '$0.52', rev: '$968M', move: '±9.6%' },
-      { date: 'Oct 15', t: 'SLTE', n: 'Slate Media', sector: 'Communication Svcs.', when: 'AMC', eps: '$0.18', rev: '$1.05B', move: '±11.2%' },
-      { date: 'Oct 16', t: 'HLWY', n: 'Halloway Machine Works', sector: 'Industrials', when: 'BMO', eps: '$1.47', rev: '$2.21B', move: '±4.9%' },
-      { date: 'Oct 16', t: 'ARCO', n: 'Arcos Homebuilders', sector: 'Consumer Discretionary', when: 'BMO', eps: '$1.93', rev: '$3.36B', move: '±6.0%' },
-      { date: 'Oct 29', t: 'NWND', n: 'Northwind Industrial', sector: 'Industrials', when: 'BMO', eps: '$1.24', rev: '$1.13B', move: '±5.5%' }
-    ].map(function (u) {
-      return Object.assign({}, u, { date: u.today ? u.date + ' · Today' : u.date, rowStyle: 'text-align: right;' + (u.today ? ' background: #261C0C;' : '') });
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    var upcoming = (E.upcoming || []).map(function (u) {
+      var today = u.date === todayIso;
+      return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
+        nEst: u.nEst ? String(u.nEst) : '—', mcap: F.money(u.mcap, 0), rowStyle: 'text-align: right;' + (today ? ' background: #261C0C;' : '') };
     });
+    var subtitle = st.err ? 'Earnings data is not available yet. The first daily refresh fills it in.' : (E.updated ? (P.reported || 0) + ' of ' + (P.total || 500) + ' S&P 500 companies have reported ' + (season.label || '') + ' results. ' + (S.n ? F.n(S.beatPct, 0) + '% beat the consensus EPS estimate, by ' + F.pct(S.avgSurprise, 1) + ' on average.' : 'The season is just getting started.') : 'Loading the season…');
     return {
-      weeks: weeks,
-      score: [
-        { label: 'Beat EPS estimates', value: '76%', sub: '5-yr avg 77%', color: '#FFD89D' },
-        { label: 'Beat revenue estimates', value: '61%', sub: '5-yr avg 69%', color: DN },
-        { label: 'Blended EPS growth', value: '+8.7%', sub: 'YoY · expected +7.9% on Sep 30', color: UP },
-        { label: 'Avg. EPS surprise', value: '+5.9%', sub: '5-yr avg +7.1%', color: '#FFD89D' },
-        { label: 'Guidance raised / cut', value: '9 / 6', sub: '18 maintained · 8 none given', color: '#FFD89D' },
-        { label: 'Avg. next-day move', value: '+0.9% / −3.1%', sub: 'on beats / on misses', color: '#FFD89D' }
-      ],
-      metricTabs: metricTabs,
-      metricWord: metric === 'eps' ? 'on EPS' : 'on revenue',
-      sectorRows: sectorRows,
-      tail: tail,
-      head: head,
-      words: [{ w: 'tariff', now: '61%', prev: '69%' }, { w: 'AI', now: '58%', prev: '51%' }, { w: 'recession', now: '9%', prev: '14%' }],
-      filterTabs: filterTabs,
-      reports: reports,
-      upcoming: up
+      liveTag: F.updated(E.updated), title: (season.label || '') + ' earnings season', subtitle: subtitle,
+      progressText: (P.reported || 0) + ' of ' + (P.total || 500) + ' · ' + Math.round(pct) + '%', progressBar: 'width: ' + pct.toFixed(1) + '%; height: 8px; background: #FFB84D;',
+      weeks: weeks, score: score, sectorRows: sectorRows, themes: themes, raised: TH.raised === undefined ? '—' : String(TH.raised), lowered: TH.lowered === undefined ? '—' : String(TH.lowered),
+      themeNote: TH.n ? 'Share of ' + TH.n + ' market headlines' : 'Builds as headlines accumulate',
+      filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming
     };
   }
 }

@@ -132,9 +132,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </nav>
 <div class="t-sub">
 <span>IPO Tracker (IPO)</span>
-<span class="dim">Tue Oct 13, 2026</span>
+<span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-tag">Sample data: illustrative numbers and fictional companies</span>
+<span class="t-tag">{{liveTag}}</span>
 </div>
 </header>
 
@@ -143,10 +143,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section aria-label="Overview" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
 <div style="flex: 1 1 560px; min-width: 0">
 <h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">IPO tracker</h1>
-<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 780px">The window is open but selective. AI, defense and space deals are pricing above range and popping; consumer and fintech deals are pricing at the low end and breaking issue. Investors are paying for growth stories and punishing everything else.</div>
+<div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 780px">{{headline}}</div>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 10px">
-<span style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13.5px">6 deals expected this week and next</span>
+<span style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13.5px">{{pipeBadge}}</span>
 </div>
 </section>
 
@@ -165,7 +165,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="IPO pipeline" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Pipeline: expected to price</h2>
-<span style="color: #A87933; font-size: 12.5px">Terms from amended S-1 filings · proceeds at range midpoint</span>
+<span style="color: #A87933; font-size: 12.5px">Nasdaq IPO calendar · proceeds at the proposed price</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 860px; font-size: 14px">
@@ -173,12 +173,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tr style="color: #C99442; font-size: 12.5px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Expected</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
-<th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Sector</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Exchange</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Price range</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Shares</th>
-<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Proceeds</th>
-<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">Implied value</th>
+<th scope="col" style="font-weight: 500; padding: 8px 0 8px 10px; border-bottom: 1px solid #3D2C13">Proceeds</th>
 </tr>
 </thead>
 <tbody>
@@ -186,12 +184,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tr style="text-align: right">
 <td style="text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; white-space: nowrap">{{p.d}}</td>
 <th scope="row" style="text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909; color: #FFD89D"><span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; margin-right: 8px">{{p.t}}</span>{{p.n}}</th>
-<td style="text-align: left; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{p.s}}</td>
 <td style="text-align: left; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{p.x}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{p.range}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{p.sh}}</td>
-<td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{p.proc}}</td>
-<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{p.val}}</td>
+<td style="padding: 10px 0 10px 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; color: #FFD89D">{{p.proc}}</td>
 </tr>
 </sc-for>
 </tbody>
@@ -243,9 +239,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Monthly IPO volume" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">IPOs priced per month, 2026</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">US listings, excluding SPACs · October month to date</div>
-<div style="display: flex; align-items: flex-end; gap: 8px; height: 170px" role="img" aria-label="Bar chart of IPOs priced per month in 2026, sample data">
+<h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">IPOs priced per month, {{year}}</h2>
+<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">US listings on Nasdaq’s IPO calendar · current month to date</div>
+<div style="display: flex; align-items: flex-end; gap: 8px; height: 170px" role="img" aria-label="Bar chart of IPOs priced per month this year">
 <sc-for list="{{months}}" as="m" hint-placeholder-count="10">
 <div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 170px">
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #FFB84D">{{m.v}}</span>
@@ -259,14 +255,14 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Pricing versus range and sector mix" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">How deals are pricing</h2>
 <div aria-hidden="true" style="display: flex; height: 12px; border-radius: 0; overflow: hidden; gap: 2px">
-<div style="flex: 34; background: #2F9E5A"></div>
-<div style="flex: 48; background: #664A1F"></div>
-<div style="flex: 18; background: #B8423A"></div>
+<div style="{{vsAbove}}"></div>
+<div style="{{vsWithin}}"></div>
+<div style="{{vsBelow}}"></div>
 </div>
 <div style="display: flex; justify-content: space-between; font-size: 13px; margin-top: 8px; margin-bottom: 18px">
-<span>Above range 34%</span><span>Within 48%</span><span>Below 18%</span>
+<span>{{vsAboveText}}</span><span>{{vsWithinText}}</span><span>{{vsBelowText}}</span>
 </div>
-<h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #FFD89D">Proceeds by sector, YTD</h3>
+<h3 style="margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #FFD89D">Deals by exchange, YTD</h3>
 <div style="display: flex; flex-direction: column; gap: 8px">
 <sc-for list="{{sectors}}" as="s" hint-placeholder-count="7">
 <div style="display: grid; grid-template-columns: 130px minmax(0, 1fr) 48px; align-items: center; gap: 10px; font-size: 13.5px">
@@ -284,11 +280,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="New S-1 filings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">New S-1 filings</h2>
-<span style="color: #A87933; font-size: 12.5px">Source: SEC EDGAR</span>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">New IPO filings</h2>
+<span style="color: #A87933; font-size: 12.5px">Nasdaq IPO calendar</span>
 </div>
 <sc-for list="{{filings}}" as="f" hint-placeholder-count="5">
-<a href="#" style="display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #221909; color: #FFB84D">
+<a href="{{f.url}}" target="_blank" rel="noopener" style="display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #221909; color: #FFB84D">
 <span style="min-width: 0">
 <span style="display: block; font-size: 14px; color: #FFD89D">{{f.n}}</span>
 <span style="display: block; font-size: 12.5px; color: #A87933">{{f.meta}}</span>
@@ -311,8 +307,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tr style="color: #C99442; font-size: 12px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Company</th>
-<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Shares</th>
-<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Of float</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">IPO price</th>
+<th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">IPO shares</th>
 <th scope="col" style="font-weight: 500; padding: 6px 0 6px 8px; border-bottom: 1px solid #3D2C13">Vs. IPO</th>
 </tr>
 </thead>
@@ -328,7 +324,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </tbody>
 </table>
-<p style="margin: 12px 0 0; font-size: 13px; color: #C99442">Unlocks where the stock trades well above the IPO price tend to see the most insider selling.</p>
+<p style="margin: 12px 0 0; font-size: 13px; color: #C99442">Estimated as 180 days after pricing, the standard lockup. Unlocks where the stock trades well above the IPO price tend to see the most insider selling.</p>
 </section>
 
 </div>
@@ -348,7 +344,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
-<span>Filings: SEC EDGAR · Pricing and trading: [DATA PROVIDER]</span>
+<span>IPO calendar: Nasdaq · Trading: Yahoo Finance · Refreshed daily</span>
 <span>Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
@@ -358,90 +354,77 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2700}}'>
 class Component extends DCLogic {
+  componentDidMount() {
+    var self = this;
+    DC.load('/data/finance/ipo.json').then(function (j) { self.setState({ i: j }); }).catch(function () { self.setState({ err: true }); });
+  }
   renderVals() {
     var UP = '#4ADE80', DN = '#FF5F56';
     var st = this.state || {};
-    var sort = st.sort || 'date';
     var self = this;
-    var pct = function (v) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%'; };
-    var raw = [
-      { ord: 1, d: 'Oct 8', t: 'ORCR', n: 'Orchard Robotics', range: '$18–20', px: 23, lo: 18, hi: 20, raised: '$368M', d1: 41.3, since: 36.0 },
-      { ord: 2, d: 'Oct 7', t: 'TDWL', n: 'Tidewell Insurance', range: '$15–17', px: 16, lo: 15, hi: 17, raised: '$192M', d1: 4.2, since: -2.1 },
-      { ord: 3, d: 'Oct 2', t: 'SLTR', n: 'Saltire Payments', range: '$21–23', px: 21, lo: 21, hi: 23, raised: '$441M', d1: -6.8, since: -11.4 },
-      { ord: 4, d: 'Sep 30', t: 'KPLR', n: 'Kepler Orbital', range: '$14–16', px: 19, lo: 14, hi: 16, raised: '$285M', d1: 88.4, since: 72.9 },
-      { ord: 5, d: 'Sep 25', t: 'VPHT', n: 'Vantage Pet Health', range: '$12–14', px: 11, lo: 12, hi: 14, raised: '$121M', d1: -3.6, since: -18.2 },
-      { ord: 6, d: 'Sep 24', t: 'RDBK', n: 'Ridgeback Midstream', range: '$20–22', px: 21, lo: 20, hi: 22, raised: '$630M', d1: 2.4, since: 6.7 }
+    var I = st.i || {};
+    var sort = st.sort || 'date';
+    var S = I.score || {};
+    var score = [
+      { label: 'IPOs priced, YTD', value: F.n(S.n, 0), sub: 'Nasdaq IPO calendar', color: '#FFD89D' },
+      { label: 'Proceeds raised, YTD', value: F.money(S.proceeds), sub: 'at the offer price', color: '#FFD89D' },
+      { label: 'Avg. first-day return', value: F.pct(S.avgD1, 1), sub: 'median ' + F.pct(S.medD1, 1) + ' · ' + (S.measuredD1 || 0) + ' deals measured', color: (S.avgD1 || 0) >= 0 ? UP : DN },
+      { label: 'Trading above offer', value: S.above === null || S.above === undefined ? '—' : F.n(S.above, 0) + '%', sub: 'of ' + (I.year || '') + ' IPOs today', color: '#FFD89D' },
+      { label: 'Median deal size', value: F.money(S.medSize), sub: 'proceeds per deal', color: '#FFD89D' },
+      { label: 'Withdrawn, YTD', value: F.n(S.withdrawn, 0), sub: 'pulled or postponed', color: DN }
     ];
-    var sorted = raw.slice().sort(function (a, b) {
-      if (sort === 'day1') return b.d1 - a.d1;
-      if (sort === 'since') return b.since - a.since;
-      return a.ord - b.ord;
+    var pipeline = (I.upcoming || []).map(function (p) {
+      return { d: p.date ? new Date(p.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) : 'TBA', t: p.sym || '—', n: p.name, x: p.exch || '—',
+        range: p.range ? '$' + p.range.replace('-', '–$') : '—', sh: F.big(p.shares), proc: F.money(p.proceeds) };
+    });
+    var pct = function (v) { return v === null || v === undefined ? '—' : F.pct(v, 1); };
+    var col = function (v) { return v === null || v === undefined ? '#C99442' : (v >= 0 ? UP : DN); };
+    var rows = (I.recent || []).slice();
+    rows.sort(function (a, b) {
+      if (sort === 'day1') return (b.d1 === null ? -999 : b.d1) - (a.d1 === null ? -999 : a.d1);
+      if (sort === 'since') return (b.since === null ? -999 : b.since) - (a.since === null ? -999 : a.since);
+      return (b.date || '').localeCompare(a.date || '');
     });
     var vsStyle = function (k) {
       var c = k === 'Above' ? ['#0D2616', '#1F6B3A', UP] : (k === 'Below' ? ['#2A0F0D', '#7A2A24', DN] : ['#1A1309', '#4A3517', '#FFB84D']);
-      return 'font-family: IBM Plex Mono, monospace; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
+      return 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
     };
-    var recent = sorted.map(function (r) {
-      var k = r.px > r.hi ? 'Above' : (r.px < r.lo ? 'Below' : 'Within');
-      return {
-        d: r.d, t: r.t, n: r.n, range: r.range, px: '$' + r.px.toFixed(2), raised: r.raised,
-        vs: k, vsStyle: vsStyle(k),
-        d1: pct(r.d1), d1Color: r.d1 >= 0 ? UP : DN,
-        since: pct(r.since), sinceColor: r.since >= 0 ? UP : DN
-      };
+    var recent = rows.map(function (r) {
+      return { d: F.day(r.date), t: r.sym || '—', n: r.name, range: r.range ? '$' + r.range.replace('-', '–$') : '—', px: r.price ? F.usd(r.price, 2) : '—',
+        vs: r.vs || 'n/a', vsStyle: vsStyle(r.vs), raised: F.money(r.proceeds), d1: pct(r.d1), d1Color: col(r.d1), since: pct(r.since), sinceColor: col(r.since) };
     });
     var sortTabs = [{ id: 'date', label: 'Newest' }, { id: 'day1', label: 'First day' }, { id: 'since', label: 'Since IPO' }].map(function (t) {
       var on = t.id === sort;
       return { label: t.label, pressed: on ? 'true' : 'false', pick: function () { self.setState({ sort: t.id }); },
         btnStyle: 'height: 34px; padding: 0 12px; border: none; border-radius: 0; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;') };
     });
-    var mData = [['Jan', 14], ['Feb', 12], ['Mar', 21], ['Apr', 16], ['May', 22], ['Jun', 25], ['Jul', 19], ['Aug', 15], ['Sep', 24], ['Oct', 9]];
-    var months = mData.map(function (m, k) {
-      return { l: m[0], v: m[1], barStyle: 'width: 100%; border-radius: 0 0 0; height: ' + Math.round(m[1] / 25 * 120) + 'px; background: ' + (k === mData.length - 1 ? '#FFE9C7' : '#6B4E22') + ';' };
+    var mm = I.months || [], mmax = Math.max.apply(null, mm.map(function (m) { return m.n; }).concat([1]));
+    var months = mm.map(function (m, k) {
+      var d = new Date(m.m + '-15T12:00:00Z');
+      return { l: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }), v: m.n, barStyle: 'width: 100%; border-radius: 0; height: ' + Math.max(2, Math.round(m.n / mmax * 120)) + 'px; background: ' + (k === mm.length - 1 ? '#FFE9C7' : '#6B4E22') + ';' };
     });
-    var sectors = [['Technology', 38], ['Financials', 17], ['Health Care', 14], ['Industrials', 13], ['Energy', 8], ['Consumer', 7], ['Other', 3]].map(function (s) {
-      return { n: s[0], v: s[1] + '%', barStyle: 'display: block; height: 10px; border-radius: 0; background: #FFB84D; width: ' + Math.round(s[1] / 40 * 100) + '%;' };
+    var vs = I.vs || {}, vt = (vs.Above || 0) + (vs.Within || 0) + (vs.Below || 0);
+    var share = function (k) { return vt ? Math.round((vs[k] || 0) / vt * 100) : 0; };
+    var ex = I.exch || [], exMax = Math.max.apply(null, ex.map(function (e) { return e[1]; }).concat([1]));
+    var exTot = ex.reduce(function (a, e) { return a + e[1]; }, 0) || 1;
+    var sectors = ex.map(function (e) { return { n: e[0], v: Math.round(e[1] / exTot * 100) + '%', barStyle: 'display: block; height: 10px; border-radius: 0; background: #FFB84D; width: ' + Math.round(e[1] / exMax * 100) + '%;' }; });
+    var filings = (I.filed || []).map(function (f) {
+      return { n: f.name, meta: (f.sym ? f.sym + ' · ' : '') + 'proposed ' + F.money(f.proceeds), d: F.day(f.date), form: 'S-1 filed',
+        url: 'https://www.sec.gov/cgi-bin/browse-edgar?company=' + encodeURIComponent(f.name || '') + '&type=S-1&action=getcompany' };
     });
+    var lockups = (I.lockups || []).map(function (l) {
+      return { d: F.day(l.lockup), n: l.name + (l.sym ? ' (' + l.sym + ')' : ''), sh: l.price ? F.usd(l.price, 2) : '—', fl: F.big(l.shares), vs: pct(l.vsIpo), color: col(l.vsIpo) };
+    });
+    var pulled = (I.withdrawn || []).map(function (w) { return { n: w.name, s: w.sym || w.exch || '', why: 'Withdrawn · proposed ' + F.money(w.proceeds), d: F.day(w.date) }; });
+    var wk = (I.upcoming || []).filter(function (p) { return p.date && new Date(p.date + 'T12:00:00Z') - Date.now() < 14 * 86400000; }).length;
+    var headline = st.err ? 'IPO data is not available yet. The first daily refresh fills it in.' : (I.updated ? (S.n || 0) + ' IPOs have priced on U.S. exchanges this year, raising ' + F.money(S.proceeds) + '. ' +
+      (S.avgD1 !== null && S.avgD1 !== undefined ? 'The average deal ' + (S.avgD1 >= 0 ? 'rose ' : 'fell ') + F.n(Math.abs(S.avgD1), 1) + '% on its first day, and ' + F.n(S.above, 0) + '% now trade above their offer price.' : '') : 'Loading…');
     return {
-      score: [
-        { label: 'IPOs priced, YTD', value: '187', sub: 'vs. 151 same point in 2025', color: '#FFD89D' },
-        { label: 'Proceeds raised, YTD', value: '$41.2B', sub: 'Highest since 2021', color: '#FFD89D' },
-        { label: 'Avg. first-day return', value: '+22.4%', sub: 'Median +9.8%', color: UP },
-        { label: 'Trading above offer', value: '58%', sub: 'of 2026 IPOs today', color: '#FFD89D' },
-        { label: 'Median deal size', value: '$186M', sub: 'Mega deals skew the average', color: '#FFD89D' },
-        { label: 'Withdrawn or postponed', value: '23', sub: 'YTD · 7 since September', color: DN }
-      ],
-      pipeline: [
-        { d: 'Wed Oct 14', t: 'LMVT', n: 'Lumenvault', s: 'AI infrastructure software', x: 'Nasdaq', range: '$24–27', sh: '18.0M', proc: '$459M', val: '$5.1B' },
-        { d: 'Thu Oct 15', t: 'CPLN', n: 'Copperline Energy Storage', s: 'Energy storage', x: 'NYSE', range: '$16–18', sh: '25.0M', proc: '$425M', val: '$3.4B' },
-        { d: 'Fri Oct 16', t: 'BWHC', n: 'Brightwater Health', s: 'Health care services', x: 'Nasdaq', range: '$13–15', sh: '12.5M', proc: '$175M', val: '$1.2B' },
-        { d: 'Wed Oct 21', t: 'HLYD', n: 'Halyard Defense Systems', s: 'Defense electronics', x: 'NYSE', range: '$30–34', sh: '15.0M', proc: '$480M', val: '$4.6B' },
-        { d: 'Thu Oct 22', t: 'FRSC', n: 'Ferrous Cycle Materials', s: 'Metals recycling', x: 'Nasdaq', range: '$10–12', sh: '20.0M', proc: '$220M', val: '$1.5B' },
-        { d: 'Fri Oct 23', t: 'NGBK', n: 'Northgate Bancshares', s: 'Regional bank', x: 'Nasdaq', range: '$18–20', sh: '6.0M', proc: '$114M', val: '$0.6B' }
-      ],
-      sortTabs: sortTabs,
-      recent: recent,
-      months: months,
-      sectors: sectors,
-      filings: [
-        { n: 'Arcadia Quantum Systems', meta: 'Quantum computing · Nasdaq · proposed $250M', d: 'Oct 9', form: 'S-1 · public filing' },
-        { n: 'Maple and Main Restaurants', meta: 'Restaurants · NYSE · proposed $150M', d: 'Oct 8', form: 'S-1 · public filing' },
-        { n: 'Lumenvault', meta: 'Sets terms: 18.0M shares at $24–27', d: 'Oct 6', form: 'S-1/A · terms set' },
-        { n: 'Sable Ridge Minerals', meta: 'Critical minerals · NYSE · proposed $300M', d: 'Oct 2', form: 'S-1 · public filing' },
-        { n: 'Corvid Cyber', meta: 'Cybersecurity · Nasdaq · size not yet set', d: 'Sep 29', form: 'S-1 · public filing' }
-      ],
-      lockups: [
-        { d: 'Oct 19', n: 'Brightpath Learning', sh: '42.0M', fl: '186%', vs: '−22.5%', color: DN },
-        { d: 'Oct 26', n: 'Strata Cloud', sh: '88.5M', fl: '240%', vs: '+64.0%', color: UP },
-        { d: 'Nov 2', n: 'Juniper Grove Foods', sh: '15.2M', fl: '71%', vs: '+3.8%', color: UP },
-        { d: 'Nov 9', n: 'Helix Diagnostics', sh: '27.9M', fl: '132%', vs: '−8.1%', color: DN },
-        { d: 'Nov 16', n: 'Polaris Freight', sh: '33.0M', fl: '95%', vs: '+18.6%', color: UP }
-      ],
-      pulled: [
-        { n: 'Beacon Home Finance', s: 'Mortgage lending', why: 'Postponed, citing market conditions', d: 'Oct 6' },
-        { n: 'Trellis Consumer Brands', s: 'Consumer products', why: 'Withdrew S-1; pursuing sale instead', d: 'Sep 30' },
-        { n: 'Fathom Pay', s: 'Fintech', why: 'Postponed after weak fintech IPO trading', d: 'Sep 26' }
-      ]
+      liveTag: F.updated(I.updated), headline: headline, pipeBadge: wk + ' deal' + (wk === 1 ? '' : 's') + ' expected in the next two weeks', year: I.year || '',
+      score: score, pipeline: pipeline, sortTabs: sortTabs, recent: recent, months: months,
+      vsAbove: 'flex: ' + Math.max(share('Above'), 0.5) + '; background: #2F9E5A;', vsWithin: 'flex: ' + Math.max(share('Within'), 0.5) + '; background: #664A1F;', vsBelow: 'flex: ' + Math.max(share('Below'), 0.5) + '; background: #B8423A;',
+      vsAboveText: vt ? 'Above range ' + share('Above') + '%' : 'No priced deals with a recorded range yet: ranges are captured while deals sit on the upcoming calendar, so this fills in as they price.', vsWithinText: vt ? 'Within ' + share('Within') + '%' : '', vsBelowText: vt ? 'Below ' + share('Below') + '%' + ' · ' + vt + ' deals with a known range' : '',
+      sectors: sectors, filings: filings, lockups: lockups, pulled: pulled
     };
   }
 }

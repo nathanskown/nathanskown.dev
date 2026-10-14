@@ -7,6 +7,35 @@
   'use strict';
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
+  /* page-wide values any template can use, e.g. {{todayLabel}} */
+  var G = window.DC_G = window.DC_G || {};
+  G.todayLabel = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).replace(/,/g, '');
+
+  /* formatting helpers shared by every page */
+  var F = window.F = {
+    n: function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); },
+    pct: function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d === undefined ? 2 : d) + '%'; },
+    usd: function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : (v < 0 ? '−$' : '$') + F.n(Math.abs(v), d === undefined ? 2 : d); },
+    arrow: function (v) { return v === null || v === undefined ? '' : (v >= 0 ? '▲' : '▼'); },
+    money: function (v, d) {
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      var a = Math.abs(v), s = v < 0 ? '−$' : '$';
+      if (a >= 1e12) return s + (a / 1e12).toFixed(d === undefined ? 2 : d) + 'T';
+      if (a >= 1e9) return s + (a / 1e9).toFixed(d === undefined ? 1 : d) + 'B';
+      if (a >= 1e6) return s + (a / 1e6).toFixed(d === undefined ? 1 : d) + 'M';
+      if (a >= 1e3) return s + (a / 1e3).toFixed(0) + 'K';
+      return s + a.toFixed(2);
+    },
+    big: function (v) { if (v === null || v === undefined) return '—'; var a = Math.abs(v), s = v < 0 ? '−' : ''; return a >= 1e9 ? s + (a / 1e9).toFixed(2) + 'B' : a >= 1e6 ? s + (a / 1e6).toFixed(2) + 'M' : a >= 1e3 ? s + (a / 1e3).toFixed(0) + 'K' : s + a.toFixed(0); },
+    time: function (iso) { if (!iso) return ''; var d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(iso); return d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }); },
+    day: function (iso) { if (!iso) return ''; var d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso); return d.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric' }); },
+    ago: function (iso) {
+      if (!iso) return '';
+      var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+      return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' hr ago' : Math.round(m / 1440) + ' d ago';
+    },
+    updated: function (iso) { return iso ? 'LIVE · UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' CT' : 'LOADING…'; }
+  };
   var ROUTES = window.DC_ROUTES || {};
   function route(href) {
     var q = href.indexOf('?'), base = q < 0 ? href : href.slice(0, q);
@@ -28,6 +57,7 @@
       if (v === null || v === undefined) return undefined;
       v = v[parts[i]];
     }
+    if (v === undefined && parts.length === 1 && G[path] !== undefined) return G[path];
     return v;
   }
   function interp(str, scope) {
@@ -178,6 +208,14 @@
   });
 
   window.DC = {
+    /* fetch one data file; ?v= changes every 5 minutes so browsers don't hold stale copies */
+    load: function (path) {
+      var v = Math.floor(Date.now() / 300000);
+      return fetch(path + (path.indexOf('?') < 0 ? '?' : '&') + 'v=' + v).then(function (r) {
+        if (!r.ok) throw new Error(r.status + ' ' + path);
+        return r.json();
+      });
+    },
     mount: function (Component, defaults) {
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];
