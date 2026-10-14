@@ -108,7 +108,7 @@ function rssItems(xml) {
 
 async function partPrice(sym) {
   const [d1, d5, y5, spx, news] = await Promise.allSettled([
-    chart(sym, "1d", "5m"), chart(sym, "5d", "30m"), chart(sym, "5y", "1d", "div"), chart("^GSPC", "5y", "1wk"),
+    chart(sym, "1d", "5m"), chart(sym, "5d", "30m"), chart(sym, "5y", "1d", "div"), chart("^GSPC", "5y", "1d"),
     getUp(`https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(sym)}&region=US&lang=en-US`, { kind: "text" }),
   ]);
   if (d1.status !== "fulfilled") throw new Error(`price unavailable: ${d1.reason && d1.reason.message}`);
@@ -143,18 +143,15 @@ async function partPrice(sym) {
     const vols = v.slice(-63).filter(Boolean);
     stats.avgVol3m = vols.length ? r(vols.reduce((a, x) => a + x, 0) / vols.length, 0) : null;
     if (spx.status === "fulfilled" && t.length > 300) {
-      // weekly returns vs the S&P 500 over 5 years
-      const sp = spx.value;
-      const wk = [];
-      for (let k = 0; k < t.length; k += 5) wk.push([t[k], c[k]]);
-      const near = (ts) => { let best = 0; for (let j = 1; j < sp.t.length; j++) if (Math.abs(sp.t[j] - ts) < Math.abs(sp.t[best] - ts)) best = j; return best; };
+      // weekly returns vs the S&P 500 over 5 years, sampled on the same trading days
+      const day = (ts) => new Date(ts * 1000).toISOString().slice(0, 10);
+      const spByDay = new Map(spx.value.t.map((ts, k) => [day(ts), spx.value.c[k]]));
+      const pts = [];
+      for (let k = 0; k < t.length; k++) { const s0 = spByDay.get(day(t[k])); if (s0) pts.push([c[k], s0]); }
       const pairs = [];
-      for (let k = 1; k < wk.length; k++) {
-        const a = near(wk[k - 1][0]), b = near(wk[k][0]);
-        if (a !== b && sp.c[a] && sp.c[b]) pairs.push([wk[k][1] / wk[k - 1][1] - 1, sp.c[b] / sp.c[a] - 1]);
-      }
+      for (let k = 5; k < pts.length; k += 5) pairs.push([pts[k][0] / pts[k - 5][0] - 1, pts[k][1] / pts[k - 5][1] - 1]);
       if (pairs.length > 30) {
-        const mx = pairs.reduce((s, p) => s + p[1], 0) / pairs.length, my = pairs.reduce((s, p) => s + p[0], 0) / pairs.length;
+        const mx = pairs.reduce((a2, p2) => a2 + p2[1], 0) / pairs.length, my = pairs.reduce((a2, p2) => a2 + p2[0], 0) / pairs.length;
         let cov = 0, vr = 0;
         for (const [y, x] of pairs) { cov += (x - mx) * (y - my); vr += (x - mx) ** 2; }
         stats.beta = vr ? r(cov / vr, 2) : null;

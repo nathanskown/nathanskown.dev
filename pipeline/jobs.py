@@ -151,7 +151,7 @@ def _slice_since(t, c, since_ts):
     return t[i:], c[i:]
 
 
-def quote_page(sym, info, mem, spx_weekly, cal):
+def quote_page(sym, info, mem, spx_daily, cal):
     cik, title = sec.tickers().get(sym, (None, None))
     d1 = mk.chart(sym, "1d", "5m")
     d5 = mk.chart(sym, "5d", "30m")
@@ -181,15 +181,11 @@ def quote_page(sym, info, mem, spx_weekly, cal):
     div_ttm = sum(a for ts, a in y5["div"].items() if int(ts) >= now - 365 * 86400)
     vols = [x for x in v[-63:] if x]
     beta = None
-    wk = [(t[k], c[k]) for k in range(0, len(t), 5)]
-    if spx_weekly and len(wk) > 60:
-        sp = dict(spx_weekly)
-        pairs = []
-        for (a_t, a_c), (b_t, b_c) in zip(wk, wk[1:]):
-            sa = min(sp, key=lambda x: abs(x - a_t))
-            sb = min(sp, key=lambda x: abs(x - b_t))
-            if sp[sa] and sp[sb] and sa != sb:
-                pairs.append((b_c / a_c - 1, sp[sb] / sp[sa] - 1))
+    if spx_daily and len(t) > 300:  # weekly returns vs the S&P 500, sampled on the same trading days
+        day = lambda ts: datetime.fromtimestamp(ts, timezone.utc).date()  # noqa: E731
+        sp = {day(ts): x for ts, x in spx_daily}
+        pts = [(c[k], sp[day(t[k])]) for k in range(len(t)) if day(t[k]) in sp]
+        pairs = [(pts[k][0] / pts[k - 5][0] - 1, pts[k][1] / pts[k - 5][1] - 1) for k in range(5, len(pts), 5)]
         if len(pairs) > 30:
             xs = [p[1] for p in pairs]
             ys = [p[0] for p in pairs]
@@ -262,11 +258,11 @@ def quote_page(sym, info, mem, spx_weekly, cal):
 
 
 def quotes(mem, cal):
-    spx = attempt("chart ^GSPC 5y", mk.chart, "^GSPC", "5y", "1wk")
-    spx_weekly = list(zip(spx["t"], spx["c"])) if spx else None
+    spx = attempt("chart ^GSPC 5y", mk.chart, "^GSPC", "5y", "1d")
+    spx_daily = list(zip(spx["t"], spx["c"])) if spx else None
     pages = {}
     for sym, info in UNIVERSE.items():
-        p = attempt(f"quote page {sym}", quote_page, sym, info, mem, spx_weekly, cal)
+        p = attempt(f"quote page {sym}", quote_page, sym, info, mem, spx_daily, cal)
         if p:
             pages[sym] = p
     # peers table needs every page first
