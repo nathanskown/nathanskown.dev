@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Market digest — NSKN</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050403}
+.t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+.t *{box-sizing:border-box}
+.t a{color:var(--hi);text-decoration:none}
+.t a:hover{color:#ffffff}
+.t button{text-shadow:inherit}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible{outline:1px solid var(--hi);outline-offset:2px}
+.t ::selection{background:var(--a);color:#000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.t table{border-collapse:collapse}
+.dim{color:var(--dim)}
+.hi{color:var(--hi)}
+.up{color:var(--up)}
+.dn{color:var(--dn)}
+.big{font-family:'VT323',ui-monospace,monospace;font-weight:400;letter-spacing:.02em}
+.t h1{font-family:'VT323',ui-monospace,monospace !important;font-weight:400 !important;font-size:56px !important;line-height:.9 !important;letter-spacing:.02em !important;text-transform:uppercase;color:var(--hi) !important;text-shadow:0 0 2px var(--a),0 0 18px rgba(255,184,77,.35)}
+.t h2{letter-spacing:.02em}
+
+/* Bloomberg-style chrome */
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-brand{font-weight:600;letter-spacing:.05em}
+.t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
+.t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
+.t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
+.t-cmd:focus-within{border-color:var(--a)}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-input::placeholder{color:var(--dim2);opacity:1}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
+.t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
+.t .t-fkey:hover{background:#000;color:var(--a)}
+.t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+
+/* panels with an explicit header band */
+.t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
+.t-pb{padding:12px 14px 14px}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+
+/* converted panels: first row becomes a numbered header band */
+.t main{counter-reset:pn 9}
+.t-panel,.t-card{counter-increment:pn}
+.t .t-card{padding:14px !important}
+.t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
+
+/* index tiles + tabs + rows (dashboard) */
+.t .tl{display:block;width:100%;text-align:left;cursor:pointer;color:inherit;min-height:44px;padding:10px 12px;background:#000;border:1px solid var(--line);transition:border-color .12s,background .12s}
+.t .tl:hover{border-color:var(--a)}
+.t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
+.t-tabs{display:flex;gap:4px}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab:hover{color:var(--hi);border-color:var(--a)}
+.t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t th{font-weight:400}
+.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-row{border-bottom:1px solid var(--line2)}
+.t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
+.t .t-rowlink:hover{background:var(--hover);color:var(--a)}
+.t-day{padding:10px 12px;background:#000;border:1px solid var(--line)}
+.t-day.is-today{background:var(--band);border-color:var(--a)}
+
+.t-foot{border-top:1px solid var(--line);background:#000}
+.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+@keyframes t-pulse{50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
+@media (max-width:760px){
+.t-hide-sm{display:none !important}
+.t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
+.t-fbar::-webkit-scrollbar{display:none}
+.t .t-fkey{min-height:44px;white-space:nowrap}
+.t-fbar-title{display:none}
+.t-cmd{margin:4px 8px 8px}
+.t h1{font-size:40px !important}
+}
+@media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="/">1-NSKN</a>
+<span class="t-chip t-hide-sm">Markets Menu</span>
+<span class="t-chip t-hide-sm">BRIEF &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>LIVE</span>
+<span class="dim">DELAYED 15 MIN</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Everything an analyst needs before the open, top to bottom</span>
+</div>
+<div class="t-cmd">
+<label for="digestSearch" class="t-prompt">NSKN ›</label>
+<input id="digestSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey is-on" href="#" aria-current="page">2) Digest</a>
+<a class="t-fkey" href="News.dc.html">3) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">4) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">5) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">6) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">7) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
+<a class="t-fkey" href="/">9) Home</a>
+</nav>
+<div class="t-sub">
+<span>Market Digest (BRIEF)</span>
+<span class="dim">{{updatedLabel}}</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">{{liveTag}}</span>
+</div>
+</header>
+
+<main style="max-width: 1320px; margin: 0 auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 18px">
+
+<section aria-label="Digest title" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
+<div style="min-width: 0">
+<h1 class="big" style="margin: 0">{{dateTitle}} Market Digest</h1>
+<div style="color: #c99442; font-size: 13.5px; margin-top: 6px">{{subtitle}}</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<a class="t-badge" href="#watch">TODAY'S SCHEDULE ↓</a>
+<a class="t-badge" href="News.dc.html" style="border-color: #ffb84d">LIVE HEADLINES <span class="t-k">GO</span></a>
+</div>
+</section>
+
+<sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
+<section class="t-panel"><div class="t-pb">The digest is built during each market-hours refresh. It will appear after the next one.</div></section>
+</sc-if>
+
+<section class="t-panel" aria-label="The 60-second version" style="border-color: #ffb84d; box-shadow: 0 0 22px rgba(255,184,77,.12)">
+<div class="t-ph"><h2><span class="t-pn">20)</span>The 60-Second Version</h2><span class="dim">Built from the numbers below, no editorializing</span></div>
+<div class="t-pb">
+<ol style="margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 1.55">
+<sc-for list="{{top5}}" as="b" hint-placeholder-count="5"><li><span style="color: #ffd89d; font-weight: 600">{{b.lead}}</span> {{b.rest}}</li></sc-for>
+</ol>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Futures and overnight markets">
+<div class="t-ph"><h2><span class="t-pn">21)</span>Futures &amp; Overnight</h2><span class="dim">vs prior close · delayed</span></div>
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px">
+<sc-for list="{{futures}}" as="f" hint-placeholder-count="12">
+<div style="background: #000; border: 1px solid #382811; padding: 10px 12px">
+<div style="display: flex; justify-content: space-between; gap: 6px"><span style="font-size: 12px; color: #c99442; text-transform: uppercase; letter-spacing: .04em">{{f.n}}</span><span style="font-size: 11px; color: #a87933">{{f.tag}}</span></div>
+<div class="big" style="font-size: 30px; line-height: 1.05; color: #ffd89d; margin-top: 2px">{{f.v}}</div>
+<div style="font-size: 12px; color: {{f.color}}">{{f.chg}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px">
+
+<section class="t-panel" aria-label="Economic data">
+<div class="t-ph"><h2><span class="t-pn">22)</span>Economic Data</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
+<div class="t-pb">
+<div style="font-size: 11.5px; letter-spacing: .12em; color: #c99442; margin-bottom: 4px">ON THE CALENDAR TODAY</div>
+<sc-for list="{{calToday}}" as="c" hint-placeholder-count="3"><div class="t-row" style="padding: 6px 0; font-size: 13px">{{c.name}}</div></sc-for>
+<sc-if value="{{noCalToday}}" hint-placeholder-val="{{ false }}"><div class="dim" style="padding: 6px 0; font-size: 13px">No major releases scheduled.</div></sc-if>
+<div style="font-size: 11.5px; letter-spacing: .12em; color: #c99442; margin: 14px 0 4px">LATEST READINGS</div>
+<table style="width: 100%; font-size: 13px">
+<thead><tr class="t-th" style="text-align: right">
+<th scope="col" style="text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid #382811">Release</th>
+<th scope="col" style="padding: 6px 8px; border-bottom: 1px solid #382811">Latest</th>
+<th scope="col" style="padding: 6px 0 6px 8px; border-bottom: 1px solid #382811">Prior</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{data}}" as="d" hint-placeholder-count="5">
+<tr class="t-row" style="text-align: right">
+<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{d.n}}</th>
+<td style="padding: 8px; font-weight: 600">{{d.a}}</td>
+<td style="padding: 8px 0 8px 8px; color: #c99442">{{d.p}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Earnings today">
+<div class="t-ph"><h2><span class="t-pn">23)</span>Earnings</h2><a href="Earnings.dc.html" style="font-size: 12px; letter-spacing: .08em">FULL CALENDAR <span class="t-k">GO</span></a></div>
+<div class="t-pb">
+<div style="font-size: 11.5px; letter-spacing: .12em; color: #c99442; margin-bottom: 2px">REPORTING TODAY (LARGEST FIRST)</div>
+<sc-for list="{{today}}" as="e" hint-placeholder-count="5">
+<div class="t-row" style="display: flex; justify-content: space-between; gap: 10px; padding: 8px 0">
+<span><span style="font-weight: 600; color: #ffd89d; margin-right: 8px">{{e.t}}</span>{{e.n}}</span>
+<span style="font-size: 12.5px; color: #c99442; flex: none">{{e.when}} · est. {{e.est}}</span>
+</div>
+</sc-for>
+<sc-if value="{{noToday}}" hint-placeholder-val="{{ false }}"><div class="dim" style="padding: 6px 0; font-size: 13px">No S&amp;P 500 reports scheduled today.</div></sc-if>
+<div style="font-size: 11.5px; letter-spacing: .12em; color: #c99442; margin: 14px 0 2px">ALREADY REPORTED (LAST 2 DAYS)</div>
+<sc-for list="{{done}}" as="e" hint-placeholder-count="5">
+<div class="t-row" style="padding: 8px 0">
+<div style="display: flex; justify-content: space-between; gap: 10px">
+<span><span style="font-weight: 600; color: #ffd89d; margin-right: 8px">{{e.t}}</span>{{e.n}}</span>
+<span style="font-size: 13px; color: {{e.color}}; flex: none">{{e.sur}}</span>
+</div>
+<div style="font-size: 12px; color: #c99442">EPS {{e.eps}} vs. {{e.est}} est.{{e.move}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+
+<section class="t-panel" aria-label="Headlines since yesterday">
+<div class="t-ph"><h2><span class="t-pn">24)</span>Notable Headlines, Last 24 Hours</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
+<div class="t-pb" style="padding-top: 2px">
+<sc-for list="{{news}}" as="n" hint-placeholder-count="6">
+<div class="t-row" style="padding: 10px 0">
+<div style="font-size: 11.5px; color: #a87933; letter-spacing: .06em">{{n.time}} · {{n.src}}{{n.tick}}</div>
+<a href="{{n.link}}" target="_blank" rel="noopener" style="font-size: 14px; line-height: 1.45">{{n.h}}</a>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px">
+
+<section id="watch" class="t-panel" aria-label="Things to watch today">
+<div class="t-ph"><h2><span class="t-pn">25)</span>Things to Watch Today</h2><span class="dim">From the calendar and earnings schedule</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{watch}}" as="w" hint-placeholder-count="6">
+<div class="t-row" style="display: flex; gap: 14px; padding: 9px 0">
+<span style="font-size: 13px; color: #ffd89d; width: 82px; flex: none">{{w.t}}</span>
+<span><span style="display: block; font-size: 13.5px; color: #ffd89d">{{w.e}}</span><span style="display: block; font-size: 12px; color: #c99442">{{w.why}}</span></span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Market breadth and levels">
+<div class="t-ph"><h2><span class="t-pn">26)</span>Breadth &amp; Key Levels</h2><span class="dim">Prior close vs. 50- and 200-day averages</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-if value="{{breadth}}" hint-placeholder-val="{{ true }}">
+<div style="padding: 6px 0 10px">
+<div style="display: flex; justify-content: space-between; font-size: 13px"><span>S&amp;P 500 advancers vs. decliners</span><span style="color: #ffd89d">{{breadth}}</span></div>
+<div aria-hidden="true" style="height: 6px; background: #ff5f56; margin-top: 5px"><div style="{{breadthBar}}"></div></div>
+</div>
+</sc-if>
+<table style="width: 100%; font-size: 13px">
+<thead><tr class="t-th" style="text-align: right">
+<th scope="col" style="text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid #382811">Index</th>
+<th scope="col" style="padding: 6px 8px; border-bottom: 1px solid #382811">Close</th>
+<th scope="col" style="padding: 6px 8px; border-bottom: 1px solid #382811">vs 50D</th>
+<th scope="col" style="padding: 6px 8px; border-bottom: 1px solid #382811">vs 200D</th>
+<th scope="col" style="padding: 6px 0 6px 8px; border-bottom: 1px solid #382811">Off 52W high</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{levels}}" as="l" hint-placeholder-count="4">
+<tr class="t-row" style="text-align: right">
+<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{l.n}}</th>
+<td style="padding: 8px">{{l.v}}</td>
+<td style="padding: 8px; color: {{l.c50}}">{{l.v50}}</td>
+<td style="padding: 8px; color: {{l.c200}}">{{l.v200}}</td>
+<td style="padding: 8px 0 8px 8px; color: #c99442">{{l.off}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px">
+
+<section class="t-panel" aria-label="Prediction market odds">
+<div class="t-ph"><h2><span class="t-pn">27)</span>Prediction Market Odds</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
+<div class="t-row" style="padding: 9px 0">
+<div style="font-size: 11px; letter-spacing: .1em; color: #a87933; text-transform: uppercase">{{od.group}}</div>
+<div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px"><span>{{od.q}}</span><span style="color: #ffd89d">{{od.v}}</span></div>
+<div aria-hidden="true" style="height: 6px; background: #241a0b; margin: 5px 0 3px"><div style="{{od.bar}}"></div></div>
+<div style="font-size: 11.5px; color: #a87933">{{od.prev}}</div>
+</div>
+</sc-for>
+<sc-if value="{{noOdds}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">Odds appear after the next market refresh.</div></sc-if>
+<div style="font-size: 11.5px; color: #a87933; margin-top: 8px">Source: Kalshi public market data. Odds are market prices, not forecasts from this site.</div>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Rest of the week">
+<div class="t-ph"><h2><span class="t-pn">28)</span>Rest of the Week</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">RELEASES <span class="t-k">GO</span></a></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{week}}" as="wk" hint-placeholder-count="6">
+<div class="t-row" style="padding: 9px 0">
+<div style="font-size: 12px; color: #ffd89d; letter-spacing: .1em; text-transform: uppercase">{{wk.d}}</div>
+<div style="font-size: 13px; margin-top: 2px">{{wk.e}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+
+</main>
+
+<footer class="t-foot">
+<div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
+<span>Futures and quotes: Yahoo Finance (delayed) · Odds: Kalshi · Economic data: FRED · Earnings: Nasdaq · Rebuilt with each market-hours refresh</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+
+<sc-if value="{{crt}}" hint-placeholder-val="{{ true }}"><div class="t-crt" aria-hidden="true"></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"crt":{"editor":"boolean","default":true,"section":"Look"},"$preview":{"width":1440,"height":3000}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    var self = this;
+    DC.load('/data/finance/digest.json').then(function (j) { self.setState({ digest: j }); }).catch(function () { self.setState({ err: true }); });
+    this.timer = setInterval(function () {
+      DC.load('/data/finance/digest.json').then(function (j) { self.setState({ digest: j }); }).catch(function () {});
+    }, 300000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+  renderVals() {
+    var UP = '#4ade80', DN = '#ff5f56', FLAT = '#ffd89d';
+    var st = this.state || {};
+    var D = st.digest || {};
+    var CT = 'America/Chicago';
+    var num = function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); };
+    var sgn = function (v, d, suf) { return v === null || v === undefined || isNaN(v) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d) + (suf || ''); };
+    var col = function (v) { return v === null || v === undefined || isNaN(v) ? FLAT : v > 0 ? UP : v < 0 ? DN : FLAT; };
+    var tm = function (iso) { try { return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: CT }); } catch (e) { return ''; } };
+    var dateTitle = '';
+    try { dateTitle = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: CT }); } catch (e) {}
+    var money = function (v) { return v === null || v === undefined ? '—' : '$' + Number(v).toFixed(2); };
+    var yieldTile = function (f) { return f.tag === 'YLD'; };
+    var mk = function (f) {
+      var isY = yieldTile(f);
+      return { n: f.n, tag: f.tag, v: num(f.price, f.dec === undefined ? 2 : f.dec) + (isY ? '%' : ''),
+               chg: isY ? sgn((f.chg || 0) * 100, 0, ' bp') : sgn(f.pct, 2, '%'), color: col(isY ? f.chg : f.pct) };
+    };
+    var futures = [].concat(D.futures || [], D.macro || [], D.world || []).map(mk);
+    var week = {};
+    (D.calWeek || []).forEach(function (c) { (week[c.date] = week[c.date] || []).push(c.name); });
+    var weekRows = Object.keys(week).sort().map(function (d) {
+      var dd = '';
+      try { dd = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); } catch (e) { dd = d; }
+      return { d: dd, e: week[d].join(' · ') };
+    });
+    var odds = [];
+    (D.odds || []).forEach(function (g) {
+      (g.markets || []).slice().sort(function (a, b) { return b.pct - a.pct; }).slice(0, 3).forEach(function (m) {
+        var d = m.prev === null || m.prev === undefined ? null : m.pct - m.prev;
+        odds.push({ group: g.title, q: m.label, v: Math.round(m.pct) + '%',
+                    bar: 'height: 6px; background: #ffb84d; box-shadow: 0 0 8px rgba(255,184,77,.5); width: ' + Math.max(1, Math.min(100, m.pct)) + '%;',
+                    prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + ' pts vs. prior day (' + Math.round(m.prev) + '%)') });
+      });
+    });
+    var br = D.breadth;
+    return {
+      crt: this.props.crt ?? true,
+      dateTitle: dateTitle,
+      updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' CT' : '',
+      liveTag: 'LIVE DATA · DELAYED',
+      subtitle: D.updated ? 'Updated ' + tm(D.updated) + ' CT · rebuilt with each market-hours refresh' : 'Loading…',
+      missing: !!st.err && !D.updated,
+      top5: D.top || [],
+      futures: futures,
+      calToday: D.calToday || [],
+      noCalToday: !!D.updated && !(D.calToday || []).length,
+      data: (D.latest || []).map(function (d) { return { n: d.n, a: d.act, p: d.prior }; }),
+      today: (D.reportingToday || []).map(function (e) { return { t: e.sym, n: e.name, when: e.when || '—', est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
+      noToday: !!D.updated && !(D.reportingToday || []).length,
+      done: (D.reported || []).map(function (e) {
+        return { t: e.sym, n: e.name, eps: money(e.eps), est: money(e.est), color: col(e.surprisePct),
+                 sur: e.surprisePct === null || e.surprisePct === undefined ? '' : (e.surprisePct >= 0 ? 'BEAT ' : 'MISS ') + sgn(e.surprisePct, 1, '%'),
+                 move: e.move === null || e.move === undefined ? '' : ' · stock ' + sgn(e.move, 2, '%') };
+      }),
+      news: (D.news || []).map(function (h) {
+        return { time: tm(h.published), src: h.source, tick: (h.tickers || []).length ? ' · ' + h.tickers.join(', ') : '', h: h.title, link: h.link };
+      }),
+      watch: D.watch || [],
+      breadth: br ? br.adv + ' up · ' + br.dec + ' down (of ' + br.n + ')' : '',
+      breadthBar: br ? 'height: 6px; background: #4ade80; width: ' + (100 * br.adv / Math.max(1, br.adv + br.dec)).toFixed(1) + '%;' : '',
+      levels: (D.levels || []).map(function (l) {
+        return { n: l.n, v: num(l.price, 2), v50: sgn(l.vs50, 1, '%'), c50: col(l.vs50), v200: sgn(l.vs200, 1, '%'), c200: col(l.vs200), off: sgn(l.offHigh, 1, '%') };
+      }),
+      odds: odds,
+      noOdds: !!D.updated && !odds.length,
+      week: weekRows
+    };
+  }
+}
+</script>
+</body>
+</html>

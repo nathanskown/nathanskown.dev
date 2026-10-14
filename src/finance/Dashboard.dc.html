@@ -122,12 +122,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
 <a class="t-fkey is-on" href="#" aria-current="page">1) Markets</a>
-<a class="t-fkey" href="News.dc.html">2) Headlines</a>
-<a class="t-fkey" href="Main.dc.html">3) Quotes</a>
-<a class="t-fkey" href="Ownership.dc.html">4) Ownership</a>
-<a class="t-fkey" href="Earnings.dc.html">5) Earnings</a>
-<a class="t-fkey" href="Macro.dc.html">6) Macro</a>
-<a class="t-fkey" href="IPO.dc.html">7) IPOs</a>
+<a class="t-fkey" href="Digest.dc.html">2) Digest</a>
+<a class="t-fkey" href="News.dc.html">3) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">4) Quotes</a>
+<a class="t-fkey" href="Ownership.dc.html">5) Ownership</a>
+<a class="t-fkey" href="Earnings.dc.html">6) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">7) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="/">9) Home</a>
 </nav>
 <div class="t-sub">
@@ -351,6 +352,22 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </aside>
 
 </div>
+<section class="t-panel" aria-label="Prediction market odds">
+<div class="t-ph"><h2><span class="t-pn">19)</span>Prediction Market Odds</h2><span class="dim">Fed, CPI and recession · Kalshi</span></div>
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px 28px; padding-top: 4px">
+<sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
+<div class="t-row" style="padding: 9px 0">
+<div style="font-size: 11px; letter-spacing: .1em; color: #a87933; text-transform: uppercase">{{od.group}}</div>
+<div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px"><span>{{od.q}}</span><span style="color: #ffd89d">{{od.v}}</span></div>
+<div aria-hidden="true" style="height: 6px; background: #241a0b; margin: 5px 0 3px"><div style="{{od.bar}}"></div></div>
+<div style="font-size: 11.5px; color: #a87933">{{od.prev}}</div>
+</div>
+</sc-for>
+<sc-if value="{{noOdds}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">Odds appear after the next market refresh.</div></sc-if>
+</div>
+<div style="padding: 0 14px 12px; font-size: 11.5px; color: #a87933">Market prices from Kalshi, not forecasts from this site. Change is measured against the prior day's last reading.</div>
+</section>
+
 </main>
 
 <footer class="t-foot">
@@ -367,6 +384,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 class Component extends DCLogic {
   componentDidMount() {
     var self = this;
+    DC.load('/data/finance/odds.json').then(function (j) { self.setState({ odds: j }); }).catch(function () {});
     ['dashboard', 'macro', 'earnings'].forEach(function (k) {
       DC.load('/data/finance/' + k + '.json').then(function (j) { var o = {}; o[k] = j; self.setState(o); }).catch(function () { var o = {}; o[k + 'Err'] = true; self.setState(o); });
     });
@@ -401,6 +419,19 @@ class Component extends DCLogic {
   renderVals() {
     var UP = '#4ade80', DN = '#ff5f56';
     var st = this.state || {};
+    var oddsRows = function (O) {
+      var rows = [];
+      ((O && O.groups) || []).forEach(function (g) {
+        (g.markets || []).slice().sort(function (a, b) { return b.pct - a.pct; }).slice(0, 3).forEach(function (m) {
+          var d = m.prev === null || m.prev === undefined ? null : m.pct - m.prev;
+          rows.push({ group: g.title, q: m.label, v: Math.round(m.pct) + '%',
+            bar: 'height: 6px; background: #ffb84d; box-shadow: 0 0 8px rgba(255,184,77,.5); width: ' + Math.max(1, Math.min(100, m.pct)) + '%;',
+            prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + ' pts vs. prior day (' + Math.round(m.prev) + '%)') });
+        });
+      });
+      return rows;
+    };
+    var oddsList = oddsRows(st.odds);
     var self = this;
     var D = st.dashboard || {}, M = st.macro || {}, E = st.earnings || {};
     var tilesRaw = D.tiles || [];
@@ -497,6 +528,7 @@ class Component extends DCLogic {
     });
     var fomc = M.fomc ? new Date(M.fomc + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase() : '—';
     return {
+      odds: oddsList, noOdds: !!st.odds && !oddsList.length,
       crt: this.props.crt !== false,
       liveTag: F.updated(D.updated), summary: summary,
       mktStatus: mktStatus, mktDot: 'width: 8px; height: 8px; background: ' + (open ? '#4ade80' : '#a87933'),

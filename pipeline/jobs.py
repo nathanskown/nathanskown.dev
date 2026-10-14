@@ -140,6 +140,8 @@ def market():
     asof = max([t.get("time") or 0 for t in tiles] or [0])
     write("dashboard.json", {"updated": now_iso(), "asOf": asof, "tiles": tiles, "sectors": sectors, "movers": movers,
                              "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8]})
+    attempt("prediction-market odds", odds)
+    attempt("market digest", digest)
 
 
 # =====================================================================================
@@ -718,3 +720,128 @@ def quarterly():
     import os
     from . import own13f
     own13f.build(force=os.environ.get("RUN_13F") == "1")
+
+
+# =====================================================================================
+# ODDS + DIGEST (run with the hourly market job)
+# =====================================================================================
+
+def odds():
+    """Prediction-market odds (Kalshi). Keeps the first reading of each UTC day as the 'previous day' baseline."""
+    from . import src_odds
+    groups = src_odds.all_groups()
+    old = read("odds.json", {}) or {}
+    day = today().isoformat()
+    if old.get("baseDay") == day:
+        base, base_day = old.get("base", {}), day
+    else:  # new day: yesterday's last readings become the comparison
+        base, base_day = old.get("current", {}), day
+    current = {}
+    for g in groups:
+        for m in g["markets"]:
+            current[m["id"]] = m["pct"]
+            m["prev"] = base.get(m["id"])
+    write("odds.json", {"updated": now_iso(), "source": "Kalshi", "groups": groups, "current": current, "base": base, "baseDay": base_day})
+
+
+def _ct_now():
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo("America/Chicago"))
+
+
+def digest():
+    """Morning briefing built only from data the site already has plus futures, global indexes and index levels."""
+    ct = _ct_now()
+    day = ct.date().isoformat()
+    dash, macro_, earn = read("dashboard.json", {}) or {}, read("macro.json", {}) or {}, read("earnings.json", {}) or {}
+    heads, od = read("headlines.json", {}) or {}, read("odds.json", {}) or {}
+
+    def quote(sym, name, tag, dec=2):
+        ch = attempt(f"digest {sym}", mk.chart, sym, "1d", "5m")
+        if not ch:
+            return None
+        q = mk.quote_from_chart(ch)
+        return {"n": name, "tag": tag, "sym": sym, "price": q["price"], "chg": q["chg"], "pct": q["pct"], "dec": dec, "time": q["time"]}
+    futures = [x for x in (quote("ES=F", "S&P 500", "FUT"), quote("NQ=F", "Nasdaq 100", "FUT"), quote("YM=F", "Dow Jones", "FUT"),
+                           quote("RTY=F", "Russell 2000", "FUT")) if x]
+    tiles = {t["id"]: t for t in dash.get("tiles", [])}
+    macro_rows = []
+    for tid, name, tag in (("tnx", "10Y Treasury yield", "YLD"), ("dxy", "US Dollar Idx", "SPOT"), ("wti", "WTI crude", "FUT"),
+                           ("gold", "Gold", "FUT"), ("btc", "Bitcoin", "SPOT"), ("vix", "VIX", "IDX")):
+        t = tiles.get(tid)
+        if t:
+            macro_rows.append({"n": name, "tag": tag, "price": t["price"], "chg": t["chg"], "pct": t["pct"], "dec": t.get("dec", 2)})
+    world = [x for x in (quote("^STOXX50E", "Euro Stoxx 50", "EUROPE"), quote("^FTSE", "FTSE 100", "UK"), quote("^N225", "Nikkei 225", "JAPAN"),
+                         quote("^HSI", "Hang Seng", "HK")) if x]
+    # key levels: prior close vs 50- and 200-day averages and the 52-week range
+    levels = []
+    for sym, name in (("^GSPC", "S&P 500"), ("^IXIC", "Nasdaq Comp."), ("^RUT", "Russell 2000"), ("^DJI", "Dow Jones")):
+        ch = attempt(f"levels {sym}", mk.chart, sym, "1y", "1d")
+        if not ch or len(ch["c"]) < 60:
+            continue
+        c = ch["c"]
+        px = c[-1]
+        ma = lambda n: sum(c[-n:]) / n if len(c) >= n else None  # noqa: E731
+        levels.append({"n": name, "price": r(px, 2), "ma50": r(ma(50), 2), "ma200": r(ma(200), 2), "hi52": r(max(c), 2), "lo52": r(min(c), 2),
+                       "vs50": r((px / ma(50) - 1) * 100, 2) if ma(50) else None, "vs200": r((px / ma(200) - 1) * 100, 2) if ma(200) else None,
+                       "offHigh": r((px / max(c) - 1) * 100, 2)})
+    # economic calendar: today and the rest of the week (Central time)
+    cal = macro_.get("calendar", [])
+    end = (ct.date() + timedelta(days=7)).isoformat()
+    cal_today = [c for c in cal if c["date"] == day]
+    cal_week = [c for c in cal if day < c["date"] <= end]
+    # earnings today, split by timing, plus reports that already landed in the last two days
+    ups = [e for e in earn.get("upcoming", []) if e.get("date") == day]
+    rec = [e for e in earn.get("recent", []) if e.get("date") >= (ct.date() - timedelta(days=2)).isoformat()]
+    ups.sort(key=lambda e: -(e.get("mcap") or 0))
+    rec.sort(key=lambda e: -(e.get("mcap") or 0))
+    keep = ("sym", "name", "date", "when", "mcap", "est", "eps", "surprisePct", "move", "beat", "sector")
+    trim = lambda e: {k: e.get(k) for k in keep}  # noqa: E731
+    # headlines from the last 24 hours, notable first
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    spam = ("lost money", "who lost", "class action", "securities fraud", "law firm", "attorney", "investigation on behalf", "investors who", "lawsuit",
+            "reminds investors", "deadline", "recover", "losses")
+    pool = [h for h in heads.get("items", []) if (h.get("published") or "") >= cutoff and h.get("type") != "SEC filing"
+            and not any(w in h["title"].lower() for w in spam)]
+    # publications first (they decide what matters), then notable press releases; newest first within each
+    pubs = sorted([h for h in pool if h.get("type") == "Publication"], key=lambda h: h["published"], reverse=True)
+    rel = sorted([h for h in pool if h.get("type") != "Publication" and h.get("notable")], key=lambda h: h["published"], reverse=True)
+    news = pubs[:6] + rel[:4]
+    news.sort(key=lambda h: h["published"], reverse=True)
+    # things to watch: FOMC proximity, today's releases, biggest reporters
+    watch = []
+    fomc = macro_.get("fomc")
+    if fomc:
+        days = (date.fromisoformat(fomc) - ct.date()).days
+        watch.append({"t": date.fromisoformat(fomc).strftime("%b %-d"), "e": "Next FOMC decision" + (" is today" if days == 0 else f" in {days} days"), "why": f"Fed funds target now {macro_.get('target', ['—'])[0]}–{macro_.get('target', ['', '—'])[-1]}%" if macro_.get("target") else ""})
+    for c in cal_today[:4]:
+        watch.append({"t": "Today", "e": c["name"], "why": "Scheduled release"})
+    for e in ups[:3]:
+        watch.append({"t": e.get("when") or "Today", "e": f"{e['sym']} reports", "why": f"EPS estimate {e['est']}" if e.get("est") is not None else "Earnings"})
+    # headline summary: plain statements generated from the numbers, no editorial
+    top = []
+    es = next((f for f in futures if f["sym"] == "ES=F"), None)
+    if es and es["pct"] is not None:
+        top.append({"lead": f"S&P futures are {'up' if es['pct'] >= 0 else 'down'} {abs(es['pct']):.2f}%.",
+                    "rest": "Nasdaq 100 futures " + next((f"{f['pct']:+.2f}%" for f in futures if f["sym"] == "NQ=F" and f["pct"] is not None), "n/a") + "."})
+    tn = tiles.get("tnx")
+    if tn and tn.get("price") is not None:
+        top.append({"lead": f"The 10-year yield is {tn['price']:.2f}%,", "rest": f"{'up' if (tn['chg'] or 0) >= 0 else 'down'} {abs((tn['chg'] or 0) * 100):.0f} bp on the day."})
+    best = max(rec + ups, key=lambda e: abs(e.get("surprisePct") or 0), default=None)
+    if best and best.get("surprisePct") is not None:
+        top.append({"lead": f"{best['sym']} {'beat' if best['surprisePct'] >= 0 else 'missed'} by {abs(best['surprisePct']):.1f}%.",
+                    "rest": f"EPS {best['eps']} vs. {best['est']} expected."})
+    shift = None
+    for g in od.get("groups", []):
+        for m in g["markets"]:
+            if m.get("prev") is not None and (shift is None or abs(m["pct"] - m["prev"]) > abs(shift[1]["pct"] - shift[1]["prev"])):
+                shift = (g, m)
+    if shift and abs(shift[1]["pct"] - shift[1]["prev"]) >= 3:
+        g, m = shift
+        top.append({"lead": f"Biggest odds move: {g['title']} — {m['label']}.", "rest": f"{m['prev']:.0f}% → {m['pct']:.0f}% since the start of the day."})
+    if news:
+        top.append({"lead": "Top headline:", "rest": news[0]["title"]})
+    write("digest.json", {"updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
+                          "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
+                          "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
+                          "breadth": dash.get("breadth"), "odds": od.get("groups", [])})
