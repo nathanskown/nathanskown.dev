@@ -694,7 +694,18 @@ def macro():
                          "target": [last("DFEDTARL")[1], last("DFEDTARU")[1]] if "DFEDTARL" in raw else None})
 
 
+def ticker_list():
+    """Every SEC-registered company with a US ticker, for the site-wide search and on-demand quote pages."""
+    j = get("https://www.sec.gov/files/company_tickers_exchange.json")
+    f = j["fields"]
+    rows = [dict(zip(f, x)) for x in j["data"]]
+    out = sorted({(x["ticker"].upper().replace(".", "-"), x["name"], int(x["cik"]), x.get("exchange") or "") for x in rows if x.get("ticker")})
+    write("tickers.json", {"updated": now_iso(), "fields": ["sym", "name", "cik", "exch"], "t": [list(x) for x in out]})
+    return out
+
+
 def daily():
+    attempt("sec ticker list", ticker_list)
     mem = attempt("members (wikipedia)", build_members, default=None) or read("members.json", {}) or {}
     macro_ok = attempt("macro", macro)
     cal = attempt("earnings season", earnings, mem, default=[]) or []
@@ -707,106 +718,7 @@ def daily():
 # QUARTERLY: 13F ownership
 # =====================================================================================
 
-OWNERSHIP_VERSION = 3  # bump when the 13F logic changes so the next push rebuilds ownership
-
-
-def quarterly(max_sets=9):
-    links = sec.dataset_links()
-    cusips = {v["cusip"].upper(): k for k, v in UNIVERSE.items() if v.get("cusip")}
-    rec, filers, issuer = {}, defaultdict(set), {}
-    for url in links[:max_sets]:
-        blob = attempt(f"13F set {url.rsplit('/', 1)[-1]}", get, url, kind="bytes", timeout=300)
-        if not blob:
-            continue
-        out, iss, fl, dropped = sec.holdings_from_zip(blob, set(cusips))
-        del blob
-        record(f"13F rows dropped (bad units) {url.rsplit('/', 1)[-1]}", True, n=dropped)
-        for key, val in out.items():
-            if key not in rec or val["filed"] > rec[key]["filed"]:
-                rec[key] = val
-        for p, s in fl.items():
-            filers[p] |= s
-        issuer.update(iss)
-    if not rec:
-        raise RuntimeError("no 13F holdings parsed")
-    big = max(len(s) for s in filers.values())
-    periods = sorted(p for p, s in filers.items() if len(s) >= 0.6 * big)[-8:]
-    record("13F periods", True, n=len(periods), note=", ".join(periods))
-    idx_kw = [k.upper() for k in CONFIG.get("index_managers", [])]
-    tick = sec.tickers()
-    done = []
-    for cu, sym in cusips.items():
-        try:
-            cik = tick.get(sym, (None,))[0]
-            fin = sec.financials(cik) if cik else {"shares": []}
-            qpage = read(f"quotes/{sym}.json") or {}
-            class_so = (qpage.get("stats") or {}).get("shares") if UNIVERSE[sym].get("shareClass") else None
-
-            def so_at(p):
-                return class_so or sec.shares_at(fin, p)
-            per = {p: {} for p in periods}
-            names = {}
-            for (mcik, p), v in rec.items():
-                if p in per and cu in v["pos"]:
-                    sh = v["pos"][cu]
-                    so_p = so_at(p)
-                    if so_p and sh > 0.3 * so_p:  # no 13F filer holds 30% of these; it's a data-entry error
-                        continue
-                    per[p][mcik] = sh
-                    names[mcik] = v["name"]
-            trend = []
-            for p in periods:
-                so = so_at(p)
-                tot = sum(per[p].values())
-                trend.append({"p": p, "inst": r(tot / so * 100, 1) if so else None, "holders": len(per[p]), "shares": tot, "so": so})
-            L, P = periods[-1], periods[-2]
-            cur, prv = per[L], per[P]
-            so = trend[-1]["so"]
-            new = [c for c in cur if c not in prv and c in filers[P]]
-            closed = [c for c in prv if c not in cur and c in filers[L]]
-            q = read(f"quotes/{sym}.json") or {}
-            px = (q.get("quote") or {}).get("price")
-            top = sorted(cur.items(), key=lambda kv: -kv[1])[:10]
-            top_rows = []
-            for mcik, sh in top:
-                ch = "New" if mcik not in prv else r((sh / prv[mcik] - 1) * 100 if prv[mcik] else None, 1)
-                kind = "Index" if any(k in names[mcik].upper() for k in idx_kw) else "Active / other"
-                top_rows.append({"n": names[mcik].title(), "style": kind, "sh": sh, "pct": r(sh / so * 100, 2) if so else None,
-                                 "val": r(sh * px, 0) if px else None, "chg": ch})
-            delta = {c: cur.get(c, 0) - prv.get(c, 0) for c in set(cur) | set(prv) if (c in filers[L] and c in filers[P])}
-            buyers = sorted(((c, d) for c, d in delta.items() if d > 0), key=lambda x: -x[1])[:5]
-            sellers = sorted(((c, d) for c, d in delta.items() if d < 0), key=lambda x: x[1])[:5]
-
-            def mover(c, d):
-                if c not in prv:
-                    note = "New position"
-                elif c not in cur:
-                    note = "Sold out"
-                else:
-                    note = f"{'Added' if d > 0 else 'Cut'} {abs(d / prv[c] * 100):.0f}%"
-                return {"n": names[c].title(), "sh": d, "note": note}
-            passive = sum(v for c, v in cur.items() if any(k in names[c].upper() for k in idx_kw))
-            inst, inst0 = trend[-1]["inst"], trend[-2]["inst"]
-            net = sum(cur.values()) - sum(prv.values())
-            hold, hold0 = trend[-1]["holders"], trend[-2]["holders"]
-            mood = "added to" if net > 0 else "trimmed"
-            read_txt = (f"Institutions {mood} {sym} last quarter: {abs(net) / 1e6:.1f}M shares net, "
-                        f"{len(new)} new positions vs {len(closed)} closed. "
-                        f"Index funds hold {passive / so * 100:.1f}% of shares outstanding." if so else
-                        f"Institutions {mood} {sym} last quarter: {abs(net) / 1e6:.1f}M shares net.")
-            out = {"sym": sym, "name": q.get("name") or tick.get(sym, (None, sym))[1], "cusip": cu, "issuer13f": issuer.get(cu),
-                   "period": L, "prior": P, "updated": now_iso(), "so": so, "price": px,
-                   "tiles": {"inst": inst, "instChg": r((inst or 0) - (inst0 or 0), 1) if inst is not None and inst0 is not None else None,
-                             "holders": hold, "holdersChg": hold - hold0, "net": net, "new": len(new), "closed": len(closed),
-                             "top10": r(sum(sh for _, sh in top) / so * 100, 1) if so else None,
-                             "passive": r(passive / so * 100, 1) if so else None},
-                   "trend": trend, "top": top_rows, "buyers": [mover(c, d) for c, d in buyers], "sellers": [mover(c, d) for c, d in sellers],
-                   "mix": {"Index": r(passive / so * 100, 1) if so else None,
-                           "Active / other": r((sum(cur.values()) - passive) / so * 100, 1) if so else None},
-                   "read": read_txt}
-            write(f"ownership/{sym}.json", out)
-            done.append({"sym": sym, "name": out["name"], "issuer13f": issuer.get(cu), "inst": inst})
-            record(f"13F {sym}", True, n=hold, note=f"cusip {cu} = {issuer.get(cu)}")
-        except Exception as e:  # noqa: BLE001
-            record(f"13F {sym}", False, error=f"{type(e).__name__}: {str(e)[:200]}")
-    write("ownership/index.json", {"updated": now_iso(), "v": OWNERSHIP_VERSION, "periods": periods, "tickers": done})
+def quarterly():
+    import os
+    from . import own13f
+    own13f.build(force=os.environ.get("RUN_13F") == "1")

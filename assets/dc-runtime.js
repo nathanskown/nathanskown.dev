@@ -181,7 +181,6 @@
     MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
     DES: '/finance/quote/', QUOTE: '/finance/quote/', NWND: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
     ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
-    PRSM: '/finance/ownership/?ticker=PRSM', HLWY: '/finance/ownership/?ticker=HLWY', ODEN: '/finance/ownership/?ticker=ODEN', KTRA: '/finance/ownership/?ticker=KTRA',
     SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
     GAME: '/sports/game/football/', NFL: '/sports/game/football/', MLB: '/sports/game/baseball/', NBA: '/sports/game/basketball/', NHL: '/sports/game/hockey/',
     TEAM: '/sports/team/lions/', LIONS: '/sports/team/lions/', TIGERS: '/sports/team/tigers/', PISTONS: '/sports/team/pistons/',
@@ -190,13 +189,73 @@
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', SPOT: '/sports/spots/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
     SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/'
   };
-  function runCmd(input) {
-    var c = input.value.trim().toUpperCase().replace(/(\s+|<)GO>?$/, '').replace(/[\s-]+/g, '');
-    if (!c) return;
-    if (CMDS[c]) { location.href = CMDS[c]; return; }
-    input.value = '';
-    input.placeholder = c === 'HELP' ? 'TRY WEI · TOP · DES · ERN · SCOR · LIONS · MSU · HOME' : '"' + c + '" NOT FOUND · TRY HELP';
+  /* full US ticker list (SEC), loaded once on demand: { list: [[sym, name, cik, exch]], bySym: {SYM: {...}} } */
+  var tickersP = null;
+  function tickers() {
+    if (!tickersP) tickersP = DC.load('/data/finance/tickers.json').then(function (j) {
+      var by = {};
+      j.t.forEach(function (x) { if (!by[x[0]]) by[x[0]] = { sym: x[0], name: x[1], cik: x[2], exch: x[3] }; });
+      return { list: j.t, bySym: by };
+    }, function () { tickersP = null; return { list: [], bySym: {} }; });
+    return tickersP;
   }
+  function matches(T, q, n) {
+    q = q.trim().toUpperCase();
+    if (!q) return [];
+    var exact = [], pre = [], name = [];
+    for (var i = 0; i < T.list.length && name.length < 200; i++) {
+      var x = T.list[i];
+      if (x[0] === q) exact.push(x);
+      else if (x[0].indexOf(q) === 0) pre.push(x);
+      else if (q.length > 2 && x[1].toUpperCase().indexOf(q) >= 0) name.push(x);
+    }
+    pre.sort(function (a, b) { return a[0].length - b[0].length; });
+    return exact.concat(pre, name).slice(0, n || 12);
+  }
+  var FN = { DES: '/finance/quote/?sym=', EQUITY: '/finance/quote/?sym=', US: '/finance/quote/?sym=', HDS: '/finance/ownership/?ticker=', OWN: '/finance/ownership/?ticker=' };
+  function runCmd(input) {
+    var raw = input.value.trim().toUpperCase().replace(/\s*<?GO>?$/, '').trim();
+    if (!raw) return;
+    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL HDS · WEI · TOP · ERN · SCOR · LIONS · HOME'; return; }
+    var compact = raw.replace(/[\s-]+/g, '');
+    var parts = raw.split(/\s+/), fn = parts.length > 1 && FN[parts[parts.length - 1]] ? parts.pop() : null;
+    if (!fn && CMDS[compact]) { location.href = CMDS[compact]; return; }
+    var q = parts.join(' ');
+    var go = function (sym) { location.href = (FN[fn] || FN.DES) + encodeURIComponent(sym); };
+    var symLike = /^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(q), sym = q.replace(/\./g, '-');
+    tickers().then(function (T) {
+      if (T.bySym[sym]) { go(sym); return; }                 // exact US ticker
+      var m = q.length > 2 ? matches(T, q, 1)[0] : null;      // company name
+      if (m && (m[0] === sym || m[1].toUpperCase().indexOf(q) >= 0)) { go(m[0]); return; }
+      if (symLike) { go(sym); return; }                      // index, ETF or other symbol Yahoo may know
+      input.value = '';
+      input.placeholder = '"' + q + '" NOT FOUND · TRY A TICKER OR HELP';
+    });
+  }
+  /* type-ahead: suggestions from the SEC list in a native datalist */
+  document.addEventListener('input', function (e) {
+    var el = e.target;
+    if (!el || !el.classList || !el.classList.contains('t-input')) return;
+    var v = el.value;
+    if (!el.getAttribute('list')) {
+      var dl = document.createElement('datalist');
+      dl.id = 'dc-tickers-' + Math.random().toString(36).slice(2, 7);
+      document.body.appendChild(dl);
+      el.setAttribute('list', dl.id);
+    }
+    if (/\s/.test(v.trim()) && FN[v.trim().split(/\s+/).pop().toUpperCase()]) return;
+    tickers().then(function (T) {
+      if (el.value !== v) return;
+      var dl = document.getElementById(el.getAttribute('list'));
+      dl.innerHTML = '';
+      matches(T, v, 12).forEach(function (x) {
+        var o = document.createElement('option');
+        o.value = x[0];
+        o.label = x[1] + (x[3] ? ' · ' + x[3] : '');
+        dl.appendChild(o);
+      });
+    });
+  });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.target && e.target.classList && e.target.classList.contains('t-input')) { e.preventDefault(); runCmd(e.target); }
   });
@@ -208,6 +267,7 @@
   });
 
   window.DC = {
+    tickers: tickers,
     /* fetch one data file; ?v= changes every 5 minutes so browsers don't hold stale copies */
     load: function (path) {
       var v = Math.floor(Date.now() / 300000);

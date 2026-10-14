@@ -172,7 +172,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px">
 <span style="{{it.typeStyle}}">{{it.type}}</span>
-<sc-for list="{{it.tickers}}" as="tk" hint-placeholder-count="1"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #FFE9C7">{{tk}}</span></sc-for>
+<sc-for list="{{it.tickers}}" as="tk" hint-placeholder-count="1"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #FFE9C7">{{tk.t}}</span></sc-for>
 <sc-if value="{{it.notable}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF">NOTABLE</span></sc-if>
 <sc-if value="{{it.fresh}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; color: #4ADE80">NEW</span></sc-if>
 </span>
@@ -283,7 +283,7 @@ class Component extends DCLogic {
       var pub = new Date(it.published);
       var sameDay = pub.toDateString() === new Date().toDateString();
       return {
-        h: it.title, link: it.link, type: it.type, tickers: it.tickers || [], notable: it.notable, fresh: fresh,
+        h: it.title, link: it.link, type: it.type, tickers: (it.tickers || []).map(function (t) { return { t: t, href: 'Main.dc.html?sym=' + t }; }), notable: it.notable, fresh: fresh,
         time: sameDay ? F.time(it.published) : F.day(it.published), src: it.source + ' · ' + F.ago(it.published),
         typeStyle: tStyle(it.type),
         rowStyle: 'display: flex; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #221909; color: #FFB84D; ' + (fresh ? 'animation: arrive 4s ease-out; ' : '') + (onWatch ? 'background: #1A1309;' : '')

@@ -30,7 +30,8 @@ class Component extends DCLogic {
     t = String(t || '').trim().toUpperCase();
     this.setState({ ticker: t, draft: '', d: null });
     var idx = (this.state || {}).index || { tickers: [] };
-    if (!idx.tickers.some(function (x) { return x.sym === t; })) { this.setState({ notFound: t }); return; }
+    var known = (idx.all || []).indexOf(t) >= 0 || idx.tickers.some(function (x) { return x.sym === t; });
+    if (!known) { this.setState({ notFound: t }); return; }
     DC.load('/data/finance/ownership/' + encodeURIComponent(t) + '.json').then(function (d) { self.setState({ d: d, notFound: null }); })
       .catch(function () { self.setState({ notFound: t }); });
   }
@@ -50,19 +51,19 @@ class Component extends DCLogic {
       onDraft: function (e) { self.setState({ draft: e.target.value }); },
       onSubmit: function (e) { if (e && e.preventDefault) e.preventDefault(); self.go(draft || st.ticker); },
       found: !!D, missing: !D && (!!st.notFound || !!st.err),
-      missingTitle: st.err ? '13F data is still being built' : (st.notFound ? st.notFound + ' is not tracked yet' : ''),
-      missingText: st.err ? 'The first build reads eight quarters of SEC 13F data sets and takes about 20 minutes. Check back shortly.' : 'This page covers the tickers listed above. Add a ticker (and its CUSIP) to data/finance/config.json in the site repo and it appears after the next monthly 13F build.',
+      missingTitle: st.err ? '13F data is still being built' : (st.notFound ? 'No 13F page for ' + st.notFound : ''),
+      missingText: st.err ? 'The first build reads eight quarters of SEC 13F data sets and takes about 20 minutes. Check back shortly.' : 'Pages cover ' + ((idx.all || []).length ? F.n(idx.all.length, 0) + ' ' : '') + 'US-listed stocks with at least 30 institutional (13F) holders. Smaller companies, funds without a 13F-reportable CUSIP, and tickers that could not be matched to a CUSIP are left out.',
       d: { tiles: [], trend: [], mix: [], top: [], buyers: [], sellers: [] } };
     if (!D) return base;
     var T = D.tiles;
     var sgn = function (v, f) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '−') + f(Math.abs(v)); };
     var tiles = [
-      { label: 'Institutional ownership', value: F.n(T.inst, 1) + '%', sub: sgn(T.instChg, function (x) { return x.toFixed(1); }) + ' pts vs. ' + quarter(D.prior), color: '#FFD89D' },
+      { label: 'Institutional ownership', value: T.inst === null || T.inst === undefined ? '—' : F.n(T.inst, 1) + '%', sub: sgn(T.instChg, function (x) { return x.toFixed(1); }) + ' pts vs. ' + quarter(D.prior), color: '#FFD89D' },
       { label: '13F holders', value: F.n(T.holders, 0), sub: sgn(T.holdersChg, String) + ' vs. ' + quarter(D.prior), color: '#FFD89D' },
       { label: 'Net institutional flow', value: sgn(T.net, F.big), sub: 'shares, ' + quarter(D.period) + ' vs. ' + quarter(D.prior), color: T.net >= 0 ? UP : DN },
       { label: 'New / closed positions', value: T.new + ' / ' + T.closed, sub: 'filers this quarter', color: '#FFD89D' },
-      { label: 'Top 10 concentration', value: F.n(T.top10, 1) + '%', sub: 'of shares outstanding', color: '#FFD89D' },
-      { label: 'Index fund share', value: F.n(T.passive, 1) + '%', sub: 'passive ownership', color: '#FFD89D' }
+      { label: 'Top 10 concentration', value: T.top10 === null || T.top10 === undefined ? '—' : F.n(T.top10, 1) + '%', sub: 'of shares outstanding', color: '#FFD89D' },
+      { label: 'Index fund share', value: T.passive === null || T.passive === undefined ? '—' : F.n(T.passive, 1) + '%', sub: 'passive ownership', color: '#FFD89D' }
     ];
     var vals = D.trend.map(function (q) { return q.inst; }).filter(function (v) { return v !== null; });
     var lo = vals.length ? Math.floor(Math.min.apply(null, vals) - 6) : 0, hi = vals.length ? Math.ceil(Math.max.apply(null, vals)) : 1;
@@ -73,8 +74,8 @@ class Component extends DCLogic {
     });
     var colors = { 'Index': '#FFB84D', 'Active / other': '#8A6326' };
     var mix = Object.keys(D.mix).map(function (k) {
-      var v = D.mix[k] || 0;
-      return { n: k, v: F.n(v, 1) + '%', chg: '', color: '#FFD89D', segStyle: 'flex: ' + v + '; background: ' + colors[k] + ';', dotStyle: 'width: 10px; height: 10px; border-radius: 0; flex: none; background: ' + colors[k] + ';' };
+      var raw = D.mix[k], v = raw || 0;
+      return { n: k, v: raw === null || raw === undefined ? '—' : F.n(raw, 1) + '%', chg: '', color: '#FFD89D', segStyle: 'flex: ' + v + '; background: ' + colors[k] + ';', dotStyle: 'width: 10px; height: 10px; border-radius: 0; flex: none; background: ' + colors[k] + ';' };
     });
     var top = D.top.map(function (h, k) {
       var isNew = h.chg === 'New';

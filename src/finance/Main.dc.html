@@ -149,7 +149,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
 <section class="t-panel" aria-label="Not tracked"><div class="t-pb" style="padding: 22px">
 <div class="hi" style="font-size: 16px">{{missingText}}</div>
-<div class="dim" style="font-size: 13px; margin-top: 6px">This page covers the tickers listed above. To track another one, add it to data/finance/config.json in the site's GitHub repo; it appears after the next daily refresh.</div>
+<div class="dim" style="font-size: 13px; margin-top: 6px">{{missingNote}}</div>
 </div></section>
 </sc-if>
 
@@ -241,6 +241,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-if value="{{noFin}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">No quarterly XBRL data found for this company.</div></sc-if>
 </section>
 
+<sc-if value="{{hasPeers}}" hint-placeholder-val="{{ true }}">
 <section class="t-card" aria-label="Peer comparison" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Peer comparison</h2>
 <div style="overflow-x: auto">
@@ -268,6 +269,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </table>
 </div>
 </section>
+</sc-if>
 
 <section class="t-card" aria-label="Insider and activist activity" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
@@ -387,7 +389,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
 <p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">{{ownRead}}</p>
 </sc-if>
-<sc-if value="{{noOwn}}" hint-placeholder-val="{{ false }}"><p class="dim" style="font-size: 13px; margin: 0 0 12px">13F data builds once a month from the SEC's quarterly data sets.</p></sc-if>
+<sc-if value="{{noOwn}}" hint-placeholder-val="{{ false }}"><p class="dim" style="font-size: 13px; margin: 0 0 12px">{{noOwnText}}</p></sc-if>
 <a href="{{ownHref}}" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFD89D; font-size: 14px; font-weight: 500">Full 13F breakdown →</a>
 </section>
 
@@ -420,19 +422,64 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 class Component extends DCLogic {
   componentDidMount() {
     var self = this;
-    DC.load('/data/finance/quotes/index.json').then(function (j) {
+    DC.load('/data/finance/quotes/index.json').then(function (j) { return j; }, function () { return { tickers: [] }; }).then(function (j) {
       var st = self.state || {};
       var sym = String(st.sym || '').toUpperCase() || (j.tickers[0] && j.tickers[0].sym);
       self.setState({ index: j, sym: sym });
-      self.fetchSym(sym, j);
-    }).catch(function () { self.setState({ err: true }); });
+      if (sym) self.fetchSym(sym, j);
+      else self.setState({ err: true });
+    });
   }
   fetchSym(sym, idx) {
     var self = this;
-    var known = (idx || (this.state || {}).index || { tickers: [] }).tickers.some(function (t) { return t.sym === sym; });
-    if (!known) { this.setState({ q: null, notTracked: sym }); return; }
-    DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) { self.setState({ q: q, notTracked: null }); })
-      .catch(function () { self.setState({ q: null, notTracked: sym }); });
+    var core = (idx || (this.state || {}).index || { tickers: [] }).tickers.some(function (t) { return t.sym === sym; });
+    if (core) {  // core watch list: built nightly, loads instantly
+      DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) { self.setState({ q: q, notTracked: null }); })
+        .catch(function () { self.live(sym); });
+      return;
+    }
+    this.live(sym);
+  }
+  live(sym) {
+    // any other ticker: fetched on demand from SEC + Yahoo through /api/quote, then shaped like a nightly file
+    var self = this;
+    this.setState({ q: null, loading: sym, notTracked: null });
+    var soft = function (p) { return p.then(function (x) { return x; }, function () { return null; }); };
+    var api = function (qs) { return fetch('/api/quote?' + qs).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); }); };
+    DC.tickers().then(function (list) {
+      var hit = list.bySym[sym];
+      var cik = hit ? hit.cik : null;
+      return Promise.all([
+        soft(api('part=price&sym=' + encodeURIComponent(sym))),
+        cik ? soft(api('part=fin&cik=' + cik)) : null,
+        cik ? soft(api('part=filings&cik=' + cik)) : null,
+        soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')),
+        soft(DC.load('/data/finance/earnings.json')),
+        soft(DC.load('/data/finance/members.json'))
+      ]).then(function (res) {
+        if ((self.state || {}).sym !== sym) return;
+        var P = res[0], Fn = res[1], Fl = res[2], O = res[3], E = res[4], M = res[5] || {};
+        if (!P || !P.quote) { self.setState({ loading: null, notTracked: sym, notFoundWhy: hit ? 'price' : 'unknown' }); return; }
+        var q = P.quote, price = q.price, so = Fn && Fn.shares, dil = Fn && Fn.diluted;
+        var capShares = so && dil ? Math.max(so, dil) : (so || dil);  // multi-class filers list one class on the cover
+        var mcap = price && capShares ? price * capShares : null;
+        var pe = Fn && Fn.epsTTM > 0 && price ? price / Fn.epsTTM : (Fn && Fn.niTTM > 0 && mcap ? mcap / Fn.niTTM : null);
+        var up = ((E || {}).upcoming || []).filter(function (x) { return x.sym === sym; })[0] || null;
+        var own = O && O.tiles ? { period: O.period, inst: O.tiles.inst, instChg: O.tiles.instChg, holders: O.tiles.holders, holdersChg: O.tiles.holdersChg,
+          trend: (O.trend || []).map(function (t) { return t.inst; }), buyers: (O.buyers || []).slice(0, 3), sellers: (O.sellers || []).slice(0, 3),
+          read: O.read, passive: O.tiles.passive } : null;
+        var inIdx = function (k) { return (M[k] || []).indexOf(sym) >= 0; };
+        self.setState({ loading: null, notTracked: null, q: {
+          sym: sym, name: q.name || (hit && hit.name) || sym, exch: q.exch || (hit && hit.exch), sector: (M.sectors || {})[sym] || (Fl && Fl.sic) || null,
+          updated: P.updated, quote: q, charts: P.charts, ytd: P.ytd, y1: P.y1, news: P.news,
+          stats: { mcap: mcap, pe: pe, divYield: P.stats.divYield, hi52: q.hi52, lo52: q.lo52, avgVol3m: P.stats.avgVol3m, beta: P.stats.beta,
+            shares: so, epsTTM: Fn ? Fn.epsTTM : null },
+          fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
+          index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }],
+          next: up, own: own, peerRows: [], onDemand: true, partial: [!Fn && cik ? 'financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
+        } });
+      });
+    }).catch(function () { self.setState({ loading: null, notTracked: sym, notFoundWhy: 'error' }); });
   }
   renderVals() {
     var UP = '#4ADE80', DN = '#FF5F56';
@@ -443,8 +490,11 @@ class Component extends DCLogic {
     var picker = idx.tickers.map(function (t) {
       return { t: t.sym, href: 'Main.dc.html?sym=' + t.sym, chg: F.pct(t.pct, 1), color: (t.pct || 0) >= 0 ? UP : DN, cls: t.sym === st.sym ? 'hi' : '' };
     });
-    var base = { picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err, ready: !!Q,
-      missingText: st.err ? 'Quote data is not available yet. The first daily refresh fills it in.' : (st.notTracked ? st.notTracked + ' is not tracked yet.' : '') };
+    var why = { unknown: ' is not a ticker the SEC or Yahoo Finance recognizes.', price: ': no price data came back from Yahoo Finance.', error: ': the data service did not respond. Try again in a minute.' };
+    var base = { picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q,
+      missingText: st.loading ? 'Loading ' + st.loading + '…' : (st.err ? 'Quote data is not available yet.' : (st.notTracked ? st.notTracked + (why[st.notFoundWhy] || ' was not found.') : '')),
+      missingNote: st.loading ? 'Pulling prices from Yahoo Finance and filings from SEC EDGAR. The first look at a ticker takes a few seconds; repeat visits are cached.' :
+        'Type any US-listed ticker or company name in the bar above. The quick picks across the top are the core watch list.' };
     if (!Q) return base;
     var ch = (Q.charts || {})[cur] || { t: [], c: [] };
     var vals = ch.c || [];
@@ -530,10 +580,10 @@ class Component extends DCLogic {
       sym: Q.sym, name: Q.name, subline: [Q.exch, Q.sector].filter(Boolean).join(' · '),
       priceText: F.usd(q.price, 2), trendColor: up ? UP : DN, trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
       trendArrow: up ? '▲' : '▼', chgText: (up ? '+' : '−') + '$' + F.n(Math.abs(chg), 2), pctText: F.pct(first ? chg / first * 100 : null),
-      rangeLabel: labels[cur], asOf: q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' CT · delayed' : '',
+      rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' CT · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
       ranges: ranges, linePath: line, areaPath: line + ' L800,260 L0,260 Z', xLabels: xLabels,
       yMax: F.n(mx, 2), yMid: F.n((mx + mn) / 2, 2), yMin: F.n(mn, 2), stats: stats,
-      finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, peers: peers,
+      finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, peers: peers, hasPeers: peers.length > 1,
       activist: !!act, activistText: act ? (act.filer || 'A holder') + ' filed a ' + act.form + ' on ' + F.day(act.date) + '. A 13D means the holder owns 5%+ and may seek to influence the company.' : '',
       insTiles: insTiles, insiders: insiders, noInsiders: !insiders.length, bigHolders: bigs, noBig: !bigs.length,
       indexes: idxRows, passiveText: O && O.passive !== undefined ? F.n(O.passive, 1) + '%' : '—',
@@ -543,7 +593,7 @@ class Component extends DCLogic {
       nextWhen: N ? (N.when === 'BMO' ? 'Before market open' : (N.when === 'AMC' ? 'After market close' : 'Time not confirmed')) : 'Dates appear about two weeks ahead',
       nextEst: N && N.est !== null ? F.usd(N.est, 2) : '—', nextN: N && N.nEst ? String(N.nEst) : '—',
       eightK: (Q.eightK || []).map(function (e) { return { url: e.url, d: F.day(e.date), items: 'Items ' + (e.items || '—') }; }),
-      hasOwn: !!O, noOwn: !O, ownPeriod: O ? quarter(O.period) : '', ownInst: O ? F.n(O.inst, 1) + '%' : '',
+      hasOwn: !!O, noOwn: !O, noOwnText: Q.onDemand ? 'No 13F page for this security: it has fewer than 30 institutional holders or its CUSIP could not be matched to a ticker.' : '13F data builds once a month from the SEC\'s quarterly data sets.', ownPeriod: O ? quarter(O.period) : '', ownInst: O ? F.n(O.inst, 1) + '%' : '',
       ownChg: O && O.instChg !== null ? F.arrow(O.instChg) + ' ' + (O.instChg >= 0 ? '+' : '−') + F.n(Math.abs(O.instChg), 1) + ' pts QoQ' : '',
       ownChgColor: O && O.instChg >= 0 ? UP : DN, ownHolders: O ? F.n(O.holders, 0) + ' holders · ' + (O.holdersChg >= 0 ? '+' : '−') + Math.abs(O.holdersChg) : '',
       ownBars: ownBars, ownBuy: O ? O.buyers.map(mv) : [], ownSell: O ? O.sellers.map(mv) : [], ownRead: O ? O.read : '',

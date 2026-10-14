@@ -7,6 +7,7 @@ from the repo without opening GitHub Actions logs.
 """
 import json
 import pathlib
+import threading
 import time
 import traceback
 from datetime import datetime, timezone
@@ -26,6 +27,7 @@ SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to"
 PACE = {"sec.gov": 0.15, "data.sec.gov": 0.15, "api.nasdaq.com": 0.4, "query1.finance.yahoo.com": 0.15,
         "query2.finance.yahoo.com": 0.15, "api.stlouisfed.org": 0.1, "fred.stlouisfed.org": 0.2}
 _last = {}
+_LOCK = threading.Lock()
 _dead = {}  # host -> consecutive failed calls; after BREAK the host fails fast for the rest of the run
 BREAK = 3
 SESSION = requests.Session()
@@ -58,10 +60,11 @@ def get(url, params=None, kind="json", tries=3, timeout=20, stream=False):
         raise RuntimeError(f"{host} skipped: {BREAK} straight failures this run")
     for key, gap in PACE.items():
         if host.endswith(key):
-            wait = _last.get(key, 0) + gap - time.time()
+            with _LOCK:  # threads share the per-host pace
+                wait = _last.get(key, 0) + gap - time.time()
+                _last[key] = time.time() + max(wait, 0)
             if wait > 0:
                 time.sleep(wait)
-            _last[key] = time.time()
             break
     err = None
     for attempt in range(tries):
@@ -140,3 +143,22 @@ def num(s):
     except ValueError:
         return None
     return -v if neg else v
+
+
+def post_json(url, payload, headers=None, timeout=30, tries=3):
+    """POST JSON, return parsed JSON (used for OpenFIGI's mapping API)."""
+    err = None
+    for attempt in range(tries):
+        try:
+            res = SESSION.post(url, json=payload, headers={"Content-Type": "application/json", **(headers or {})}, timeout=timeout)
+            if res.status_code == 429:
+                err = "HTTP 429"
+                time.sleep(int(res.headers.get("ratelimit-reset", "0") or 0) + 6 * (attempt + 1))
+                continue
+            if res.status_code != 200:
+                raise RuntimeError(f"HTTP {res.status_code} for {url}: {res.text[:120]}")
+            return res.json()
+        except requests.RequestException as e:
+            err = f"{type(e).__name__}: {str(e)[:160]}"
+            time.sleep(3 * (attempt + 1))
+    raise RuntimeError(err or f"failed {url}")

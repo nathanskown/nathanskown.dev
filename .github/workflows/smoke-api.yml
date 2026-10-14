@@ -1,0 +1,55 @@
+name: Check live quote API
+
+# After Cloudflare deploys a change to the on-demand API, call it from outside and
+# report what came back as annotations on the run (visible without opening logs).
+on:
+  push:
+    branches: [main]
+    paths: ["functions/**", ".github/workflows/smoke-api.yml"]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Wait for the deploy, then call each part
+        run: |
+          base=https://nathanskown.dev/api/quote
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /tmp/p.json -w '%{http_code}' "$base?part=price&sym=AAPL&t=$i")
+            if grep -q '"quote"' /tmp/p.json 2>/dev/null || grep -q '"error"' /tmp/p.json 2>/dev/null; then break; fi
+            sleep 20
+          done
+          sleep 30
+          check() {
+            local label=$1 url=$2
+            local t0=$(date +%s%N)
+            local code=$(curl -s -o /tmp/out.json -w '%{http_code}' "$url")
+            local ms=$(( ($(date +%s%N) - t0) / 1000000 ))
+            local summary=$(python3 - <<'PY'
+          import json
+          try:
+              j = json.load(open('/tmp/out.json'))
+          except Exception as e:
+              print('not json:', open('/tmp/out.json', errors='replace').read()[:150].replace('\n', ' ')); raise SystemExit
+          if 'error' in j and len(j) == 1: print('ERROR', j['error']); raise SystemExit
+          bits = []
+          q = j.get('quote') or {}
+          if q: bits += [f"price={q.get('price')}", f"name={q.get('name')}", f"charts={','.join(j.get('charts', {}))}", f"beta={(j.get('stats') or {}).get('beta')}", f"news={len(j.get('news') or [])}"]
+          if 'fin' in j: bits += [f"quarters={[x['end'] for x in j['fin']][-2:]}", f"epsTTM={j.get('epsTTM')}", f"shares={j.get('shares')}", f"diluted={j.get('diluted')}"]
+          if 'insider' in j: bits += [f"name={j.get('name')}", f"form4s={j['insider'].get('formsRead')}", f"insiderRows={len(j['insider']['rows'])}", f"13dg={len(j.get('holders5') or [])}", f"8k={len(j.get('eightK') or [])}"]
+          if j.get('errors'): bits.append(f"partErrors={j['errors']}")
+          print(' '.join(bits))
+          PY
+          )
+            echo "::notice title=$label ($code, ${ms}ms)::$summary"
+          }
+          check "price AAPL" "$base?part=price&sym=AAPL"
+          check "price PLTR" "$base?part=price&sym=PLTR"
+          check "price SPY" "$base?part=price&sym=SPY"
+          check "fin PLTR" "$base?part=fin&cik=1321655"
+          check "filings PLTR" "$base?part=filings&cik=1321655"
+          check "fin AAPL" "$base?part=fin&cik=320193"
+          check "filings AAPL" "$base?part=filings&cik=320193"
+          check "price PLTR (cached)" "$base?part=price&sym=PLTR"

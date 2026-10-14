@@ -7,7 +7,7 @@ import os
 import sys
 import time
 
-from . import jobs
+from . import jobs, own13f
 from .net import STATUS, attempt, now_iso, read, write
 
 
@@ -22,7 +22,7 @@ def pick():
         return ["market"]
     want = ["market", "daily"]
     own = read("ownership/index.json") or {}
-    if os.environ.get("RUN_13F") == "1" or own.get("v") != jobs.OWNERSHIP_VERSION:
+    if os.environ.get("RUN_13F") == "1" or own.get("v") != own13f.VERSION:
         want.append("quarterly")
     return want
 

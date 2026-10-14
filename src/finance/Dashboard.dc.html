@@ -248,7 +248,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{movers}}" as="mv" hint-placeholder-count="5">
 <div class="t-row" style="display: flex; align-items: center; gap: 12px; padding: 9px 0">
-<span style="font-weight: 600; color: #ffd89d; width: 52px; flex: none">{{mv.t}}</span>
+<a href="{{mv.href}}" style="font-weight: 600; color: #ffd89d; width: 52px; flex: none">{{mv.t}}</a>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{mv.n}}</span>
 <span style="display: block; font-size: 11.5px; color: #c99442">{{mv.why}}</span>
@@ -312,7 +312,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 <sc-for list="{{ed.items}}" as="ei" hint-placeholder-count="3">
 <div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid #241a0b; font-size: 12.5px">
-<span><span style="font-weight: 600; color: #ffd89d">{{ei.t}}</span> <span style="color: #c99442">{{ei.when}}</span></span>
+<span><a href="{{ei.href}}" style="font-weight: 600; color: #ffd89d">{{ei.t}}</a> <span style="color: #c99442">{{ei.when}}</span></span>
 <span>{{ei.eps}}</span>
 </div>
 </sc-for>
@@ -439,7 +439,7 @@ class Component extends DCLogic {
     });
     var mov = (D.movers || {})[tab] || [];
     var movers = mov.map(function (m) {
-      return { t: m.sym, n: m.name, why: m.sector || '', px: F.usd(m.price, 2), chg: F.arrow(m.pct) + ' ' + F.pct(m.pct, 1), color: m.pct >= 0 ? UP : DN };
+      return { t: m.sym, href: 'Main.dc.html?sym=' + m.sym, n: m.name, why: m.sector || '', px: F.usd(m.price, 2), chg: F.arrow(m.pct) + ' ' + F.pct(m.pct, 1), color: m.pct >= 0 ? UP : DN };
     });
     var moverTabs = [{ id: 'gainers', label: 'GAINERS' }, { id: 'losers', label: 'LOSERS' }].map(function (t) {
       var on = t.id === tab;
@@ -463,14 +463,14 @@ class Component extends DCLogic {
     (E.upcoming || []).forEach(function (x) { (days[x.date] = days[x.date] || []).push(x); });
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     var earnDays = Object.keys(days).sort().slice(0, 5).map(function (d) {
-      var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
+      var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, href: 'Main.dc.html?sym=' + x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
       return { day: new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase(), tag: d === todayIso ? 'TODAY' : days[d].length + ' shown', items: items, colCls: 't-day' + (d === todayIso ? ' is-today' : '') };
     });
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
     });
     var watch = (D.watch || []).map(function (w) {
-      return { t: w.sym, n: w.name, px: F.usd(w.price, 2), href: w.inUniverse ? 'Main.dc.html?sym=' + w.sym : '#', chg: F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+      return { t: w.sym, n: w.name, px: F.usd(w.price, 2), href: 'Main.dc.html?sym=' + w.sym, chg: F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
     });
     var fomc = M.fomc ? new Date(M.fomc + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase() : '—';
     return {

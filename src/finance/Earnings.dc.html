@@ -270,7 +270,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="9">
 <tr style="{{u.rowStyle}}">
 <td style="text-align: left; padding: 10px 10px 10px 0; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace; white-space: nowrap">{{u.date}}</td>
-<th scope="row" style="text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909"><span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; margin-right: 8px">{{u.t}}</span>{{u.n}}</th>
+<th scope="row" style="text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid #221909"><a href="{{u.href}}"><span style="font-family: 'IBM Plex Mono', monospace; color: #FFE9C7; margin-right: 8px">{{u.t}}</span>{{u.n}}</a></th>
 <td style="text-align: left; padding: 10px; border-bottom: 1px solid #221909; color: #C99442">{{u.sector}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.when}}</td>
 <td style="padding: 10px; border-bottom: 1px solid #221909; font-family: 'IBM Plex Mono', monospace">{{u.eps}}</td>
@@ -345,12 +345,12 @@ class Component extends DCLogic {
         ly: r.lastYearEps === null || r.lastYearEps === undefined ? '—' : F.usd(r.lastYearEps, 2), growth: g === null ? '' : F.pct(g, 1) + ' YoY', growthColor: (g || 0) >= 0 ? UP : DN,
         nEst: r.nEst ? String(r.nEst) : '—', mcap: F.money(r.mcap, 0) + ' mkt cap',
         newsUrl: 'https://finance.yahoo.com/quote/' + r.sym + '/news', secUrl: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + r.sym + '&type=8-K',
-        quoteHref: tracked[r.sym] ? 'Main.dc.html?sym=' + r.sym : '#' };
+        quoteHref: 'Main.dc.html?sym=' + r.sym };
     });
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     var upcoming = (E.upcoming || []).map(function (u) {
       var today = u.date === todayIso;
-      return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
+      return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
         nEst: u.nEst ? String(u.nEst) : '—', mcap: F.money(u.mcap, 0), rowStyle: 'text-align: right;' + (today ? ' background: #261C0C;' : '') };
     });
     var subtitle = st.err ? 'Earnings data is not available yet. The first daily refresh fills it in.' : (E.updated ? (P.reported || 0) + ' of ' + (P.total || 500) + ' S&P 500 companies have reported ' + (season.label || '') + ' results. ' + (S.n ? F.n(S.beatPct, 0) + '% beat the consensus EPS estimate, by ' + F.pct(S.avgSurprise, 1) + ' on average.' : 'The season is just getting started.') : 'Loading the season…');
