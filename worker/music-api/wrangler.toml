@@ -1,0 +1,5 @@
+# Only needed if you deploy with the command line (npx wrangler deploy).
+# If you paste src/index.js into the Cloudflare dashboard instead, you can ignore this file.
+name = "music-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"

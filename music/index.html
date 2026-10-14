@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">  <!-- remove at launch -->
+<title>MUSIC · nathanskown.dev</title>
+<link rel="stylesheet" href="assets/music.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="../">NATHANSKOWN.DEV</a> / <b>MUSIC</b></div>
+  <h1>MUSIC</h1>
+  <div class="sub">Two guessing games. Pick one.</div>
+
+  <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> Placeholder songs, artists and stand-in audio. Nothing external is called. See assets/config.js.</div>
+
+  <div class="cards">
+    <a class="card" href="track/">
+      <div class="card-title">GUESS.TRACK</div>
+      <div class="card-sub">Name the song from a 1-second clip. Each wrong guess unlocks more audio.</div>
+      <div class="card-meta">1s → 2s → 4s → 8s · 5 songs a round · daily challenge</div>
+    </a>
+    <a class="card" href="artist/">
+      <div class="card-title">GUESS.ARTIST</div>
+      <div class="card-sub">Name the artist from three of their lesser-known top tracks. Wrong guesses reveal more.</div>
+      <div class="card-meta">3 → 4 → 5 tracks → tags &amp; era → biggest hit · daily challenge</div>
+    </a>
+  </div>
+
+  <section id="credits"></section>
+  <footer id="foot"></footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/credits.js"></script>
+<script>
+  if (!MX.isLive()) MX.$("modeBanner").classList.remove("hidden");
+  MX.renderCredits("credits", "hub");
+  MX.renderFooter("foot");
+</script>
+</body>
+</html>

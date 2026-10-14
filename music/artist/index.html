@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">  <!-- remove at launch -->
+<title>GUESS.ARTIST · nathanskown.dev</title>
+<link rel="stylesheet" href="../assets/music.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="../../">NATHANSKOWN.DEV</a> / <a href="../">MUSIC</a> / <b>GUESS.ARTIST</b></div>
+  <h1>GUESS.ARTIST</h1>
+  <div class="sub">Name the artist from three of their lesser-known top tracks. Every wrong guess unlocks another clue.</div>
+
+  <div id="modeBanner" class="mock hidden"></div>
+
+  <!-- SETUP -->
+  <section id="setup" class="panel">
+    <h2>NEW ROUND</h2>
+    <div class="row">
+      <label for="filter" class="sub" style="margin:0">POOL</label>
+      <select id="filter"></select>
+      <button class="primary" id="startBtn">START · 5 ARTISTS</button>
+      <button id="dailyBtn">DAILY CHALLENGE</button>
+    </div>
+    <div class="sub" style="margin:10px 0 0">Clues: 3 tracks → a 4th → a 5th → genre, era &amp; country → their biggest hit. Points: 5 / 4 / 3 / 2 / 1.</div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="panel hidden">
+    <div class="stat">
+      <div><span>ARTIST</span><strong id="sNum">1/5</strong></div>
+      <div><span>SCORE</span><strong id="sScore">0</strong></div>
+      <div><span>CLUES</span><strong id="sClues">1/5</strong></div>
+      <div><span>WORTH</span><strong id="sWorth">5</strong></div>
+      <div id="dailyTag" class="hidden"><span>MODE</span><strong>DAILY</strong></div>
+    </div>
+
+    <ul class="clues" id="clues"></ul>
+
+    <div class="guess">
+      <input type="text" id="guessIn" placeholder="Type an artist name…" autocomplete="off" spellcheck="false">
+      <div class="sugg hidden" id="sugg"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="guessBtn">SUBMIT GUESS</button>
+      <button id="skipBtn">SKIP (0 PTS)</button>
+      <button id="peekBtn" class="hidden">[DEV] PEEK</button>
+    </div>
+    <div class="msg" id="msg"></div>
+
+    <div class="reveal hidden" id="reveal">
+      <div class="t" id="rName"></div>
+      <div id="rMeta" class="sub" style="margin:2px 0 6px"></div>
+      <ol id="rTracks"></ol>
+      <div class="credit">
+        <a class="badge" id="rLink" href="#" target="_blank" rel="noopener">View on Last.fm ↗</a>
+        <span>Data from Last.fm</span>
+      </div>
+      <button class="primary" id="nextBtn">NEXT ▶</button>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="summary" class="panel hidden">
+    <h2>ROUND CLOSE</h2>
+    <div class="stat">
+      <div><span>SCORE</span><strong id="fScore"></strong></div>
+      <div><span>ACCURACY</span><strong id="fAcc"></strong></div>
+      <div><span>AVG CLUES</span><strong id="fClues"></strong></div>
+      <div><span>BEST STREAK</span><strong id="fStreak"></strong></div>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>ARTIST</th><th>CLUES USED</th><th class="n">PTS</th></tr></thead>
+      <tbody id="fRows"></tbody>
+    </table>
+    <pre class="share" id="shareTxt"></pre>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="copyBtn">COPY RESULT</button>
+      <button id="againBtn">NEW ROUND</button>
+    </div>
+    <div class="msg" id="copyMsg"></div>
+  </section>
+
+  <section id="credits"></section>
+  <footer id="foot"></footer>
+</div>
+
+<script src="../assets/config.js"></script>
+<script src="../assets/common.js"></script>
+<script src="../assets/credits.js"></script>
+<script src="../data/artists.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = MX.$, CFG = window.MUSIC_CONFIG, ROUND = CFG.ROUND_SIZE || 5;
+  const DATA = window.ARTIST_DATA || { meta: { lesserFrom: 3, mode: "missing" }, artists: [] };
+  const LESSER_FROM = DATA.meta.lesserFrom || 3;
+  const MAX_POINTS = 5;
+  let S = null;
+
+  /* an artist is playable if it has at least 3 lesser-known tracks that don't give away the name */
+  const leaks = (title, a) => MX.norm(title).includes(MX.normArtist(a.name));
+  const lesserOf = a => (a.tracks || []).filter((t, i) => i >= LESSER_FROM && !leaks(t.name, a));
+  const ARTISTS = DATA.artists.filter(a => lesserOf(a).length >= 3 && a.tracks.length);
+
+  /* ---------------- clue stages ----------------
+     Stage 0 shows 3 of the artist's lesser-known tracks (deepest cuts first), then each wrong
+     guess adds a 4th and 5th track, then genre / era / country, then their biggest hit. */
+  function buildStages(a, rnd) {
+    const picked = MX.shuffle(lesserOf(a), rnd).slice(0, 5).sort((x, y) => y.rank - x.rank);
+    const stages = [];
+    stages.push(picked.slice(0, 3).map((t, i) => ({ k: "TRACK " + (i + 1), v: t.name })));
+    for (let i = 3; i < picked.length; i++) stages.push([{ k: "TRACK " + (i + 1), v: picked[i].name }]);
+    const meta = [];
+    if (a.tags && a.tags.length) meta.push({ k: "GENRE", v: a.tags.slice(0, 3).join(" · ") });
+    if (a.debutDecade) meta.push({ k: "STARTED", v: a.debutDecade + "s" });
+    if (a.country) meta.push({ k: "FROM", v: a.country });
+    if (meta.length) stages.push(meta);
+    stages.push([{ k: "BIGGEST HIT", v: a.tracks[0].name }]);
+    return stages;
+  }
+  const worth = stage => Math.max(1, MAX_POINTS - stage);
+
+  /* ---------------- setup ---------------- */
+  function init() {
+    const note = $("modeBanner");
+    if (DATA.meta.mode === "mock") {
+      note.innerHTML = "<b>MOCK MODE.</b> These " + ARTISTS.length + " artists and their tracks are placeholder sample data. " +
+        "The Last.fm build script replaces them with a real catalog.";
+      note.classList.remove("hidden");
+      if (MX.isLive()) note.innerHTML += ' <b>Warning:</b> config.js says live, but this is still the sample catalog.';
+    } else if (!ARTISTS.length) {
+      note.innerHTML = "<b>No artist data.</b> data/artists.js is empty or missing.";
+      note.classList.remove("hidden");
+    }
+    MX.renderCredits("credits", "artist");
+    MX.renderFooter("foot");
+    $("startBtn").textContent = "START · " + ROUND + " ARTISTS";
+
+    const opts = [["all", "All artists (" + ARTISTS.length + ")"]];
+    const count = fn => ARTISTS.filter(fn).length;
+    ["easy", "medium", "hard"].forEach(t => {
+      const n = count(a => a.tier === t);
+      if (n >= ROUND) opts.push(["t:" + t, t[0].toUpperCase() + t.slice(1) + " (" + n + ")"]);
+    });
+    const tagN = {}, decN = {}, ctryN = {};
+    ARTISTS.forEach(a => {
+      (a.tags || []).forEach(g => { tagN[g] = (tagN[g] || 0) + 1; });
+      if (a.debutDecade) decN[a.debutDecade] = (decN[a.debutDecade] || 0) + 1;
+      if (a.country) ctryN[a.country] = (ctryN[a.country] || 0) + 1;
+    });
+    Object.keys(decN).sort().forEach(d => { if (decN[d] >= ROUND) opts.push(["d:" + d, "Started in the " + d + "s (" + decN[d] + ")"]); });
+    Object.keys(tagN).sort().forEach(g => { if (tagN[g] >= ROUND) opts.push(["g:" + g, "Genre: " + g + " (" + tagN[g] + ")"]); });
+    Object.keys(ctryN).sort().forEach(c => { if (ctryN[c] >= ROUND) opts.push(["c:" + c, "From: " + c + " (" + ctryN[c] + ")"]); });
+    $("filter").innerHTML = opts.map(o => '<option value="' + MX.esc(o[0]) + '">' + MX.esc(o[1]) + "</option>").join("");
+    $("startBtn").disabled = $("dailyBtn").disabled = ARTISTS.length < 1;
+  }
+
+  function filtered() {
+    const v = $("filter").value, k = v.slice(0, 2), x = v.slice(2);
+    if (v === "all") return ARTISTS;
+    if (k === "t:") return ARTISTS.filter(a => a.tier === x);
+    if (k === "d:") return ARTISTS.filter(a => String(a.debutDecade) === x);
+    if (k === "g:") return ARTISTS.filter(a => (a.tags || []).includes(x));
+    if (k === "c:") return ARTISTS.filter(a => a.country === x);
+    return ARTISTS;
+  }
+
+  function startRound(daily) {
+    const rnd = daily ? MX.mulberry32(MX.hashStr("guess-artist-" + MX.todayKey())) : Math.random;
+    const base = daily ? ARTISTS : filtered();
+    const queue = MX.shuffle(base, rnd).slice(0, ROUND).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
+    S = { queue, i: 0, stage: 0, score: 0, results: [], daily, done: false };
+    $("setup").classList.add("hidden");
+    $("summary").classList.add("hidden");
+    $("game").classList.remove("hidden");
+    $("dailyTag").classList.toggle("hidden", !daily);
+    loadArtist();
+  }
+
+  /* ---------------- one artist ---------------- */
+  const cur = () => S.queue[S.i];
+
+  function loadArtist() {
+    S.stage = 0; S.done = false;
+    $("guessIn").value = ""; $("guessIn").disabled = false;
+    $("guessBtn").disabled = false; $("skipBtn").disabled = false;
+    $("msg").textContent = "";
+    $("reveal").classList.add("hidden");
+    ac.hide();
+    renderClues(true);
+    updateStats();
+    $("guessIn").focus();
+  }
+
+  function renderClues(fresh) {
+    const c = cur(), ul = $("clues");
+    let html = "";
+    for (let s = 0; s <= S.stage; s++) {
+      const isNew = s === S.stage && (!fresh || s === 0);
+      html += c.stages[s].map(cl =>
+        '<li class="' + (isNew ? "new" : "") + '"><span class="k">' + MX.esc(cl.k) + '</span><span class="v">' + MX.esc(cl.v) + "</span></li>").join("");
+    }
+    if (S.stage < c.stages.length - 1) {
+      html += '<li class="locked"><span class="k">NEXT CLUE</span><span class="v">locked · worth ' + worth(S.stage + 1) + "</span></li>";
+    }
+    ul.innerHTML = html;
+  }
+
+  function updateStats() {
+    $("sNum").textContent = (S.i + 1) + "/" + S.queue.length;
+    $("sScore").textContent = S.score;
+    $("sClues").textContent = (S.stage + 1) + "/" + cur().stages.length;
+    $("sWorth").textContent = S.done ? "—" : worth(S.stage);
+  }
+
+  function submitGuess() {
+    if (S.done) return;
+    const g = $("guessIn").value.trim();
+    if (!g) return;
+    ac.hide();
+    const c = cur();
+    if (MX.isArtistMatch(g, c.artist)) finishArtist(true);
+    else if (S.stage < c.stages.length - 1) {
+      S.stage++;
+      renderClues(false);
+      $("msg").innerHTML = '<span class="bad">✗ Not it.</span> New clue unlocked — worth ' + worth(S.stage) + " now.";
+      $("guessIn").value = ""; $("guessIn").focus();
+      updateStats();
+    } else finishArtist(false);
+  }
+
+  function finishArtist(got) {
+    const c = cur(), a = c.artist, pts = got ? worth(S.stage) : 0;
+    S.score += pts; S.done = true;
+    S.results.push({ artist: a, got, pts, stage: S.stage, stages: c.stages.length });
+    $("guessIn").disabled = true; $("guessBtn").disabled = true; $("skipBtn").disabled = true;
+    $("msg").innerHTML = got ? '<span class="ok">✓ Correct! +' + pts + "</span>" : '<span class="bad">✗ Out of clues. +0</span>';
+    $("rName").textContent = a.name;
+    $("rMeta").textContent = [(a.tags || []).slice(0, 3).join(" · "), a.country, a.debutDecade ? "since the " + a.debutDecade + "s" : ""].filter(Boolean).join(" · ");
+    $("rTracks").innerHTML = a.tracks.slice(0, 5).map(t => "<li>" + MX.esc(t.name) + "</li>").join("");
+    $("rLink").setAttribute("href", a.url || "#");
+    $("nextBtn").textContent = (S.i === S.queue.length - 1) ? "SEE RESULTS ▶" : "NEXT ▶";
+    $("reveal").classList.remove("hidden");
+    updateStats();
+    $("nextBtn").focus();
+  }
+
+  function next() {
+    if (S.i < S.queue.length - 1) { S.i++; loadArtist(); } else showSummary();
+  }
+
+  /* ---------------- summary ---------------- */
+  function showSummary() {
+    $("game").classList.add("hidden");
+    $("summary").classList.remove("hidden");
+    const R = S.results, hits = R.filter(r => r.got);
+    $("fScore").textContent = S.score + " / " + (R.length * MAX_POINTS);
+    $("fAcc").textContent = Math.round(hits.length / R.length * 100) + "%";
+    $("fClues").textContent = hits.length ? (hits.reduce((s, r) => s + r.stage + 1, 0) / hits.length).toFixed(1) : "—";
+    let best = 0, run = 0; R.forEach(r => { run = r.got ? run + 1 : 0; best = Math.max(best, run); });
+    $("fStreak").textContent = best;
+    $("fRows").innerHTML = R.map((r, i) =>
+      "<tr><td>" + (i + 1) + "</td><td>" + MX.esc(r.artist.name) + "</td><td>" + (r.stage + 1) + "/" + r.stages + "</td>" +
+      '<td class="n ' + (r.got ? "ok" : "bad") + '">' + (r.got ? "+" + r.pts : "0") + "</td></tr>").join("");
+    const grid = R.map(r => (r.got ? (r.stage < 2 ? "■" : r.stage < r.stages - 1 ? "▣" : "□") : "✗")).join(" ");
+    $("shareTxt").textContent = "GUESS.ARTIST " + (S.daily ? MX.todayKey() + " (daily)" : "") + "\n" + grid + "\n" +
+      S.score + "/" + (R.length * MAX_POINTS) + "  nathanskown.dev";
+    $("copyMsg").textContent = "";
+  }
+
+  /* ---------------- wiring ---------------- */
+  const suggest = q => {
+    const n = MX.normArtist(q);
+    if (n.length < 2) return Promise.resolve([]);
+    const out = [];
+    for (const a of ARTISTS) {
+      if ([a.name].concat(a.aliases || []).some(x => MX.normArtist(x).includes(n))) {
+        out.push({ label: a.name });
+        if (out.length >= 6) break;
+      }
+    }
+    return Promise.resolve(out);
+  };
+  const ac = MX.Autocomplete($("guessIn"), $("sugg"), suggest, { onEnter: submitGuess });
+  $("startBtn").onclick = () => startRound(false);
+  $("dailyBtn").onclick = () => startRound(true);
+  $("guessBtn").onclick = submitGuess;
+  $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
+  $("nextBtn").onclick = next;
+  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); };
+  $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
+  $("peekBtn").onclick = () => { if (S && !S.done) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(cur().artist.name) + "</span>"; };
+  $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
+
+  init();
+})();
+</script>
+</body>
+</html>
