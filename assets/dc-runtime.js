@@ -206,7 +206,7 @@
 
   /* command line on every inner page: type a page code, team or ticker and press Enter */
   var CMDS = {
-    HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest',
+    HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest', STATUS: '/status/', CONTACT: '/#contact',
     BRIEF: '/finance/digest/', MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
     DES: '/finance/quote/', QUOTE: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
     ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
@@ -267,6 +267,15 @@
     }); }
   }
   /* type-ahead: suggestions from the SEC list in a native datalist */
+  // "/" or Ctrl/Cmd+K jumps to the command line from anywhere on the page
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    var k = (e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K');
+    if (!k && (e.key !== '/' || /INPUT|TEXTAREA|SELECT/.test(tag) || e.target.isContentEditable)) return;
+    var inp = document.querySelector('input.t-input');
+    if (!inp) return;
+    e.preventDefault(); inp.focus(); inp.select();
+  });
   document.addEventListener('input', function (e) {
     var el = e.target;
     if (!el || !el.classList || !el.classList.contains('t-input')) return;

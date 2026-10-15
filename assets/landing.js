@@ -108,7 +108,12 @@
     var panels = document.querySelectorAll('[data-panel]');
     for (var j = 0; j < panels.length; j++) panels[j].hidden = panels[j].getAttribute('data-panel') !== k;
     $('secDgst').classList.toggle('is-hl', k === 'digest');
-    if (show && label) $('panel').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+    if (show && label) {
+      $('panel').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+      // move keyboard and screen-reader focus to the panel that just opened
+      var pt = $('panelTitle'); pt.setAttribute('tabindex', '-1'); try { pt.focus({ preventScroll: true }); } catch (e) { pt.focus(); }
+    }
+    try { history.replaceState(null, '', show ? '#' + k : location.pathname); } catch (e) { /* ignore */ }
   }
   var hlTimer;
   function flash(id) {
@@ -140,7 +145,8 @@
     return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('MUS', 'Music games                 4'), r('DGST', 'Morning digest signup        5'), '',
       'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Profile  (WHOAMI)            6'), r('CONTACT', 'Get in touch                 7'), '',
       'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ODDS  SIM  INJ  ·  TRCK  ARTS', '',
-      'SYSTEM', r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
+      'LOOK UP', r('MOD', 'Any US ticker → quote page'), r('MOD HDS', 'Ticker → 13F ownership'), r('LIONS', 'Any team → team page (add NFL, BB, FB…)'), '',
+      'SYSTEM', r('STATUS', 'Data feed health'), r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
   }
   function renderDrawer() {
     var box = $('drawerLines');
@@ -171,13 +177,69 @@
     else if (['CONTACT', 'MSG', '7'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
     else if (['HOME', 'MENU', 'OVERVIEW', '1'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
     else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
+    else if (c === 'STATUS' || c === 'SYS') { out.push(L('DATA FEEDS, REFRESH JOBS AND SANITY CHECKS')); out.push(LINK('▸ OPEN SYSTEM STATUS', '/status/')); }
     else if (c === 'REBOOT') { setLast('REBOOT <GO>'); $('drawer').hidden = true; reboot(); return; }
     else if (c === 'SUDO' || c.indexOf('SUDO ') === 0) out.push(L('PERMISSION DENIED. THIS INCIDENT WILL BE REPORTED.', 'err'));
-    else out.push(L('"' + c + '" IS NOT A RECOGNIZED FUNCTION.  TRY  HELP <GO>', 'err'));
+    else { lookup(c, out); return; }
     state.log = state.log.concat(out).slice(-40);
     setLast(c + ' <GO>');
     if (active) setActive(active);
     renderDrawer();
+  }
+  /* Anything that isn't a function code: a ticker (MOD, MOD HDS, BRK.B), a team (LIONS, MICHIGAN STATE BB) or a
+     company name. Lists load once, on first use. */
+  var LISTS = null;
+  function lists() {
+    if (!LISTS) LISTS = Promise.all([
+      fetch('/data/finance/tickers.json').then(function (r) { return r.json(); }).catch(function () { return { t: [] }; }),
+      fetch('/data/sports/teams.json').then(function (r) { return r.json(); }).catch(function () { return { leagues: {} }; })
+    ]);
+    return LISTS;
+  }
+  var LG_WORD = { NFL: 'nfl', MLB: 'mlb', NBA: 'nba', NHL: 'nhl', FB: 'ncaaf', NCAAF: 'ncaaf', CFB: 'ncaaf', BB: 'ncaab', NCAAB: 'ncaab', CBB: 'ncaab', HKY: 'ncaah', HOCKEY: 'ncaah', NCAAH: 'ncaah' };
+  var LG_PRI = { nfl: 0, mlb: 1, nba: 2, nhl: 3, ncaaf: 4, ncaab: 5, ncaah: 6 };
+  function lookup(c, out) {
+    var L = function (t, k) { return { t: t, k: k }; };
+    var go = function (label, href) {
+      out.push(L('LOADING ' + label + ' …'));
+      state.log = state.log.concat(out).slice(-40); setLast(c + ' <GO>'); renderDrawer();
+      location.href = href;
+    };
+    var words = c.split(/\s+/), fn = words.length > 1 && (FIN[words[words.length - 1]] || words[words.length - 1] === 'EQUITY') ? words.pop() : null;
+    if (words[words.length - 1] === 'US' || words[words.length - 1] === 'EQUITY') words = words.filter(function (w) { return w !== 'US' && w !== 'EQUITY'; });
+    var q = words.join(' ');
+    lists().then(function (res) {
+      var T = res[0].t || [], leagues = res[1].leagues || {};
+      var sym = q.replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2');
+      var tk = T.filter(function (x) { return x[0] === sym; })[0];
+      var page = fn === 'HDS' ? '/finance/ownership/?ticker=' : '/finance/quote/?sym=';
+      if (tk) return go(tk[0] + ' · ' + String(tk[1]).toUpperCase(), page + encodeURIComponent(tk[0]));
+      // teams: "LIONS", "DETROIT LIONS", "MICHIGAN STATE BB"
+      var tw = q.split(' '), lgWant = LG_WORD[tw[tw.length - 1]] || null;
+      if (lgWant) tw.pop();
+      var tq = tw.join(' ').toLowerCase();
+      var hits = [];
+      Object.keys(leagues).forEach(function (lg) {
+        if (lgWant && lg !== lgWant) return;
+        leagues[lg].forEach(function (t) {
+          var names = [t.name, t.short, t.nick, t.loc + ' ' + t.nick].filter(Boolean).map(function (n) { return n.toLowerCase(); });
+          var score = names.indexOf(tq) >= 0 ? 0 : (names.some(function (n) { return (' ' + n + ' ').indexOf(' ' + tq + ' ') >= 0; }) ? 1 : 9);
+          if (score < 9) hits.push({ lg: lg, t: t, s: score * 10 + LG_PRI[lg] });
+        });
+      });
+      hits.sort(function (a, b) { return a.s - b.s; });
+      if (tq.length >= 3 && hits.length) {
+        var h = hits[0];
+        return go(h.t.name.toUpperCase() + ' (' + h.lg.toUpperCase() + ')', '/sports/team/?lg=' + h.lg + '&id=' + encodeURIComponent(h.t.id));
+      }
+      // company name
+      if (q.length >= 3) {
+        var co = T.filter(function (x) { return String(x[1]).toUpperCase().indexOf(q) === 0; })[0] || T.filter(function (x) { return String(x[1]).toUpperCase().indexOf(' ' + q) >= 0; })[0];
+        if (co) return go(co[0] + ' · ' + String(co[1]).toUpperCase(), page + encodeURIComponent(co[0]));
+      }
+      out.push(L('"' + c + '" IS NOT A FUNCTION, TICKER OR TEAM.  TRY  HELP <GO>', 'err'));
+      state.log = state.log.concat(out).slice(-40); setLast(c + ' <GO>'); renderDrawer();
+    });
   }
   $('cmdForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -479,8 +541,17 @@
   try { seen = sessionStorage.getItem('nskn-booted') === '1'; sessionStorage.setItem('nskn-booted', '1'); } catch (e) { seen = false; }
   setMode(0);
   if (!reduced && !seen) runBoot(); else scramble();
-  if (location.hash === '#digest') setActive('digest');
-  if (location.hash === '#contact') setActive('contact');
+  // ?cmd= runs a command handed over from another page's command line (e.g. a ticker typed on a music page)
+  try {
+    var qc = new URLSearchParams(location.search).get('cmd');
+    if (qc) { history.replaceState(null, '', location.pathname + location.hash); setTimeout(function () { run(qc); }, 50); }
+  } catch (e) { /* ignore */ }
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); $('nk-cmd-in').focus(); }
+  });
+  function fromHash() { var k = location.hash.slice(1); if (TITLES[k]) setActive(k, LABEL[k]); }
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
 
   /* ---------- Right Now: live markets + the next Detroit / MSU games ---------- */
   (function rightNow() {

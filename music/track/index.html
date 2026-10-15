@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guess the Track · NSKN Terminal</title>
+<meta name="description" content="Guess the Track: name the song from a one-second clip. Every wrong guess unlocks more audio, with a new daily challenge at midnight Central.">
+<link rel="canonical" href="https://nathanskown.dev/music/track/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="Guess the Track · NSKN Terminal">
+<meta property="og:description" content="Guess the Track: name the song from a one-second clip. Every wrong guess unlocks more audio, with a new daily challenge at midnight Central.">
+<meta property="og:url" content="https://nathanskown.dev/music/track/">
+<meta property="og:image" content="https://nathanskown.dev/assets/og/music.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#050007">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,7 +85,7 @@
 
     <div class="guess">
       <span class="pfx">TITLE &rsaquo;</span>
-      <input type="text" id="guessIn" placeholder="Type a song title…" autocomplete="off" spellcheck="false">
+      <input type="text" id="guessIn" aria-label="Your guess: song title" placeholder="Type a song title…" autocomplete="off" spellcheck="false">
       <div class="sugg hidden" id="sugg"></div>
     </div>
     <div class="row" style="margin-top:10px">
@@ -114,7 +125,7 @@
     <div class="msg" id="copyMsg"></div>
     <div id="lbBox" class="lbbox hidden">
       <div class="lbhead">POST TO TODAY'S LEADERBOARD</div>
-      <div class="guess"><span class="pfx">NAME &rsaquo;</span><input type="text" id="lbName" maxlength="16" placeholder="Your name (2 to 16 characters)" autocomplete="off" spellcheck="false"></div>
+      <div class="guess"><span class="pfx">NAME &rsaquo;</span><input type="text" id="lbName" aria-label="Name to show on the leaderboard" maxlength="16" placeholder="Your name (2 to 16 characters)" autocomplete="off" spellcheck="false"></div>
       <div class="row" style="margin-top:10px"><button class="primary" id="lbSubmit">POST MY SCORE</button><a class="badge" href="/music/leaderboard/">VIEW FULL BOARD</a></div>
       <div class="msg" id="lbMsg"></div>
       <div id="lbTop"></div>

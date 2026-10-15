@@ -48,7 +48,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:11.5px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
@@ -76,7 +76,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -142,7 +142,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}">
 <nav aria-label="Recently viewed" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin">
-<span style="flex: none; color: #A87933; font-size: 11.5px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
+<span style="flex: none; color: #A87933; font-size: 12px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
 <sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size: 12.5px">{{rc.t}}</a></sc-for>
 </nav>
 </sc-if>
@@ -187,11 +187,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div aria-hidden="true" style="flex: none; width: 4px; background: #FFB84D; box-shadow: 0 0 10px rgba(255,184,77,.5)"></div>
 <div style="padding: 14px 18px; min-width: 0">
 <div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px">
-<span style="font-size: 11px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
+<span style="font-size: 12px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
 <sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12.5px; color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
 </div>
 <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #FFE9C7; max-width: 980px">{{aboutText}}</p>
-<div style="margin-top: 6px; font-size: 11.5px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
+<div style="margin-top: 6px; font-size: 12px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
 </div>
 </section>
 </sc-if>
@@ -556,7 +556,7 @@ class Component extends DCLogic {
     var self = this;
     var st = this.state || {};
     var Q = st.q, idx = st.index || { tickers: [] };
-    var cur = st.range || '1Y';
+    var cur = st.range || PREFS.get('fin.range', '1Y');   // last range picked in this browser
     var picker = idx.tickers.map(function (t) {
       return { t: t.sym, href: 'Main.dc.html?sym=' + t.sym, chg: F.pct(t.pct, 1), color: (t.pct || 0) >= 0 ? UP : DN, cls: t.sym === st.sym ? 'hi' : '' };
     });
@@ -594,7 +594,10 @@ class Component extends DCLogic {
     }) : [];
     var ranges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y'].map(function (id) {
       var on = id === cur;
-      return { id: id, pressed: on ? 'true' : 'false', pick: function () { self.setState({ range: id }); },
+      return { id: id, pressed: on ? 'true' : 'false', pick: function () {
+        PREFS.set('fin.range', id);
+        try { var u = new URLSearchParams(location.search); u.set('range', id); history.replaceState(null, '', location.pathname + '?' + u.toString()); } catch (e) { /* ignore */ }
+        self.setState({ range: id }); },
         btnStyle: 'min-width: 44px; height: 36px; padding: 0 10px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;') };
     });
     var S = Q.stats || {};

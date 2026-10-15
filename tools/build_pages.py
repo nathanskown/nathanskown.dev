@@ -79,6 +79,27 @@ SECTIONS = {
     },
 }
 
+# One description per page (search results and link previews), falling back to the section's.
+PAGE_DESC = {
+    ("finance", ""): "US market dashboard: indices, sectors, movers, Treasury yields, economic data, earnings calendar and headlines, refreshed through the trading day.",
+    ("finance", "digest"): "The day's market brief: futures, overnight markets, what moved yesterday and what's on today's calendar.",
+    ("finance", "headlines"): "Live market headlines from publications, press wires and SEC 8-K filings, filterable by watchlist and notable news.",
+    ("finance", "quote"): "Quote and company page for any US ticker: price chart, financials, insider and activist filings, index membership and 13F ownership.",
+    ("finance", "ownership"): "13F institutional ownership for US stocks: who owns it, who bought and sold last quarter, and how much index funds hold.",
+    ("finance", "earnings"): "Earnings season tracker for the S&P 500: beat rates, surprises, stock reactions and the reporting calendar.",
+    ("finance", "macro"): "The US economy in numbers from FRED: inflation, jobs, growth, rates, recession signals and the release calendar.",
+    ("finance", "ipo"): "US IPO tracker: deals pricing soon, first-day and since-IPO returns, new filings and lockup expirations.",
+    ("sports", ""): "Live scores and schedules for the NFL, MLB, NBA, NHL, college sports, soccer, golf and tennis, with house win probabilities.",
+    ("sports", "teams"): "Every team in the NFL, MLB, NBA, NHL and college sports, with records and house-model ratings.",
+    ("sports", "simulator"): "Pick any two teams and see the house model's projected margin and win probability.",
+    ("sports", "odds"): "Playoff, division and title odds from 10,000 simulations of the rest of the season.",
+    ("sports", "injuries"): "Injury reports across the major leagues.",
+    ("sports", "track-record"): "Every house-model pick, logged before the game and graded after the final.",
+    ("sports", "methodology"): "How the house sports ratings, projections and simulations work.",
+}
+SITE = "https://nathanskown.dev"
+OG_IMAGE = {"finance": "/assets/og/markets.png", "sports": "/assets/og/sports.png"}
+
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 
 
@@ -114,7 +135,7 @@ def between(src, start, end):
     return src[i:src.index(end, i)]
 
 
-def build_page(path, cfg, props, title):
+def build_page(path, cfg, props, title, section="", route=""):
     src = path.read_text()
     body = between(src, "</helmet>", "</x-dc>")
     m = re.search(r"<script type=\"text/x-dc\" data-dc-script data-props='([^']*)'>([\s\S]*?)</script>", src)
@@ -126,13 +147,29 @@ def build_page(path, cfg, props, title):
     tree = json.dumps(tb.root["c"], separators=(",", ":")).replace("</", "<\\/")
     routes = json.dumps(cfg["routes"], separators=(",", ":"))
     scripts = "".join(f'<script src="{src}"></script>\n' for src in cfg.get("scripts", []))
+    desc = PAGE_DESC.get((section, route), cfg.get("desc", ""))
+    url = f"{SITE}/{section}/" + (f"{route}/" if route else "")
+    og = OG_IMAGE.get(section, "/assets/og/home.png")
+    full = f"{title} · NSKN Terminal"
+    # pages that show one ticker, team or game from the query string have no single canonical URL
+    dynamic = route in ("quote", "ownership", "team", "game") or route.startswith("game/")
+    canon = "" if dynamic else f'<link rel="canonical" href="{url}">\n'
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(title)} · NSKN Terminal</title>
-<meta name="description" content="{html.escape(cfg.get("desc", ""))}">
+<title>{html.escape(full)}</title>
+<meta name="description" content="{html.escape(desc)}">
+{canon}<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="{html.escape(full)}">
+<meta property="og:description" content="{html.escape(desc)}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}{og}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="{cfg["theme"]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -159,7 +196,7 @@ def main():
         for route, src_name, props, title in cfg["pages"]:
             out = ROOT / name / route / "index.html"
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(build_page(ROOT / "src" / name / src_name, cfg, props, title))
+            out.write_text(build_page(ROOT / "src" / name / src_name, cfg, props, title, name, route))
             print("built", out.relative_to(ROOT))
 
 

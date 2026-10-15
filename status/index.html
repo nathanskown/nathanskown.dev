@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System status · NSKN Terminal</title>
+<meta name="description" content="Health of every data feed behind nathanskown.dev: when each refresh last ran, which sources failed, and whether the live APIs answer.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#020402">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--g:#70ff8c;--hi:#c0ffc9;--dim:#5da867;--line:#123a1a;--bg:#020402;--ok:#4ade80;--warn:#ffb84d;--bad:#ff5f56}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--hi);font:14px/1.5 'IBM Plex Mono',ui-monospace,monospace}
+a{color:var(--g)}
+.skip{position:absolute;left:8px;top:-60px;background:var(--g);color:#000;padding:8px 14px;font-weight:600}
+.skip:focus{top:8px}
+.bar{display:flex;align-items:center;gap:12px;background:var(--g);color:#000;padding:6px 14px;font-weight:600}
+.bar a{color:#000}
+main{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+h1{font-family:VT323,monospace;font-weight:400;font-size:56px;line-height:1;margin:6px 0 4px;color:var(--g);text-shadow:0 0 12px rgba(112,255,140,.45)}
+.lead{color:var(--dim);margin:0 0 22px}
+section{border:1px solid var(--line);padding:16px;margin:0 0 18px;background:#030803}
+h2{font-size:15px;margin:0 0 10px;color:var(--g);letter-spacing:.04em}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:500;font-size:12.5px}
+.s{display:inline-block;min-width:64px;padding:1px 8px;font-size:12px;font-weight:600;color:#000;text-align:center}
+.s.ok{background:var(--ok)}.s.warn{background:var(--warn)}.s.bad{background:var(--bad)}.s.wait{background:#2a4a30;color:var(--hi)}
+.dim{color:var(--dim)}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="bar"><a href="/">1-NSKN</a><span>System status</span><span style="flex:1"></span><span id="now"></span></div>
+<main id="main">
+<h1>SYSTEM STATUS</h1>
+<p class="lead" id="lead">Checking every feed…</p>
+
+<section aria-labelledby="h-live">
+<h2 id="h-live">Live APIs (checked from your browser just now)</h2>
+<div class="wrap"><table><thead><tr><th scope="col">Endpoint</th><th scope="col">Status</th><th scope="col">Detail</th></tr></thead><tbody id="live"></tbody></table></div>
+</section>
+
+<section aria-labelledby="h-jobs">
+<h2 id="h-jobs">Scheduled refreshes</h2>
+<div class="wrap"><table><thead><tr><th scope="col">Job</th><th scope="col">Status</th><th scope="col">Last finished</th><th scope="col">Failed sources</th></tr></thead><tbody id="jobs"></tbody></table></div>
+</section>
+
+<section aria-labelledby="h-checks">
+<h2 id="h-checks">Data sanity checks</h2>
+<div class="wrap"><table><thead><tr><th scope="col">Check</th><th scope="col">Status</th><th scope="col">Detail</th></tr></thead><tbody id="checks"></tbody></table></div>
+</section>
+<p class="dim">Times in your time zone. This page reads the same files and APIs the site does; nothing is cached for it.</p>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var ago = function (iso) {
+    if (!iso) return '—';
+    var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    var when = new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return when + ' (' + (m < 60 ? m + ' min' : m < 2880 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + ' d') + ' ago)';
+  };
+  var pill = function (k, t) { return '<span class="s ' + k + '">' + esc(t) + '</span>'; };
+  var row = function (cells) { return '<tr>' + cells.map(function (c, i) { return i === 0 ? '<th scope="row">' + c + '</th>' : '<td>' + c + '</td>'; }).join('') + '</tr>'; };
+  $('now').textContent = new Date().toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  var bad = 0, warn = 0;
+  var tally = function (k) { if (k === 'bad') bad++; else if (k === 'warn') warn++; };
+  function lead() {
+    $('lead').textContent = bad ? bad + ' problem' + (bad === 1 ? '' : 's') + ' and ' + warn + ' warning' + (warn === 1 ? '' : 's') + '.' : (warn ? 'All feeds up, ' + warn + ' warning' + (warn === 1 ? '' : 's') + '.' : 'All feeds up.');
+  }
+  var get = function (u) { var t0 = performance.now(); return fetch(u, { cache: 'no-store' }).then(function (r) { return r.text().then(function (x) { var j = null; try { j = JSON.parse(x); } catch (e) {} return { ok: r.ok, code: r.status, j: j, ms: Math.round(performance.now() - t0) }; }); }, function () { return { ok: false, code: 0, j: null, ms: 0 }; }); };
+
+  // 1) live APIs
+  var LIVE = [
+    ['Market tiles', '/api/live?part=tiles', function (j) { return j && j.tiles ? j.tiles.length + ' tiles' : ''; }],
+    ['Quote API (AAPL)', '/api/quote?part=price&sym=AAPL', function (j) { return j && j.quote ? '$' + j.quote.price : ''; }],
+    ['ESPN scoreboard (NFL)', '/api/espn/site/v2/sports/football/nfl/scoreboard', function (j) { return j && j.events ? j.events.length + ' games' : ''; }],
+    ['Music leaderboard', '/api/music/board?game=track&scope=today', function (j) { return j && j.entries ? j.entries.length + ' scores today' : ''; }],
+    ['Music daily schedule', '/music/data/daily.js', function () { return 'loaded'; }],
+    ['Deezer preview lookup', 'https://music-api.nskown.workers.dev/health', function (j) { return j && j.ok ? 'ok' : ''; }]
+  ];
+  $('live').innerHTML = LIVE.map(function (x) { return row([esc(x[0]), pill('wait', '…'), '']); }).join('');
+  Promise.all(LIVE.map(function (x) { return get(x[1]); })).then(function (rs) {
+    $('live').innerHTML = rs.map(function (r, i) {
+      var k = r.ok ? (r.ms > 4000 ? 'warn' : 'ok') : 'bad'; tally(k);
+      return row([esc(LIVE[i][0]), pill(k, r.ok ? (k === 'warn' ? 'SLOW' : 'UP') : 'DOWN'), esc((r.ok ? LIVE[i][2](r.j) : 'HTTP ' + r.code + (r.j && r.j.error ? ' · ' + r.j.error : '')) + ' · ' + r.ms + ' ms')]);
+    }).join('');
+    lead();
+  });
+
+  // 2) scheduled jobs: how stale each one may get before it counts as late (hours)
+  var LATE = { 'finance · market': 3, 'finance · daily': 30, 'finance · quarterly': 24 * 40, 'sports · live': 3, 'sports · daily': 30 };
+  Promise.all([get('/data/finance/status.json'), get('/data/sports/status.json')]).then(function (rs) {
+    var rows = [];
+    [['finance', rs[0].j], ['sports', rs[1].j]].forEach(function (p) {
+      var S = p[1] || {};
+      Object.keys(S).forEach(function (job) {
+        var x = S[job]; if (!x || typeof x !== 'object' || !x.finished) return;
+        var name = p[0] + ' · ' + job, hrs = (Date.now() - new Date(x.finished).getTime()) / 3600000;
+        var failed = x.failed || Object.keys(x.sources || {}).filter(function (k) { return x.sources[k] && x.sources[k].ok === false; });
+        var late = LATE[name] && hrs > LATE[name];
+        // market and live jobs only run in their hours, so "late" overnight and on weekends is expected
+        var offHours = /market|live/.test(job) && (new Date().getDay() % 6 === 0 || new Date().getHours() < 8 || new Date().getHours() > 23);
+        var k = failed.length > 3 ? 'bad' : (failed.length || (late && !offHours)) ? 'warn' : 'ok'; tally(k);
+        rows.push(row([esc(name), pill(k, k === 'ok' ? 'OK' : k === 'warn' ? (late && !failed.length ? 'LATE' : 'PARTIAL') : 'FAILING'), esc(ago(x.finished)), failed.length ? esc(failed.slice(0, 6).join(', ') + (failed.length > 6 ? ' +' + (failed.length - 6) : '')) : '<span class="dim">none</span>']));
+      });
+    });
+    $('jobs').innerHTML = rows.join('') || row(['Status files', pill('bad', 'MISSING'), '', '']);
+    lead();
+  });
+
+  // 3) sanity checks on the published data
+  Promise.all([get('/data/finance/macro.json'), get('/data/finance/earnings.json'), get('/data/finance/dashboard.json'), get('/data/finance/ownership/AAPL.json')]).then(function (rs) {
+    var M = rs[0].j || {}, E = rs[1].j || {}, D = rs[2].j || {}, O = rs[3].j || {};
+    var checks = [];
+    var weekend = (M.calendar || []).filter(function (c) { var d = new Date(c.date + 'T12:00:00Z').getUTCDay(); return d === 0 || d === 6; });
+    checks.push(['Release calendar has no weekend dates', !weekend.length, weekend.length + ' weekend entries']);
+    var dupe = {}; (M.calendar || []).forEach(function (c) { dupe[c.name] = (dupe[c.name] || 0) + 1; });
+    var spam = Object.keys(dupe).filter(function (k) { return dupe[k] > 4; });
+    checks.push(['No release repeats every day', !spam.length, spam.join(', ') || 'ok']);
+    var tiles = D.tiles || [], tnx = tiles.filter(function (t) { return t.id === 'tnx'; })[0];
+    checks.push(['10-year yield is between 0% and 15%', !tnx || (tnx.price > 0 && tnx.price < 15), tnx ? tnx.price + '%' : 'not in data']);
+    var T = O.tiles || {};
+    checks.push(['13F holder change ties to new minus closed (AAPL)', T.holdersChg === undefined || T.holdersChg === T.new - T.closed, 'holders ' + T.holdersChg + ' vs ' + T.new + ' − ' + T.closed]);
+    var huge = (O.buyers || []).filter(function (b) { return O.so && b.note === 'New position' && b.sh > 0.005 * O.so; });
+    checks.push(['No implausible new 13F stakes (AAPL)', !huge.length, huge.map(function (b) { return b.n; }).join(', ') || 'ok']);
+    var today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    var stale = (E.upcoming || []).filter(function (x) { return x.date < today; });
+    checks.push(['Earnings calendar has no past dates under "upcoming"', !stale.length, stale.length + ' stale rows']);
+    $('checks').innerHTML = checks.map(function (c) { var k = c[1] ? 'ok' : 'warn'; tally(k); return row([esc(c[0]), pill(k, c[1] ? 'PASS' : 'CHECK'), esc(c[2])]); }).join('');
+    lead();
+  });
+})();
+</script>
+</body>
+</html>

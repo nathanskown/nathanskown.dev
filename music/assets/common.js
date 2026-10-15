@@ -243,7 +243,7 @@
       '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
       '<span class="dim">TRCK &middot; ARTS &middot; LB &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
       '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
-      '<input id="mxCmdIn" type="text" placeholder="TYPE HELP, THEN GO" spellcheck="false" aria-label="Command line">' +
+      '<input id="mxCmdIn" type="text" placeholder="TICKER, TEAM OR HELP" spellcheck="false" aria-label="Command line">' +
       '<button type="submit">GO</button></form>' +
       '<div class="mx-msg" id="mxMsg" role="status" aria-live="polite"></div>' +
       '<nav class="mx-fbar" aria-label="Music"><span class="t">Music</span>' +
@@ -271,8 +271,16 @@
         return;
       }
       if (ROUTES[c]) { msg.textContent = "Opening " + c + "…"; location.href = ROUTES[c]; return; }
-      msg.innerHTML = '<span class="err">"' + MX.esc(c) + '" IS NOT A RECOGNIZED FUNCTION.</span> TRY HELP &lt;GO&gt;';
+      // tickers, teams and other site functions are resolved by the home page's command line
+      msg.textContent = "Looking up " + c + "…";
+      location.href = "/?cmd=" + encodeURIComponent(c);
     };
+    document.addEventListener("keydown", e => {
+      const tag = (e.target && e.target.tagName) || "";
+      const k = (e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K");
+      if (!k && (e.key !== "/" || /INPUT|TEXTAREA|SELECT/.test(tag))) return;
+      e.preventDefault(); MX.$("mxCmdIn").focus();
+    });
     const clock = MX.$("mxClock");
     const tick = () => {
       try { clock.textContent = MX.zoneLabel() + " " + new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()); }

@@ -118,13 +118,13 @@
 <div class="{{g.cls}}">
 <sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>
 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
-<div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 11.5px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
+<div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 12px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
 </sc-for>
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 6px">
-<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"><span class="{{g.pill}}">{{g.status}}</span><sc-if value="{{g.sub}}" hint-placeholder-val="{{false}}"><span class="dim" style="font-size: 11.5px">{{g.sub}}</span></sc-if></span>
+<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"><span class="{{g.pill}}">{{g.status}}</span><sc-if value="{{g.sub}}" hint-placeholder-val="{{false}}"><span class="dim" style="font-size: 12px">{{g.sub}}</span></sc-if></span>
 <sc-if value="{{g.href}}" hint-placeholder-val="{{true}}"><a class="s-go" href="{{g.href}}" aria-label="{{g.aria}}" style="width: auto; padding: 0 10px; height: 32px; font-size: 12px">{{g.cta}} →</a></sc-if>
 </div>
-<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 11.5px; margin-top: 6px">{{g.note}}<sc-if value="{{g.house}}" hint-placeholder-val="{{false}}"><span class="s-house">{{g.house}}</span></sc-if></div></sc-if>
+<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 12px; margin-top: 6px">{{g.note}}<sc-if value="{{g.house}}" hint-placeholder-val="{{false}}"><span class="s-house">{{g.house}}</span></sc-if></div></sc-if>
 </div>
 </sc-for>
 </div>

@@ -6,6 +6,16 @@
 <title>NSKN Terminal · Markets, Sports &amp; Music</title>
 <meta name="author" content="Nathan Skown">
 <meta name="description" content="A live terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
+<link rel="canonical" href="https://nathanskown.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="NSKN Terminal · Markets, Sports &amp; Music">
+<meta property="og:description" content="A live terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
+<meta property="og:url" content="https://nathanskown.dev/">
+<meta property="og:image" content="https://nathanskown.dev/assets/og/home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#020402">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +25,7 @@
 </head>
 <body>
 <div class="nk t-green" id="root">
+<a class="nk-skiplink" href="#main">Skip to content</a>
 
 <header>
 <div class="nk-title">
@@ -35,7 +46,7 @@
 <div class="nk-cmdwrap">
 <form class="nk-cmd" id="cmdForm">
 <label for="nk-cmd-in" class="nk-prompt">NSKN ›</label>
-<input id="nk-cmd-in" class="nk-input" type="text" placeholder="TYPE HELP, THEN GO" autocomplete="off" spellcheck="false" enterkeyhint="go">
+<input id="nk-cmd-in" class="nk-input" type="text" placeholder="TICKER, TEAM OR HELP" aria-label="Command line: type a ticker, team or function, then GO" autocomplete="off" spellcheck="false" enterkeyhint="go">
 <button type="submit" class="nk-go">GO</button>
 </form>
 <div class="nk-drawer" id="drawer" role="log" aria-live="polite" hidden>
@@ -59,7 +70,7 @@
 </div>
 </header>
 
-<main class="nk-main">
+<main class="nk-main" id="main" tabindex="-1">
 
 <nav class="nk-side" aria-label="Site">
 <div class="nk-sh">Navigate</div>
@@ -82,10 +93,10 @@
 <div class="nk-sh"><span>Site Stats</span><span class="nk-dim">v26.10</span></div>
 <dl class="nk-kvs">
 <dt>MARKETS</dt><dd>8 PAGES · LIVE</dd>
-<dt>SPORTS</dt><dd>LIVE · 3 IN BUILD</dd>
+<dt>SPORTS</dt><dd>LIVE · 12 PAGES</dd>
 <dt>MUSIC</dt><dd>2 GAMES</dd>
 <dt>DIGEST</dt><dd>DAILY 5:15 AM</dd>
-<dt>STATUS</dt><dd>LIVE · V1</dd>
+<dt>STATUS</dt><dd><a href="/status/">FEEDS · CHECK</a></dd>
 </dl>
 </div>
 </nav>
