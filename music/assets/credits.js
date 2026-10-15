@@ -16,7 +16,7 @@
 
   const REMOVE =
     "<p><b>Want something removed?</b> If you are an artist, label or rights holder and would like a song or artist " +
-    "taken out, use the contact link in the site footer and it will be removed promptly.</p>";
+    "taken out, use the <a href='/#contact'>contact page</a> and it will be removed promptly.</p>";
 
   const AUDIO =
     "<p><b>Audio.</b> Song previews are 30-second clips streamed directly from Deezer's servers. " +
@@ -28,13 +28,11 @@
     "from MusicBrainz. Each revealed artist links back to its Last.fm page.</p>";
 
   const BADGES = {
-    track:
-      '<span class="badge" title="Placeholder: the official Deezer logo, used per Deezer\'s trademark guidelines">Deezer</span>',
-    artist:
-      '<span class="badge" title="Placeholder: the official Last.fm button, placed where Last.fm approves">powered by AudioScrobbler</span>',
+    track: '<a class="badge" href="https://www.deezer.com" target="_blank" rel="noopener">Audio previews: Deezer</a>',
+    artist: '<a class="badge" href="https://www.last.fm" target="_blank" rel="noopener">Data: Last.fm</a>',
     hub:
-      '<span class="badge" title="Placeholder: official Deezer logo">Deezer</span>' +
-      '<span class="badge" title="Placeholder: official Last.fm button">powered by AudioScrobbler</span>'
+      '<a class="badge" href="https://www.deezer.com" target="_blank" rel="noopener">Audio previews: Deezer</a>' +
+      '<a class="badge" href="https://www.last.fm" target="_blank" rel="noopener">Data: Last.fm</a>'
   };
 
   const DEV = {
@@ -63,7 +61,7 @@
     const live = (window.MUSIC_CONFIG || {}).MODE === "live";
     return (
       "<details open><summary>SOURCES &amp; CREDITS</summary>" + body +
-      '<div class="credit">' + BADGES[kind] + (live ? "" : "<span>Buttons shown here are stand-ins for the official artwork.</span>") + "</div>" +
+      '<div class="credit">' + BADGES[kind] + "" + "</div>" +
       '<div class="devnote"><b>DEV NOTES · not shown on the live site</b><ul>' + DEV[kind] + (kind !== "hub" ? DEV.hub : "") + COMMON_DEV + "</ul></div>" +
       "</details>"
     );
@@ -79,7 +77,10 @@
   MX.renderFooter = function (id) {
     const el = MX.$(id);
     if (!el) return;
-    el.innerHTML = '<label><input type="checkbox" id="devToggle"> show dev tools (peek at answers, compliance notes)</label>';
+    const dev = /[?&]dev(=|&|$)/.test(location.search);   // owner-only: add ?dev=1 to any music page's address
+    el.innerHTML =
+      '<span><a href="/">&larr; nathanskown.dev</a> &middot; <a href="/music/">Music</a> &middot; <a href="/#contact">Contact</a></span>' +
+      (dev ? '<label><input type="checkbox" id="devToggle"> show dev tools (peek at answers, compliance notes)</label>' : "");
     MX.initDevToggle();
   };
 })();

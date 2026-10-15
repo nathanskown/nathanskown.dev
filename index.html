@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nathan Skown · NSKN Terminal</title>
-<meta name="description" content="A personal terminal for market analysis and sports.">
+<meta name="description" content="A personal terminal for market analysis, sports and music games.">
 <meta name="theme-color" content="#020402">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +51,7 @@
 </div>
 <div class="nk-sub">
 <span>Personal Terminal (NSKN)</span>
-<span class="nk-dim nk-hide-sm">95) Sections · MARKET ANALYSIS / SPORTS</span>
+<span class="nk-dim nk-hide-sm">95) Sections · MARKET ANALYSIS / SPORTS / MUSIC</span>
 <span class="nk-spacer"></span>
 <span class="nk-tag">nathanskown.dev</span>
 </div>
@@ -64,9 +64,10 @@
 <button type="button" class="nk-nav" data-go="overview"><span class="nk-num">1)</span>Overview</button>
 <a class="nk-nav" href="/finance/"><span class="nk-num">2)</span>Market Analysis</a>
 <a class="nk-nav" href="/sports/"><span class="nk-num">3)</span>Sports</a>
-<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">4)</span>Morning Digest</button>
-<button type="button" class="nk-nav" data-go="about"><span class="nk-num">5)</span>About</button>
-<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">6)</span>Contact</button>
+<a class="nk-nav" href="/music/"><span class="nk-num">4)</span>Music</a>
+<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">5)</span>Morning Digest</button>
+<button type="button" class="nk-nav" data-go="about"><span class="nk-num">6)</span>About</button>
+<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">7)</span>Contact</button>
 <div class="nk-sh nk-hide-sm">System</div>
 <div class="nk-sys nk-hide-sm">
 <button type="button" class="nk-nav" data-cmd="HELP"><span class="nk-num">90)</span>Help</button>
@@ -86,7 +87,7 @@
 <div class="nk-kicker">NSKN &lt;PERSON&gt; · Personal Terminal</div>
 <h1 class="nk-name" id="name" aria-label="Nathan Skown"><span aria-hidden="true" id="nameA">NATHAN</span><span aria-hidden="true" id="nameB">SKOWN</span></h1>
 <p class="nk-typed"><span class="nk-gt">&gt;</span> <span id="typed"></span><span class="nk-caret" aria-hidden="true"></span></p>
-<p class="nk-meta">Markets · Sports · Data<span class="nk-sep">//</span>Personal project · est. 2026</p>
+<p class="nk-meta">Markets · Sports · Music · Data<span class="nk-sep">//</span>Personal project · est. 2026</p>
 
 <div class="nk-secs">
 <a class="nk-sec" id="secMkt" href="/finance/">
@@ -103,8 +104,15 @@
 <span class="nk-sec-viz"><span class="nk-sec-chips"><span>SCOR</span><span>GAME</span><span>TEAM</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
+<a class="nk-sec" id="secMusic" href="/music/" style="--g:#d58bff;--glow:rgba(213,139,255,.18);--line:#2e1a3d">
+<span class="nk-sec-top"><span class="nk-num">4)</span><span class="nk-k">MUS</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-t">MUSIC</span>
+<span class="nk-sec-d">Two guessing games · name the song from a clip · name the artist from their deep cuts</span>
+<span class="nk-sec-viz"><span class="nk-sec-chips"><span>TRCK</span><span>ARTS</span></span></span>
+<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+</a>
 <button type="button" class="nk-dg" id="secDgst" data-go="digest">
-<span class="nk-dg-k"><span class="nk-num">4)</span><span class="nk-k">DGST</span></span>
+<span class="nk-dg-k"><span class="nk-num">5)</span><span class="nk-k">DGST</span></span>
 <span class="nk-dg-main"><span class="nk-dg-t">DETROIT + MSU MORNING DIGEST</span><span class="nk-dg-d">Free · in your inbox every morning at 5:15 AM CT</span></span>
 <span class="nk-dg-go">SUBSCRIBE <span class="nk-k">GO</span></span>
 </button>
@@ -121,8 +129,8 @@
 <dt>NAME</dt><dd>NATHAN SKOWN</dd>
 <dt>HOME BASE</dt><dd>CHICAGO, IL</dd>
 <dt>ALMA MATER</dt><dd>MICHIGAN STATE UNIVERSITY</dd>
-<dt>INTERESTS</dt><dd>MARKETS · SPORTS · DATA</dd>
-<dt>THIS SITE</dt><dd>A PERSONAL TERMINAL FOR MARKET ANALYSIS &amp; SPORTS</dd>
+<dt>INTERESTS</dt><dd>MARKETS · SPORTS · MUSIC · DATA</dd>
+<dt>THIS SITE</dt><dd>A PERSONAL TERMINAL FOR MARKET ANALYSIS, SPORTS &amp; MUSIC GAMES</dd>
 </dl>
 <p class="nk-note">A personal project. Every page here is a work in progress.</p>
 </div>
@@ -166,7 +174,7 @@
 <div class="nk-rp">
 <div class="nk-rh"><span>Site Stats</span><span class="nk-dim">Build v26.10</span></div>
 <dl class="nk-kvs">
-<dt>SECTIONS</dt><dd>2</dd>
+<dt>SECTIONS</dt><dd>3</dd>
 <dt>MARKET ANALYSIS</dt><dd>7 PAGES · SAMPLE DATA</dd>
 <dt>SPORTS</dt><dd>12 PAGES · SAMPLE DATA</dd>
 <dt>MORNING DIGEST</dt><dd>DAILY · 5:15 AM CT</dd>
@@ -202,7 +210,7 @@
 </div>
 <div class="nk-status">
 <span><span class="nk-hi">●</span> LINK nathanskown.dev</span>
-<span>2 SECTIONS · MORNING DIGEST</span>
+<span>3 SECTIONS · MORNING DIGEST</span>
 <span>SESSION <span data-bind="uptime">00:00:00</span></span>
 <span>© 2026 NATHAN SKOWN</span>
 </div>
