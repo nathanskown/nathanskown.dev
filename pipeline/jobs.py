@@ -514,7 +514,7 @@ def ipos():
 # =====================================================================================
 # DAILY: macro (FRED)
 # =====================================================================================
-SERIES = ["CPIAUCSL", "CPILFESL", "PCEPILFE", "UNRATE", "PAYEMS", "A191RL1Q225SBEA", "DFF", "DGS10", "T10Y2Y",
+SERIES = ["CPIAUCSL", "CPILFESL", "CPIAUCNS", "CPILFENS", "PCEPILFE", "UNRATE", "PAYEMS", "A191RL1Q225SBEA", "DFF", "DGS10", "T10Y2Y",
           "BAMLH0A0HYM2", "ICSA", "RSAFS", "UMCSENT", "SAHMREALTIME", "FEDFUNDS", "USREC", "DFEDTARL", "DFEDTARU",
           "CUSR0000SAH1", "CUSR0000SASL2RS", "CPIUFDSL", "CUSR0000SACL1E", "CPIENGSL",
           "JTSJOL", "JTSQUR", "CES0500000003", "CIVPART", "CCSA", "LNS12300060"]
@@ -541,6 +541,11 @@ def macro():
         if obs:
             raw[sid] = obs
     record("fred mode", True, note="API key" if mi.FRED_KEY else "public CSV (no API key)")
+    # The BLS headline and core CPI year-over-year rates are computed from NOT seasonally adjusted indexes.
+    # Year-over-year on the seasonally adjusted series can differ by a few tenths, so use the unadjusted ones.
+    for sa, ns in (("CPIAUCSL", "CPIAUCNS"), ("CPILFESL", "CPILFENS")):
+        if raw.get(ns):
+            raw[sa] = raw[ns]
 
     def last(sid, k=1):
         o = raw.get(sid) or []

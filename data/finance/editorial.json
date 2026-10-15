@@ -1,0 +1,241 @@
+{
+ "date": "2026-10-15",
+ "written": "2026-10-15T17:55:00Z",
+ "headline": "Hot inflation meets an AI credit scare",
+ "lede": "Two stories hit at once. A hotter-than-expected inflation report put a second Fed rate hike on the table for Oct. 27-28, and a credit scare around AI infrastructure, which started with CoreWeave's bonds, has now knocked Seoul and Tokyo down 8% and 5% in a day. Thursday is a split screen: Dow futures are up about 1% while Nasdaq 100 futures are down about 0.6%, which tells you where the pain is concentrated.",
+ "market": {
+  "title": "Why the market dropped Wednesday",
+  "points": [
+   {
+    "lead": "The inflation report was hot, and the mix was worse than the headline.",
+    "body": "September CPI rose 0.6% on the month and 3.7% from a year ago, versus 3.6% expected and 3.4% in August. Core was 2.6% versus 2.5% expected. Gasoline (+9%) explained more than half of the monthly rise, but economists flagged the part that matters: energy costs are starting to seep into services. Core CPI's three-month annualized rate jumped to about 3.4% from about 2% in August, and 'supercore' services ran near 4.6%. That is harder for the Fed to look through."
+   },
+   {
+    "lead": "Rate-hike odds roughly doubled in a day.",
+    "body": "The Fed already raised rates on Sept. 16, to 3.75%-4.00%, in a unanimous vote, its first hike in three years. After CPI, the market-implied odds of another hike at the Oct. 27-28 meeting jumped from about 22% to briefly above 50%, then settled around 30%-35%. The 10-year Treasury yield spiked about 12 basis points to above 5.3%, then reversed all of it and sits near 5.1%, a three-week low. Bonds were being bought as a safe haven even as the Fed looked more likely to hike."
+   },
+   {
+    "lead": "The AI credit scare did most of the damage to the indexes.",
+    "body": "The Nasdaq fell 1.9% while the Dow was nearly flat. CoreWeave dropped about 15% as its bond yields approached 15% and its debt was described as distressed. Oracle fell about 8.8%, AMD 5.7%, GE Vernova 6.2%, Nvidia 3.2% and Broadcom 3.1%. The logic: AI data centers are financed with a lot of debt, so higher rates and wider credit spreads hit them harder than anyone. Semiconductors had already been falling for days."
+   },
+   {
+    "lead": "Bank earnings were not a safe harbor.",
+    "body": "Bank of America fell about 4.8% after earnings of $0.91 versus $1.10 expected, hurt by a $1.2 billion Treasury penalty over anti-money-laundering failures ($1.08 excluding it, still light). State Street fell about 4.1% on weak revenue. Morgan Stanley and Wells Fargo also fell after beating estimates."
+   },
+   {
+    "lead": "The tape: five losses in six days, and small caps are in a correction.",
+    "body": "The S&P 500 fell 1.1% to 7,718.94, its fifth loss in six sessions since the record high. The Russell 2000 fell 1.9% and is now more than 10% below its August peak."
+   }
+  ]
+ },
+ "data": {
+  "bottom": "The pattern is stagflation-flavored, not overheating. Prices are re-accelerating on an energy shock that is now bleeding into services, while job growth is thin and real pay is falling. That is the hardest backdrop for a central bank that just started hiking, and for stocks priced on falling rates.",
+  "rows": [
+   {
+    "n": "CPI (Sept)",
+    "read": "+0.6% m/m, 3.7% y/y vs. 3.6% expected",
+    "signal": "neg",
+    "why": "Hotter than forecast, with gasoline up 9% in one month and spillover into services. Raises the odds of another hike."
+   },
+   {
+    "n": "Core CPI (Sept)",
+    "read": "+0.3% m/m, 2.6% y/y vs. 2.5% expected",
+    "signal": "neg",
+    "why": "The year-over-year level is still modest, but the three-month annualized pace (about 3.4%) is the number the Fed will watch."
+   },
+   {
+    "n": "PPI (Sept)",
+    "read": "+1.3% m/m vs. 0.5% expected; 6.3% y/y",
+    "signal": "neg",
+    "why": "Biggest annual gain in about four years, with producer gasoline up 20% in a month. Core PPI +0.5% m/m. Cost pressure upstream usually reaches consumer prices later, and squeezes margins for companies that cannot pass it on."
+   },
+   {
+    "n": "Retail sales (Sept)",
+    "read": "+0.8% vs. 0.3%-0.4% expected; August revised up to +1.3%",
+    "signal": "mix",
+    "why": "Looks strong, but gas stations explain about $4.1 billion of the $5.7 billion gain. Excluding gas, sales rose 0.2%, and the control group rose 0.1% vs. 0.3% expected. Consumers spent more dollars on fuel, not on more goods."
+   },
+   {
+    "n": "Real wages (Sept)",
+    "read": "Real hourly earnings -0.7% y/y",
+    "signal": "neg",
+    "why": "Inflation has outrun pay for six straight months. A drag on spending that retail sales have not shown yet."
+   },
+   {
+    "n": "Jobs (FRED, Sept)",
+    "read": "Payrolls +29K (prior +133K); unemployment 4.2% (prior 4.1%)",
+    "signal": "neg",
+    "why": "Hiring is slowing and unemployment is edging up. This is the growth side of the Fed's dilemma."
+   },
+   {
+    "n": "Jobless claims (week of Oct. 10)",
+    "read": "199K vs. 198K prior",
+    "signal": "pos",
+    "why": "Layoffs are still low. The labor market is soft on hiring, not yet on firing."
+   }
+  ]
+ },
+ "earnings": [
+  {
+   "sym": "TSM",
+   "name": "TSMC",
+   "when": "Reported Thursday",
+   "result": "Record profit of NT$763B (+69%) vs. NT$746B expected. Revenue $46.7B. Gross margin 66.4% (67.7% in Q2). Q4 revenue guide $52.3B-$54.3B, about 14% above Q3. 2026 capex unchanged at $60B-$64B.",
+   "why": "TSMC is the best read on whether AI demand is real. Demand is fine: high-performance computing is 68% of revenue and the CEO sees about 44% growth this year. The US shares still fell about 4% because margins slipped and the market is selling financing risk, not fundamentals. That gap is the story of the week."
+  },
+  {
+   "sym": "SCHW",
+   "name": "Charles Schwab",
+   "when": "Reported Thursday, before the open",
+   "result": "Adjusted EPS $1.69 vs. $1.66 expected (+29% y/y). Revenue $7.17B vs. $7.20B. Core net new assets $190B (+38%). Shares down about 4% premarket.",
+   "why": "A good quarter with a soft spot: revenue was light and management guided 2026 revenue and margin growth toward the low end of its range. Sweep cash fell as clients put money back into markets, which is good for trading and asset fees but bad for net interest margin."
+  },
+  {
+   "sym": "USB",
+   "name": "U.S. Bancorp",
+   "when": "Reported Thursday, before the open",
+   "result": "EPS $1.34 vs. $1.32 expected. Revenue $7.97B vs. $7.99B. Raised 2026 revenue growth to 8%-9% from 5%-7%. Net interest margin 2.84%, up 5 bp. Charge-offs 51 bp, down 2 bp. Shares up about 2% premarket.",
+   "why": "The cleanest bank report of the week: credit is stable and margins are rising. Higher-for-longer rates help a bank like this, which is why it traded up while Schwab traded down."
+  },
+  {
+   "sym": "BAC",
+   "name": "Bank of America",
+   "when": "Reported Wednesday",
+   "result": "EPS $0.91 vs. $1.10 expected; $1.08 excluding a $1.2B Treasury penalty. Revenue about $30B vs. $30.6B expected. Shares fell about 4.8%.",
+   "why": "The miss was mostly a one-off penalty, not credit. Still, the market punished it on a day when it was already nervous about higher funding costs."
+  },
+  {
+   "sym": "GS",
+   "name": "Goldman Sachs",
+   "when": "Reported Tuesday",
+   "result": "EPS $17.01 vs. $12.90 expected (+32%). Stock -0.6% Wednesday.",
+   "why": "A huge beat that barely moved the stock. Across Goldman, JPMorgan, Citi and Wells Fargo, dealmaking fees were $8.47B, up 15% from a year ago but down 7.5% from the second quarter. Investors saw a peak in momentum."
+  },
+  {
+   "sym": "IBKR / JBHT / AA",
+   "name": "Interactive Brokers, J.B. Hunt, Alcoa",
+   "when": "After the close today",
+   "result": "Options imply moves of about 4.9%, 5.9% and 5.9% respectively.",
+   "why": "Interactive Brokers is a read on retail trading activity and rate-sensitive interest income. J.B. Hunt shows whether freight demand is holding up against high fuel costs. Alcoa shows how aluminum prices and energy costs are playing through."
+  }
+ ],
+ "watch": [
+  {
+   "t": "3:30 PM CT",
+   "e": "Cleveland Fed's Hammack speaks",
+   "why": "She has already pointed to tariffs, the AI investment boom and rising services prices as inflation drivers. Any hint on the October meeting will move the hike odds."
+  },
+  {
+   "t": "All day",
+   "e": "Do chips stabilize?",
+   "why": "The Philadelphia Semiconductor Index fell about 4.5% Wednesday. TSMC's strong report did not stop the selling. A bounce in Nvidia and Broadcom would suggest the worst of the rate-and-credit fear has passed."
+  },
+  {
+   "t": "All day",
+   "e": "CoreWeave and AI-debt spillover",
+   "why": "Watch CoreWeave's bonds, Oracle and other debt-funded AI names. A second day of selling would suggest this is a financing problem, not a one-day scare."
+  },
+  {
+   "t": "All day",
+   "e": "The 10-year yield near 5.1%",
+   "why": "Yields fell as stocks fell. If yields keep dropping on weak stocks, bonds are trading growth fear. If they rise again, the market is back to pricing a Fed hike."
+  },
+  {
+   "t": "After close",
+   "e": "IBKR, JBHT and Alcoa report",
+   "why": "See above for what each one signals."
+  },
+  {
+   "t": "Tomorrow",
+   "e": "Industrial production",
+   "why": "Factory output and capacity use, a check on whether energy costs are hurting manufacturers."
+  },
+  {
+   "t": "Oct. 27-28",
+   "e": "FOMC meeting",
+   "why": "The hike odds (roughly one in three on Kalshi at the time of writing) are the number to watch between now and then."
+  }
+ ],
+ "wild": [
+  {
+   "tag": "ASIA",
+   "h": "Seoul fell about 8% and Tokyo about 5% in a single day",
+   "body": "South Korea's Kospi dropped more than 7% on Tuesday and about 8% on Thursday, with Samsung down 9% and SK Hynix down 11%. Japan's Nikkei fell 4.8% to 64,615, with chip equipment makers Advantest (-15%), SUMCO (-14%) and Lasertec (-14%) leading the way."
+  },
+  {
+   "tag": "CREDIT",
+   "h": "CoreWeave's bonds are yielding close to 15%",
+   "body": "The stock fell about 15% in a day, its bonds are being described as distressed, and Elon Musk replied 'Yikes' to the news. The worry has spread to Oracle and other debt-funded 'neocloud' names, because they all depend on cheap financing to build data centers before the revenue arrives."
+  },
+  {
+   "tag": "BONDS",
+   "h": "The 10-year yield rose 12 bp and gave it all back within hours",
+   "body": "A hot CPI normally pushes yields up and keeps them there. On Wednesday Treasuries rallied into the close as stocks fell, so the move reversed completely. Japan's 10-year yield also fell about 8 bp to below 2.93%."
+  },
+  {
+   "tag": "ENERGY",
+   "h": "Producer gasoline prices jumped 20% in one month",
+   "body": "Gasoline is up about 34% from a year ago at the consumer level, and gas stations' sales are up 28% year over year, tied to the war with Iran. Regular gasoline is about $4.33 a gallon, down from $4.47 on Sept. 28. Brent crude is near $105."
+  },
+  {
+   "tag": "PAY",
+   "h": "Six straight months of falling real wages",
+   "body": "Inflation has outpaced hourly pay since April. Real average hourly earnings are down 0.7% from a year ago."
+  },
+  {
+   "tag": "CRYPTO",
+   "h": "Bitcoin is about 35% below its October 2025 peak",
+   "body": "It trades near $81,600, and about $220 million of crypto positions were liquidated in the latest session. Ether fell more than 5%."
+  }
+ ],
+ "sources": [
+  {
+   "t": "AP: stocks fall as hotter inflation lifts yields",
+   "u": "https://www.bnnbloomberg.ca/markets/2026/10/14/us-stocks-drop-toward-their-worst-day-since-june-as-inflation-worsens/"
+  },
+  {
+   "t": "Axios: the inflation warning sign",
+   "u": "https://www.axios.com/2026/10/14/inflation-warning-sign-cpi"
+  },
+  {
+   "t": "Yahoo Finance: market live blog, Oct. 14",
+   "u": "https://finance.yahoo.com/markets/live/stock-market-today-hot-inflation-report-drops-tech-drives-sp-500-nasdaq-down-152206632.html"
+  },
+  {
+   "t": "TheStreet: stock market today, Oct. 15",
+   "u": "https://www.thestreet.com/stock-market/stock-market-today-dow-jones-sp-500-nasdaq-updates-oct-15-2026"
+  },
+  {
+   "t": "Saxo: Market Quick Take, Oct. 15",
+   "u": "https://www.home.saxo/en-sg/content/articles/macro/market-quick-take---risk-sentiment-crumbling-us-treasuries-a-safe-haven---15-october-2026-15102026"
+  },
+  {
+   "t": "Babypips: PPI and retail sales, Sept. 2026",
+   "u": "https://www.babypips.com/news/headline-us-ppi-retail-sales-september-2026-gasoline-prices-fed-outlook-2026-10-15"
+  },
+  {
+   "t": "TIKR: TSMC Q3 results",
+   "u": "https://www.tikr.com/blog/tsmc-posts-a-sixth-straight-record-quarter-and-its-q4-guide-says-the-ai-boom-isnt-slowing-heres-the-fuller-picture"
+  },
+  {
+   "t": "Investing.com: Schwab Q3 call",
+   "u": "https://www.investing.com/news/transcripts/earnings-call-transcript-charles-schwab-posts-record-q3-2026-results-but-shares-fall-93CH-4952035"
+  },
+  {
+   "t": "Investing.com: U.S. Bancorp Q3 call",
+   "u": "https://www.investing.com/news/transcripts/earnings-call-transcript-us-bancorp-tops-eps-forecasts-in-q3-2026-93CH-4952135"
+  },
+  {
+   "t": "MarketScreener: Nikkei slumps 5%",
+   "u": "https://www.marketscreener.com/news/japan-s-nikkei-slumps-5-as-tech-stocks-hammered-by-ai-rate-hike-worries-ce785dd3db89f22c"
+  },
+  {
+   "t": "TipRanks: implied earnings moves, Oct. 15",
+   "u": "https://www.tipranks.com/news/options-volatility-and-implied-earnings-moves-today-october-15-2026"
+  },
+  {
+   "t": "CNBC: CoreWeave bond yields near 15%",
+   "u": "https://www.cnbc.com/2026/10/14/coreweave-stock-bond-yields-ai-debt.html"
+  }
+ ]
+}

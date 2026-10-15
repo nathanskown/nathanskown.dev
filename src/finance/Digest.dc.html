@@ -153,10 +153,22 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
+<sc-if value="{{hasEd}}" hint-placeholder-val="{{ true }}">
+<section class="t-panel" aria-label="The read" style="border-color: #ffb84d; box-shadow: 0 0 22px rgba(255,184,77,.12)">
+<div class="t-ph"><h2>The Read</h2><span class="dim">{{edByline}}</span></div>
+<div class="t-pb">
+<div class="big" style="font-size: 38px; line-height: 1.05; color: #ffd89d; text-shadow: 0 0 12px rgba(255,184,77,.35)">{{edHeadline}}</div>
+<p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; max-width: 980px">{{edLede}}</p>
+<sc-if value="{{edStale}}" hint-placeholder-val="{{ false }}"><p style="margin: 10px 0 0; font-size: 12.5px; color: #ff9a56">{{edStale}}</p></sc-if>
+</div>
+</section>
+</sc-if>
+
 <sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
 <section class="t-panel"><div class="t-pb">The digest is built during each market-hours refresh. It will appear after the next one.</div></section>
 </sc-if>
 
+<sc-if value="{{noEd}}" hint-placeholder-val="{{ false }}">
 <section class="t-panel" aria-label="The 60-second version" style="border-color: #ffb84d; box-shadow: 0 0 22px rgba(255,184,77,.12)">
 <div class="t-ph"><h2><span class="t-pn">20)</span>The 60-Second Version</h2><span class="dim">Built from the numbers below, no editorializing</span></div>
 <div class="t-pb">
@@ -165,6 +177,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </ol>
 </div>
 </section>
+</sc-if>
 
 <section class="t-panel" aria-label="Futures and overnight markets">
 <div class="t-ph"><h2><span class="t-pn">21)</span>Futures &amp; Overnight</h2><span class="dim">vs prior close · delayed</span></div>
@@ -178,6 +191,92 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </div>
 </section>
+
+<sc-if value="{{hasEd}}" hint-placeholder-val="{{ true }}">
+
+<section class="t-panel" aria-label="Why the market moved">
+<div class="t-ph"><h2>{{edMarketTitle}}</h2><span class="dim">Context for the numbers above</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{edPoints}}" as="p" hint-placeholder-count="5">
+<div class="t-row" style="padding: 12px 0">
+<div style="font-size: 14.5px; color: #ffd89d; font-weight: 600">{{p.lead}}</div>
+<div style="font-size: 13.5px; line-height: 1.6; margin-top: 4px; max-width: 1040px">{{p.body}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-panel" aria-label="What the data is saying">
+<div class="t-ph"><h2>What the Data Is Saying</h2><span class="dim">Positive or negative for markets and the economy</span></div>
+<div class="t-pb">
+<div style="padding: 10px 12px; background: #000; border: 1px solid #ffb84d; font-size: 14px; line-height: 1.55; margin-bottom: 8px"><span style="font-size: 11px; letter-spacing: .12em; color: #000; background: #ffb84d; text-shadow: none; padding: 0 5px; margin-right: 8px">BOTTOM LINE</span>{{edBottom}}</div>
+<sc-for list="{{edData}}" as="d" hint-placeholder-count="7">
+<div class="t-row" style="display: grid; grid-template-columns: 170px 96px minmax(0, 1fr); gap: 4px 16px; padding: 12px 0; align-items: start">
+<div style="color: #ffd89d; font-weight: 600; font-size: 13.5px">{{d.n}}</div>
+<div><span style="display: inline-block; border: 1px solid {{d.color}}; color: {{d.color}}; padding: 0 8px; font-size: 11.5px; letter-spacing: .1em">{{d.label}}</span></div>
+<div>
+<div style="font-size: 13.5px; color: #ffd89d">{{d.read}}</div>
+<div style="font-size: 13px; line-height: 1.55; color: #c99442; margin-top: 3px">{{d.why}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Earnings and why they matter">
+<div class="t-ph"><h2>Earnings, and Why They Matter</h2><a href="Earnings.dc.html" style="font-size: 12px; letter-spacing: .08em">FULL CALENDAR <span class="t-k">GO</span></a></div>
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 10px">
+<sc-for list="{{edEarn}}" as="e" hint-placeholder-count="6">
+<div style="background: #000; border: 1px solid #382811; padding: 12px 14px">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline"><span><span style="font-weight: 600; color: #ffd89d; margin-right: 8px">{{e.sym}}</span>{{e.name}}</span><span style="font-size: 11.5px; color: #a87933; text-align: right">{{e.when}}</span></div>
+<div style="font-size: 12.5px; color: #c99442; margin-top: 6px; line-height: 1.5">{{e.result}}</div>
+<div style="font-size: 13.5px; line-height: 1.55; margin-top: 8px"><span style="font-size: 11px; letter-spacing: .12em; color: #000; background: #ffb84d; text-shadow: none; padding: 0 5px; margin-right: 8px">WHY IT MATTERS</span>{{e.why}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px">
+
+<section id="watch" class="t-panel" aria-label="What to watch">
+<div class="t-ph"><h2>What to Watch</h2><span class="dim">Times CT</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{edWatch}}" as="w" hint-placeholder-count="6">
+<div class="t-row" style="display: flex; gap: 14px; padding: 10px 0">
+<span style="font-size: 12.5px; color: #ffd89d; width: 82px; flex: none">{{w.t}}</span>
+<span><span style="display: block; font-size: 13.5px; color: #ffd89d">{{w.e}}</span><span style="display: block; font-size: 12.5px; line-height: 1.5; color: #c99442">{{w.why}}</span></span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Off the beaten path">
+<div class="t-ph"><h2>Off the Beaten Path</h2><span class="dim">Odd, extreme or easy to miss</span></div>
+<div class="t-pb" style="padding-top: 4px">
+<sc-for list="{{edWild}}" as="w" hint-placeholder-count="6">
+<div class="t-row" style="padding: 10px 0">
+<div style="font-size: 11px; letter-spacing: .12em; color: #a87933">{{w.tag}}</div>
+<div style="font-size: 14px; color: #ffd89d">{{w.h}}</div>
+<div style="font-size: 13px; line-height: 1.55; margin-top: 3px">{{w.body}}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+
+<section class="t-panel" aria-label="Sources">
+<div class="t-ph"><h2>Sources for the Editorial</h2><span class="dim">Written from this reporting; check the originals</span></div>
+<div class="t-pb" style="display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px">
+<sc-for list="{{edSources}}" as="u" hint-placeholder-count="8"><a href="{{u.u}}" target="_blank" rel="noopener">{{u.t}} ↗</a></sc-for>
+</div>
+</section>
+
+<div style="font-size: 12px; letter-spacing: .12em; color: #c99442; padding-top: 6px">LIVE DATA BELOW · REFRESHED WITH EACH MARKET-HOURS UPDATE</div>
+
+</sc-if>
+
+
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px">
 
@@ -247,7 +346,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px">
 
-<section id="watch" class="t-panel" aria-label="Things to watch today">
+<sc-if value="{{noEd}}" hint-placeholder-val="{{ false }}">
+<section id="watch-live" class="t-panel" aria-label="Things to watch today">
 <div class="t-ph"><h2><span class="t-pn">25)</span>Things to Watch Today</h2><span class="dim">From the calendar and earnings schedule</span></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="6">
@@ -258,6 +358,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </div>
 </section>
+</sc-if>
 
 <section class="t-panel" aria-label="Market breadth and levels">
 <div class="t-ph"><h2><span class="t-pn">26)</span>Breadth &amp; Key Levels</h2><span class="dim">Prior close vs. 50- and 200-day averages</span></div>
@@ -342,6 +443,7 @@ class Component extends DCLogic {
   componentDidMount() {
     var self = this;
     DC.load('/data/finance/digest.json').then(function (j) { self.setState({ digest: j }); }).catch(function () { self.setState({ err: true }); });
+    DC.load('/data/finance/editorial.json').then(function (j) { self.setState({ ed: j }); }).catch(function () {});
     this.timer = setInterval(function () {
       DC.load('/data/finance/digest.json').then(function (j) { self.setState({ digest: j }); }).catch(function () {});
     }, 300000);
@@ -351,6 +453,10 @@ class Component extends DCLogic {
     var UP = '#4ade80', DN = '#ff5f56', FLAT = '#ffd89d';
     var st = this.state || {};
     var D = st.digest || {};
+    var ED = st.ed || null;
+    var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
+    var edDateLabel = '';
+    if (ED && ED.date) { try { edDateLabel = new Date(ED.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {} }
     var CT = window.TZ;
     var num = function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); };
     var sgn = function (v, d, suf) { return v === null || v === undefined || isNaN(v) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d) + (suf || ''); };
@@ -383,7 +489,15 @@ class Component extends DCLogic {
       });
     });
     var br = D.breadth;
+    var stale = ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the live data below is current.' : '';
     return {
+      hasEd: !!ED, noEd: !ED,
+      edHeadline: ED ? ED.headline : '', edLede: ED ? ED.lede : '', edStale: stale,
+      edByline: ED ? 'Written by Claude for ' + edDateLabel + ' · ' + tm(ED.written) + ' CT' : '',
+      edMarketTitle: ED && ED.market ? ED.market.title : '', edPoints: ED && ED.market ? ED.market.points : [],
+      edBottom: ED && ED.data ? ED.data.bottom : '',
+      edData: ED && ED.data ? ED.data.rows.map(function (r) { var g = SIG[r.signal] || SIG.mix; return { n: r.n, read: r.read, why: r.why, label: g[0], color: g[1] }; }) : [],
+      edEarn: ED ? ED.earnings || [] : [], edWatch: ED ? ED.watch || [] : [], edWild: ED ? ED.wild || [] : [], edSources: ED ? ED.sources || [] : [],
       crt: this.props.crt ?? true,
       dateTitle: dateTitle,
       updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL : '',
