@@ -14,7 +14,7 @@
      Only needed for Guess the Track in live mode.
    ============================================================ */
 window.MUSIC_CONFIG = {
-  MODE: "mock",
-  WORKER_URL: "",
+  MODE: "live",
+  WORKER_URL: "https://music-api.nskown.workers.dev",
   ROUND_SIZE: 5
 };
