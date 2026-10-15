@@ -388,11 +388,10 @@
     var v5 = Math.floor(Date.now() / 300000);
     var j = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
     var TILES = [['spx', 'S&P 500', 2], ['ixic', 'NASDAQ', 2], ['tnx', 'US 10Y', 2], ['vix', 'VIX', 2]];
-    // Detroit first, then MSU, in the order they matter
-    var TEAMS = [
-      ['Lions', 'football/nfl', '8', 'lions'], ['Tigers', 'baseball/mlb', '6', 'tigers'], ['Pistons', 'basketball/nba', '8', 'pistons'],
-      ['Red Wings', 'hockey/nhl', '5', 'red-wings'], ['MSU Hoops', 'basketball/mens-college-basketball', '127', 'msu-basketball'],
-      ['MSU Football', 'football/college-football', '127', 'msu-football'], ['MSU Hockey', 'hockey/mens-college-hockey', '127', 'msu-hockey']];
+    // league-wide scoreboards (trimmed by the site's ESPN proxy); Detroit + MSU games are highlighted
+    var LGS = [['NFL', 'football/nfl', 'nfl'], ['MLB', 'baseball/mlb', 'mlb'], ['NBA', 'basketball/nba', 'nba'], ['NHL', 'hockey/nhl', 'nhl'],
+      ['CFB', 'football/college-football', 'ncaaf'], ['CBB', 'basketball/mens-college-basketball', 'ncaab']];
+    var MINE = { nfl: '8', mlb: '6', nba: '8', nhl: '5', ncaaf: '127', ncaab: '127' };
     var mk = '', games = '';
     function render() { box.innerHTML = mk + games; }
     function when(iso) {
@@ -414,29 +413,36 @@
       if (asof && d.asOf) asof.textContent = 'As of ' + new Date(d.asOf * 1000).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ' CT';
       render();
     }).catch(function () { mk = ''; render(); });
-    // next game for each team, then show the soonest few
-    Promise.all(TEAMS.map(function (t) {
-      return j('/api/espn/site/v2/sports/' + t[1] + '/teams/' + t[2] + '/schedule').then(function (s) {
-        var now = Date.now();
-        var next = (s.events || []).map(function (e) {
+    var day = function (ms) { return new Date(ms).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }); };
+    Promise.all(LGS.map(function (L) {
+      return j('/api/espn/site/v2/sports/' + L[1] + '/scoreboard').then(function (sb) {
+        return (sb.events || []).map(function (e) {
           var c = (e.competitions || [])[0] || {}, st = ((c.status || {}).type || {});
-          var cs = c.competitors || [], me = cs.filter(function (x) { return String((x.team || {}).id) === t[2]; })[0] || {}, op = cs.filter(function (x) { return x !== me; })[0] || {};
-          var sc = function (x) { return x.score && typeof x.score === 'object' ? x.score.displayValue : (x.score || ''); };
-          return { t: t, at: Date.parse(e.date), state: st.state, detail: st.shortDetail || '', home: me.homeAway === 'home',
-            opp: ((op.team || {}).abbreviation || (op.team || {}).shortDisplayName || 'TBD'), my: sc(me), their: sc(op) };
-        }).filter(function (g) { return g.state === 'in' || (g.state === 'pre' && g.at > now - 3600000); })
-          .sort(function (a, b) { return (a.state === 'in' ? -1 : 0) - (b.state === 'in' ? -1 : 0) || a.at - b.at; })[0];
-        return next || null;
-      }).catch(function () { return { err: true }; });
-    })).then(function (list) {
-      var week = Date.now() + 8 * 86400000;
-      var failed = list.every(function (g) { return g && g.err; });
-      var up = list.filter(function (g) { return g && !g.err && (g.state === 'in' || g.at < week); })
-        .sort(function (a, b) { return (a.state === 'in' ? -1 : 0) - (b.state === 'in' ? -1 : 0) || a.at - b.at; }).slice(0, 5);
-      games = '<dt class="nk-now-h">NEXT UP · DETROIT + MSU</dt>' + (up.length ? up.map(function (g) {
-        var right = g.state === 'in' ? '<span class="nk-live">LIVE ' + esc(g.my) + '–' + esc(g.their) + ' · ' + esc(g.detail) + '</span>' : esc(when(g.at));
-        return '<a href="/sports/team/' + g.t[3] + '/"><span>' + esc(g.t[0].toUpperCase()) + (g.home ? ' vs ' : ' @ ') + esc(g.opp) + '</span><span>' + right + '</span></a>';
-      }).join('') : '<dd class="nk-now-note">' + (failed ? 'Schedules are unavailable right now.' : 'No Detroit or MSU games in the next week.') + '</dd>');
+          var cs = c.competitors || [];
+          var home = cs.filter(function (x) { return x.homeAway === 'home'; })[0] || cs[1] || {}, away = cs.filter(function (x) { return x.homeAway === 'away'; })[0] || cs[0] || {};
+          var ab = function (x) { return ((x.team || {}).abbreviation || (x.team || {}).shortDisplayName || '?'); };
+          var sc = function (x) { return x.score && typeof x.score === 'object' ? x.score.displayValue : (x.score == null ? '' : x.score); };
+          var mine = cs.some(function (x) { return String((x.team || {}).id) === MINE[L[2]]; });
+          return { L: L, id: e.id, at: Date.parse(e.date), state: st.state, done: !!st.completed, detail: st.shortDetail || '', away: ab(away), home: ab(home),
+            as: sc(away), hs: sc(home), mine: mine };
+        });
+      }).catch(function () { return null; });
+    })).then(function (lists) {
+      var failed = lists.every(function (x) { return x === null; });
+      var all = [].concat.apply([], lists.filter(Boolean));
+      var today = day(Date.now()), soon = Date.now() + 36 * 3600000;
+      var live = all.filter(function (g) { return g.state === 'in'; });
+      var next = all.filter(function (g) { return g.state === 'pre' && g.at < soon; }).sort(function (a, b) { return a.at - b.at; });
+      var fin = all.filter(function (g) { return g.state === 'post' && day(g.at) === today; }).sort(function (a, b) { return b.at - a.at; });
+      var pickMine = function (xs) { return xs.filter(function (g) { return g.mine; }).concat(xs.filter(function (g) { return !g.mine; })); };
+      var rows = pickMine(live).concat(pickMine(next).slice(0, 4), fin).slice(0, 8);
+      var head = '<dt class="nk-now-h">SPORTS · ' + (live.length ? live.length + ' LIVE NOW' : 'TODAY') + '</dt>';
+      games = head + (rows.length ? rows.map(function (g) {
+        var left = '<b class="nk-lg">' + g.L[0] + '</b> ' + (g.state === 'pre' ? esc(g.away) + ' @ ' + esc(g.home) : esc(g.away) + ' ' + esc(g.as) + ' @ ' + esc(g.home) + ' ' + esc(g.hs));
+        var right = g.state === 'in' ? '<span class="nk-live">' + esc(g.detail) + '</span>' : g.state === 'pre' ? esc(when(g.at)) : 'FINAL';
+        return '<a class="' + (g.mine ? 'nk-mine' : '') + '" href="/sports/game/?lg=' + g.L[2] + '&amp;id=' + encodeURIComponent(g.id) + '"><span>' + left + '</span><span>' + right + '</span></a>';
+      }).join('') : '<dd class="nk-now-note">' + (failed ? 'Scores are unavailable right now.' : 'No games in the next day and a half.') + '</dd>')
+        + '<a class="nk-now-more" href="/sports/"><span>All scores &amp; schedules</span><span>SCOR ›</span></a>';
       render();
     });
   })();
