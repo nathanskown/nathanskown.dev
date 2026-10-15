@@ -168,3 +168,31 @@ def index_members(page):
                 out.append({"sym": sym, "name": row[name] if name is not None else sym, "sector": row[sec]})
         return out
     raise RuntimeError(f"no constituents table on {page}")
+
+
+ISHARES = {
+    "r1000": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/1467271812596.ajax?fileType=csv&fileName=IWB_holdings&dataType=fund",
+    "r2000": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/1467271812596.ajax?fileType=csv&fileName=IWM_holdings&dataType=fund",
+}
+# iShares writes share classes without the dot (BRKB); Yahoo and the SEC list use BRK-B
+ISHARES_FIX = {"BRKB": "BRK-B", "BFB": "BF-B", "BFA": "BF-A", "LENB": "LEN-B", "HEIA": "HEI-A", "MOGA": "MOG-A",
+               "UHALB": "UHAL-B", "CWENA": "CWEN-A", "GEFB": "GEF-B", "CRDA": "CRD-A", "LGFA": "LGF-A", "LGFB": "LGF-B"}
+
+
+def russell_members(key):
+    """Russell 1000 / 2000 constituents from the iShares IWB / IWM daily holdings file -> [ticker]."""
+    import csv as _csv
+    text = get(ISHARES[key], kind="text", timeout=40)
+    lines = text.splitlines()
+    start = next((i for i, ln in enumerate(lines) if ln.startswith("Ticker,")), None)
+    if start is None:
+        raise RuntimeError(f"no holdings table in iShares {key} file")
+    out = []
+    for row in _csv.DictReader(lines[start:]):
+        t = (row.get("Ticker") or "").strip().upper()
+        if not t or t == "-" or (row.get("Asset Class") or "").strip() != "Equity":
+            continue
+        out.append(ISHARES_FIX.get(t, t.replace(".", "-")))
+    if len(out) < (800 if key == "r1000" else 1500):
+        raise RuntimeError(f"iShares {key} list looks short: {len(out)}")
+    return sorted(set(out))

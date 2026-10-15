@@ -66,13 +66,27 @@ def build_members():
             out["names"].setdefault(x["sym"], x["name"])
     if not out["sp500"]:
         raise RuntimeError("S&P 500 list empty")
+    old = read("members.json", {}) or {}
+    for key in ("r1000", "r2000"):  # Russell lists from iShares; keep yesterday's list if today's download fails
+        out[key] = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None) or old.get(key, [])
     write("members.json", out)
     return out
 
 
-NOTABLE = ("acquire", "acquisition", "merger", "to buy", "takeover", "guidance", "outlook", "bankrupt", "chapter 11",
-           "ceo", "resign", "steps down", "buyback", "repurchase", "activist", "layoff", "recall", "fda", "downgrade",
-           "upgrade", "record", "rate cut", "rate hike", "fomc", "tariff", "probe", "lawsuit", "settle", "13d")
+# "Notable": a whole-word match on market-moving terms, never on spam (class-action ads, market-size reports),
+# and a press release only counts when it names a listed company. Same rule as worker/live.js and the pages.
+NOTABLE_RE = __import__("re").compile(r"\b(acquires?|acquired|acquisition|merger|to buy|buyout|takeover|bankrupt(cy)?|chapter 11|guidance|outlook|forecast|recalls?|subpoena|sec charges|fda (approv|clear)\w*|fomc|rate (cut|hike|decision)s?|tariffs?|downgrades?d?|upgrades?d?|layoffs?|job cuts|ceo|cfo|resigns?|steps down|buyback|repurchase|stock split|ipo|trading halt|halts trading|outage|data breach|activist|13d|beats|misses|earnings)\b", __import__("re").I)
+SPAM_RE = __import__("re").compile(r"lost money|who lost|class action|securities fraud|law firm|attorney|investigation on behalf|investors who|reminds investors|shareholder alert|deadline|recover losses|market to reach|market size|cagr|webinar", __import__("re").I)
+
+
+def is_notable(title, kind, tickers):
+    if SPAM_RE.search(title or ""):
+        return False
+    if kind == "Press release" and not tickers:
+        return False
+    return bool(NOTABLE_RE.search(title or ""))
+
+
 ITEM_NOTABLE = ("1.01", "1.03", "2.01", "2.02", "2.05", "2.06", "4.02", "5.02")
 
 
@@ -108,7 +122,7 @@ def headlines():
                         tick.add(c2t[int(m.group(1))])
                     items_hit = any(("Item " + x) in summ for x in ITEM_NOTABLE) or "13D" in title
                     title = re.sub(r"\s*\(\d{6,10}\)\s*\((Filer|Subject)\)", "", title)
-                notable = items_hit or any(k in low for k in NOTABLE)
+                notable = items_hit or is_notable(title, kind, tick)
                 seen[it["link"]] = {"title": title[:240], "link": it["link"], "source": src, "type": kind,
                                     "published": it.get("published") or now_iso(), "firstSeen": now_iso(),
                                     "tickers": sorted(t.replace(".", "-") for t in tick)[:6], "notable": notable}
@@ -147,6 +161,7 @@ def market():
     write("dashboard.json", {"updated": now_iso(), "asOf": asof, "tiles": tiles, "sectors": sectors, "movers": movers,
                              "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8]})
     attempt("prediction-market odds", odds)
+    attempt("earnings season (same-day results)", earnings, mem, True)
     attempt("market digest", digest)
 
 
@@ -253,6 +268,9 @@ def quote_page(sym, info, mem, spx_daily, cal):
     news = attempt(f"news {sym}", mi.feed, f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={sym}&region=US&lang=en-US", default=[]) or []
     idx = [{"name": "S&P 500", "member": sym in mem.get("sp500", [])}, {"name": "S&P MidCap 400", "member": sym in mem.get("sp400", [])},
            {"name": "S&P SmallCap 600", "member": sym in mem.get("sp600", [])}]
+    if mem.get("r1000") or mem.get("r2000"):
+        idx += [{"name": "Russell 1000", "member": sym in mem.get("r1000", [])},
+                {"name": "Russell 2000", "member": sym in mem.get("r2000", [])}]
     eight_k = [{"date": f["filingDate"], "items": f.get("items"), "url": sec.filing_url(cik, f["accessionNumber"], f["primaryDocument"])}
                for f in filings if f["form"] == "8-K"][:6]
     return {"sym": sym, "name": q["name"] or title, "exch": q["exch"], "sector": mem.get("sectors", {}).get(sym) or (sub or {}).get("sicDescription"),
@@ -306,7 +324,8 @@ def _season(d):
     return qend, f"Q{q} {qend.year}"
 
 
-def earnings(mem):
+def earnings(mem, live=False):
+    """Earnings season. live=True (hourly market job) refetches only today and yesterday so reports land the same day."""
     sp = set(mem.get("sp500", []))
     sect = mem.get("sectors", {})
     d0 = today()
@@ -318,16 +337,33 @@ def earnings(mem):
     while day <= max(end, d0 + timedelta(days=14)):
         if day.weekday() < 5:
             key = ds(day)
-            if key in cache.get("days", {}) and day < d0 - timedelta(days=3):
+            fresh_needed = day >= d0 - timedelta(days=1) if live else day >= d0 - timedelta(days=3)
+            if key in cache.get("days", {}) and not fresh_needed:
                 days[key] = cache["days"][key]
             else:
                 rows = attempt(f"nasdaq earnings {key}", mi.earnings_day, key, default=None)
                 days[key] = rows if rows is not None else cache.get("days", {}).get(key, [])
         day += timedelta(days=1)
     record("nasdaq earnings calendar", True, n=sum(len(v) for v in days.values()))
-    moves = cache.get("moves", {})
+    # v2: reports with no time given now use the same-session window, so moves cached by the old rule are redone
+    moves = cache.get("moves", {}) if cache.get("movesV") == 2 else {}
+    # Nasdaq drops the report time, estimate count and year-ago EPS from some rows once results are in. Remember
+    # what earlier fetches said for each report so those fields stay filled.
+    memo = cache.get("memo", {})
+    for v in days.values():
+        for x in v:
+            k = f"{x['sym']}:{x['date']}"
+            m = memo.setdefault(k, {})
+            for f in ("when", "nEst", "lastYearEps"):
+                val = x.get(f)
+                if val not in (None, "—"):
+                    m[f] = val
+                elif m.get(f) is not None:
+                    x[f] = m[f]
+    memo = {k: v for k, v in memo.items() if k.split(":")[-1] >= ds(start - timedelta(days=7))}
     rows = [x for v in days.values() for x in v if x["sym"] in sp]
     reported = [x for x in rows if x["date"] <= ds(d0) and x["eps"] is not None and x["est"] is not None]
+    live_moves = {}
     for x in reported:
         key = f"{x['sym']}:{x['date']}"
         if key in moves:
@@ -337,16 +373,23 @@ def earnings(mem):
             dts = [datetime.fromtimestamp(ts, timezone.utc).date().isoformat() for ts in ch["t"]]
             if x["date"] in dts:
                 i = dts.index(x["date"])
-                a, b = (i - 1, i) if x["when"] == "BMO" else (i, i + 1)
+                # AMC reports trade the next session. BMO, and reports with no time given (mostly banks and
+                # industrials, which report before the open), trade the same session.
+                a, b = (i, i + 1) if x["when"] == "AMC" else (i - 1, i)
                 if a >= 0 and b < len(ch["c"]):
-                    moves[key] = r((ch["c"][b] / ch["c"][a] - 1) * 100, 2)
+                    mv = r((ch["c"][b] / ch["c"][a] - 1) * 100, 2)
+                    if dts[b] >= ds(d0):   # today's session isn't over: show it, but don't freeze it in the cache
+                        live_moves[key] = mv
+                    else:
+                        moves[key] = mv
         except Exception as e:
             print("move skip", key, e)
     beats = [x for x in reported if x["eps"] >= x["est"]]
     surpr = [(x["eps"] - x["est"]) / abs(x["est"]) * 100 for x in reported if x["est"]]
     growth = [(x["eps"] - x["lastYearEps"]) / abs(x["lastYearEps"]) * 100 for x in reported if x.get("lastYearEps")]
-    mv_b = [moves[f"{x['sym']}:{x['date']}"] for x in beats if moves.get(f"{x['sym']}:{x['date']}") is not None]
-    mv_m = [moves[f"{x['sym']}:{x['date']}"] for x in reported if x not in beats and moves.get(f"{x['sym']}:{x['date']}") is not None]
+    allmv = {**moves, **live_moves}
+    mv_b = [allmv[f"{x['sym']}:{x['date']}"] for x in beats if allmv.get(f"{x['sym']}:{x['date']}") is not None]
+    mv_m = [allmv[f"{x['sym']}:{x['date']}"] for x in reported if x not in beats and allmv.get(f"{x['sym']}:{x['date']}") is not None]
     by_sec = defaultdict(lambda: [0, 0])
     for x in reported:
         s = sect.get(x["sym"], "Other")
@@ -364,7 +407,7 @@ def earnings(mem):
     recent_out = []
     for x in recent:
         key = f"{x['sym']}:{x['date']}"
-        recent_out.append({**x, "sector": sect.get(x["sym"]), "move": moves.get(key),
+        recent_out.append({**x, "sector": sect.get(x["sym"]), "move": allmv.get(key), "moveLive": key in live_moves,
                            "beat": x["eps"] >= x["est"], "surprisePct": r((x["eps"] - x["est"]) / abs(x["est"]) * 100, 1) if x["est"] else None})
     upcoming = sorted([x for x in rows if ds(d0) <= x["date"] <= ds(d0 + timedelta(days=14))],
                       key=lambda x: (x["date"], -(x["mcap"] or 0)))
@@ -374,7 +417,7 @@ def earnings(mem):
         if len(per_day[x["date"]]) < 6:
             per_day[x["date"]].append({**x, "sector": sect.get(x["sym"])})
     themes = headline_themes()
-    write("earnings_cache.json", {"days": {k: v for k, v in days.items()}, "moves": moves})
+    write("earnings_cache.json", {"days": {k: v for k, v in days.items()}, "moves": moves, "movesV": 2, "memo": memo})
     all_cal = [x for v in days.values() for x in v]
     out = {"updated": now_iso(), "season": {"label": label, "qend": ds(qend), "start": ds(start)},
            "progress": {"reported": len(reported), "total": len(sp), "scheduled": len({x["sym"] for x in rows})},
@@ -393,11 +436,14 @@ def earnings(mem):
 def headline_themes():
     items = (read("headlines.json", {}) or {}).get("items", [])
     cut = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
-    week = [h for h in items if h["published"] >= cut]
+    # news coverage only: press releases (market-size reports, class-action ads) would drown the signal
+    week = [h for h in items if h["published"] >= cut and h.get("type") == "Publication"]
     if not week:
         return None
+    since = min(h["published"] for h in week)
     terms = {"tariff": r"tariff", "AI": r"\bai\b|artificial intelligence", "recession": r"recession", "layoffs": r"layoff|job cuts",
-             "rate cut": r"rate cut|cut rates", "inflation": r"inflation"}
+             "rate cut": r"rate cuts?|cut rates", "rate hike": r"rate hikes?|hike rates|raise rates", "inflation": r"inflation|\bcpi\b",
+             "Fed": r"\bfed\b|fomc|powell"}
     import re
     out = []
     for name, pat in terms.items():
@@ -405,7 +451,7 @@ def headline_themes():
         out.append({"term": name, "n": n, "share": r(n / len(week) * 100, 1)})
     raised = sum(1 for h in week if re.search(r"(raises|raised|boosts|lifts).*(guidance|outlook|forecast)", h["title"], re.I))
     lowered = sum(1 for h in week if re.search(r"(lowers|cuts|reduces|slashes).*(guidance|outlook|forecast)", h["title"], re.I))
-    return {"n": len(week), "terms": sorted(out, key=lambda x: -x["n"]), "raised": raised, "lowered": lowered}
+    return {"n": len(week), "since": since, "terms": sorted(out, key=lambda x: -x["n"]), "raised": raised, "lowered": lowered}
 
 
 # =====================================================================================
@@ -485,8 +531,16 @@ def ipos():
             x["vs"] = "Above" if x["price"] > lo_hi[0] else ("Below" if x["price"] < lo_hi[0] else "Within")
         else:
             x["vs"] = None
-    d1s = [x["d1"] for x in ytd if x["d1"] is not None]
-    since = [x for x in ytd if x["since"] is not None]
+    # SPACs list at $10 and trade near trust value, so they would drag every average toward zero:
+    # stats below cover operating companies only; SPACs are counted separately and flagged in the tables.
+    import re as _re
+    for x in priced:
+        nm, sy = x.get("name") or "", x.get("sym") or ""
+        x["spac"] = bool(_re.search(r"\bacquisition (corp|corporation|company|co)\b|\bblank check\b|\bspac\b", nm, _re.I)
+                         or (x.get("price") == 10 and sy.endswith("U")))
+    ops = [x for x in ytd if not x["spac"]]
+    d1s = [x["d1"] for x in ops if x["d1"] is not None]
+    since = [x for x in ops if x["since"] is not None]
     by_month = Counter(x["date"][:7] for x in ytd)
     lockups = []
     for x in priced:
@@ -495,14 +549,15 @@ def ipos():
             lp = (latest.get(x["sym"]) or {}).get("price")
             lockups.append({**x, "lockup": ds(lu), "vsIpo": r((lp / x["price"] - 1) * 100, 1) if lp and x["price"] else None})
     lockups.sort(key=lambda x: x["lockup"])
-    vs = Counter(x["vs"] for x in ytd if x["vs"])
+    vs = Counter(x["vs"] for x in ops if x["vs"])
     write("ipo_cache.json", {"ranges": ranges, "first": first})
     write("ipo.json", {
         "updated": now_iso(), "year": d0.year,
         "score": {"n": len(ytd), "proceeds": r(sum(x["proceeds"] or 0 for x in ytd), 0),
                   "avgD1": r(statistics.mean(d1s), 1) if d1s else None, "medD1": r(statistics.median(d1s), 1) if d1s else None,
                   "above": r(sum(1 for x in since if x["since"] > 0) / len(since) * 100, 0) if since else None,
-                  "medSize": r(statistics.median([x["proceeds"] for x in ytd if x["proceeds"]]), 0) if ytd else None,
+                  "medSize": r(statistics.median([x["proceeds"] for x in ops if x["proceeds"]]), 0) if any(x["proceeds"] for x in ops) else None,
+                  "nOps": len(ops), "nSpac": len(ytd) - len(ops),
                   "withdrawn": len([x for x in withdrawn if (x["date"] or "") >= f"{d0.year}-01-01"]),
                   "measuredD1": len(d1s)},
         "months": [{"m": f"{d0.year}-{k:02d}", "n": by_month.get(f"{d0.year}-{k:02d}", 0)} for k in range(1, d0.month + 1)],
@@ -520,9 +575,52 @@ SERIES = ["CPIAUCSL", "CPILFESL", "CPIAUCNS", "CPILFENS", "PCEPILFE", "UNRATE", 
           "BAMLH0A0HYM2", "ICSA", "RSAFS", "UMCSENT", "SAHMREALTIME", "FEDFUNDS", "USREC", "DFEDTARL", "DFEDTARU",
           "CUSR0000SAH1", "CUSR0000SASL2RS", "CPIUFDSL", "CUSR0000SACL1E", "CPIENGSL",
           "JTSJOL", "JTSQUR", "CES0500000003", "CIVPART", "CCSA", "LNS12300060"]
-MAJOR = ("consumer price", "employment situation", "gross domestic", "personal income", "retail", "industrial production",
-         "producer price", "job openings", "unemployment insurance", "new residential construction", "fomc", "existing home",
-         "durable goods", "university of michigan")
+# Market-moving releases only, with their usual release time (New York). FRED's calendar lists many minor
+# series and a "FOMC Press Release" entry for every day, so the list is matched by name, not taken whole.
+MAJOR_RELEASES = [
+    ("consumer price index", "Consumer Price Index (CPI)", "08:30"),
+    ("employment situation", "Jobs report (Employment Situation)", "08:30"),
+    ("gross domestic product", "GDP", "08:30"),
+    ("personal income and outlays", "Personal income & PCE inflation", "08:30"),
+    ("advance monthly sales for retail", "Retail sales", "08:30"),
+    ("producer price index", "Producer Price Index (PPI)", "08:30"),
+    ("unemployment insurance weekly claims report", "Initial jobless claims", "08:30"),
+    ("new residential construction", "Housing starts", "08:30"),
+    ("advance report on durable goods", "Durable goods orders", "08:30"),
+    ("g.17 industrial production", "Industrial production", "09:15"),
+    ("job openings and labor turnover", "JOLTS job openings", "10:00"),
+    ("existing home sales", "Existing home sales", "10:00"),
+    ("surveys of consumers", "UMich consumer sentiment", "10:00"),
+    ("university of michigan", "UMich consumer sentiment", "10:00"),
+]
+
+
+def curate_calendar(cal, fomc_dates):
+    """FRED release dates -> [{date, name, et, at}] for major releases on weekdays, plus FOMC decisions from config."""
+    from zoneinfo import ZoneInfo
+    ny = ZoneInfo("America/New_York")
+    out, seen = [], set()
+    for c in cal:
+        nm = (c.get("name") or "").lower()
+        hit = next((x for x in MAJOR_RELEASES if nm.startswith(x[0])), None)
+        if not hit:
+            continue
+        d = date.fromisoformat(c["date"])
+        if d.weekday() >= 5 or (c["date"], hit[1]) in seen:
+            continue
+        seen.add((c["date"], hit[1]))
+        out.append({"date": c["date"], "name": hit[1], "et": hit[2], "id": c.get("id")})
+    first = min((c["date"] for c in cal), default=ds(today()))
+    last_ = max((c["date"] for c in cal), default=first)
+    for d in fomc_dates:
+        if first <= d <= last_:
+            out.append({"date": d, "name": "FOMC rate decision", "et": "14:00", "id": None})
+    for c in out:
+        hh, mm = map(int, c["et"].split(":"))
+        y, mo, dd = map(int, c["date"].split("-"))
+        c["at"] = datetime(y, mo, dd, hh, mm, tzinfo=ny).astimezone(timezone.utc).isoformat()
+    out.sort(key=lambda c: c["at"])
+    return out
 
 
 def _yoy(obs, lag=12):
@@ -703,7 +801,7 @@ def macro():
             a, b, d1 = f"{o[-1][1]:.1f}" + ("%" if sid == "UNRATE" else ""), f"{o[-2][1]:.1f}" + ("%" if sid == "UNRATE" else ""), o[-1][0]
         latest.append({"n": label, "id": sid, "act": a, "prior": b, "period": d1})
     cal = attempt("fred release calendar", mi.fred_release_calendar, default=[]) or []
-    cal = [c for c in cal if any(k in (c["name"] or "").lower() for k in MAJOR)]
+    cal = curate_calendar(cal, CONFIG.get("fomc_2026", []))
     fomc = next((d for d in CONFIG.get("fomc_2026", []) if d >= ds(today())), None)
     write("macro.json", {"updated": now_iso(), "keyed": bool(mi.FRED_KEY), "tiles": tiles, "history": history,
                          "recessions": recessions, "signals": signals, "infl": infl, "labor": labor, "latest": latest,

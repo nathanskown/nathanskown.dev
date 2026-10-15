@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">HDS &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -179,7 +178,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
 <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{ticker}}</span>
 <span style="font-size: 18px; font-weight: 600; color: #FFD89D">{{d.name}}</span>
-<span style="color: #C99442; font-size: 13.5px">{{d.so}} shares outstanding</span>
+<span style="color: #C99442; font-size: 13.5px">{{d.so}} shares outstanding at quarter end</span>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
 <span style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13px">{{periodLabel}}</span>
@@ -243,7 +242,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Top holders" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Top 10 institutional holders</h2>
-<span style="color: #A87933; font-size: 12.5px">Value at the latest close of {{d.px}}</span>
+<span style="color: #A87933; font-size: 12.5px">{{d.pxLabel}}</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 760px; font-size: 14px">
@@ -300,7 +299,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 
 <section aria-label="About this data" style="font-size: 13px; color: #A87933; line-height: 1.6; max-width: 900px">
-13F filings show long US equity positions for managers with $100M+ in assets, filed within 45 days of quarter end. They miss short positions, non-US holders, retail and most changes since quarter end, so treat them as a lagged snapshot. A 13D or 13G filing can reveal a big move sooner.
+13F filings show long US equity positions for managers with $100M+ in assets, filed within 45 days of quarter end. They miss short positions, non-US holders, retail and most changes since quarter end, so treat them as a lagged snapshot. A 13D or 13G filing can reveal a big move sooner. Ownership can top 100%: lent shares are reported by both the lender's manager and the buyer of the borrowed shares, and some holdings are counted by two filers. Buyers, sellers and net flow only compare managers whose filings for both quarters are complete, and group a firm's legal entities (e.g. T. Rowe Price) under one name.
 </section>
 
 </div>
@@ -324,7 +323,8 @@ class Component extends DCLogic {
     var self = this;
     DC.load('/data/finance/ownership/index.json').then(function (j) {
       self.setState({ index: j });
-      var t = String((self.state || {}).ticker || (j.tickers[0] || {}).sym || '').toUpperCase();
+      var s0 = self.state || {};
+      var t = String(s0.ticker || s0.sym || (j.tickers[0] || {}).sym || '').toUpperCase();
       if (t) self.go(t);
     }).catch(function () { self.setState({ err: true }); });
   }
@@ -335,8 +335,18 @@ class Component extends DCLogic {
     var idx = (this.state || {}).index || { tickers: [] };
     var known = (idx.all || []).indexOf(t) >= 0 || idx.tickers.some(function (x) { return x.sym === t; });
     if (!known) { this.setState({ notFound: t }); return; }
-    DC.load('/data/finance/ownership/' + encodeURIComponent(t) + '.json').then(function (d) { self.setState({ d: d, notFound: null }); })
-      .catch(function () { self.setState({ notFound: t }); });
+    try { history.replaceState(null, '', location.pathname + '?ticker=' + encodeURIComponent(t)); } catch (e) { /* ignore */ }
+    DC.load('/data/finance/ownership/' + encodeURIComponent(t) + '.json').then(function (d) {
+      self.setState({ d: d, notFound: null });
+      // pages outside the core list have no saved price: fetch one so the value column fills in
+      if (!d.price) fetch('/api/quote?part=price&sym=' + encodeURIComponent(t)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        var px = j && j.quote && j.quote.price;
+        if (!px || (self.state || {}).ticker !== t) return;
+        d.price = px; d.livePrice = true;
+        d.top.forEach(function (h) { h.val = h.sh * px; });
+        self.setState({ d: d });
+      }).catch(function () { /* leave values blank */ });
+    }).catch(function () { self.setState({ notFound: t }); });
   }
   renderVals() {
     var UP = '#4ADE80', DN = '#FF5F56';
@@ -370,8 +380,8 @@ class Component extends DCLogic {
     var tiles = [
       { label: 'Institutional ownership', value: T.inst === null || T.inst === undefined ? '—' : F.n(T.inst, 1) + '%', sub: sgn(T.instChg, function (x) { return x.toFixed(1); }) + ' pts vs. ' + quarter(D.prior), color: '#FFD89D' },
       { label: '13F holders', value: F.n(T.holders, 0), sub: sgn(T.holdersChg, String) + ' vs. ' + quarter(D.prior), color: '#FFD89D' },
-      { label: 'Net institutional flow', value: sgn(T.net, F.big), sub: 'shares, ' + quarter(D.period) + ' vs. ' + quarter(D.prior), color: T.net >= 0 ? UP : DN },
-      { label: 'New / closed positions', value: T.new + ' / ' + T.closed, sub: 'filers this quarter', color: '#FFD89D' },
+      { label: 'Net institutional flow', value: sgn(T.net, F.big), sub: 'shares, ' + quarter(D.period) + ' vs. ' + quarter(D.prior) + ' · managers filing both', color: T.net >= 0 ? UP : DN },
+      { label: 'New / closed positions', value: T.new + ' / ' + T.closed, sub: 'managers opening / exiting (net ' + sgn(T.new - T.closed, String) + ')', color: '#FFD89D' },
       { label: 'Top 10 concentration', value: T.top10 === null || T.top10 === undefined ? '—' : F.n(T.top10, 1) + '%', sub: 'of shares outstanding', color: '#FFD89D' },
       { label: 'Index fund share', value: T.passive === null || T.passive === undefined ? '—' : F.n(T.passive, 1) + '%', sub: 'passive ownership', color: '#FFD89D' }
     ];
@@ -396,7 +406,8 @@ class Component extends DCLogic {
     var period = new Date(D.period + 'T12:00:00Z');
     var due = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 0) + 45 * 86400000);
     var nxt = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 4, 0) + 45 * 86400000);
-    base.d = { name: D.name, so: F.big(D.so), px: D.price ? F.usd(D.price, 2) : '—', read: D.read, tiles: tiles, trend: trend, mix: mix, top: top,
+    base.d = { name: D.name, so: F.big(D.so), px: D.price ? F.usd(D.price, 2) : '—',
+      pxLabel: D.price ? (D.livePrice ? 'Value at the latest price of ' : 'Value at the latest close of ') + F.usd(D.price, 2) : 'Value: price unavailable', read: D.read, tiles: tiles, trend: trend, mix: mix, top: top,
       buyers: D.buyers.map(mv), sellers: D.sellers.map(mv) };
     base.periodLabel = 'Holdings as of ' + period.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) + ' (' + quarter(D.period) + ')';
     base.nextLabel = quarter(new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 28)).toISOString().slice(0, 10)) + ' filings due ' + nxt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });

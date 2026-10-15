@@ -63,7 +63,7 @@
       var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
       return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' hr ago' : Math.round(m / 1440) + ' d ago';
     },
-    updated: function (iso) { return iso ? 'LIVE · UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; }
+    updated: function (iso) { return iso ? 'UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; }
   };
   var ROUTES = window.DC_ROUTES || {};
   function route(href) {

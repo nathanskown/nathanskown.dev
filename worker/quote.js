@@ -9,7 +9,7 @@
 const SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to";
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
 const YAHOO = ["https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com"];
-const API_VERSION = 5; // bump when the output changes: new cache namespace, and the deploy check waits for it
+const API_VERSION = 6; // bump when the output changes: new cache namespace, and the deploy check waits for it
 const TTL = { price: 900, fin: 43200, filings: 3600 };
 
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
@@ -340,7 +340,8 @@ export async function handleQuote(request, ctx) {
   if (request.method !== "GET") return json({ error: "GET only" }, 405);
   const url = new URL(request.url);
   const part = url.searchParams.get("part") || "";
-  const sym = (url.searchParams.get("sym") || "").toUpperCase();
+  // share classes are written BRK.B on most sites but BRK-B at Yahoo
+  const sym = (url.searchParams.get("sym") || "").toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, "$1-$2");
   const cik = url.searchParams.get("cik") || "";
   if (!(part in TTL)) return json({ error: "part must be price, fin or filings" }, 400);
   if (part === "price" && !/^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(sym)) return json({ error: "bad sym" }, 400);
@@ -359,6 +360,11 @@ export async function handleQuote(request, ctx) {
     ctx.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch (e) {
-    return json({ error: String(e && e.message || e).slice(0, 200) }, 502);
+    // keep upstream URLs and messages out of the response; they go to the Worker log instead
+    console.error("quote", part, sym || cik, String(e && e.message || e).slice(0, 300));
+    const msg = String(e && e.message || e);
+    const code = /price unavailable/.test(msg) ? (/HTTP 404/.test(msg) ? "unknown_symbol" : "price_unavailable")
+      : /rate|429/i.test(msg) ? "rate_limited" : "upstream_unavailable";
+    return json({ error: code }, code === "unknown_symbol" ? 404 : 502);
   }
 }

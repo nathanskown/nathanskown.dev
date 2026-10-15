@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">TOP &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -151,6 +150,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
 <button type="button" onClick="{{toggleWatch}}" aria-pressed="{{watchPressed}}" style="{{watchStyle}}">Watchlist only</button>
 <button type="button" onClick="{{toggleNotable}}" aria-pressed="{{notablePressed}}" style="{{notableStyle}}">Notable only</button>
+<button type="button" onClick="{{toggleAllPR}}" aria-pressed="{{allPRPressed}}" style="{{allPRStyle}}">All press releases</button>
 <button type="button" onClick="{{togglePause}}" style="height: 40px; padding: 0 16px; border-radius: 0; border: 1px solid #FFB84D; background: #FFB84D; color: #000000; text-shadow: none; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">{{pauseLabel}}</button>
 </div>
 </section>
@@ -328,8 +328,14 @@ class Component extends DCLogic {
     };
     var srcCount = {}; all.forEach(function (it) { if (it.source) srcCount[it.source] = (srcCount[it.source] || 0) + 1; });
     var srcList = Object.keys(srcCount).sort();
+    // re-check "notable" with the current rule so items saved under the old, looser rule don't stay flagged
+    var NOTE = /\b(acquires?|acquired|acquisition|merger|to buy|buyout|takeover|bankrupt(cy)?|chapter 11|guidance|outlook|forecast|recalls?|subpoena|sec charges|fda (approv|clear)\w*|fomc|rate (cut|hike|decision)s?|tariffs?|downgrades?d?|upgrades?d?|layoffs?|job cuts|ceo|cfo|resigns?|steps down|buyback|repurchase|stock split|ipo|trading halt|halts trading|outage|data breach|activist|13d|beats|misses|earnings)\b/i, SPAM = /lost money|who lost|class action|securities fraud|law firm|attorney|investigation on behalf|investors who|reminds investors|shareholder alert|deadline|recover losses|market to reach|market size|cagr|webinar/i;
+    all.forEach(function (it) { it.notable = !SPAM.test(it.title || '') && !(it.type === 'Press release' && !(it.tickers || []).length) && NOTE.test(it.title || ''); });
+    var allPR = !!NP.allPR;
     var items = all.filter(function (it) {
       if (typeMap[tab] && it.type !== typeMap[tab]) return false;
+      // press releases that name no listed company (charity events, market-size reports) are hidden unless asked for
+      if (!allPR && it.type === 'Press release' && (!(it.tickers || []).length || SPAM.test(it.title || ''))) return false;
       if (hiddenSrc.indexOf(it.source) >= 0) return false;
       if (notableOnly && !it.notable) return false;
       if (watchOnly && !(it.tickers || []).some(function (t) { return watchList.indexOf(t) >= 0; })) return false;
@@ -359,7 +365,10 @@ class Component extends DCLogic {
     });
     var watch = watchList.map(function (t) { return { t: t, c: all.filter(function (it) { return (it.tickers || []).indexOf(t) >= 0; }).length }; });
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-    var sched = ((st.macro || {}).calendar || []).filter(function (c) { return c.date === todayIso; }).map(function (c) { return { t: 'Today', e: c.name }; })
+    var sched = ((st.macro || {}).calendar || []).filter(function (c) { return c.date === todayIso; }).map(function (c) {
+      var past = c.at && new Date(c.at).getTime() <= Date.now();
+      return { t: c.at ? (past ? 'Out ' : '') + F.time(new Date(c.at).getTime() / 1000) : 'Today', e: c.name };
+    })
       .concat(((st.earnings || {}).upcoming || []).filter(function (x) { return x.date === todayIso; }).slice(0, 5).map(function (x) { return { t: x.when, e: x.name + ' (' + x.sym + ') earnings' }; }));
     var sources = [];
     var feeds = (st.config || {}).feeds || {};
@@ -375,6 +384,7 @@ class Component extends DCLogic {
       togglePause: function () { self.setState({ paused: !paused }); },
       toggleWatch: function () { saveNP({ watchOnly: !watchOnly }); },
       toggleNotable: function () { saveNP({ notableOnly: !notableOnly }); },
+      toggleAllPR: function () { saveNP({ allPR: !allPR }); }, allPRPressed: allPR ? 'true' : 'false', allPRStyle: toggle(allPR),
       sources: srcList.map(function (sname) {
         var on = hiddenSrc.indexOf(sname) < 0;
         return { label: sname, n: srcCount[sname], pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),

@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">WEI &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -496,11 +495,11 @@ class Component extends DCLogic {
     var oddsRows = function (O) {
       var rows = [];
       ((O && O.groups) || []).forEach(function (g) {
-        (g.markets || []).slice().sort(function (a, b) { return Math.abs(a.pct - 50) - Math.abs(b.pct - 50); }).slice(0, 3).forEach(function (m) {
+        (g.markets || []).slice().sort(function (a, b) { return Math.abs(a.pct - 50) - Math.abs(b.pct - 50); }).slice(0, 3).forEach(function (m, k) {
           var d = m.prev === null || m.prev === undefined ? null : m.pct - m.prev;
-          rows.push({ group: g.event || g.title, q: m.label, v: Math.round(m.pct) + '%',
+          rows.push({ group: k === 0 ? (g.event || g.title) : '', q: /^(starts|yes)$/i.test(m.label || '') ? 'Yes' : m.label, v: Math.round(m.pct) + '%',
             bar: 'height: 6px; background: #ffb84d; box-shadow: 0 0 8px rgba(255,184,77,.5); width: ' + Math.max(1, Math.min(100, m.pct)) + '%;',
-            prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + ' pts vs. prior day (' + Math.round(m.prev) + '%)') });
+            prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + (Math.abs(Math.round(d)) === 1 ? ' pt' : ' pts') + ' vs. prior day (' + Math.round(m.prev) + '%)') });
         });
       });
       return rows;
@@ -564,8 +563,10 @@ class Component extends DCLogic {
     var macroRows = (M.latest || []).slice(0, 6).map(function (m) {
       return { n: m.n, period: new Date(m.period + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }), act: m.act, prior: m.prior };
     });
-    var upcoming = (M.calendar || []).slice(0, 5).map(function (c) {
-      return { d: new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }).toUpperCase(), e: c.name };
+    var nowMs = Date.now();
+    var upcoming = (M.calendar || []).filter(function (c) { return !c.at || new Date(c.at).getTime() > nowMs; }).slice(0, 5).map(function (c) {
+      var day = new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }).toUpperCase();
+      return { d: c.at ? day + ' ' + F.time(new Date(c.at).getTime() / 1000) : day, e: c.name };
     });
     var mov = (D.movers || {})[tab] || [];
     var movers = mov.map(function (m) {
@@ -594,7 +595,7 @@ class Component extends DCLogic {
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var earnDays = Object.keys(days).sort().slice(0, 5).map(function (d) {
       var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, href: 'Main.dc.html?sym=' + x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
-      return { day: new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase(), tag: d === todayIso ? 'TODAY' : days[d].length + ' shown', items: items, colCls: 't-day' + (d === todayIso ? ' is-today' : '') };
+      return { day: new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase(), tag: (d === todayIso ? 'TODAY' : days[d].length + ' reporting') + (days[d].length > 4 ? ' · +' + (days[d].length - 4) + ' more' : ''), items: items, colCls: 't-day' + (d === todayIso ? ' is-today' : '') };
     });
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };

@@ -505,13 +505,18 @@
       var t = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
       return (same ? 'TODAY' : day) + ' ' + t;
     }
+    // yields move in basis points, everything else in percent
+    function chgTxt(t, up, sign) {
+      if (t.id === 'tnx' && t.chg != null) return (up ? '▲' : '▼') + (sign ? (up ? ' +' : ' −') : '') + Math.abs(Math.round(t.chg * 100)) + ' bp';
+      return (up ? '▲' : '▼') + (sign ? (up ? ' +' : ' −') : '') + Math.abs(t.pct || 0).toFixed(2) + '%';
+    }
     j('/data/finance/dashboard.json?v=' + v5).then(function (d) {
       var by = {}; (d.tiles || []).forEach(function (t) { by[t.id] = t; });
       mk = '<dt class="nk-now-h">MARKETS</dt>' + TILES.map(function (x) {
         var t = by[x[0]]; if (!t || t.price == null) return '';
         var up = (t.pct || 0) >= 0;
         var px = x[0] === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: x[2], maximumFractionDigits: x[2] });
-        return '<dt>' + esc(x[1]) + '</dt><dd>' + px + '</dd><dd class="nk-chg' + (up ? '' : ' nk-dn') + '">' + (up ? '▲ +' : '▼ −') + Math.abs(t.pct || 0).toFixed(2) + '%</dd>';
+        return '<dt>' + esc(x[1]) + '</dt><dd>' + px + '</dd><dd class="nk-chg' + (up ? '' : ' nk-dn') + '">' + chgTxt(t, up, true) + '</dd>';
       }).join('');
       // hero line, MKT card and the scrolling ticker share these numbers
       var L = window.NSKN_LIVE || {}, spx = by.spx;
@@ -528,9 +533,10 @@
           var up = (t.pct || 0) >= 0, dp = t.price < 10 ? 4 : 2;
           return '<a class="nk-tk' + (up ? '' : ' nk-dn') + '" href="/finance/"><b>' + esc(NAMES[t.id] || t.name) + '</b> ' +
             (t.id === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp })) +
-            ' <span>' + (up ? '▲' : '▼') + Math.abs(t.pct || 0).toFixed(2) + '%</span></a>';
+            ' <span>' + chgTxt(t, up, false) + '</span></a>';
         }).join('');
-        tk.innerHTML = '<div class="nk-tick-run">' + one + '</div><div class="nk-tick-run" aria-hidden="true">' + one + '</div>';
+        // the second copy only exists to make the loop seamless: hide it from screen readers and the Tab key
+        tk.innerHTML = '<div class="nk-tick-run">' + one + '</div><div class="nk-tick-run" aria-hidden="true">' + one.replace(/<a /g, '<a tabindex="-1" ') + '</div>';
         tk.closest('.nk-tick').hidden = false;
       }
       if (L.onUpdate) L.onUpdate();

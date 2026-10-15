@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">IPO &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -368,10 +367,10 @@ class Component extends DCLogic {
     var sort = st.sort || 'date';
     var S = I.score || {};
     var score = [
-      { label: 'IPOs priced, YTD', value: F.n(S.n, 0), sub: 'Nasdaq IPO calendar', color: '#FFD89D' },
+      { label: 'IPOs priced, YTD', value: F.n(S.n, 0), sub: S.nSpac !== undefined ? F.n(S.nOps, 0) + ' companies · ' + F.n(S.nSpac, 0) + ' SPACs' : 'Nasdaq IPO calendar', color: '#FFD89D' },
       { label: 'Proceeds raised, YTD', value: F.money(S.proceeds), sub: 'at the offer price', color: '#FFD89D' },
-      { label: 'Avg. first-day return', value: F.pct(S.avgD1, 1), sub: 'median ' + F.pct(S.medD1, 1) + ' · ' + (S.measuredD1 || 0) + ' deals measured', color: (S.avgD1 || 0) >= 0 ? UP : DN },
-      { label: 'Trading above offer', value: S.above === null || S.above === undefined ? '—' : F.n(S.above, 0) + '%', sub: 'of ' + (I.year || '') + ' IPOs today', color: '#FFD89D' },
+      { label: 'Avg. first-day return', value: F.pct(S.avgD1, 1), sub: 'median ' + F.pct(S.medD1, 1) + ' · ' + (S.measuredD1 || 0) + (S.nSpac !== undefined ? ' companies (SPACs excluded)' : ' deals measured'), color: (S.avgD1 || 0) >= 0 ? UP : DN },
+      { label: 'Trading above offer', value: S.above === null || S.above === undefined ? '—' : F.n(S.above, 0) + '%', sub: 'of ' + (I.year || '') + (S.nSpac !== undefined ? ' company IPOs today' : ' IPOs today'), color: '#FFD89D' },
       { label: 'Median deal size', value: F.money(S.medSize), sub: 'proceeds per deal', color: '#FFD89D' },
       { label: 'Withdrawn, YTD', value: F.n(S.withdrawn, 0), sub: 'pulled or postponed', color: DN }
     ];
@@ -392,7 +391,7 @@ class Component extends DCLogic {
       return 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
     };
     var recent = rows.map(function (r) {
-      return { d: F.day(r.date), t: r.sym || '—', href: r.sym && r.price ? 'Main.dc.html?sym=' + r.sym : '#', n: r.name, range: r.range ? '$' + r.range.replace('-', '–$') : '—', px: r.price ? F.usd(r.price, 2) : '—',
+      return { d: F.day(r.date), t: r.sym || '—', href: r.sym && r.price ? 'Main.dc.html?sym=' + r.sym : '#', n: r.name + (r.spac ? ' · SPAC' : ''), range: r.range ? '$' + r.range.replace('-', '–$') : '—', px: r.price ? F.usd(r.price, 2) : '—',
         vs: r.vs || 'n/a', vsStyle: vsStyle(r.vs), raised: F.money(r.proceeds), d1: pct(r.d1), d1Color: col(r.d1), since: pct(r.since), sinceColor: col(r.since) };
     });
     var sortTabs = [{ id: 'date', label: 'Newest' }, { id: 'day1', label: 'First day' }, { id: 'since', label: 'Since IPO' }].map(function (t) {
@@ -406,6 +405,8 @@ class Component extends DCLogic {
       return { l: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }), v: m.n, barStyle: 'width: 100%; border-radius: 0; height: ' + Math.max(2, Math.round(m.n / mmax * 120)) + 'px; background: ' + (k === mm.length - 1 ? '#FFE9C7' : '#6B4E22') + ';' };
     });
     var vs = I.vs || {}, vt = (vs.Above || 0) + (vs.Within || 0) + (vs.Below || 0);
+    var VS_MIN = 10;   // a split across fewer deals than this isn't a pattern
+    var vsReady = vt >= VS_MIN;
     var share = function (k) { return vt ? Math.round((vs[k] || 0) / vt * 100) : 0; };
     var ex = I.exch || [], exMax = Math.max.apply(null, ex.map(function (e) { return e[1]; }).concat([1]));
     var exTot = ex.reduce(function (a, e) { return a + e[1]; }, 0) || 1;
@@ -420,12 +421,12 @@ class Component extends DCLogic {
     var pulled = (I.withdrawn || []).map(function (w) { return { n: w.name, s: w.sym || w.exch || '', why: 'Withdrawn · proposed ' + F.money(w.proceeds), d: F.day(w.date) }; });
     var wk = (I.upcoming || []).filter(function (p) { return p.date && new Date(p.date + 'T12:00:00Z') - Date.now() < 14 * 86400000; }).length;
     var headline = st.err ? 'IPO data is not available yet. The first daily refresh fills it in.' : (I.updated ? (S.n || 0) + ' IPOs have priced on U.S. exchanges this year, raising ' + F.money(S.proceeds) + '. ' +
-      (S.avgD1 !== null && S.avgD1 !== undefined ? 'The average deal ' + (S.avgD1 >= 0 ? 'rose ' : 'fell ') + F.n(Math.abs(S.avgD1), 1) + '% on its first day, and ' + F.n(S.above, 0) + '% now trade above their offer price.' : '') : 'Loading…');
+      (S.avgD1 !== null && S.avgD1 !== undefined ? 'The average ' + (S.nSpac !== undefined ? 'operating company ' : 'deal ') + (S.avgD1 >= 0 ? 'rose ' : 'fell ') + F.n(Math.abs(S.avgD1), 1) + '% on its first day, and ' + F.n(S.above, 0) + '% now trade above their offer price.' : '') : 'Loading…');
     return {
       liveTag: F.updated(I.updated), headline: headline, pipeBadge: wk + ' deal' + (wk === 1 ? '' : 's') + ' expected in the next two weeks', year: I.year || '',
       score: score, pipeline: pipeline, sortTabs: sortTabs, recent: recent, months: months,
-      vsAbove: 'flex: ' + Math.max(share('Above'), 0.5) + '; background: #2F9E5A;', vsWithin: 'flex: ' + Math.max(share('Within'), 0.5) + '; background: #664A1F;', vsBelow: 'flex: ' + Math.max(share('Below'), 0.5) + '; background: #B8423A;',
-      vsAboveText: vt ? 'Above range ' + share('Above') + '%' : 'No priced deals with a recorded range yet: ranges are captured while deals sit on the upcoming calendar, so this fills in as they price.', vsWithinText: vt ? 'Within ' + share('Within') + '%' : '', vsBelowText: vt ? 'Below ' + share('Below') + '%' + ' · ' + vt + ' deals with a known range' : '',
+      vsAbove: !vsReady ? 'flex: 1; background: #3D2C13;' : 'flex: ' + Math.max(share('Above'), 0.5) + '; background: #2F9E5A;', vsWithin: !vsReady ? 'display: none;' : 'flex: ' + Math.max(share('Within'), 0.5) + '; background: #664A1F;', vsBelow: !vsReady ? 'display: none;' : 'flex: ' + Math.max(share('Below'), 0.5) + '; background: #B8423A;',
+      vsAboveText: vsReady ? 'Above range ' + share('Above') + '%' : 'Only ' + vt + ' priced deal' + (vt === 1 ? '' : 's') + ' with a recorded range so far. Ranges are captured while deals sit on the upcoming calendar; the split shows once ' + VS_MIN + ' have priced.', vsWithinText: vsReady ? 'Within ' + share('Within') + '%' : '', vsBelowText: vsReady ? 'Below ' + share('Below') + '%' + ' · ' + vt + ' deals with a known range' : '',
       sectors: sectors, filings: filings, lockups: lockups, pulled: pulled
     };
   }

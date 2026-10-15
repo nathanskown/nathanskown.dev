@@ -19,9 +19,11 @@ const TILES = [["spx", "^GSPC", "S&P 500", "", 2], ["ixic", "^IXIC", "Nasdaq Com
 const SECTORS = [["XLK", "Technology"], ["XLE", "Energy"], ["XLC", "Communication"], ["XLF", "Financials"],
   ["XLY", "Cons. Discretionary"], ["XLI", "Industrials"], ["XLB", "Materials"], ["XLV", "Health Care"],
   ["XLRE", "Real Estate"], ["XLP", "Cons. Staples"], ["XLU", "Utilities"]];
-const NOTABLE = ["acquire", "acquisition", "merger", "to buy", "buyout", "bankruptcy", "chapter 11", "guidance", "raises", "cuts", "recall",
-  "investigation", "subpoena", "sec charges", "fda approv", "fda clear", "rate decision", "fomc", "tariff", "downgrade", "upgrade",
-  "layoff", "ceo", "resign", "dividend", "buyback", "split", "ipo", "halt", "outage", "breach", "strike"];
+// "Notable": whole-word market-moving terms, never spam, and a press release must name a listed company.
+// Same rule as pipeline/jobs.py (is_notable) and the headline pages.
+const NOTABLE_RE = /\b(acquires?|acquired|acquisition|merger|to buy|buyout|takeover|bankrupt(cy)?|chapter 11|guidance|outlook|forecast|recalls?|subpoena|sec charges|fda (approv|clear)\w*|fomc|rate (cut|hike|decision)s?|tariffs?|downgrades?d?|upgrades?d?|layoffs?|job cuts|ceo|cfo|resigns?|steps down|buyback|repurchase|stock split|ipo|trading halt|halts trading|outage|data breach|activist|13d|beats|misses|earnings)\b/i;
+const SPAM_RE = /lost money|who lost|class action|securities fraud|law firm|attorney|investigation on behalf|investors who|reminds investors|shareholder alert|deadline|recover losses|market to reach|market size|cagr|webinar/i;
+const isNotable = (title, kind, tickers) => !SPAM_RE.test(title) && !(kind === "Press release" && !tickers.size) && NOTABLE_RE.test(title);
 
 const EN = new Set("the and of to in for on with at by from is are was were after new says say will its over as an has have that this his her their it be not but or up out more than into about how what why who when amid against could would may year q1 q2 q3 q4 reports announces announced announce launches shares stock stocks inc corp".split(" "));
 const FOREIGN = new Set("el la los las del y que para con por una un su se es al lo le les des du et pour dans une sur est qui der die das und mit für von den zu ist nicht auf ein eine im dem um da uma os não ao dos nas nos il di per che della degli sono gli en een het van voor och att som på är med av ett de em na pela pelo anuncia resultados trimestre lucro dividendo banco acima esperado anuncian empresa nuevo nueva primer segundo tercer cuarto ganancias".split(" "));
@@ -239,7 +241,7 @@ async function partNews(env) {
       for (const m of it.title.matchAll(/\$([A-Z]{1,5})\b/g)) tick.add(m[1]);
       for (const [re, t] of alias) if (re.test(low)) tick.add(t);
       fresh.push({ title: it.title.slice(0, 240), link: it.link, source: src, type: kind, published: it.published || now, firstSeen: now,
-        tickers: [...tick].map((t) => t.replace(".", "-")).sort().slice(0, 6), notable: NOTABLE.some((w) => low.includes(w)) });
+        tickers: [...tick].map((t) => t.replace(".", "-")).sort().slice(0, 6), notable: isNotable(it.title, kind, tick) });
     }
   });
   fresh.sort((a, b) => (a.published < b.published ? 1 : -1));

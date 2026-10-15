@@ -12,6 +12,7 @@ matches are cached in data/finance/cusip_map.json, so only new securities are lo
 """
 import csv
 import io
+import re
 import os
 import pathlib
 import tempfile
@@ -19,6 +20,7 @@ import time
 import zipfile
 from datetime import date, timedelta
 from collections import Counter
+from functools import lru_cache
 from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
@@ -27,7 +29,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 10          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 11          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -185,6 +187,58 @@ def _at(hist, day):
     return best
 
 
+# Managers that file under several legal entities are shown as one name, so an internal transfer between
+# them (T. Rowe Price Associates -> T. Rowe Price Investment Management) doesn't show up as a buyer and a seller.
+MANAGER_GROUPS = [
+    ("T. ROWE PRICE", "T. Rowe Price"), ("PRICE T ROWE", "T. Rowe Price"),
+    ("VANGUARD", "Vanguard"), ("BLACKROCK", "BlackRock"), ("STATE STREET", "State Street"),
+    ("FMR LLC", "Fidelity (FMR)"), ("FIDELITY", "Fidelity (FMR)"), ("GEODE CAPITAL", "Geode Capital"),
+    ("CAPITAL RESEARCH", "Capital Group"), ("CAPITAL INTERNATIONAL", "Capital Group"), ("CAPITAL WORLD", "Capital Group"),
+    ("JPMORGAN", "JPMorgan Chase"), ("J P MORGAN", "JPMorgan Chase"), ("MORGAN STANLEY", "Morgan Stanley"),
+    ("GOLDMAN SACHS", "Goldman Sachs"), ("WELLS FARGO", "Wells Fargo"), ("UBS ", "UBS"), ("INVESCO", "Invesco"),
+    ("NORTHERN TRUST", "Northern Trust"), ("DIMENSIONAL", "Dimensional"), ("WELLINGTON", "Wellington"),
+]
+_SMALL = {"Llc": "LLC", "Lp": "LP", "L.P.": "LP", "Inc": "Inc.", "Inc.": "Inc.", "Ltd": "Ltd.", "Co": "Co.", "N.A.": "N.A.",
+          "Plc": "plc", "Ag": "AG", "Sa": "SA", "Nv": "NV", "Ab": "AB", "Asa": "ASA", "Se": "SE", "Fmr": "FMR", "Ubs": "UBS",
+          "Bny": "BNY", "Jpmorgan": "JPMorgan", "Blackrock": "BlackRock", "Aqr": "AQR", "Ii": "II", "Iii": "III"}
+
+
+def pretty_manager(raw):
+    """Readable manager name: drop SEC state suffixes (/Md/, /Adv), fix the casing title() gets wrong."""
+    n = re.sub(r"\s*/[A-Za-z]{2,4}/?\s*$", "", str(raw or "").strip())
+    n = re.sub(r"\s+", " ", n).strip(" ,")
+    words = []
+    for w in n.title().split(" "):
+        core = w.rstrip(",")
+        words.append(_SMALL.get(core, core) + ("," if w.endswith(",") else ""))
+    return " ".join(words).replace(", Inc.", " Inc.").replace(" Inc.,", " Inc.")
+
+
+@lru_cache(maxsize=None)
+def manager_group(raw):
+    up = " " + str(raw or "").upper() + " "
+    for key, label in MANAGER_GROUPS:
+        if " " + key in up:
+            return label
+    return pretty_manager(raw)
+
+
+def comparable_filers(det, L, P):
+    """Managers whose two filings can be compared position by position.
+
+    A manager that filed in only one of the quarters, or whose filing in one quarter lists far fewer stocks
+    than the other (a partial or mis-keyed filing), makes every holding look like a new position or a sale.
+    Those managers still count as holders, but are left out of buying/selling, net flow and "New position" labels."""
+    cl = det[det["period"] == L].groupby("cik").size().to_dict()
+    cp = det[det["period"] == P].groupby("cik").size().to_dict()
+    ok = set()
+    for c in set(cl) & set(cp):
+        a, b = cl[c], cp[c]
+        if min(a, b) >= 0.5 * max(a, b) or abs(a - b) < 10:
+            ok.add(int(c))
+    return ok
+
+
 def build(max_sets=9, force=False):
     links = sec.dataset_links()[:max_sets]
     old = read("ownership/index.json", {}) or {}
@@ -260,10 +314,12 @@ def build(max_sets=9, force=False):
            note=f"{len(ciks)} companies queried, {len(retry)} retried; errors: {dict(errs.most_common(4))}")
 
     agg_ix = agg.set_index(["cusip", "period"])
+    comp = comparable_filers(det, L, P)
+    record("13F comparable managers", True, n=len(comp), note=f"of {len(filers.get(L, set()))} filing in {L}")
     cur_all = det[det["period"] == L].groupby("cusip")
     prv_all = det[det["period"] == P].groupby("cusip")
     empty = pd.DataFrame(columns=["cik", "sh"])
-    diag = {"over150": [], "noShares": []}
+    diag = {"over150": [], "noShares": [], "bigNew": []}
     stale_before = (date.fromisoformat(L) - timedelta(days=548)).isoformat()
     done_core, all_syms, n_ok = [], [], 0
     for sym, cu in sorted(best.items()):
@@ -306,29 +362,55 @@ def build(max_sets=9, force=False):
                     continue
                 t["shares"], t["holders"] = float(sum(pos.values())), len(pos)
                 t["inst"] = r(t["shares"] / t["so"] * 100, 1) if t["so"] else None
-            fl, fp = filers.get(L, set()), filers.get(P, set())
-            new = [c for c in cur if c not in prv and c in fp]
-            closed = [c for c in prv if c not in cur and c in fl]
+            # holders: every manager. New/closed are plain set differences, so holders change = new - closed.
+            new = [c for c in cur if c not in prv]
+            closed = [c for c in prv if c not in cur]
             px = (q.get("quote") or {}).get("price")
-            top = sorted(cur.items(), key=lambda kv: -kv[1])[:10]
-            name = lambda c: (mgr.get(c) or f"CIK {c}").title()  # noqa: E731
+            # top holders and movers are grouped by manager family (several legal entities, one firm)
+            grp_cur, grp_prv, grp_names = {}, {}, {}
+            for c, v in cur.items():
+                g = manager_group(mgr.get(c) or f"CIK {c}")
+                grp_cur[g] = grp_cur.get(g, 0) + v
+                grp_names.setdefault(g, []).append(c)
+            for c, v in prv.items():
+                g = manager_group(mgr.get(c) or f"CIK {c}")
+                grp_prv[g] = grp_prv.get(g, 0) + v
+                grp_names.setdefault(g, []).append(c)
             passive_of = lambda c: any(k in (mgr.get(c) or "").upper() for k in idx_kw)  # noqa: E731
-            top_rows = [{"n": name(c), "style": "Index" if passive_of(c) else "Active / other", "sh": sh,
+            passive_grp = {g for g, cs in grp_names.items() if any(passive_of(c) for c in cs)}
+            top = sorted(grp_cur.items(), key=lambda kv: -kv[1])[:10]
+            top_rows = [{"n": g, "style": "Index" if g in passive_grp else "Active / other", "sh": sh,
                          "pct": r(sh / so * 100, 2) if so else None, "val": r(sh * px, 0) if px else None,
-                         "chg": "New" if c not in prv else r((sh / prv[c] - 1) * 100 if prv[c] else None, 1)} for c, sh in top]
-            delta = {c: cur.get(c, 0) - prv.get(c, 0) for c in set(cur) | set(prv) if c in fl and c in fp}
-            buyers = sorted(((c, d) for c, d in delta.items() if d > 0), key=lambda x: -x[1])[:5]
-            sellers = sorted(((c, d) for c, d in delta.items() if d < 0), key=lambda x: x[1])[:5]
+                         "chg": (r((sh / grp_prv[g] - 1) * 100, 1) if grp_prv.get(g)
+                                 else "New" if any(c in comp for c in grp_names[g]) else None)} for g, sh in top]
+            # buying and selling: only managers whose two filings are comparable
+            dcur, dprv = {}, {}
+            for c in set(cur) | set(prv):
+                if c not in comp:
+                    continue
+                g = manager_group(mgr.get(c) or f"CIK {c}")
+                dcur[g] = dcur.get(g, 0) + cur.get(c, 0)
+                dprv[g] = dprv.get(g, 0) + prv.get(c, 0)
+            delta = {g: dcur[g] - dprv[g] for g in dcur}
+            # A brand-new (or fully sold) stake above 0.5% of a widely held stock is almost always a filing gap
+            # (a quarter missing from the data), not a real trade: AAPL showed JPMorgan "new" with $79B.
+            if so and len(cur) >= 1000:
+                for g in [g for g, d in delta.items() if (not dprv[g] or not dcur[g]) and abs(d) > 0.005 * so]:
+                    diag["bigNew"].append(f"{sym}:{g}")
+                    del delta[g]
+            buyers = sorted(((g, d) for g, d in delta.items() if d > 0), key=lambda x: -x[1])[:5]
+            sellers = sorted(((g, d) for g, d in delta.items() if d < 0), key=lambda x: x[1])[:5]
 
-            def mover(c, d):
-                note = "New position" if c not in prv else ("Sold out" if c not in cur else f"{'Added' if d > 0 else 'Cut'} {abs(d / prv[c] * 100):.0f}%")
-                return {"n": name(c), "sh": d, "note": note}
+            def mover(g, d):
+                note = "New position" if not dprv.get(g) else ("Sold out" if not dcur.get(g) else f"{'Added' if d > 0 else 'Cut'} {abs(d / dprv[g] * 100):.0f}%")
+                return {"n": g, "sh": d, "note": note}
             passive = sum(v for c, v in cur.items() if passive_of(c))
             inst, inst0 = trend[-1]["inst"], trend[-2]["inst"]
-            net = sum(cur.values()) - sum(prv.values())
+            net = sum(delta.values())
             hold, hold0 = len(cur), len(prv)
             mood = "added to" if net > 0 else "trimmed"
-            read_txt = f"Institutions {mood} {sym} last quarter: {abs(net) / 1e6:.1f}M shares net, {len(new)} new positions vs {len(closed)} closed."
+            read_txt = (f"Institutions {mood} {sym} last quarter: {abs(net) / 1e6:.1f}M shares net among managers that filed both "
+                        f"quarters. {len(new)} managers opened a position and {len(closed)} closed one.")
             if so:
                 read_txt += f" Index funds hold {passive / so * 100:.1f}% of shares outstanding."
             out = {"sym": sym, "name": q.get("name") or (tick.get(sym) or (None, issuers.get(cu) or sym))[1], "cusip": cu,
@@ -337,7 +419,7 @@ def build(max_sets=9, force=False):
                              "holders": hold, "holdersChg": hold - hold0, "net": net, "new": len(new), "closed": len(closed),
                              "top10": r(sum(sh for _, sh in top) / so * 100, 1) if so else None,
                              "passive": r(passive / so * 100, 1) if so else None},
-                   "trend": trend, "top": top_rows, "buyers": [mover(c, d) for c, d in buyers], "sellers": [mover(c, d) for c, d in sellers],
+                   "trend": trend, "top": top_rows, "buyers": [mover(g, d) for g, d in buyers], "sellers": [mover(g, d) for g, d in sellers],
                    "mix": {"Index": r(passive / so * 100, 1) if so else None,
                            "Active / other": r((sum(cur.values()) - passive) / so * 100, 1) if so else None},
                    "read": read_txt}
@@ -354,6 +436,7 @@ def build(max_sets=9, force=False):
     record("13F no share count", True, n=len(diag["noShares"]),
            note=f"{len(with_cik)} with an SEC CIK, e.g. {with_cik[:15]}")
     record("13F implausible share count", True, n=len(diag["over150"]), note=str(diag["over150"][:15]))
+    record("13F implausible new/closed stakes skipped", True, n=len(diag["bigNew"]), note=str(diag["bigNew"][:15]))
     index = {"updated": now_iso(), "v": VERSION, "latestSet": newest, "periods": periods,
              "tickers": sorted(done_core, key=lambda x: list(universe).index(x["sym"])), "all": sorted(all_syms)}
     write("ownership/index.json", index)

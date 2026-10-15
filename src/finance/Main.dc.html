@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">DES &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -203,7 +202,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Price chart" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Price</h2>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Price <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: {{rangeColor}}">{{rangeChgText}}</span></h2>
 <div role="group" aria-label="Chart range" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
 <sc-for list="{{ranges}}" as="r" hint-placeholder-count="7">
 <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.btnStyle}}">{{r.id}}</button>
@@ -358,7 +357,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Index membership" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Index membership</h2>
-<span style="color: #A87933; font-size: 12.5px">S&amp;P index lists · passive ownership from 13F filings</span>
+<span style="color: #A87933; font-size: 12.5px">S&amp;P lists (Wikipedia) · Russell from iShares IWB/IWM holdings · passive ownership from 13F</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{indexes}}" as="ix" hint-placeholder-count="3">
@@ -451,7 +450,7 @@ class Component extends DCLogic {
     var self = this;
     DC.load('/data/finance/quotes/index.json').then(function (j) { return j; }, function () { return { tickers: [] }; }).then(function (j) {
       var st = self.state || {};
-      var sym = String(st.sym || '').toUpperCase() || (j.tickers[0] && j.tickers[0].sym);
+      var sym = String(st.sym || st.ticker || '').toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2') || (j.tickers[0] && j.tickers[0].sym);
       self.setState({ index: j, sym: sym });
       if (sym) self.fetchSym(sym, j);
       else self.setState({ err: true });
@@ -502,7 +501,8 @@ class Component extends DCLogic {
           stats: { mcap: mcap, pe: pe, divYield: P.stats.divYield, hi52: q.hi52, lo52: q.lo52, avgVol3m: P.stats.avgVol3m, beta: P.stats.beta,
             shares: so, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
-          index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }],
+          index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }]
+            .concat((M.r1000 || M.r2000) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
           next: up, own: own, peerRows: [], onDemand: true, staleTags: !!(Fn && Fn.staleTags), secBusy: !!(Fn && Fn.rateLimited && !(Fn.fin || []).length) || (!Fn && !!cik), partial: [(!Fn || Fn.rateLimited) && cik ? 'some SEC financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
         } });
       });
@@ -546,6 +546,12 @@ class Component extends DCLogic {
       .catch(function () { done(null); });
   }
   renderVals() {
+    var EIGHTK = { '1.01': 'Material agreement', '1.02': 'Agreement ended', '1.03': 'Bankruptcy', '1.05': 'Cybersecurity incident',
+      '2.01': 'Acquisition or sale completed', '2.02': 'Earnings release', '2.03': 'New debt', '2.04': 'Debt acceleration',
+      '2.05': 'Restructuring costs', '2.06': 'Impairment', '3.01': 'Listing notice', '3.02': 'Unregistered share sale',
+      '3.03': 'Shareholder rights change', '4.01': 'Auditor change', '4.02': 'Restatement', '5.01': 'Change in control',
+      '5.02': 'Executive or director change', '5.03': 'Charter or bylaw change', '5.07': 'Shareholder vote results',
+      '5.08': 'Director nominations', '7.01': 'Investor presentation (Reg FD)', '8.01': 'Other news' };
     var UP = '#4ADE80', DN = '#FF5F56';
     var self = this;
     var st = this.state || {};
@@ -573,7 +579,10 @@ class Component extends DCLogic {
     var intraday = cur === '1D' || cur === '5D';
     var first = vals[0], lastV = vals[vals.length - 1];
     if (cur === '1D' && Q.quote.prev) first = Q.quote.prev;
-    var chg = lastV - first, up = chg >= 0;
+    var chg = lastV - first;
+    // headline = today's move vs the prior close, whatever range the chart shows
+    var dPrev = Q.quote.prev, dChg = Q.quote.price != null && dPrev ? Q.quote.price - dPrev : null, up = (dChg === null ? chg : dChg) >= 0;
+    var rUp = chg >= 0;
     var ts = ch.t || [];
     var xLabels = ts.length ? [0, 0.25, 0.5, 0.75, 1].map(function (f) {
       var t0 = ts[Math.min(ts.length - 1, Math.round(f * (ts.length - 1)))];
@@ -614,9 +623,12 @@ class Component extends DCLogic {
     });
     var I = Q.insider || { rows: [] };
     var insiders = (I.rows || []).slice(0, 10).map(function (x) {
-      var val = x.shares && x.price ? x.shares * x.price : null;
+      // an option exercise's "price" is the strike, so shares × price isn't what the stake is worth: value it at today's price
+      var isEx = x.code === 'M' || x.code === 'X';
+      var unit = isEx ? (Q.quote || {}).price : x.price;
+      var val = x.shares && unit ? x.shares * unit : null;
       return { d: F.day(x.date || x.filed), n: x.name, role: x.role || '', type: x.type + (x.code === 'S' && x.plan ? ' · 10b5-1' : ''),
-        sh: F.n(x.shares, 0), px: x.price ? F.usd(x.price, 2) : '—', val: val ? F.money(val) : '—',
+        sh: F.n(x.shares, 0), px: x.price ? F.usd(x.price, 2) + (isEx ? ' strike' : '') : '—', val: val ? F.money(val) + (isEx ? ' now' : '') : '—',
         color: x.code === 'P' ? UP : (x.code === 'S' ? DN : '#FFB84D') };
     });
     var insTiles = [
@@ -651,8 +663,9 @@ class Component extends DCLogic {
       pos52Style: 'left: ' + (S.hi52 > S.lo52 ? Math.max(0, Math.min(100, (q.price - S.lo52) / (S.hi52 - S.lo52) * 100)).toFixed(1) : 50) + '%',
       pos52Text: S.hi52 > S.lo52 && q.price != null ? 'Price is ' + Math.round(Math.max(0, Math.min(100, (q.price - S.lo52) / (S.hi52 - S.lo52) * 100))) + '% of the way from the 52-week low to the high' : '',
       priceText: F.usd(q.price, 2), trendColor: up ? UP : DN, trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
-      trendArrow: up ? '▲' : '▼', chgText: (up ? '+' : '−') + '$' + F.n(Math.abs(chg), 2), pctText: F.pct(first ? chg / first * 100 : null),
-      rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL + ' · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
+      trendArrow: up ? '▲' : '▼', chgText: dChg === null ? '—' : (up ? '+' : '−') + '$' + F.n(Math.abs(dChg), 2), pctText: F.pct(dChg !== null ? dChg / dPrev * 100 : null),
+      rangeLabel: 'today',
+      rangeChgText: vals.length > 1 ? (rUp ? '▲ +' : '▼ −') + F.n(Math.abs(chg / first * 100), 2) + '% ' + labels[cur] : '', rangeColor: rUp ? UP : DN, asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL + ' · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
       ranges: ranges, linePath: line, areaPath: line + ' L800,260 L0,260 Z', xLabels: xLabels,
       yMax: F.n(mx, 2), yMid: F.n((mx + mn) / 2, 2), yMin: F.n(mn, 2), stats: stats,
       finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, noFinText: Q.secBusy ? 'The SEC\'s data service is rate-limiting requests right now. Reload in a couple of minutes.' : Q.staleTags ? 'This company\'s recent filings use XBRL tags the SEC\'s standardized data API does not return, so there are no current quarterly figures to show.' : 'No quarterly XBRL financials on file (common for ETFs, funds and foreign filers).', peers: peers, hasPeers: peers.length > 1,
@@ -664,7 +677,11 @@ class Component extends DCLogic {
       nextDate: N ? new Date(N.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : 'Not scheduled yet',
       nextWhen: N ? (N.when === 'BMO' ? 'Before market open' : (N.when === 'AMC' ? 'After market close' : 'Time not confirmed')) : 'Dates appear about two weeks ahead',
       nextEst: N && N.est !== null ? F.usd(N.est, 2) : '—', nextN: N && N.nEst ? String(N.nEst) : '—',
-      eightK: (Q.eightK || []).map(function (e) { return { url: e.url, d: F.day(e.date), items: 'Items ' + (e.items || '—') }; }),
+      eightK: (Q.eightK || []).map(function (e) {
+        var names = String(e.items || '').split(/[,\s]+/).filter(Boolean).filter(function (i) { return i !== '9.01'; })
+          .map(function (i) { return EIGHTK[i] || 'Item ' + i; });
+        return { url: e.url, d: F.day(e.date), items: names.length ? names.join(' · ') : 'Exhibits only' };
+      }),
       hasOwn: !!O, noOwn: !O, noOwnText: Q.onDemand ? 'No 13F page for this security: it has fewer than 30 institutional holders or its CUSIP could not be matched to a ticker.' : '13F data builds once a month from the SEC\'s quarterly data sets.', ownPeriod: O ? quarter(O.period) : '', ownInst: O ? F.n(O.inst, 1) + '%' : '',
       ownChg: O && O.instChg !== null ? F.arrow(O.instChg) + ' ' + (O.instChg >= 0 ? '+' : '−') + F.n(Math.abs(O.instChg), 1) + ' pts QoQ' : '',
       ownChgColor: O && O.instChg >= 0 ? UP : DN, ownHolders: O ? F.n(O.holders, 0) + ' holders · ' + (O.holdersChg >= 0 ? '+' : '−') + Math.abs(O.holdersChg) : '',

@@ -108,8 +108,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">ERN &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -192,7 +191,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Market themes" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Market themes · last 7 days</h2>
+<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Market themes in the news</h2>
 <span style="color: #A87933; font-size: 12.5px">{{themeNote}}</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 16px">
@@ -232,13 +231,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 <div style="text-align: right; flex: none">
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: {{rp.moveColor}}">{{rp.move}}</div>
-<div style="font-size: 12px; color: #A87933">next-day move</div>
+<div style="font-size: 12px; color: #A87933">{{rp.moveLabel}}</div>
 </div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
 <div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">EPS</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div><div style="font-size: 12px; color: {{rp.epsColor}}">{{rp.epsTag}}</div></div>
 <div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Year ago</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.ly}}</div><div style="font-size: 12px; color: {{rp.growthColor}}">{{rp.growth}}</div></div>
-<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.nEst}}</div><div style="font-size: 12px; color: #A87933">{{rp.mcap}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Estimates</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.nEst}}</div><div style="font-size: 12px; color: #A87933">{{rp.mcap}}</div></div>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px">
 <a href="{{rp.newsUrl}}" target="_blank" rel="noopener" style="border: 1px solid #3D2C13; padding: 6px 10px">News ↗</a>
@@ -265,7 +264,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Sector</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Time</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">EPS est.</th>
-<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Analysts</th>
+<th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13" title="Number of EPS estimates in the Nasdaq/Zacks consensus">Estimates</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-right: 0">Mkt cap</th>
 </tr>
 </thead>
@@ -324,8 +323,8 @@ class Component extends DCLogic {
     var score = [
       { label: 'Beat EPS estimates', value: S.beatPct === null || S.beatPct === undefined ? '—' : F.n(S.beatPct, 0) + '%', sub: (S.n || 0) + ' S&P 500 reporters so far', color: '#FFD89D' },
       { label: 'Avg. EPS surprise', value: F.pct(S.avgSurprise, 1), sub: 'median ' + F.pct(S.medSurprise, 1), color: (S.avgSurprise || 0) >= 0 ? UP : DN },
-      { label: 'Median EPS growth', value: F.pct(S.medGrowth, 1), sub: 'vs. same quarter last year', color: (S.medGrowth || 0) >= 0 ? UP : DN },
-      { label: 'Avg. next-day move', value: F.pct(S.moveBeat, 1) + ' / ' + F.pct(S.moveMiss, 1), sub: 'on beats / on misses', color: '#FFD89D' },
+      { label: 'Median EPS growth', value: S.medGrowth === null || S.medGrowth === undefined ? 'Pending' : F.pct(S.medGrowth, 1), sub: S.medGrowth === null || S.medGrowth === undefined ? 'year-ago EPS not in the feed yet' : 'vs. same quarter last year', color: (S.medGrowth || 0) >= 0 ? UP : DN },
+      { label: 'Avg. reaction', value: F.pct(S.moveBeat, 1) + ' / ' + F.pct(S.moveMiss, 1), sub: 'first session after the report · beats / misses', color: '#FFD89D' },
       { label: 'Reported / scheduled', value: (P.reported || 0) + ' / ' + (P.scheduled || 0), sub: 'S&P 500 companies this season', color: '#FFD89D' },
       { label: 'Season window', value: season.label || '—', sub: season.qend ? 'quarter ended ' + F.day(season.qend) : '', color: '#FFD89D' }
     ];
@@ -342,7 +341,9 @@ class Component extends DCLogic {
     });
     var reports = (E.recent || []).filter(function (r) { return filt === 'all' || (filt === 'beat' ? r.beat : !r.beat); }).map(function (r) {
       var g = r.lastYearEps ? (r.eps - r.lastYearEps) / Math.abs(r.lastYearEps) * 100 : null;
-      return { t: r.sym, n: r.name, sector: r.sector || '—', date: F.day(r.date) + ' · ' + r.when,
+      var when = r.when === 'BMO' ? 'Before open' : (r.when === 'AMC' ? 'After close' : 'Time not given');
+      return { t: r.sym, n: r.name, sector: r.sector || '—', date: F.day(r.date) + ' · ' + when,
+        moveLabel: r.moveLive ? 'reaction so far today' : (r.when === 'AMC' ? 'next-session move' : 'report-day move'),
         move: r.move === null || r.move === undefined ? '—' : F.arrow(r.move) + ' ' + F.pct(r.move, 1), moveColor: r.move === null || r.move === undefined ? '#C99442' : (r.move >= 0 ? UP : DN),
         eps: F.usd(r.eps, 2) + ' vs. ' + F.usd(r.est, 2), epsTag: (r.beat ? 'Beat ' : 'Missed ') + F.pct(r.surprisePct, 1), epsColor: r.beat ? UP : DN,
         ly: r.lastYearEps === null || r.lastYearEps === undefined ? '—' : F.usd(r.lastYearEps, 2), growth: g === null ? '' : F.pct(g, 1) + ' YoY', growthColor: (g || 0) >= 0 ? UP : DN,
@@ -363,7 +364,7 @@ class Component extends DCLogic {
       liveTag: F.updated(E.updated), title: (season.label || '') + ' earnings season', subtitle: subtitle,
       progressText: (P.reported || 0) + ' of ' + (P.total || 500) + ' · ' + Math.round(pct) + '%', progressBar: 'width: ' + pct.toFixed(1) + '%; height: 8px; background: #FFB84D;',
       weeks: weeks, score: score, sectorRows: sectorRows, themes: themes, raised: TH.raised === undefined ? '—' : String(TH.raised), lowered: TH.lowered === undefined ? '—' : String(TH.lowered),
-      themeNote: TH.n ? 'Share of ' + TH.n + ' market headlines' : 'Builds as headlines accumulate',
+      themeNote: TH.n ? 'Share of ' + TH.n + ' news headlines (press releases excluded)' + (TH.since ? ' since ' + F.day(TH.since) : '') : 'Builds as headlines accumulate',
       filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
       ernWatchOn: ernWatch ? 'true' : 'false', ernWatchCls: 't-tab' + (ernWatch ? ' is-on' : ''),
       ernWatchToggle: function () { PREFS.set('fin.ernWatch', !ernWatch); self.setState({ ernWatch: !ernWatch }); }
