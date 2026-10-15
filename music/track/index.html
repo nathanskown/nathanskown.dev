@@ -39,17 +39,28 @@
   <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> The song list is placeholder data and the audio is a synthesized stand-in melody, so you can test the whole flow without any live source. Switch to live in assets/config.js.</div>
 
   <!-- SETUP -->
-  <section id="setup" class="panel">
-    <h2>NEW ROUND</h2>
-    <div id="filter" class="mx-pool"></div>
-    <div class="row">
-      <button class="primary" id="startBtn">START · 5 SONGS</button>
-      <button id="dailyBtn">DAILY CHALLENGE</button>
+  <section id="setup">
+    <div class="daily-card">
+      <div class="dc-top"><span class="dc-tag">DAILY</span><span class="dim">New one every day at midnight Chicago time</span></div>
+      <h2 class="dc-title">Daily Challenge</h2>
+      <p class="dc-desc">Everyone gets the same 5 songs today, so scores are directly comparable. Songs run from the 1970s to now across pop, hip-hop, R&amp;B, rock and country. Post your score to the <a href="/music/leaderboard/">leaderboard</a>.</p>
+      <div class="row"><button class="primary big" id="dailyBtn">PLAY TODAY'S CHALLENGE &#9654;</button></div>
+      <div class="hint" id="dailyNote"></div>
     </div>
-    <div class="hint">Clips unlock in steps: <b>1s → 2s → 4s → 8s</b>. Points: <b>5 / 3 / 2 / 1</b>.</div>
-    <div class="hint">A longer clip only unlocks when you <b>submit a wrong guess</b>. Skip gives up the song for 0 points and does not unlock more audio.</div>
-    <div class="hint" id="dailyNote"></div>
-    <div id="setupMsg" class="msg"></div>
+
+    <div class="custom-card">
+      <div class="dc-top"><span class="dc-tag alt">CUSTOM</span><span class="dim">Practice. Not on the leaderboard.</span></div>
+      <h2 class="dc-title sm">Custom Quiz</h2>
+      <p class="dc-desc">Choose the genres and eras you want, then play 5 random songs from that pool.</p>
+      <div id="filter" class="mx-pool"></div>
+      <div class="row"><button class="primary big" id="startBtn">START &middot; 5 SONGS</button></div>
+    </div>
+
+    <div class="rules">
+      <div class="hint">Clips unlock in steps: <b>1s &rarr; 2s &rarr; 4s &rarr; 8s</b>. Points: <b>5 / 3 / 2 / 1</b>.</div>
+      <div class="hint">A longer clip unlocks when you <b>submit a wrong guess</b>, or press <b>I don't know</b> to take the next clip for fewer points. Skip gives up the song for 0 points.</div>
+      <div id="setupMsg" class="msg"></div>
+    </div>
   </section>
 
   <!-- GAME -->
@@ -67,6 +78,7 @@
       <div>
         <div class="row">
           <button class="primary" id="playBtn">▶ PLAY CLIP</button>
+          <button id="moreBtn" class="ghost">I DON'T KNOW &middot; LONGER CLIP</button>
           <button id="skipBtn">SKIP (0 PTS)</button>
         </div>
         <div class="meter" id="meter">
@@ -74,7 +86,7 @@
           <div class="head" id="head"></div>
         </div>
         <div class="labels" id="labels"></div>
-        <div class="hint" id="clipHint">Submit a guess to unlock a longer clip. A wrong guess adds time; Skip does not.</div>
+        <div class="hint" id="clipHint">A wrong guess or "I don't know" unlocks a longer clip (fewer points). Skip gives up the song.</div>
         <div id="eq" aria-hidden="true"></div>
         <div class="credit">
           <span id="inlineCredit"></span>
@@ -154,7 +166,7 @@
   let POOL = [], S = null, EQ = { on() {}, off() {} };
   const dailyNote = () => {
     const t = MX.stats.dailyToday("track");
-    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "Daily songs span the 1970s to today across Pop, Hip-Hop, R&B & Soul, Rock & Alt and Country & Folk. " + MX.dailyResetText();
+    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "" + MX.dailyResetText();
   };
 
   const decadeOf = s => (s.year ? Math.floor(s.year / 10) * 10 : (s.era || null));
@@ -231,7 +243,7 @@
 
   /* ---------------- one song ---------------- */
   function setControls(on) {
-    ["guessIn", "guessBtn", "skipBtn", "playBtn"].forEach(id => { $(id).disabled = !on; });
+    ["guessIn", "guessBtn", "skipBtn", "moreBtn", "playBtn"].forEach(id => { $(id).disabled = !on; });
   }
 
   async function nextSong() {
@@ -304,6 +316,9 @@
     $("sScore").textContent = S.score;
     $("sClip").textContent = CLIPS[S.stage] + "s";
     $("sWorth").textContent = S.done ? "—" : POINTS[S.stage];
+    const last = S.stage >= CLIPS.length - 1;
+    $("moreBtn").disabled = S.done || last;
+    $("moreBtn").innerHTML = last ? "NO LONGER CLIPS" : "I DON'T KNOW &middot; LONGER CLIP (WORTH " + POINTS[S.stage + 1] + ")";
   }
 
   function drawMeter() {
@@ -422,6 +437,12 @@
   $("dailyBtn").onclick = () => startRound(true);
   $("playBtn").onclick = playClip;
   $("guessBtn").onclick = submitGuess;
+  $("moreBtn").onclick = () => {
+    if (!S || S.done || S.stage >= CLIPS.length - 1) return;
+    S.stage++;
+    $("msg").innerHTML = '<span class="bad">Longer clip.</span> Clip extended to ' + CLIPS[S.stage] + "s, worth " + POINTS[S.stage] + " now.";
+    drawMeter(); updateStats(); $("guessIn").focus();
+  };
   $("skipBtn").onclick = () => { if (S && !S.done) finishSong(false); };
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };

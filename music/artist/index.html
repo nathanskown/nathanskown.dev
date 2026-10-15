@@ -39,15 +39,27 @@
   <div id="modeBanner" class="mock hidden"></div>
 
   <!-- SETUP -->
-  <section id="setup" class="panel">
-    <h2>NEW ROUND</h2>
-    <div id="filter" class="mx-pool"></div>
-    <div class="row">
-      <button class="primary" id="startBtn">START · 5 ARTISTS</button>
-      <button id="dailyBtn">DAILY CHALLENGE</button>
+  <section id="setup">
+    <div class="daily-card">
+      <div class="dc-top"><span class="dc-tag">DAILY</span><span class="dim">New one every day at midnight Chicago time</span></div>
+      <h2 class="dc-title">Daily Challenge</h2>
+      <p class="dc-desc">Everyone gets the same 5 artists today, with the same clues, so scores are directly comparable. Post your score to the <a href="/music/leaderboard/">leaderboard</a>.</p>
+      <div class="row"><button class="primary big" id="dailyBtn">PLAY TODAY'S CHALLENGE &#9654;</button></div>
+      <div class="hint" id="dailyNote"></div>
     </div>
-    <div class="hint">Clues: <b>3 tracks → a 4th → a 5th → genre, era &amp; country → their biggest hit</b>. Points: <b>5 / 4 / 3 / 2 / 1</b>.</div>
-    <div class="hint" id="dailyNote"></div>
+
+    <div class="custom-card">
+      <div class="dc-top"><span class="dc-tag alt">CUSTOM</span><span class="dim">Practice. Not on the leaderboard.</span></div>
+      <h2 class="dc-title sm">Custom Quiz</h2>
+      <p class="dc-desc">Choose the genres, eras and difficulty you want, then play 5 random artists from that pool.</p>
+      <div id="filter" class="mx-pool"></div>
+      <div class="row"><button class="primary big" id="startBtn">START &middot; 5 ARTISTS</button></div>
+    </div>
+
+    <div class="rules">
+      <div class="hint">Clues: <b>3 tracks &rarr; a 4th &rarr; a 5th &rarr; genre, era &amp; country &rarr; their biggest hit</b>. Points: <b>5 / 4 / 3 / 2 / 1</b>.</div>
+      <div class="hint">A new clue unlocks when you <b>submit a wrong guess</b>, or press <b>I don't know</b> to take the next clue for fewer points. Skip gives up the artist for 0 points.</div>
+    </div>
   </section>
 
   <!-- GAME -->
@@ -69,6 +81,7 @@
     </div>
     <div class="row" style="margin-top:10px">
       <button class="primary" id="guessBtn">SUBMIT GUESS</button>
+      <button id="moreBtn" class="ghost">I DON'T KNOW &middot; NEXT CLUE</button>
       <button id="skipBtn">SKIP (0 PTS)</button>
     </div>
     <div class="msg" id="msg" role="status" aria-live="polite"></div>
@@ -244,7 +257,7 @@
     S.stage = 0; S.done = false;
     SEEN.add(cur().artist.name);
     $("guessIn").value = ""; $("guessIn").disabled = false;
-    $("guessBtn").disabled = false; $("skipBtn").disabled = false;
+    $("guessBtn").disabled = false; $("skipBtn").disabled = false; $("moreBtn").disabled = false;
     $("msg").textContent = "";
     $("reveal").classList.add("hidden");
     ac.hide();
@@ -272,6 +285,9 @@
     $("sScore").textContent = S.score;
     $("sClues").textContent = (S.stage + 1) + "/" + cur().stages.length;
     $("sWorth").textContent = S.done ? "—" : worth(S.stage);
+    const last = S.stage >= cur().stages.length - 1;
+    $("moreBtn").disabled = S.done || last;
+    $("moreBtn").innerHTML = last ? "NO MORE CLUES" : "I DON'T KNOW &middot; NEXT CLUE (WORTH " + worth(S.stage + 1) + ")";
   }
 
   function submitGuess() {
@@ -295,7 +311,7 @@
     $("reveal").classList.toggle("win", got); $("reveal").classList.toggle("lose", !got);
     S.score += pts; S.done = true;
     S.results.push({ artist: a, got, pts, stage: S.stage, stages: c.stages.length });
-    $("guessIn").disabled = true; $("guessBtn").disabled = true; $("skipBtn").disabled = true;
+    $("guessIn").disabled = true; $("guessBtn").disabled = true; $("skipBtn").disabled = true; $("moreBtn").disabled = true;
     $("msg").innerHTML = got ? '<span class="ok">✓ Correct! +' + pts + "</span>" : '<span class="bad">✗ Out of clues. +0</span>';
     $("rName").textContent = a.name;
     $("rMeta").textContent = [(a.tags || []).slice(0, 3).join(" · "), a.country, a.debutDecade ? "since the " + a.debutDecade + "s" : ""].filter(Boolean).join(" · ");
@@ -374,6 +390,13 @@
   $("startBtn").onclick = () => startRound(false);
   $("dailyBtn").onclick = () => startRound(true);
   $("guessBtn").onclick = submitGuess;
+  $("moreBtn").onclick = () => {
+    if (!S || S.done || S.stage >= cur().stages.length - 1) return;
+    S.stage++;
+    renderClues(false);
+    $("msg").innerHTML = '<span class="bad">New clue.</span> Worth ' + worth(S.stage) + " now.";
+    updateStats(); $("guessIn").focus();
+  };
   $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
