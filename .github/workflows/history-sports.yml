@@ -1,14 +1,19 @@
 name: Sports history and tuning
 
-# Run by hand. Downloads the last five regular seasons for each league from ESPN, then replays them to
-# fit the house model's settings and checks the result on a held-out season (see pipeline/sports/tune.py).
-# Re-run it whenever you want the settings refit, for example at the start of a new season.
+# Downloads past regular seasons for each league from ESPN (see pipeline/sports/history.py for how many),
+# then replays them to fit the house model's settings and checks the result on held-out seasons
+# (pipeline/sports/tune.py). Run it by hand to refit, for example at the start of a new season.
+# It also runs by itself when history.py changes, to fetch whatever that change asks for; that run only
+# downloads (no refit), so a fetch-only change can never move the live model.
 on:
+  push:
+    branches: [main]
+    paths: ["pipeline/sports/history.py"]
   workflow_dispatch:
     inputs:
       leagues:
         description: "Leagues to download (comma separated)"
-        default: "nfl,ncaaf,nhl,nba,ncaab,ncaah"
+        default: "nfl,ncaaf,nhl,nba,ncaab,ncaah,mlb"
 
 permissions:
   contents: write
@@ -38,12 +43,22 @@ jobs:
             git commit -q -m "data: $1"
             for i in 1 2 3; do git pull -q --rebase -X theirs origin "$branch" && git push -q origin "HEAD:$branch" && break; sleep 5; done
           }
-          for lg in $(echo "${{ github.event.inputs.leagues || 'nfl,ncaaf,nhl,nba,ncaab,ncaah' }}" | tr ',' ' '); do
+          for lg in $(echo "${{ github.event.inputs.leagues || 'nfl,ncaaf,nhl,nba,ncaab,ncaah,mlb' }}" | tr ',' ' '); do
             echo "::group::history $lg"
             HIST_LG=$lg python -m pipeline.sports.run history || echo "history $lg exited with an error"
             echo "::endgroup::"
             save "sports history ($lg)"
+            python - "$lg" <<'PY'
+          import json, glob, sys
+          lg = sys.argv[1]
+          rows = []
+          for f in sorted(glob.glob(f"data/sports/history/{lg}_*.json")):
+              d = json.load(open(f))
+              rows.append(f"{d['year']}:{len(d['g'])}{'' if d.get('complete') else '!'}/L{d.get('lines', '-')}")
+          print(f"::notice title=history {lg}::" + " ".join(rows))
+          PY
           done
+          if [ "${{ github.event_name }}" = "push" ]; then echo "fetch-only run (push): skipping the refit"; exit 0; fi
           echo "::group::tune"
           python -m pipeline.sports.run tune || echo "tune exited with an error"
           echo "::endgroup::"
