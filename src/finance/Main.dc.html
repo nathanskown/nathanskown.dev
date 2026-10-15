@@ -502,7 +502,7 @@ class Component extends DCLogic {
             shares: so, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
           index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }]
-            .concat((M.r1000 || M.r2000) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
+            .concat(((M.r1000 || []).length || (M.r2000 || []).length) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
           next: up, own: own, peerRows: [], onDemand: true, staleTags: !!(Fn && Fn.staleTags), secBusy: !!(Fn && Fn.rateLimited && !(Fn.fin || []).length) || (!Fn && !!cik), partial: [(!Fn || Fn.rateLimited) && cik ? 'some SEC financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
         } });
       });

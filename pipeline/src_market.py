@@ -182,11 +182,11 @@ ISHARES_FIX = {"BRKB": "BRK-B", "BFB": "BF-B", "BFA": "BF-A", "LENB": "LEN-B", "
 def russell_members(key):
     """Russell 1000 / 2000 constituents from the iShares IWB / IWM daily holdings file -> [ticker]."""
     import csv as _csv
-    text = get(ISHARES[key], kind="text", timeout=40)
-    lines = text.splitlines()
-    start = next((i for i, ln in enumerate(lines) if ln.startswith("Ticker,")), None)
+    text = get(ISHARES[key], kind="text", timeout=40).lstrip("\ufeff")
+    lines = [ln.lstrip("\ufeff") for ln in text.splitlines()]
+    start = next((i for i, ln in enumerate(lines) if re.match(r'^\s*"?Ticker"?\s*,', ln)), None)
     if start is None:
-        raise RuntimeError(f"no holdings table in iShares {key} file")
+        raise RuntimeError(f"no holdings table in iShares {key} file; starts {text[:160]!r}")
     out = []
     for row in _csv.DictReader(lines[start:]):
         t = (row.get("Ticker") or "").strip().upper()
