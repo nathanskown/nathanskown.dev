@@ -143,6 +143,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section aria-label="Look up a stock" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 18px">
 <div style="flex: 1 1 480px; min-width: 0">
+<div class="f-kicker" aria-hidden="true">HDS · SEC 13F filings, quarterly</div>
 <h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">13F ownership tracker</h1>
 <div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 720px">Who owns a stock, who's buying, and who's leaving, from institutional 13F filings. Enter a ticker to look it up.</div>
 </div>
@@ -189,7 +190,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section aria-label="Ownership summary">
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{d.tiles}}" as="t" hint-placeholder-count="6">
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{t.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{t.color}}; margin-top: 2px">{{t.value}}</div>
 <div style="color: #A87933; font-size: 12.5px">{{t.sub}}</div>

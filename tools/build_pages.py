@@ -43,7 +43,8 @@ SECTIONS = {
     "finance": {
         "desc": "Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.",
         "css": "assets/finance.css",
-        "theme": "#050403",
+        "theme": "#070402",
+        "scripts": ["/assets/finance-ui.js"],
         "pages": [
             ("", "Dashboard.dc.html", {}, "Market dashboard"),
             ("digest", "Digest.dc.html", {}, "Market digest"),

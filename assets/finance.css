@@ -93,3 +93,107 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .dash-main{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;box-sizing:border-box}
 .t .dash-main>*{min-width:0}
 .t .dash-row{display:contents}
+
+/* ==========================================================================
+   v2 look: brighter amber with an amber-to-orange gradient, glowing figures,
+   accent-barred panels and a live market tape. Red and green stay reserved
+   for direction (prices, beats, misses). Everything above still applies;
+   these rules retune it.
+   ========================================================================== */
+body{background:#070402}
+.t{--a:#ffb84d;--hi:#ffdca3;--wh:#fff4e0;--gold:#ffd166;--orange:#ff8f3d;--line:#3d2b12;--band:#2a1d0b;--panel:#0b0704;--hover:#21170a;
+background:radial-gradient(1200px 520px at 50% -200px,rgba(255,184,77,.11),transparent 70%),radial-gradient(900px 640px at 100% 25%,rgba(255,143,61,.06),transparent 70%),#070402;
+text-shadow:0 0 5px rgba(255,184,77,.18)}
+.t a:focus-visible,.t button:focus-visible,.t input:focus-visible,.t select:focus-visible,.t [tabindex]:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(255,184,77,.35)}
+.t-skip{position:absolute;left:12px;top:-60px;z-index:100;padding:10px 14px;background:#ffd166;color:#000 !important;font:600 13px 'IBM Plex Mono',ui-monospace,monospace;text-decoration:none}
+.t-skip:focus{top:8px;outline:2px solid #fff;outline-offset:2px}
+
+/* header chrome */
+.t-title{background:linear-gradient(90deg,#140d05,#080503)}
+.t-fbar{background:linear-gradient(90deg,#ffd166 0%,#ffb84d 48%,#ff8f3d 100%);box-shadow:0 0 26px rgba(255,170,60,.2)}
+.t .t-fkey{transition:background .12s,color .12s}
+.t .t-fkey:hover{background:rgba(0,0,0,.84);color:var(--gold)}
+.t .t-fkey.is-on{background:#000;color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+.t-prompt{background:linear-gradient(90deg,#ffd166,#ffb84d)}
+.t-cmd:focus-within{border-color:var(--a);box-shadow:0 0 0 1px var(--a),0 0 22px rgba(255,184,77,.18)}
+.t-tag{background:linear-gradient(90deg,#ffd166,#ffb84d)}
+
+/* headings */
+.t h1{background:linear-gradient(92deg,#ffffff 0%,#ffe7bd 30%,#ffb84d 62%,#ff8f3d 100%);-webkit-background-clip:text;background-clip:text;color:transparent !important;text-shadow:none !important;filter:drop-shadow(0 0 14px rgba(255,170,60,.33))}
+.f-kicker{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.f-kicker::before{content:"";width:18px;height:2px;background:linear-gradient(90deg,var(--gold),var(--orange))}
+.f-kicker .f-live{color:var(--up)}
+
+/* panels */
+.t-panel,.t .t-card{background:linear-gradient(180deg,#110b05,#080503) !important;border-color:var(--line) !important;box-shadow:inset 0 1px 0 rgba(255,184,77,.07)}
+.t-ph{background:linear-gradient(90deg,rgba(255,184,77,.17),rgba(255,184,77,.05) 55%,rgba(255,184,77,.02));border-left:3px solid var(--a);border-bottom:1px solid var(--line)}
+.t-ph h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--wh)}
+.t-pn{color:var(--a)}
+.t .t-card > :first-child{background:linear-gradient(90deg,rgba(255,184,77,.17),rgba(255,184,77,.04)) !important;border-left:3px solid var(--a);border-bottom:1px solid var(--line)}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{text-transform:uppercase;letter-spacing:.1em;font-size:13px !important;color:var(--wh) !important}
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{color:var(--a)}
+.t-badge{background:rgba(0,0,0,.6);border-color:var(--line)}
+
+/* rows and tables */
+.t table td,.t table th{font-variant-numeric:tabular-nums}
+.t tbody tr{transition:background .12s}
+.t tbody tr:hover{background:rgba(255,184,77,.06)}
+.t .t-rowlink:hover{background:rgba(255,184,77,.07);box-shadow:inset 3px 0 0 var(--a)}
+
+/* tabs */
+.t .t-tab{transition:border-color .12s,color .12s,background .12s}
+.t .t-tab.is-on{background:linear-gradient(90deg,#ffd166,#ffb84d);border-color:transparent;color:#000;font-weight:600}
+.t .t-tab:hover:not(.is-on){border-color:var(--a);color:var(--wh);background:rgba(255,184,77,.07)}
+
+/* index tiles (dashboard): direction shows as a top edge as well as the arrow */
+.t .tl{position:relative;background:linear-gradient(180deg,#120c05,#050302);transition:border-color .15s,transform .15s,box-shadow .15s}
+.t .tl::before{content:"";position:absolute;left:-1px;right:-1px;top:-1px;height:2px;background:var(--line)}
+.t .tl.is-up::before{background:linear-gradient(90deg,transparent,#4ade80,transparent)}
+.t .tl.is-dn::before{background:linear-gradient(90deg,transparent,#ff5f56,transparent)}
+.t .tl:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 1px rgba(255,184,77,.3)}
+.t .tl.is-on{background:linear-gradient(180deg,#2b1d0a,#100a04);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 26px rgba(255,209,102,.2)}
+.t .tl .big{text-shadow:0 0 12px rgba(255,184,77,.35)}
+
+/* stat cards on the section pages */
+.t .f-stat{position:relative;overflow:hidden;background:linear-gradient(180deg,#130c05,#070402) !important;border-color:var(--line) !important;transition:border-color .15s}
+.t .f-stat::after{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--gold),var(--orange))}
+.t .f-stat:hover{border-color:rgba(255,184,77,.55) !important}
+.t .f-stat > div:nth-child(1){font-size:11.5px !important;letter-spacing:.08em;text-transform:uppercase}
+.t .f-stat > div:nth-child(2){font-family:'VT323',ui-monospace,monospace !important;font-size:32px !important;font-weight:400 !important;line-height:1.1;text-shadow:0 0 12px currentColor}
+
+.t .f-stat.sm > div:nth-child(2){font-size:26px !important}
+
+/* quote page */
+.t .f-price{display:inline-block;margin-top:10px;font-family:'VT323',ui-monospace,monospace !important;font-size:72px !important;line-height:.9;font-weight:400 !important;color:#fff4e0 !important;text-shadow:0 0 2px #ffb84d,0 0 22px rgba(255,184,77,.45)}
+.f-range{margin-top:12px;max-width:440px}
+.f-range-l{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);letter-spacing:.06em;margin-bottom:5px}
+.f-range-bar{position:relative;height:8px;background:linear-gradient(90deg,rgba(255,95,86,.35),rgba(255,184,77,.25),rgba(74,222,128,.35));border:1px solid var(--line)}
+.f-range-bar > i{position:absolute;top:-5px;width:3px;height:16px;margin-left:-1px;background:#fff;box-shadow:0 0 10px #ffb84d}
+
+/* sector heat cells */
+.t .f-heat{transition:transform .12s,box-shadow .12s}
+.t .f-heat:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.5)}
+
+/* bottom market tape, on every market page */
+.f-tape{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:stretch;height:34px;background:rgba(8,5,2,.95);border-top:1px solid #3d2b12;backdrop-filter:blur(6px);font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:12.5px;color:#ffdca3}
+.f-tape-l{display:flex;align-items:center;gap:6px;padding:0 12px;background:linear-gradient(90deg,#ffd166,#ffb84d);color:#000;font-weight:600;letter-spacing:.12em;white-space:nowrap}
+.f-tape-win{flex:1 1 auto;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 2%,#000 98%,transparent);mask-image:linear-gradient(90deg,transparent,#000 2%,#000 98%,transparent)}
+.f-tape-track{display:flex;width:max-content;height:100%;animation:f-tape 80s linear infinite}
+.f-tape:hover .f-tape-track,.f-tape:focus-within .f-tape-track,.f-tape.is-paused .f-tape-track{animation-play-state:paused}
+.f-tape-run{display:flex;align-items:center}
+.f-tape a{display:inline-flex;align-items:center;gap:8px;height:100%;padding:0 14px;color:#ffdca3;white-space:nowrap;border-right:1px solid #3d2b12;text-decoration:none}
+.f-tape a:hover,.f-tape a:focus-visible{background:#21170a;color:#fff;outline-offset:-2px}
+.f-tape .lbl{display:inline-flex;align-items:center;height:100%;padding:0 12px;background:#1a1208;color:#ffd166;font-size:11px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;border-right:1px solid #3d2b12}
+.f-tape b{color:#ffb84d;font-weight:600;letter-spacing:.06em}
+.f-tape .px{color:#fff4e0}
+.f-tape .u{color:#4ade80}
+.f-tape .d{color:#ff6b62}
+.f-tape .s{color:#c99442;letter-spacing:.1em}
+.f-tape button{flex:none;width:44px;border:0;border-left:1px solid #3d2b12;background:#000;color:#ffdca3;font:inherit;cursor:pointer}
+.f-tape button:hover{background:#ffb84d;color:#000}
+.f-tape button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+body.has-tape{padding-bottom:34px}
+@keyframes f-tape{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.f-tape-track{animation:none}.f-tape-win{overflow-x:auto}.t .tl:hover,.t .f-heat:hover{transform:none}}
+@media (max-width:760px){.f-tape{height:38px}.f-tape-l .x{display:none}body.has-tape{padding-bottom:38px}.t .f-price{font-size:56px !important}}
+@media print{.f-tape,.t-crt{display:none}}

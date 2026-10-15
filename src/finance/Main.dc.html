@@ -169,11 +169,17 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 <h1 style="margin: 10px 0 6px; font-size: 34px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">{{name}}</h1>
 <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #FFD89D">{{priceText}}</span>
+<span class="f-price" style="font-family: 'IBM Plex Mono', monospace; font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #FFD89D">{{priceText}}</span>
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: {{trendColor}}">{{trendArrow}} {{chgText}} ({{pctText}})</span>
 <span style="color: #C99442; font-size: 13.5px">{{rangeLabel}}</span>
 </div>
 <div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{asOf}}</div>
+<sc-if value="{{has52}}" hint-placeholder-val="{{ true }}">
+<div class="f-range" role="img" aria-label="{{pos52Text}}">
+<div class="f-range-l"><span>52W LOW {{lo52}}</span><span>52W HIGH {{hi52}}</span></div>
+<div class="f-range-bar"><i style="{{pos52Style}}"></i></div>
+</div>
+</sc-if>
 </div>
 </section>
 
@@ -214,7 +220,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Key statistics</h2>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{stats}}" as="s" hint-placeholder-count="8">
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div class="f-stat sm" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">{{s.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500; margin-top: 2px; color: #FFD89D">{{s.value}}</div>
 </div>
@@ -344,7 +350,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{indexes}}" as="ix" hint-placeholder-count="3">
 <div style="background: #0E0A05; border: 1px solid #382811; padding: 12px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center"><span style="color: #FFD89D">{{ix.n}}</span><span style="{{ix.statusStyle}}">{{ix.status}}</span></div>
 </sc-for>
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
+<div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
 <div style="color: #C99442; font-size: 12.5px">Held by index fund managers</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: #FFD89D">{{passiveText}}</div>
 <div aria-hidden="true" style="height: 6px; border-radius: 0; background: #241A0B; margin: 8px 0 6px"><div style="{{passiveBar}}"></div></div>
@@ -589,6 +595,9 @@ class Component extends DCLogic {
     var labels = { '1D': 'today', '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', 'YTD': 'year to date', '1Y': 'past year', '5Y': 'past 5 years' };
     return Object.assign(base, {
       sym: Q.sym, name: Q.name, subline: [Q.exch, Q.sector].filter(Boolean).join(' · '),
+      has52: S.lo52 != null && S.hi52 != null && S.hi52 > S.lo52 && q.price != null, lo52: F.usd(S.lo52, 2), hi52: F.usd(S.hi52, 2),
+      pos52Style: 'left: ' + (S.hi52 > S.lo52 ? Math.max(0, Math.min(100, (q.price - S.lo52) / (S.hi52 - S.lo52) * 100)).toFixed(1) : 50) + '%',
+      pos52Text: S.hi52 > S.lo52 && q.price != null ? 'Price is ' + Math.round(Math.max(0, Math.min(100, (q.price - S.lo52) / (S.hi52 - S.lo52) * 100))) + '% of the way from the 52-week low to the high' : '',
       priceText: F.usd(q.price, 2), trendColor: up ? UP : DN, trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
       trendArrow: up ? '▲' : '▼', chgText: (up ? '+' : '−') + '$' + F.n(Math.abs(chg), 2), pctText: F.pct(first ? chg / first * 100 : null),
       rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL + ' · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),

@@ -143,6 +143,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section aria-label="Market summary" style="flex: 1 1 100%; order: 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
 <div style="min-width: 0">
+<div class="f-kicker" aria-hidden="true">WEI · US markets · delayed 15 min</div>
 <h1 class="big" style="margin: 0; font-size: 56px; line-height: .9; color: #ffd89d; text-shadow: 0 0 2px #ffb84d, 0 0 18px rgba(255,184,77,.4)">MARKETS TODAY</h1>
 <div style="color: #c99442; font-size: 13.5px; margin-top: 6px">{{summary}}</div>
 </div>
@@ -310,7 +311,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
 <sc-for list="{{sectors}}" as="sc" hint-placeholder-count="11">
-<div style="{{sc.cellStyle}}">
+<div class="f-heat" style="{{sc.cellStyle}}">
 <span style="font-size: 12.5px">{{sc.n}}</span>
 <span style="font-size: 12.5px; font-weight: 600">{{sc.chg}}</span>
 </div>
@@ -538,7 +539,7 @@ class Component extends DCLogic {
         name: t.name, disp: fmt(t.price, t.dec, t.unit), color: up ? UP : DN,
         pctText: t.pct === null || t.pct === undefined ? '—' : (t.unit === '%' ? F.arrow(t.chg) + ' ' + chgText(t) : F.arrow(t.pct) + ' ' + F.pct(t.pct)),
         spark: path(t.c, 160, 3, 30), pressed: on ? 'true' : 'false',
-        pick: function () { self.setState({ sel: t.id }); }, cls: 'tl' + (on ? ' is-on' : '')
+        pick: function () { self.setState({ sel: t.id }); }, cls: 'tl' + (on ? ' is-on' : '') + (t.pct === null || t.pct === undefined || t.pct === 0 ? '' : (up ? ' is-up' : ' is-dn'))
       };
     });
     cur = cur || { name: 'Loading', c: [], t: [], dec: 2 };
