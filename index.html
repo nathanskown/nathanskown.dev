@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nathan Skown · NSKN Terminal</title>
-<meta name="description" content="A personal terminal for market analysis, sports and music games.">
+<title>NSKN Terminal · Markets, Sports &amp; Music</title>
+<meta name="author" content="Nathan Skown">
+<meta name="description" content="A live terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#020402">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +20,7 @@
 <div class="nk-title">
 <span class="nk-brand">1-NSKN</span>
 <span class="nk-chip nk-hide-sm">Main Menu</span>
-<span class="nk-chip nk-hide-sm">NATHAN SKOWN &lt;PERSON&gt;</span>
+<span class="nk-chip nk-hide-sm">MARKETS · SPORTS · MUSIC</span>
 <span class="nk-chip nk-hide-sm">HOME</span>
 <span class="nk-spacer"></span>
 <span class="nk-live"><span class="nk-dot"></span>LIVE</span>
@@ -90,28 +91,35 @@
 </nav>
 
 <section class="nk-center" aria-label="Home">
-<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim">Page 1 of 1</span></div>
+<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim nk-keys">KEYS <span class="nk-k">/</span> COMMAND · <span class="nk-k">1</span><span class="nk-k">2</span><span class="nk-k">3</span> MODE</span></div>
+<div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
 
 <div class="nk-hero" id="hero">
 <canvas class="nk-canvas" id="surface" aria-hidden="true"></canvas>
 <div class="nk-hero-in">
-<div class="nk-kicker">NSKN &lt;PERSON&gt; · Personal Terminal</div>
-<h1 class="nk-name" id="name" aria-label="Nathan Skown"><span aria-hidden="true" id="nameA">NATHAN</span><span aria-hidden="true" id="nameB">SKOWN</span></h1>
+<div class="nk-kicker"><span class="nk-dot"></span>NSKN TERMINAL<span class="nk-kick-mode"><span class="nk-sep">//</span>MODE <span id="modeIdx">01</span>/03</span><span class="nk-sep">//</span><span id="modeName">MARKETS</span></div>
+<h1 class="nk-word" id="word" aria-label="NSKN Terminal: markets, sports and music"><span aria-hidden="true" id="wordA"></span><span class="nk-word-cur" aria-hidden="true">_</span></h1>
 <p class="nk-typed"><span class="nk-gt">&gt;</span> <span id="typed"></span><span class="nk-caret" aria-hidden="true"></span></p>
-<p class="nk-meta">Markets · Sports · Music · Data<span class="nk-sep">//</span>Personal project · est. 2026</p>
+<div class="nk-modes" role="tablist" aria-label="Modes">
+<button type="button" class="nk-mode" role="tab" data-mode="0" style="--mc:#ffbf3a"><span>01 MARKETS</span><i class="nk-mode-bar"></i></button>
+<button type="button" class="nk-mode" role="tab" data-mode="1" style="--mc:#66e6f2"><span>02 SPORTS</span><i class="nk-mode-bar"></i></button>
+<button type="button" class="nk-mode" role="tab" data-mode="2" style="--mc:#d58bff"><span>03 MUSIC</span><i class="nk-mode-bar"></i></button>
+</div>
 
 <div class="nk-secs">
-<a class="nk-sec" id="secMkt" href="/finance/">
+<a class="nk-sec" id="secMkt" href="/finance/" style="--g:#ffbf3a;--glow:rgba(255,191,58,.18);--line:#3d2e0d">
 <span class="nk-sec-top"><span class="nk-num">2)</span><span class="nk-k">MKT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">MARKET<br>ANALYSIS</span>
 <span class="nk-sec-d">Dashboard · headlines · quotes · ownership · earnings · macro · IPOs</span>
+<span class="nk-sec-live" id="cardMkt">Loading markets…</span>
 <span class="nk-sec-viz"><span class="nk-sec-chips"><span>WEI</span><span>TOP</span><span>DES</span><span>HDS</span><span>ERN</span><span>ECO</span><span>IPO</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
-<a class="nk-sec" id="secSprt" href="/sports/">
+<a class="nk-sec" id="secSprt" href="/sports/" style="--g:#66e6f2;--glow:rgba(102,230,242,.18);--line:#12363b">
 <span class="nk-sec-top"><span class="nk-num">3)</span><span class="nk-k">SPRT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">SPORTS</span>
 <span class="nk-sec-d">Live scores · game center · team pages · playoff odds · matchup simulator · injuries · pick track record</span>
+<span class="nk-sec-live" id="cardSprt">Loading scores…</span>
 <span class="nk-sec-viz"><span class="nk-sec-chips"><span>SCOR</span><span>GAME</span><span>TEAM</span><span>ODDS</span><span>SIM</span><span>INJ</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
@@ -119,6 +127,7 @@
 <span class="nk-sec-top"><span class="nk-num">4)</span><span class="nk-k">MUS</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">MUSIC</span>
 <span class="nk-sec-d">Two guessing games · name the song from a clip · name the artist from their deep cuts</span>
+<span class="nk-sec-live"><span class="nk-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>TODAY'S DAILY IS LIVE</span>
 <span class="nk-sec-viz"><span class="nk-sec-chips"><span>TRCK</span><span>ARTS</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
@@ -129,7 +138,7 @@
 </button>
 </div>
 </div>
-<div class="nk-fig">FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT</div>
+<div class="nk-fig" id="fig">FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT</div>
 </div>
 
 <div class="nk-screen" id="panel" hidden>

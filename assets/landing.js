@@ -189,35 +189,95 @@
     if (e.key === 'Escape') $('drawer').hidden = true;
   });
 
-  /* ---------- headline scramble + typing ---------- */
+  /* ---------- hero: one big word that cycles MARKETS → SPORTS → MUSIC ----------
+     Each mode recolors the hero, morphs the wireframe into its own surface, and retypes the line under the
+     headline with live numbers when they're in. Hovering a section card (or a mode tab) jumps to that mode. */
+  var MODES = [
+    { k: 'mkt', word: 'MARKETS', rgb: [255, 191, 58], card: 'secMkt', fig: 'FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT',
+      line: function (L) { return L.spx ? 'S&P 500 ' + L.spx + '  ·  quotes, filings & 13F ownership for any US ticker' : 'quotes, filings & 13F ownership for any US ticker'; } },
+    { k: 'sprt', word: 'SPORTS', rgb: [102, 230, 242], card: 'secSprt', fig: 'FIG.2 · WIN PROBABILITY FIELD · SIMULATED · MOVE TO TILT',
+      line: function (L) { return (L.live ? L.live + ' games live right now  ·  ' : L.next ? 'next up: ' + L.next + '  ·  ' : '') + 'scores, odds & simulations, every league'; } },
+    { k: 'mus', word: 'MUSIC', rgb: [213, 139, 255], card: 'secMusic', fig: 'FIG.3 · SPECTRUM RIPPLE · SIMULATED · MOVE TO TILT',
+      line: function () { return 'name the song from a one-second clip  ·  new daily challenge every day'; } }
+  ];
+  var LIVE = window.NSKN_LIVE = window.NSKN_LIVE || {};
+  var mode = 0, modeAt = 0, held = false, CYCLE = 6500;
   var scr = null, typ = null, typedOnce = false;
+  var G = '#$%&*+=<>/?|0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
   function type() {
-    var T = 'a personal terminal for markets, sports & music';
+    var T = MODES[mode].line(LIVE);
     var out = $('typed');
+    clearInterval(typ);
     if (reduced) { out.textContent = T; return; }
-    var i = 0; clearInterval(typ);
-    typ = setInterval(function () { i++; out.textContent = T.slice(0, i); if (i >= T.length) clearInterval(typ); }, 28);
+    var i = 0;
+    typ = setInterval(function () { i++; out.textContent = T.slice(0, i); if (i >= T.length) clearInterval(typ); }, 18);
   }
   function scramble() {
-    var A = 'NATHAN', B = 'SKOWN', G = '#$%&*+=<>/?|0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    var a = $('nameA'), b = $('nameB');
-    if (reduced) { a.textContent = A; b.textContent = B; if (!typedOnce) { typedOnce = true; type(); } return; }
-    var dur = 1250, start = performance.now();
-    var la = A.split('').map(function () { return dur * (0.2 + Math.random() * 0.8); });
-    var lb = B.split('').map(function () { return dur * (0.2 + Math.random() * 0.8); });
-    var mix = function (s, locks, e) { return s.split('').map(function (ch, i) { return e >= locks[i] ? ch : G[Math.floor(Math.random() * G.length)]; }).join(''); };
+    var A = MODES[mode].word, a = $('wordA');
+    typedOnce = true;
+    if (reduced) { a.textContent = A; type(); return; }
+    var from = a.textContent || '', n = Math.max(from.length, A.length), dur = 700, start = performance.now();
+    var locks = []; for (var q = 0; q < n; q++) locks.push(dur * (0.25 + 0.75 * q / n) * (0.7 + Math.random() * 0.3));
     clearInterval(scr);
     scr = setInterval(function () {
-      var e = performance.now() - start;
-      if (e >= dur) {
-        clearInterval(scr); scr = null; a.textContent = A; b.textContent = B;
-        if (!typedOnce) { typedOnce = true; type(); }
-        return;
-      }
-      a.textContent = mix(A, la, e); b.textContent = mix(B, lb, e);
-    }, 45);
+      var e = performance.now() - start, out = '';
+      for (var i = 0; i < n; i++) out += e >= locks[i] ? (A[i] || '') : G[Math.floor(Math.random() * G.length)];
+      a.textContent = out;
+      if (e >= dur) { clearInterval(scr); scr = null; a.textContent = A; }
+    }, 40);
+    type();
   }
-  $('name').addEventListener('pointerenter', function () { if (!state.booting && !scr) scramble(); });
+  function setMode(i, why) {
+    i = (i + MODES.length) % MODES.length;
+    var changed = i !== mode;
+    mode = i; modeAt = performance.now();
+    var m = MODES[i], hero = $('hero');
+    hero.setAttribute('data-mode', m.k);
+    hero.style.setProperty('--hg', 'rgb(' + m.rgb.join(',') + ')');
+    $('modeIdx').textContent = '0' + (i + 1);
+    $('modeName').textContent = m.word;
+    $('fig').textContent = m.fig;
+    var tabs = document.querySelectorAll('.nk-mode');
+    for (var t = 0; t < tabs.length; t++) { var on = +tabs[t].getAttribute('data-mode') === i; tabs[t].classList.toggle('is-on', on); tabs[t].setAttribute('aria-selected', on); }
+    MODES.forEach(function (x, k) { var c = $(x.card); if (c) c.classList.toggle('is-mode', k === i); });
+    if (changed || why === 'start') scramble();
+  }
+  // a tab's progress bar shows time until the next mode; hovering anything in the hero holds the current one
+  function cycleTick(now) {
+    if (!state.booting && !held && !reduced && now - modeAt > CYCLE && !document.hidden) setMode(mode + 1);
+    var bar = document.querySelector('.nk-mode.is-on .nk-mode-bar');
+    var f = held || reduced ? 1 : Math.min(1, (now - modeAt) / CYCLE);
+    if (bar) bar.style.transform = 'scaleX(' + f.toFixed(3) + ')';
+  }
+  MODES.forEach(function (m, i) {
+    var c = $(m.card);
+    if (!c) return;
+    c.addEventListener('pointerenter', function () { held = true; setMode(i); });
+    c.addEventListener('focus', function () { held = true; setMode(i); });
+    c.addEventListener('pointerleave', function () { held = false; modeAt = performance.now(); });
+    c.addEventListener('blur', function () { held = false; modeAt = performance.now(); });
+  });
+  document.querySelectorAll('.nk-mode').forEach(function (b) {
+    b.addEventListener('click', function () { setMode(+b.getAttribute('data-mode')); });
+  });
+  $('word').addEventListener('pointerenter', function () { if (!state.booting && !scr) scramble(); });
+  // cursor spotlight on the hero
+  $('hero').addEventListener('pointermove', function (e) {
+    var r = this.getBoundingClientRect();
+    this.style.setProperty('--sx', (e.clientX - r.left) + 'px');
+    this.style.setProperty('--sy', (e.clientY - r.top) + 'px');
+  });
+  // keys: / focuses the command line; 1-3 pick a mode; ← → step through modes
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); $('nk-cmd-in').focus(); }
+    else if (e.key >= '1' && e.key <= '3') setMode(+e.key - 1);
+    else if (e.key === 'ArrowRight') setMode(mode + 1);
+    else if (e.key === 'ArrowLeft') setMode(mode - 1);
+  });
+  // live numbers arrive later; retype the line if the current mode can use them
+  LIVE.onUpdate = function () { if (!state.booting && typedOnce) type(); };
 
   /* ---------- boot sequence ---------- */
   var BOOT = [
@@ -226,9 +286,10 @@
     ['MOUNT  /website', 'OK'],
     ['MOUNT  /website/finance', 'OK'],
     ['MOUNT  /website/sports', 'OK'],
+    ['MOUNT  /website/music', 'OK'],
     ['HANDSHAKE  nathanskown.dev:443', 'OK'],
     ['SYNC CLOCKS  ' + CLOCKS.map(function (c) { return c[0]; }).join(' · '), 'OK'],
-    ['BUILD SURFACE  IV(K,T) · 36x22 MESH', 'OK'],
+    ['BUILD SURFACES  IV(K,T) · WP(M,T) · FFT(F,T) · 36x22 MESH', 'OK'],
     ['INDEX SECTIONS  MARKET ANALYSIS · SPORTS · MUSIC', 'OK']
   ];
   var bootN = 0, bt = null;
@@ -259,10 +320,10 @@
     clearTimeout(bt);
     state.bootOut = true;
     $('boot').classList.add('is-out');
-    bt = setTimeout(function () { $('boot').hidden = true; state.booting = false; scramble(); }, skip ? 220 : 470);
+    bt = setTimeout(function () { $('boot').hidden = true; state.booting = false; modeAt = performance.now(); scramble(); }, skip ? 220 : 470);
   }
   function reboot() {
-    clearInterval(scr); scr = null; clearInterval(typ); typedOnce = false; $('typed').textContent = '';
+    clearInterval(scr); scr = null; clearInterval(typ); typedOnce = false; $('typed').textContent = ''; $('wordA').textContent = '';
     if (reduced) { scramble(); return; }
     runBoot();
   }
@@ -277,7 +338,7 @@
     tmy = ((e.clientY - r.top) / r.height - 0.5) * 2;
   });
   hero.addEventListener('pointerleave', function () { tmx = 0; tmy = 0; });
-  var RGB = '141,255,156';
+  var RGB = '255,191,58', CUR = [255, 191, 58], MW = [1, 0, 0];
   var TENORS = ['1M', '2M', '3M', '4M', '5M', '6M', '7M', '8M', '9M', '10M', '11M', '1Y', '13M', '14M', '15M', '16M', '18M', '19M', '20M', '21M', '22M', '2Y'];
   function draw(now) {
     var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -291,10 +352,16 @@
       if (!t0) t0 = now;
       var t = reduced ? 3 : (now - t0) / 1000;
       mx += (tmx - mx) * 0.05; my += (tmy - my) * 0.05;
+      cycleTick(now);
+      // ease color and surface shape toward the current mode
+      var tgt = MODES[mode].rgb, ease = reduced ? 1 : 0.06;
+      for (var c3 = 0; c3 < 3; c3++) { CUR[c3] += (tgt[c3] - CUR[c3]) * ease; MW[c3] += ((c3 === mode ? 1 : 0) - MW[c3]) * ease; }
+      RGB = CUR.map(Math.round).join(',');
+      var dom = MW.indexOf(Math.max.apply(null, MW));
       var narrow = w < 700;
-      var cx = narrow ? w * 0.5 : w * 0.72;
-      var cy = narrow ? h - Math.min(170, h * 0.27) : h * 0.5;
-      var S = narrow ? Math.min(w * 0.42, 172) : Math.min(w * 0.27, h * 0.48);
+      var cx = narrow ? w * 0.5 : w * 0.8;
+      var cy = narrow ? h - Math.min(170, h * 0.27) : h * 0.45;
+      var S = narrow ? Math.min(w * 0.42, 172) : Math.min(w * 0.22, h * 0.4, 210);
       var yaw = -0.62 + Math.sin(t * 0.12) * 0.55 + mx * 0.7;
       var pitch = 0.5 + my * 0.28;
       var cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
@@ -303,10 +370,25 @@
         var Y = zz * cp + D * sp, Dz = D * cp - zz * sp, k = 3.4 / (3.4 + Dz);
         return [cx + X * S * k, cy - Y * S * k, Dz];
       };
-      var surf = function (u, v) {
+      var fMkt = function (u, v) {   // implied vol: smile across strikes, flattening with tenor
         var T = (v + 1) / 2;
         return 0.52 * u * u * (1.1 - 0.7 * T) - 0.17 * u * (1 - 0.55 * T) + 0.24 * Math.exp(-3.4 * T)
           + 0.05 * Math.sin(2.4 * u + 1.9 * v + t * 0.9) + 0.03 * Math.cos(3.3 * v - t * 0.6 + u * 1.3) - 0.12;
+      };
+      var fSprt = function (u, v) {  // win probability: a logistic cliff in score margin that sharpens as the clock runs out
+        var T = (v + 1) / 2, k = 2.2 + 7 * T, m = u - 0.35 * Math.sin(t * 0.5 + T * 2.2);
+        return 0.62 / (1 + Math.exp(-k * m)) - 0.3 + 0.025 * Math.sin(4 * u - t * 1.3 + v * 3);
+      };
+      var fMus = function (u, v) {   // spectrum ripple: rings spreading from a pulsing center
+        var r = Math.sqrt(u * u + v * v), beat = 0.75 + 0.25 * Math.abs(Math.sin(t * 2.1));
+        return 0.3 * beat * Math.cos(8 * r - t * 3.2) * Math.exp(-1.5 * r) + 0.05 * Math.sin(6 * u + t * 1.7) * Math.cos(5 * v - t) - 0.02;
+      };
+      var surf = function (u, v) {
+        var z = 0;
+        if (MW[0] > 0.002) z += MW[0] * fMkt(u, v);
+        if (MW[1] > 0.002) z += MW[1] * fSprt(u, v);
+        if (MW[2] > 0.002) z += MW[2] * fMus(u, v);
+        return z;
       };
       var NU = 36, NV = 22, zF = -0.36, pts = [], best = null, i, j;
       for (j = 0; j < NV; j++) {
@@ -359,18 +441,26 @@
       // keep every label fully inside the frame (narrow screens used to clip them)
       var put = function (txt, x, y) { var tw2 = ctx.measureText(txt).width; ctx.fillText(txt, Math.max(4, Math.min(x, w - tw2 - 4)), y); };
       var lab = function (u2, v2, txt, dx, dy) { var p4 = proj(u2, v2, zF); put(txt, p4[0] + dx, p4[1] + dy); };
+      var AX = [
+        { x: [['80%', -1], ['100%', 0], ['120%', 1]], xl: 'STRIKE / SPOT', y: [['1M', -1], ['6M', 0], ['2Y', 1]], yl: 'TENOR' },
+        { x: [['-14', -1], ['0', 0], ['+14', 1]], xl: 'SCORE MARGIN', y: [['Q1', -1], ['HALF', 0], ['END', 1]], yl: 'CLOCK' },
+        { x: [['-1', -1], ['0', 0], ['+1', 1]], xl: 'STEREO FIELD', y: [['20HZ', -1], ['1K', 0], ['20K', 1]], yl: 'FREQ' }
+      ][dom];
       if (w >= 560) {  // axis labels only where there's room for them
-        [['80%', -1], ['100%', 0], ['120%', 1]].forEach(function (x) { lab(x[1], -1.12, x[0], -12, 13); });
-        lab(0, -1.4, 'STRIKE / SPOT', -38, 15);
-        [['1M', -1], ['6M', 0], ['2Y', 1]].forEach(function (x) { lab(1.12, x[1], x[0], 6, 4); });
-        lab(1.42, 0, 'TENOR', 6, 18);
+        AX.x.forEach(function (x) { lab(x[1], -1.12, x[0], -12, 13); });
+        lab(0, -1.4, AX.xl, -38, 15);
+        AX.y.forEach(function (x) { lab(1.12, x[1], x[0], 6, 4); });
+        lab(1.42, 0, AX.yl, 6, 18);
       }
       var sl = pts[js][NU - 1];
       ctx.fillStyle = 'rgba(' + RGB + ',0.95)';
-      put('T=' + TENORS[js], sl[0] + 8, sl[1] + 3);
+      put(dom === 0 ? 'T=' + TENORS[js] : dom === 1 ? 'Q' + (1 + Math.floor(js / NV * 4)) + ' ' + p2(14 - (js * 7) % 15) + ':00' : 'BAR ' + (js + 1), sl[0] + 8, sl[1] + 3);
       if (best) {
-        var bx = best[0], by = best[1], iv = (16 + (best[3] + 0.2) * 22).toFixed(1);
-        var txt = 'MAX IV ' + iv + '%  [SIM]', tw = ctx.measureText(txt).width, left = bx + 20 + tw > w - 8;
+        var bx = best[0], by = best[1];
+        var txt = dom === 0 ? 'MAX IV ' + (16 + (best[3] + 0.2) * 22).toFixed(1) + '%  [SIM]'
+          : dom === 1 ? 'WIN PROB ' + Math.min(99.9, 50 + (best[3] + 0.3) / 0.62 * 50).toFixed(1) + '%  [SIM]'
+          : 'PEAK ' + (-12 + best[3] * 40).toFixed(1) + ' dB  [SIM]';
+        var tw = ctx.measureText(txt).width, left = bx + 20 + tw > w - 8;
         ctx.strokeStyle = 'rgba(' + RGB + ',1)'; ctx.lineWidth = 1;
         ctx.strokeRect(bx - 3.5, by - 3.5, 7, 7);
         ctx.beginPath(); ctx.moveTo(bx, by - 5); ctx.lineTo(bx, by - 34); ctx.lineTo(left ? bx - 14 : bx + 14, by - 34); ctx.stroke();
@@ -387,6 +477,7 @@
   requestAnimationFrame(draw);
   var seen = false;
   try { seen = sessionStorage.getItem('nskn-booted') === '1'; sessionStorage.setItem('nskn-booted', '1'); } catch (e) { seen = false; }
+  setMode(0);
   if (!reduced && !seen) runBoot(); else scramble();
   if (location.hash === '#digest') setActive('digest');
   if (location.hash === '#contact') setActive('contact');
@@ -422,6 +513,27 @@
         var px = x[0] === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: x[2], maximumFractionDigits: x[2] });
         return '<dt>' + esc(x[1]) + '</dt><dd>' + px + '</dd><dd class="nk-chg' + (up ? '' : ' nk-dn') + '">' + (up ? '▲ +' : '▼ −') + Math.abs(t.pct || 0).toFixed(2) + '%</dd>';
       }).join('');
+      // hero line, MKT card and the scrolling ticker share these numbers
+      var L = window.NSKN_LIVE || {}, spx = by.spx;
+      if (spx && spx.price != null) {
+        L.spx = spx.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + ((spx.pct || 0) >= 0 ? '▲' : '▼') + Math.abs(spx.pct || 0).toFixed(2) + '%';
+        var cm = document.getElementById('cardMkt');
+        if (cm) cm.innerHTML = '<span class="nk-live-dot"></span>S&amp;P 500 <b>' + esc(L.spx) + '</b>';
+      }
+      var NAMES = { spx: 'S&P 500', ixic: 'NASDAQ', dji: 'DOW', rut: 'RUSSELL', vix: 'VIX', tnx: 'US 10Y', dxy: 'DXY', wti: 'WTI', gold: 'GOLD', btc: 'BTC',
+        ftse: 'FTSE', dax: 'DAX', sx5e: 'STOXX 50', n225: 'NIKKEI', hsi: 'HANG SENG', tsx: 'TSX', eurusd: 'EUR/USD', usdjpy: 'USD/JPY', gbpusd: 'GBP/USD' };
+      var tk = document.getElementById('tickTrack');
+      if (tk && d.tiles && d.tiles.length) {
+        var one = d.tiles.filter(function (t) { return t.price != null; }).map(function (t) {
+          var up = (t.pct || 0) >= 0, dp = t.price < 10 ? 4 : 2;
+          return '<a class="nk-tk' + (up ? '' : ' nk-dn') + '" href="/finance/"><b>' + esc(NAMES[t.id] || t.name) + '</b> ' +
+            (t.id === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp })) +
+            ' <span>' + (up ? '▲' : '▼') + Math.abs(t.pct || 0).toFixed(2) + '%</span></a>';
+        }).join('');
+        tk.innerHTML = '<div class="nk-tick-run">' + one + '</div><div class="nk-tick-run" aria-hidden="true">' + one + '</div>';
+        tk.closest('.nk-tick').hidden = false;
+      }
+      if (L.onUpdate) L.onUpdate();
       var asof = document.getElementById('nowAsOf');
       if (asof && d.asOf) asof.textContent = 'As of ' + new Date(d.asOf * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + ZONE;
       render();
@@ -449,6 +561,13 @@
       var fin = all.filter(function (g) { return g.state === 'post' && day(g.at) === today; }).sort(function (a, b) { return b.at - a.at; });
       var pickMine = function (xs) { return xs.filter(function (g) { return g.mine; }).concat(xs.filter(function (g) { return !g.mine; })); };
       var rows = pickMine(live).concat(pickMine(next).slice(0, 4), fin).slice(0, 8);
+      var L2 = window.NSKN_LIVE || {};
+      L2.live = live.length;
+      L2.next = next.length ? next[0].away + ' @ ' + next[0].home + ' ' + when(next[0].at) : '';
+      var cs2 = document.getElementById('cardSprt');
+      if (cs2 && !failed) cs2.innerHTML = live.length ? '<span class="nk-live-dot"></span><b>' + live.length + ' LIVE NOW</b> · ' + esc(live[0].L[0] + ' ' + live[0].away + ' ' + live[0].as + '-' + live[0].hs + ' ' + live[0].home)
+        : next.length ? 'NEXT · <b>' + esc(next[0].L[0] + ' ' + next[0].away + ' @ ' + next[0].home) + '</b> ' + esc(when(next[0].at)) : 'No games in the next day and a half';
+      if (L2.onUpdate) L2.onUpdate();
       var head = '<dt class="nk-now-h">SPORTS · ' + (live.length ? live.length + ' LIVE NOW' : 'TODAY') + '</dt>';
       games = head + (rows.length ? rows.map(function (g) {
         var left = '<b class="nk-lg">' + g.L[0] + '</b> ' + (g.state === 'pre' ? esc(g.away) + ' @ ' + esc(g.home) : esc(g.away) + ' ' + esc(g.as) + ' @ ' + esc(g.home) + ' ' + esc(g.hs));
