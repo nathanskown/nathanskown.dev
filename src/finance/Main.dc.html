@@ -183,6 +183,20 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
+<sc-if value="{{hasAbout}}" hint-placeholder-val="{{ true }}">
+<section aria-label="About the company" style="display: flex; gap: 0; margin: 0 0 24px; background: #0A0704; border: 1px solid #382811">
+<div aria-hidden="true" style="flex: none; width: 4px; background: #FFB84D; box-shadow: 0 0 10px rgba(255,184,77,.5)"></div>
+<div style="padding: 14px 18px; min-width: 0">
+<div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px">
+<span style="font-size: 11px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
+<sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12.5px; color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
+</div>
+<p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #FFE9C7; max-width: 980px">{{aboutText}}</p>
+<div style="margin-top: 6px; font-size: 11.5px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
+</div>
+</section>
+</sc-if>
+
 <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
 
 <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
@@ -494,6 +508,43 @@ class Component extends DCLogic {
       });
     }).catch(function () { self.setState({ loading: null, notTracked: sym, notFoundWhy: 'error' }); });
   }
+  componentDidUpdate() {
+    /* company blurb: looked up on Wikipedia by company name, validated by name match, cached for the session */
+    var self = this, st = this.state || {}, Q = st.q;
+    if (!Q || !Q.sym || st.aboutFor === Q.sym || this._aboutBusy === Q.sym) return;
+    this._aboutBusy = Q.sym;
+    var sym = Q.sym, name = Q.name || sym;
+    var done = function (a) { self._aboutBusy = null; self.setState({ aboutFor: sym, about: a }); };
+    try { var c = sessionStorage.getItem('about:' + sym); if (c) { done(JSON.parse(c)); return; } } catch (e) {}
+    var STOP = { inc: 1, corp: 1, corporation: 1, co: 1, company: 1, ltd: 1, limited: 1, plc: 1, holdings: 1, group: 1, the: 1, 'class': 1, a: 1, b: 1, c: 1, de: 1, sa: 1, nv: 1, ag: 1, lp: 1, llc: 1, 'new': 1, common: 1, stock: 1, cl: 1 };
+    var toks = function (t) { return String(t).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(function (w) { return w && !STOP[w]; }); };
+    var score = function (a, b) {
+      var x = toks(a), y = toks(b); if (!x.length || !y.length) return 0;
+      var ys = {}; y.forEach(function (w) { ys[w] = 1; }); var hit = 0; x.forEach(function (w) { if (ys[w]) hit++; });
+      return hit / Math.max(x.length, y.length);
+    };
+    var short = function (txt) {
+      var parts = String(txt || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+(?=[A-Z])/), out = '';
+      for (var i = 0; i < parts.length && out.length < 220; i++) out += (out ? ' ' : '') + parts[i];
+      if (out.length > 380) out = out.slice(0, 380).replace(/\s+\S*$/, '') + '…';
+      return out;
+    };
+    fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srlimit=5&format=json&origin=*&srsearch=' + encodeURIComponent(name + ' company'))
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var best = null;
+        ((j.query || {}).search || []).forEach(function (h) { var sc = score(h.title, name); if (!best || sc > best.sc) best = { sc: sc, title: h.title }; });
+        if (!best || best.sc < 0.5) throw new Error('no match');
+        return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(best.title.replace(/ /g, '_'))).then(function (r) { return r.json(); });
+      })
+      .then(function (p) {
+        if (!p || !p.extract || p.type === 'disambiguation') throw new Error('no extract');
+        var a = { text: short(p.extract), kind: p.description || '', url: (p.content_urls && p.content_urls.desktop && p.content_urls.desktop.page) || 'https://en.wikipedia.org/wiki/' + encodeURIComponent(p.title || name) };
+        try { sessionStorage.setItem('about:' + sym, JSON.stringify(a)); } catch (e) {}
+        done(a);
+      })
+      .catch(function () { done(null); });
+  }
   renderVals() {
     var UP = '#4ADE80', DN = '#FF5F56';
     var self = this;
@@ -508,7 +559,8 @@ class Component extends DCLogic {
     var rec = PREFS.get('fin.recent', []);
     if (Q && Q.sym && rec[0] !== Q.sym) rec = PREFS.set('fin.recent', [Q.sym].concat(rec.filter(function (x) { return x !== Q.sym; })).slice(0, 10));
     var recent = rec.map(function (t) { return { t: t, href: 'Main.dc.html?sym=' + encodeURIComponent(t), cls: t === st.sym ? 'hi' : '' }; });
-    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' US Equity' : 'Quote') + ' · Description (DES)', picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q,
+    var A = st.about && st.aboutFor === (Q && Q.sym) ? st.about : null;
+    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' US Equity' : 'Quote') + ' · Description (DES)', picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q, hasAbout: !!A, aboutText: A ? A.text : '', aboutKind: A ? A.kind : '', aboutUrl: A ? A.url : '',
       missingText: st.loading ? 'Loading ' + st.loading + '…' : (st.err ? 'Quote data is not available yet.' : (st.notTracked ? st.notTracked + (why[st.notFoundWhy] || ' was not found.') : '')),
       missingNote: st.loading ? 'Pulling prices from Yahoo Finance and filings from SEC EDGAR. The first look at a ticker takes a few seconds; repeat visits are cached.' :
         'Type any US-listed ticker or company name in the bar above. The quick picks across the top are the core watch list.' };

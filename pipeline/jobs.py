@@ -79,7 +79,7 @@ ITEM_NOTABLE = ("1.01", "1.03", "2.01", "2.02", "2.05", "2.06", "4.02", "5.02")
 def headlines():
     import re
     old = read("headlines.json", {}) or {}
-    seen = {h["link"]: h for h in old.get("items", [])}
+    seen = {h["link"]: h for h in old.get("items", []) if mi.is_english(h.get("title", ""))}  # drops any non-English items kept from earlier runs
     c2t = attempt("sec ticker map", sec.cik_to_ticker, default={}) or {}
     alias = {}
     for t, info in UNIVERSE.items():
@@ -91,6 +91,8 @@ def headlines():
             items = attempt(f"feed: {src}", mi.feed, url, default=[]) or []
             for it in items[:60]:
                 if it["link"] in seen:
+                    continue
+                if not mi.is_english(it["title"]):
                     continue
                 title, summ = it["title"], it.get("summary", "")
                 tick = set(re.findall(r"\((?:NYSE|NASDAQ|Nasdaq|NYSE American|Cboe)[^:)]*:\s*([A-Z.]{1,6})\)", title + " " + summ))
@@ -140,7 +142,7 @@ def market():
         if ch:
             q = mk.quote_from_chart(ch)
             watch.append({"sym": s, "name": q["name"] or s, "price": q["price"], "pct": q["pct"], "inUniverse": s in UNIVERSE})
-    heads = attempt("headlines", headlines, default=[]) or (read("headlines.json", {}) or {}).get("items", [])
+    heads = attempt("headlines", headlines, default=[]) or [h for h in (read("headlines.json", {}) or {}).get("items", []) if mi.is_english(h.get("title", ""))]
     asof = max([t.get("time") or 0 for t in tiles] or [0])
     write("dashboard.json", {"updated": now_iso(), "asOf": asof, "tiles": tiles, "sectors": sectors, "movers": movers,
                              "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8]})
@@ -819,7 +821,7 @@ def digest():
     spam = ("lost money", "who lost", "class action", "securities fraud", "law firm", "attorney", "investigation on behalf", "investors who", "lawsuit",
             "reminds investors", "deadline", "recover", "losses")
     pool = [h for h in heads.get("items", []) if (h.get("published") or "") >= cutoff and h.get("type") != "SEC filing"
-            and not any(w in h["title"].lower() for w in spam)]
+            and not any(w in h["title"].lower() for w in spam) and mi.is_english(h["title"])]
     # publications first (they decide what matters), then notable press releases; newest first within each
     pubs = sorted([h for h in pool if h.get("type") == "Publication"], key=lambda h: h["published"], reverse=True)
     rel = sorted([h for h in pool if h.get("type") != "Publication" and h.get("notable")], key=lambda h: h["published"], reverse=True)
@@ -858,7 +860,75 @@ def digest():
         top.append({"lead": f"Biggest odds move: {g.get('event') or g['title']} — {m['label']}.", "rest": f"{m['prev']:.0f}% → {m['pct']:.0f}% since the start of the day."})
     if news:
         top.append({"lead": "Top headline:", "rest": news[0]["title"]})
-    write("digest.json", {"updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
+    # ---- rule-based commentary: plain-English reads generated from the numbers (no AI, no cost) ----
+    def num(x):
+        try:
+            return float(str(x).replace("%", "").replace("K", "").replace("+", "").replace("M", ""))
+        except ValueError:
+            return None
+    # polarity: +1 means a higher reading is good for markets/economy, -1 means higher is bad
+    POL = {"CPIAUCSL": (-1, "Inflation", "inflation pressure rising", "inflation pressure easing"), "CPILFESL": (-1, "Core inflation", "underlying inflation pressure rising", "underlying inflation pressure easing"),
+           "UNRATE": (-1, "Unemployment", "the labor market is loosening", "the labor market is tightening"), "PAYEMS": (1, "Hiring", "hiring picked up", "hiring slowed"),
+           "RSAFS": (1, "Consumer spending", "spending picked up", "spending cooled"), "ICSA": (-1, "Layoff claims", "layoffs are rising", "layoffs are falling"),
+           "UMCSENT": (1, "Consumer sentiment", "consumer mood is improving", "consumer mood is worsening")}
+    reads = []
+    for row in macro_.get("latest", []):
+        pol = POL.get(row["id"])
+        a, b = num(row["act"]), num(row["prior"])
+        if not pol or a is None or b is None:
+            continue
+        diff = a - b
+        if abs(diff) < 1e-9:
+            sig, txt = "mix", f"Unchanged from {row['prior']}."
+        else:
+            good = (diff > 0) == (pol[0] > 0)
+            sig = "pos" if good else "neg"
+            phrase = pol[2] if diff > 0 else pol[3]
+            txt = f"{phrase[0].upper() + phrase[1:]} ({'up' if diff > 0 else 'down'} from {row['prior']})."
+        reads.append({"id": row["id"], "sig": sig, "read": txt})
+    auto_earn = {}
+    for e in rec:
+        sp, mv = e.get("surprisePct"), e.get("move")
+        if sp is None or mv is None:
+            continue
+        beat = sp >= 0
+        size = "a big" if abs(sp) >= 10 else "a modest" if abs(sp) >= 3 else "a slim"
+        if beat and mv < -1:
+            txt = f"Beat by {sp:.1f}% but the stock fell {abs(mv):.1f}%: expectations were high, or guidance and the mix of results disappointed."
+        elif beat and mv > 1:
+            txt = f"{size.capitalize()} beat ({sp:+.1f}%), rewarded with a {mv:.1f}% gain."
+        elif not beat and mv > 1:
+            txt = f"Missed by {abs(sp):.1f}% yet rose {mv:.1f}%: the bar was low or the outlook helped."
+        elif not beat and mv < -1:
+            txt = f"{size.capitalize()} miss ({sp:+.1f}%), punished with a {abs(mv):.1f}% drop."
+        else:
+            txt = f"{'Beat' if beat else 'Missed'} by {abs(sp):.1f}%; the stock barely moved ({mv:+.1f}%)."
+        auto_earn[e["sym"]] = txt
+    tone_bits = []
+    if es and es["pct"] is not None:
+        p = es["pct"]
+        tone_bits.append("S&P futures are " + ("sharply lower" if p <= -1 else "lower" if p <= -0.3 else "sharply higher" if p >= 1 else "higher" if p >= 0.3 else "little changed") + f" ({p:+.2f}%)")
+    vx = tiles.get("vix")
+    if vx and vx.get("pct") is not None:
+        tone_bits.append(f"the VIX is {vx['price']:.1f} ({vx['pct']:+.1f}%), " + ("a sign of rising caution" if vx["pct"] > 5 else "a sign of calm" if vx["pct"] < -5 else "steady"))
+    if tn and tn.get("chg") is not None:
+        tone_bits.append(f"the 10-year yield is {tn['price']:.2f}% ({tn['chg'] * 100:+.0f} bp)")
+    br2 = dash.get("breadth")
+    if br2 and br2.get("n"):
+        tone_bits.append(f"{br2['adv']} of {br2['n']} S&P 500 stocks are up")
+    secs = sorted(dash.get("sectors", []), key=lambda x: x.get("pct") or 0)
+    if len(secs) >= 2:
+        tone_bits.append(f"{secs[-1]['name']} leads ({secs[-1]['pct']:+.1f}%) and {secs[0]['name']} lags ({secs[0]['pct']:+.1f}%)")
+    lvl_reads = []
+    for l in levels:
+        v50, v200 = l.get("vs50"), l.get("vs200")
+        if v50 is None or v200 is None:
+            continue
+        trend = ("above both averages: trend intact" if v50 > 0 and v200 > 0 else "below both averages: trend broken" if v50 < 0 and v200 < 0
+                 else "below the 50-day but above the 200-day: pullback inside an uptrend" if v200 > 0 else "above the 50-day but below the 200-day: bouncing in a downtrend")
+        lvl_reads.append({"n": l["n"], "read": f"{trend}; {abs(l['offHigh']):.1f}% below its 52-week high."})
+    auto = {"tone": ("; ".join(tone_bits)[0].upper() + "; ".join(tone_bits)[1:] + ".") if tone_bits else "", "reads": reads, "earnings": auto_earn, "levels": lvl_reads}
+    write("digest.json", {"auto": auto, "updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
                           "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
                           "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
                           "breadth": dash.get("breadth"), "odds": od.get("groups", [])})

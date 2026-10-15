@@ -23,6 +23,24 @@ const NOTABLE = ["acquire", "acquisition", "merger", "to buy", "buyout", "bankru
   "investigation", "subpoena", "sec charges", "fda approv", "fda clear", "rate decision", "fomc", "tariff", "downgrade", "upgrade",
   "layoff", "ceo", "resign", "dividend", "buyback", "split", "ipo", "halt", "outage", "breach", "strike"];
 
+const EN = new Set("the and of to in for on with at by from is are was were after new says say will its over as an has have that this his her their it be not but or up out more than into about how what why who when amid against could would may year q1 q2 q3 q4 reports announces announced announce launches shares stock stocks inc corp".split(" "));
+const FOREIGN = new Set("el la los las del y que para con por una un su se es al lo le les des du et pour dans une sur est qui der die das und mit für von den zu ist nicht auf ein eine im dem um da uma os não ao dos nas nos il di per che della degli sono gli en een het van voor och att som på är med av ett de em na pela pelo anuncia resultados trimestre lucro dividendo banco acima esperado anuncian empresa nuevo nueva primer segundo tercer cuarto ganancias".split(" "));
+// Heuristic: true for English text; rejects non-Latin scripts and text that reads as Spanish, French, German, Portuguese, Italian, Dutch or Swedish.
+function isEnglish(text) {
+  const letters = Array.from(text || "").filter((c) => /\p{L}/u.test(c));
+  if (!letters.length) return true;
+  const nonLatin = letters.filter((c) => c.codePointAt(0) > 0x24f).length;
+  if (nonLatin / letters.length > 0.2) return false;
+  const accents = letters.filter((c) => { const k = c.codePointAt(0); return k >= 0xc0 && k <= 0x24f; }).length;
+  if (accents / letters.length > 0.06) return false;
+  const words = (text.toLowerCase().match(/[a-zà-ÿ']+/g) || []);
+  let en = 0, fo = 0;
+  for (const w of words) { if (EN.has(w)) en++; if (FOREIGN.has(w)) fo++; }
+  if (fo >= 2 && fo > en) return false;
+  if (words.length >= 5 && en === 0 && fo >= 1) return false;
+  return true;
+}
+
 const r = (v, d = 2) => (v === null || v === undefined || !isFinite(v) ? null : Math.round(v * 10 ** d) / 10 ** d);
 const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, "+00:00");
 const json = (obj, status = 200, ttl = 0) =>
@@ -213,6 +231,7 @@ async function partNews(env) {
     for (const it of parseFeed(res.value).slice(0, 60)) {
       if (seen.has(it.link)) continue;
       seen.add(it.link);
+      if (!isEnglish(it.title)) continue;
       const low = it.title.toLowerCase();
       const tick = new Set();
       for (const m of (it.title + " " + it.summary).matchAll(/\((?:NYSE|NASDAQ|Nasdaq|NYSE American|Cboe)[^:)]*:\s*([A-Z.]{1,6})\)/g)) tick.add(m[1]);

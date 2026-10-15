@@ -124,3 +124,34 @@ def feed(url):
                       "summary": _clean(it.findtext(ATOM + "summary"))[:400],
                       "published": _when(it.findtext(ATOM + "updated") or it.findtext(ATOM + "published"))})
     return [i for i in items if i["title"] and i["link"]]
+
+
+# ---- English-only filter for headlines -----------------------------------------------------------------
+_EN = set("the and of to in for on with at by from is are was were after new says say will its over as an has have that this his her their "
+          "it be not but or up out more than into about how what why who when amid against could would may year q1 q2 q3 q4 reports announces "
+          "announced announce launches shares stock stocks inc corp".split())
+_FOREIGN = set("el la los las del y que para con por una un su se es al lo le les des du et pour dans une sur est qui der die das und mit "
+               "für von den zu ist nicht auf ein eine im dem um da uma os não ao dos nas nos il di per che della degli sono gli i en een het "
+               "van voor och att som på är med av ett de em na pela pelo anuncia resultados trimestre lucro dividendo banco acima esperado "
+               "anuncian resultados empresa nuevo nueva primer segundo tercer cuarto trimestre ganancias".split()) - {"a", "i", "as", "an"}
+
+
+def is_english(text):
+    """Heuristic: True for English text. Rejects non-Latin scripts and text that reads as Spanish, French, German, Portuguese, Italian, Dutch or Swedish."""
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return True
+    non_latin = sum(1 for c in letters if ord(c) > 0x024F)
+    if non_latin / len(letters) > 0.2:
+        return False
+    accents = sum(1 for c in letters if 0xC0 <= ord(c) <= 0x24F)
+    if accents / len(letters) > 0.06:
+        return False
+    words = re.findall(r"[a-zA-Zà-ÿ']+", text.lower())
+    en = sum(1 for w in words if w in _EN)
+    fo = sum(1 for w in words if w in _FOREIGN)
+    if fo >= 2 and fo > en:
+        return False
+    if len(words) >= 5 and en == 0 and fo >= 1:
+        return False
+    return True

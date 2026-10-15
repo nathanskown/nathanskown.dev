@@ -159,6 +159,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb">
 <div class="big" style="font-size: 38px; line-height: 1.05; color: #ffd89d; text-shadow: 0 0 12px rgba(255,184,77,.35)">{{edHeadline}}</div>
 <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; max-width: 980px">{{edLede}}</p>
+<sc-if value="{{autoTone}}" hint-placeholder-val="{{ true }}"><p style="margin: 12px 0 0; font-size: 13.5px; line-height: 1.55; color: #c99442"><span style="font-size: 11px; letter-spacing: .12em; color: #000; background: #ffd89d; text-shadow: none; padding: 0 5px; margin-right: 8px">LIVE TONE</span>{{autoTone}}</p></sc-if>
 <sc-if value="{{edStale}}" hint-placeholder-val="{{ false }}"><p style="margin: 10px 0 0; font-size: 12.5px; color: #ff9a56">{{edStale}}</p></sc-if>
 </div>
 </section>
@@ -296,8 +297,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tbody>
 <sc-for list="{{data}}" as="d" hint-placeholder-count="5">
 <tr class="t-row" style="text-align: right">
-<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{d.n}}</th>
-<td style="padding: 8px; font-weight: 600">{{d.a}}</td>
+<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{d.n}}<span style="display: block; font-size: 11.5px; font-weight: 400; line-height: 1.4; color: {{d.color}}">{{d.read}}</span></th>
+<td style="padding: 8px; font-weight: 600; color: {{d.color}}">{{d.a}}</td>
 <td style="padding: 8px 0 8px 8px; color: #c99442">{{d.p}}</td>
 </tr>
 </sc-for>
@@ -325,6 +326,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span style="font-size: 13px; color: {{e.color}}; flex: none">{{e.sur}}</span>
 </div>
 <div style="font-size: 12px; color: #c99442">EPS {{e.eps}} vs. {{e.est}} est.{{e.move}}</div>
+<div style="font-size: 12.5px; line-height: 1.5; margin-top: 3px; color: {{e.color}}">{{e.ctx}}</div>
 </div>
 </sc-for>
 </div>
@@ -389,6 +391,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </tbody>
 </table>
+<sc-for list="{{lvlReads}}" as="lr" hint-placeholder-count="4"><div style="font-size: 12.5px; line-height: 1.5; padding: 5px 0; color: #c99442"><span style="color: #ffd89d">{{lr.n}}</span> is {{lr.read}}</div></sc-for>
 </div>
 </section>
 
@@ -508,13 +511,18 @@ class Component extends DCLogic {
       futures: futures,
       calToday: D.calToday || [],
       noCalToday: !!D.updated && !(D.calToday || []).length,
-      data: (D.latest || []).map(function (d) { return { n: d.n, a: d.act, p: d.prior }; }),
+      data: (D.latest || []).map(function (d) {
+        var rd = ((D.auto || {}).reads || []).filter(function (x) { return x.id === d.id; })[0];
+        return { n: d.n, a: d.act, p: d.prior, read: rd ? rd.read : '', color: rd ? (rd.sig === 'pos' ? UP : rd.sig === 'neg' ? DN : FLAT) : FLAT };
+      }),
+      autoTone: (D.auto || {}).tone || '',
+      lvlReads: (D.auto || {}).levels || [],
       today: (D.reportingToday || []).map(function (e) { return { t: e.sym, n: e.name, when: e.when || '—', est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
       noToday: !!D.updated && !(D.reportingToday || []).length,
       done: (D.reported || []).map(function (e) {
         return { t: e.sym, n: e.name, eps: money(e.eps), est: money(e.est), color: col(e.surprisePct),
                  sur: e.surprisePct === null || e.surprisePct === undefined ? '' : (e.surprisePct >= 0 ? 'BEAT ' : 'MISS ') + sgn(e.surprisePct, 1, '%'),
-                 move: e.move === null || e.move === undefined ? '' : ' · stock ' + sgn(e.move, 2, '%') };
+                 move: e.move === null || e.move === undefined ? '' : ' · stock ' + sgn(e.move, 2, '%'), ctx: ((D.auto || {}).earnings || {})[e.sym] || '' };
       }),
       news: (D.news || []).map(function (h) {
         return { time: tm(h.published), src: h.source, tick: (h.tickers || []).length ? ' · ' + h.tickers.join(', ') : '', h: h.title, link: h.link };
