@@ -59,7 +59,6 @@
     <div class="row" style="margin-top:10px">
       <button class="primary" id="guessBtn">SUBMIT GUESS</button>
       <button id="skipBtn">SKIP (0 PTS)</button>
-      <button id="peekBtn" class="hidden">[DEV] PEEK</button>
     </div>
     <div class="msg" id="msg" role="status" aria-live="polite"></div>
 
@@ -368,7 +367,6 @@
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
-  $("peekBtn").onclick = () => { if (S && !S.done) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(cur().artist.name) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
 
   init();

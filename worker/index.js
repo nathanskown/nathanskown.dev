@@ -3,6 +3,9 @@
 import { handleQuote } from "./quote.js";
 import { handleEspn } from "./sports.js";
 import { handleLive } from "./live.js";
+import { handleMusic, serveDaily, MusicBoard } from "./music.js";
+
+export { MusicBoard };
 
 export default {
   async fetch(request, env, ctx) {
@@ -10,6 +13,8 @@ export default {
     if (url.pathname === "/api/quote") return handleQuote(request, ctx);
     if (url.pathname.startsWith("/api/espn/")) return handleEspn(request, ctx);
     if (url.pathname === "/api/live") return handleLive(request, env, ctx);
+    if (url.pathname.startsWith("/api/music/")) return handleMusic(request, env);
+    if (url.pathname === "/music/data/daily.js") return serveDaily();
     return env.ASSETS.fetch(request); // falls through to 404.html for unknown paths
   },
 };

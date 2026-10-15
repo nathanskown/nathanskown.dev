@@ -216,9 +216,7 @@
     const t = MX.$("devToggle");
     if (!t) return;
     t.onchange = () => {
-      document.body.classList.toggle("dev", t.checked);
-      const peek = MX.$("peekBtn");
-      if (peek) peek.classList.toggle("hidden", !t.checked);
+      document.body.classList.toggle("dev", t.checked);   // shows layout notes only; answers are never revealed
     };
   };
 
@@ -301,7 +299,7 @@
     dailyToday: game => { const g = MX.stats.get(game); return g && g.dailyKey === MX.todayKey() ? g : null; }
   };
 
-  /* ---------- leaderboard client (talks to the music-api Worker; needs WORKER_URL and its KV binding) ---------- */
+  /* ---------- leaderboard client (talks to the site Worker at /api/music; see worker/music.js) ---------- */
   const NAMEKEY = "nskn.music.name";
   const LB_ERR = {
     leaderboard_not_configured: "The leaderboard isn't switched on yet.",
@@ -312,7 +310,7 @@
     origin_not_allowed: "This address isn't allowed to post scores."
   };
   MX.lb = {
-    base: () => String((window.MUSIC_CONFIG || {}).WORKER_URL || "").replace(/\/+$/, ""),
+    base: () => String((window.MUSIC_CONFIG || {}).LB_URL || "/api/music").replace(/\/+$/, ""),
     enabled: () => !!MX.lb.base(),
     savedName: () => { try { return localStorage.getItem(NAMEKEY) || ""; } catch (e) { return ""; } },
     saveName: n => { try { localStorage.setItem(NAMEKEY, n); } catch (e) { /* storage blocked */ } },

@@ -15,7 +15,8 @@
    ============================================================ */
 window.MUSIC_CONFIG = {
   MODE: "live",
-  WORKER_URL: "https://music-api.nskown.workers.dev",
+  WORKER_URL: "https://music-api.nskown.workers.dev",   // Deezer preview lookups
+  LB_URL: "/api/music",                                  // daily leaderboard, served by the site Worker
   ROUND_SIZE: 5,
   SUGGEST_MIN: 4   // autocomplete waits for this many characters (answers never depend on it)
 };

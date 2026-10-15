@@ -8,5 +8,10 @@
     "binding": "ASSETS",
     "not_found_handling": "404-page"
   },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Music leaderboard storage. The migration creates the SQLite-backed Durable Object on the next deploy.
+  "durable_objects": {
+    "bindings": [{ "name": "MUSIC_BOARD", "class_name": "MusicBoard" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MusicBoard"] }]
 }

@@ -1,4 +1,4 @@
-// Builds music/data/daily.js: the frozen daily-challenge picks for Guess the Track and Guess the Artist.
+// Builds music/data/daily.json: the frozen daily-challenge picks for Guess the Track and Guess the Artist.
 //
 // Why this exists: if the daily songs were picked from the live catalog each morning, rebuilding the
 // catalog (Last.fm data changes weekly) would change today's challenge halfway through the day.
@@ -66,8 +66,11 @@ if (!seeds.length) { console.error("No songs found in " + DIR + "/data. Nothing 
 if (!playable.length) { console.error("No playable artists found in " + DIR + "/data/artists.js. Nothing to schedule."); process.exit(1); }
 
 /* ---- existing schedule (kept as-is) ---- */
-const out = join(DIR, "data/daily.js");
-const days = (load(out).DAILY_SCHEDULE || {}).days || {};
+// daily.json is not published as a file: the site Worker bundles it and serves /music/data/daily.js with
+// only today and past days, so future answers never reach a browser.
+const out = join(DIR, "data/daily.json");
+const legacy = join(DIR, "data/daily.js");
+const days = (existsSync(out) ? JSON.parse(readFileSync(out, "utf8")) : (load(legacy).DAILY_SCHEDULE || {})).days || {};
 
 const today = chicagoKey(new Date());
 const first = addDays(today, -KEEP_PAST_DAYS);
@@ -91,8 +94,7 @@ for (let i = 0; i <= DAYS_AHEAD; i++) {
 
 const sorted = {};
 for (const k of Object.keys(days).sort()) sorted[k] = days[k];
-const body = "/* Frozen daily challenges, written by tools/build-daily.mjs. Today and past days are never rewritten. */\n" +
-  "window.DAILY_SCHEDULE = " + JSON.stringify({ generatedAt: new Date().toISOString(), days: sorted }) + ";\n";
+const body = JSON.stringify({ generatedAt: new Date().toISOString(), days: sorted });
 writeFileSync(out + ".tmp", body);
 renameSync(out + ".tmp", out);
 console.log("Daily schedule: " + Object.keys(sorted).length + " days (" + added + " added or re-picked), " + Object.keys(sorted)[0] + " to " + Object.keys(sorted).slice(-1)[0] + ". " + (body.length / 1024).toFixed(0) + " KB.");

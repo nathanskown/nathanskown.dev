@@ -57,7 +57,6 @@
         <div class="row">
           <button class="primary" id="playBtn">▶ PLAY CLIP</button>
           <button id="skipBtn">SKIP (0 PTS)</button>
-          <button id="peekBtn" class="hidden">[DEV] PEEK</button>
         </div>
         <div class="meter" id="meter">
           <div class="unlock" id="unlock"></div>
@@ -165,14 +164,23 @@
     $("startBtn").textContent = "START · " + ROUND + " SONGS";
     POOL = await src.pool();
     const famN = {}, decN = {};
-    POOL.forEach(s => { const f = MXV.family(s.genre); famN[f] = (famN[f] || 0) + 1; const d = decadeOf(s); if (d) decN[d] = (decN[d] || 0) + 1; });
+    // Every song lands in exactly one genre chip and one era chip, so the chip counts add up to the pool size.
+    POOL.forEach(s => { const f = MXV.family(s.genre); famN[f] = (famN[f] || 0) + 1; const d = String(decadeOf(s)); decN[d] = (decN[d] || 0) + 1; });
+    const famOpts = MXV.FAMILIES.filter(f => famN[f] >= ROUND && f !== "Other").map(f => ({ v: f, label: f, n: famN[f] }));
+    const famRest = POOL.length - famOpts.reduce((t, o) => t + o.n, 0);
+    if (famRest > 0) famOpts.push({ v: "__other", label: "Other", n: famRest });
+    const decOpts = Object.keys(decN).filter(d => d !== "null").sort().filter(d => decN[d] >= ROUND).map(d => ({ v: d, label: d + "s", n: decN[d] }));
+    const decRest = POOL.length - decOpts.reduce((t, o) => t + o.n, 0);
+    if (decRest > 0) decOpts.push({ v: "__other", label: "Undated", n: decRest });
+    const famShown = new Set(famOpts.map(o => o.v)), decShown = new Set(decOpts.map(o => o.v));
     FILTER = MX.chipFilter("filter", "track", [
-      { key: "f", label: "GENRE", opts: MXV.FAMILIES.filter(f => famN[f] >= ROUND && f !== "Other").map(f => ({ v: f, label: f, n: famN[f] })) },
-      { key: "d", label: "ERA", opts: Object.keys(decN).sort().filter(d => decN[d] >= ROUND).map(d => ({ v: d, label: d + "s", n: decN[d] })) }
+      { key: "f", label: "GENRE", opts: famOpts },
+      { key: "d", label: "ERA", opts: decOpts }
     ], () => poolNote());
+    FILTER_SHOWN = { f: famShown, d: decShown };
     poolNote();
   }
-  let FILTER = null;
+  let FILTER = null, FILTER_SHOWN = { f: new Set(), d: new Set() };
   function poolNote() {
     if (!FILTER) return;
     const n = filtered().length;
@@ -182,7 +190,10 @@
 
   function filtered() {
     if (!FILTER) return POOL;
-    return FILTER.apply(POOL, (s, g, v) => g === "f" ? MXV.family(s.genre) === v : String(decadeOf(s)) === v);
+    return FILTER.apply(POOL, (s, g, v) => {
+      const k = g === "f" ? MXV.family(s.genre) : String(decadeOf(s));
+      return v === "__other" ? !FILTER_SHOWN[g].has(k) : k === v;
+    });
   }
 
   /* Rounds come out of MXV.spread: genre families take turns (weighted by size), no artist repeats within a few
@@ -404,7 +415,6 @@
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
-  $("peekBtn").onclick = () => { if (S && S.cur) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(S.cur.title) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
 
   init();

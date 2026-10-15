@@ -61,7 +61,7 @@
   async function load() {
     const mine = ++seq;
     $("lbMeta").textContent = "";
-    if (!MX.lb.enabled()) { $("lbBody").innerHTML = '<p class="hint">The leaderboard needs the music Worker (WORKER_URL in assets/config.js).</p>'; return; }
+    if (!MX.lb.enabled()) { $("lbBody").innerHTML = '<p class="hint">The leaderboard is offline right now.</p>'; return; }
     $("lbBody").innerHTML = '<p class="hint">Loading…</p>';
     try {
       const j = await MX.lb.board(game, scope);
