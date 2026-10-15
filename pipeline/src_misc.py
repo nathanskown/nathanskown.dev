@@ -157,3 +157,33 @@ def is_english(text):
     if len(words) >= 5 and en == 0 and fo >= 1:
         return False
     return True
+
+
+# --- headline junk filter (same rules in worker/live.js and src/finance/News.dc.html) ---
+import re as _re
+
+# shareholder-lawsuit / securities-fraud solicitations from plaintiff law firms: dropped for every source
+LAWSUIT_RE = _re.compile(
+    r"securities (fraud|class action|litigation)|class action|class period|lead plaintiff|lost money|who lost|"
+    r"shareholder (alert|rights|class|investigation)|investors? (who|with|that|alert|are encouraged|should)|"
+    r"(encourages?|urges?|reminds?) (\w+ )?(investors|shareholders)|recover\w* (your |their )?(investment |investor )?losses|"
+    r"investigat\w* .{0,60}(on behalf|shareholders|investors)|on behalf of (\w+ )?(shareholders|investors)|"
+    r"law (firm|offices?)|attorneys?\b|fiduciary|pomerantz|rosen law|levi & korsinsky|bragar|faruqi|gross law|bronstein|"
+    r"kessler topaz|robbins (geller|llp)|schall|glancy|hagens berman|johnson fistel|block & leviton|portnoy|kirby mcinerney|"
+    r"halper sadeh|ademi|monteverde|rigrodsky|lowey|bernstein liebhard|\bdj?s law\b|deadline.{0,40}(plaintiff|lawsuit|class)", _re.I)
+
+# Yahoo Finance: keep only earnings / results recaps, and never the "should you buy" advice pieces
+YAHOO_EARN_RE = _re.compile(r"earnings|quarterly results|\bq[1-4]\b.{0,40}(results|revenue|earnings|profit|sales)|reports? .{0,30}(revenue|profit|results|loss)|"
+                            r"\b(beats?|misses|tops)\b|guidance|\brevenue\b|\beps\b|(net|operating|quarterly|adjusted) (profit|income)", _re.I)
+YAHOO_ADVICE_RE = _re.compile(r"reasons?\b|should you|buy,? sell|\bto buy\b|buy (now|the dip|and hold|before)|chance to buy|time to (buy|sell)|worth (buying|owning)|"
+                              r"what needs to be true|better (buy|stock)|best (stocks?|etfs?)|top (stocks?|etfs?)|\betfs?\b|trim or add|millionaire|"
+                              r"compelling|stock i.m buying|\bto sell\b|buy or sell|is it (a )?(buy|sell)|the case for", _re.I)
+
+
+def is_junk(title, source=""):
+    t = title or ""
+    if LAWSUIT_RE.search(t):
+        return True
+    if source == "Yahoo Finance":
+        return not YAHOO_EARN_RE.search(t) or bool(YAHOO_ADVICE_RE.search(t))
+    return False

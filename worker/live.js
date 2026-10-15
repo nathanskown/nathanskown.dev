@@ -23,6 +23,11 @@ const SECTORS = [["XLK", "Technology"], ["XLE", "Energy"], ["XLC", "Communicatio
 // Same rule as pipeline/jobs.py (is_notable) and the headline pages.
 const NOTABLE_RE = /\b(acquires?|acquired|acquisition|merger|to buy|buyout|takeover|bankrupt(cy)?|chapter 11|guidance|outlook|forecast|recalls?|subpoena|sec charges|fda (approv|clear)\w*|fomc|rate (cut|hike|decision)s?|tariffs?|downgrades?d?|upgrades?d?|layoffs?|job cuts|ceo|cfo|resigns?|steps down|buyback|repurchase|stock split|ipo|trading halt|halts trading|outage|data breach|activist|13d|beats|misses|earnings)\b/i;
 const SPAM_RE = /lost money|who lost|class action|securities fraud|law firm|attorney|investigation on behalf|investors who|reminds investors|shareholder alert|deadline|recover losses|market to reach|market size|cagr|webinar/i;
+// Headline junk filter: shareholder-lawsuit solicitations (all sources) and Yahoo Finance pieces that are not earnings recaps.
+const LAWSUIT_RE = /securities (fraud|class action|litigation)|class action|class period|lead plaintiff|lost money|who lost|shareholder (alert|rights|class|investigation)|investors? (who|with|that|alert|are encouraged|should)|(encourages?|urges?|reminds?) (\w+ )?(investors|shareholders)|recover\w* (your |their )?(investment |investor )?losses|investigat\w* .{0,60}(on behalf|shareholders|investors)|on behalf of (\w+ )?(shareholders|investors)|law (firm|offices?)|attorneys?\b|fiduciary|pomerantz|rosen law|levi & korsinsky|bragar|faruqi|gross law|bronstein|kessler topaz|robbins (geller|llp)|schall|glancy|hagens berman|johnson fistel|block & leviton|portnoy|kirby mcinerney|halper sadeh|ademi|monteverde|rigrodsky|lowey|bernstein liebhard|\bdj?s law\b|deadline.{0,40}(plaintiff|lawsuit|class)/i;
+const YAHOO_EARN_RE = /earnings|quarterly results|\bq[1-4]\b.{0,40}(results|revenue|earnings|profit|sales)|reports? .{0,30}(revenue|profit|results|loss)|\b(beats?|misses|tops)\b|guidance|\brevenue\b|\beps\b|(net|operating|quarterly|adjusted) (profit|income)/i;
+const YAHOO_ADVICE_RE = /reasons?\b|should you|buy,? sell|\bto buy\b|buy (now|the dip|and hold|before)|chance to buy|time to (buy|sell)|worth (buying|owning)|what needs to be true|better (buy|stock)|best (stocks?|etfs?)|top (stocks?|etfs?)|\betfs?\b|trim or add|millionaire|compelling|stock i.m buying|\bto sell\b|buy or sell|is it (a )?(buy|sell)|the case for/i;
+const isJunk = (title, source) => LAWSUIT_RE.test(title || "") || (source === "Yahoo Finance" && (!YAHOO_EARN_RE.test(title || "") || YAHOO_ADVICE_RE.test(title || "")));
 const isNotable = (title, kind, tickers) => !SPAM_RE.test(title) && !(kind === "Press release" && !tickers.size) && NOTABLE_RE.test(title);
 
 const EN = new Set("the and of to in for on with at by from is are was were after new says say will its over as an has have that this his her their it be not but or up out more than into about how what why who when amid against could would may year q1 q2 q3 q4 reports announces announced announce launches shares stock stocks inc corp".split(" "));
@@ -234,7 +239,7 @@ async function partNews(env) {
     for (const it of parseFeed(res.value).slice(0, 60)) {
       if (seen.has(it.link)) continue;
       seen.add(it.link);
-      if (!isEnglish(it.title)) continue;
+      if (!isEnglish(it.title) || isJunk(it.title, src)) continue;
       const low = it.title.toLowerCase();
       const tick = new Set();
       for (const m of (it.title + " " + it.summary).matchAll(/\((?:NYSE|NASDAQ|Nasdaq|NYSE American|Cboe)[^:)]*:\s*([A-Z.]{1,6})\)/g)) tick.add(m[1]);

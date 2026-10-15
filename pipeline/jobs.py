@@ -93,7 +93,7 @@ ITEM_NOTABLE = ("1.01", "1.03", "2.01", "2.02", "2.05", "2.06", "4.02", "5.02")
 def headlines():
     import re
     old = read("headlines.json", {}) or {}
-    seen = {h["link"]: h for h in old.get("items", []) if mi.is_english(h.get("title", ""))}  # drops any non-English items kept from earlier runs
+    seen = {h["link"]: h for h in old.get("items", []) if mi.is_english(h.get("title", "")) and not mi.is_junk(h.get("title", ""), h.get("source", ""))}  # drops non-English, lawsuit-ad and non-recap Yahoo items kept from earlier runs
     c2t = attempt("sec ticker map", sec.cik_to_ticker, default={}) or {}
     alias = {}
     for t, info in UNIVERSE.items():
@@ -106,7 +106,7 @@ def headlines():
             for it in items[:60]:
                 if it["link"] in seen:
                     continue
-                if not mi.is_english(it["title"]):
+                if not mi.is_english(it["title"]) or mi.is_junk(it["title"], src):
                     continue
                 title, summ = it["title"], it.get("summary", "")
                 tick = set(re.findall(r"\((?:NYSE|NASDAQ|Nasdaq|NYSE American|Cboe)[^:)]*:\s*([A-Z.]{1,6})\)", title + " " + summ))
@@ -156,7 +156,7 @@ def market():
         if ch:
             q = mk.quote_from_chart(ch)
             watch.append({"sym": s, "name": q["name"] or s, "price": q["price"], "pct": q["pct"], "inUniverse": s in UNIVERSE})
-    heads = attempt("headlines", headlines, default=[]) or [h for h in (read("headlines.json", {}) or {}).get("items", []) if mi.is_english(h.get("title", ""))]
+    heads = attempt("headlines", headlines, default=[]) or [h for h in (read("headlines.json", {}) or {}).get("items", []) if mi.is_english(h.get("title", "")) and not mi.is_junk(h.get("title", ""), h.get("source", ""))]
     asof = max([t.get("time") or 0 for t in tiles] or [0])
     write("dashboard.json", {"updated": now_iso(), "asOf": asof, "tiles": tiles, "sectors": sectors, "movers": movers,
                              "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8]})
@@ -919,7 +919,7 @@ def digest():
     spam = ("lost money", "who lost", "class action", "securities fraud", "law firm", "attorney", "investigation on behalf", "investors who", "lawsuit",
             "reminds investors", "deadline", "recover", "losses")
     pool = [h for h in heads.get("items", []) if (h.get("published") or "") >= cutoff and h.get("type") != "SEC filing"
-            and not any(w in h["title"].lower() for w in spam) and mi.is_english(h["title"])]
+            and not any(w in h["title"].lower() for w in spam) and mi.is_english(h["title"]) and not mi.is_junk(h["title"], h.get("source", ""))]
     # publications first (they decide what matters), then notable press releases; newest first within each
     pubs = sorted([h for h in pool if h.get("type") == "Publication"], key=lambda h: h["published"], reverse=True)
     rel = sorted([h for h in pool if h.get("type") != "Publication" and h.get("notable")], key=lambda h: h["published"], reverse=True)

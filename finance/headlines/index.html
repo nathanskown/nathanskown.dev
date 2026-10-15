@@ -52,10 +52,14 @@ class Component extends DCLogic {
       if (words.length >= 5 && en === 0 && fo >= 1) return false;
       return true;
     };
+    /* shareholder-lawsuit ads (any source) and Yahoo pieces that are not earnings recaps */
+    var LAW = /securities (fraud|class action|litigation)|class action|class period|lead plaintiff|lost money|who lost|shareholder (alert|rights|class|investigation)|investors? (who|with|that|alert|are encouraged|should)|(encourages?|urges?|reminds?) (\w+ )?(investors|shareholders)|recover\w* (your |their )?(investment |investor )?losses|investigat\w* .{0,60}(on behalf|shareholders|investors)|on behalf of (\w+ )?(shareholders|investors)|law (firm|offices?)|attorneys?\b|fiduciary|pomerantz|rosen law|levi & korsinsky|bragar|faruqi|gross law|bronstein|kessler topaz|robbins (geller|llp)|schall|glancy|hagens berman|johnson fistel|block & leviton|portnoy|kirby mcinerney|halper sadeh|ademi|monteverde|rigrodsky|lowey|bernstein liebhard|\bdj?s law\b|deadline.{0,40}(plaintiff|lawsuit|class)/i, YEARN = /earnings|quarterly results|\bq[1-4]\b.{0,40}(results|revenue|earnings|profit|sales)|reports? .{0,30}(revenue|profit|results|loss)|\b(beats?|misses|tops)\b|guidance|\brevenue\b|\beps\b|(net|operating|quarterly|adjusted) (profit|income)/i, YADV = /reasons?\b|should you|buy,? sell|\bto buy\b|buy (now|the dip|and hold|before)|chance to buy|time to (buy|sell)|worth (buying|owning)|what needs to be true|better (buy|stock)|best (stocks?|etfs?)|top (stocks?|etfs?)|\betfs?\b|trim or add|millionaire|compelling|stock i.m buying|\bto sell\b|buy or sell|is it (a )?(buy|sell)|the case for/i;
+    var isJunk = function (h) { var t = h && h.title || ''; return LAW.test(t) || (h.source === 'Yahoo Finance' && (!YEARN.test(t) || YADV.test(t))); };
+    var keepItem = function (h) { return isEn(h) && !isJunk(h); };
     var pull = function () {
       if ((self.state || {}).paused) return;
       DC.load('/data/finance/headlines.json').then(function (j) {
-        j.items = (j.items || []).filter(isEn);
+        j.items = (j.items || []).filter(keepItem);
         var st = self.state || {};
         var known = st.known || {};
         var unseen = st.unseen || 0;
@@ -74,7 +78,7 @@ class Component extends DCLogic {
       fetch('/api/live?part=news').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (lv) {
         var st = self.state || {};
         if (!st.items || !lv.items || !lv.items.length) return;
-        lv.items = lv.items.filter(isEn);
+        lv.items = lv.items.filter(keepItem);
         var known = Object.assign({}, st.known || {});
         var unseen = st.unseen || 0;
         var add = lv.items.filter(function (h) { return !known[h.link]; });
