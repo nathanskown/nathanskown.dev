@@ -9,7 +9,7 @@ probabilities fit what happened).
              season's rating is kept), home edge, and for college the margin cap
   not searched   sigma, which is simply the spread of projection errors (the maximum-likelihood value)
 
-Honesty check: for each of the newest two seasons the settings are fit on the seasons before it, then scored on
+Honesty check: for each of the newest seasons (four when there are eight or more stored, otherwise two) the settings are fit on the seasons before it, then scored on
 that season, which they never saw. They are adopted only if they beat the current settings across both by a
 clear margin (a paired test, game by game); otherwise the current settings stay. model/tuned.json records both sets of numbers.
 
@@ -30,7 +30,7 @@ GRID = {
     "k": [0.4, 0.7, 1.0, 1.6, 2.5, 4.0, 6.0, 10.0],  # multiples of the current k
     "carry": [0.0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1.0],
     "hfa": [0.5, 0.75, 1.0, 1.25, 1.5],             # multiples of the current home edge
-    "cap": {"ncaaf": [21, 28, 35, 45, None], "ncaab": [25, 30, 40, 60, None]},
+    "cap": {"nfl": [14, 21, 28, None], "ncaaf": [21, 28, 35, 45, None], "ncaab": [25, 30, 40, 60, None]},
 }
 
 
@@ -192,7 +192,8 @@ def tune(lg):
     default = dict(base)
     # Rolling check: for each of the newest two seasons, fit on the seasons before it and score it. The
     # sigma used on the held-out season is the one measured on the training seasons, as it would be live.
-    folds = years[-2:] if len(years) >= 4 else years[-1:]
+    # more history means more folds, which is what lets a small effect show up in a league with few games
+    folds = years[-4:] if len(years) >= 8 else years[-2:] if len(years) >= 4 else years[-1:]
     diffs, rec = [], []
     for hold in folds:
         train = [y for y in years if y < hold]
