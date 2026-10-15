@@ -53,7 +53,7 @@ jobs:
           import json, glob, sys
           lg = sys.argv[1]
           rows = []
-          for f in sorted(glob.glob(f"data/sports/history/{lg}_*.json")):
+          for f in sorted(glob.glob(f"data/sports/history/{lg}_[0-9]*.json")):    # season files only (not mlb_sp_*)
               d = json.load(open(f))
               rows.append(f"{d['year']}:{len(d['g'])}{'' if d.get('complete') else '!'}/L{d.get('lines', '-')}")
           print(f"::notice title=history {lg}::" + " ".join(rows))
