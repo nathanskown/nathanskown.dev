@@ -100,6 +100,17 @@ export async function handleEspn(request, ctx) {
   } catch (e) {
     return json(502, { error: "upstream unreachable", detail: String(e && e.message || e) });
   }
+  // ESPN sometimes refuses one host for one URL (seen: NFL scoreboard 403 on game day) while its mirror answers.
+  // Retry once there, without edge caching, so a cached refusal can't stick.
+  if (!up.ok && up.status !== 404) {
+    try {
+      const alt = await fetch(target.replace("https://site.api.espn.com/", "https://site.web.api.espn.com/"), {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; nathanskown.dev sports pages)", Accept: "application/json" },
+        signal: AbortSignal.timeout(12000),
+      });
+      if (alt.ok) up = alt;
+    } catch (e) { /* keep the first answer */ }
+  }
   if (!up.ok) return json(up.status === 404 ? 404 : 502, { error: `upstream HTTP ${up.status}` }, 30);
 
   const headers = {
