@@ -141,6 +141,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <main style="max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box">
 
+<sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}">
+<nav aria-label="Recently viewed" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin">
+<span style="flex: none; color: #A87933; font-size: 11.5px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
+<sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size: 12.5px">{{rc.t}}</a></sc-for>
+</nav>
+</sc-if>
 <nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
 <sc-for list="{{picker}}" as="pk" hint-placeholder-count="12">
 <a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size: 12.5px; white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
@@ -492,7 +498,11 @@ class Component extends DCLogic {
       return { t: t.sym, href: 'Main.dc.html?sym=' + t.sym, chg: F.pct(t.pct, 1), color: (t.pct || 0) >= 0 ? UP : DN, cls: t.sym === st.sym ? 'hi' : '' };
     });
     var why = { unknown: ' is not a ticker the SEC or Yahoo Finance recognizes.', price: ': no price data came back from Yahoo Finance.', error: ': the data service did not respond. Try again in a minute.' };
-    var base = { secHead: (st.sym ? st.sym + ' US Equity' : 'Quote') + ' · Description (DES)', picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q,
+    // recently viewed tickers, remembered in this browser
+    var rec = PREFS.get('fin.recent', []);
+    if (Q && Q.sym && rec[0] !== Q.sym) rec = PREFS.set('fin.recent', [Q.sym].concat(rec.filter(function (x) { return x !== Q.sym; })).slice(0, 10));
+    var recent = rec.map(function (t) { return { t: t, href: 'Main.dc.html?sym=' + encodeURIComponent(t), cls: t === st.sym ? 'hi' : '' }; });
+    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' US Equity' : 'Quote') + ' · Description (DES)', picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q,
       missingText: st.loading ? 'Loading ' + st.loading + '…' : (st.err ? 'Quote data is not available yet.' : (st.notTracked ? st.notTracked + (why[st.notFoundWhy] || ' was not found.') : '')),
       missingNote: st.loading ? 'Pulling prices from Yahoo Finance and filings from SEC EDGAR. The first look at a ticker takes a few seconds; repeat visits are cached.' :
         'Type any US-listed ticker or company name in the bar above. The quick picks across the top are the core watch list.' };
@@ -581,7 +591,7 @@ class Component extends DCLogic {
       sym: Q.sym, name: Q.name, subline: [Q.exch, Q.sector].filter(Boolean).join(' · '),
       priceText: F.usd(q.price, 2), trendColor: up ? UP : DN, trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
       trendArrow: up ? '▲' : '▼', chgText: (up ? '+' : '−') + '$' + F.n(Math.abs(chg), 2), pctText: F.pct(first ? chg / first * 100 : null),
-      rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' CT · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
+      rangeLabel: labels[cur], asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL + ' · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
       ranges: ranges, linePath: line, areaPath: line + ' L800,260 L0,260 Z', xLabels: xLabels,
       yMax: F.n(mx, 2), yMid: F.n((mx + mn) / 2, 2), yMin: F.n(mn, 2), stats: stats,
       finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, noFinText: Q.secBusy ? 'The SEC\'s data service is rate-limiting requests right now. Reload in a couple of minutes.' : Q.staleTags ? 'This company\'s recent filings use XBRL tags the SEC\'s standardized data API does not return, so there are no current quarterly figures to show.' : 'No quarterly XBRL financials on file (common for ETFs, funds and foreign filers).', peers: peers, hasPeers: peers.length > 1,

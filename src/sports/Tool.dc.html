@@ -19,7 +19,7 @@
 <span class="t-chip t-hide-sm">{{code}} &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">ALL TIMES CT</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -230,7 +230,7 @@
 
 <footer class="t-foot">
 <div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
-<span>Data: ESPN public API · Ratings, projections and odds: house model · All times Central</span>
+<span>Data: ESPN public API · Ratings, projections and odds: house model · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
 </footer>
@@ -395,7 +395,7 @@ class Component extends DCLogic {
         recAll.sort(function (x, y) { return x.d < y.d ? 1 : -1; }); pen.sort(function (x, y) { return x.d < y.d ? -1 : 1; });
         tr.recent = recAll.slice(0, 40).map(function (x) { return x.row; }); tr.pend = pen.slice(0, 40).map(function (x) { return x.row; });
         tr.noRecent = !tr.recent.length; tr.noPend = !tr.pend.length;
-        tr.sub = 'Updated ' + (T.updated ? F.day(T.updated) + ' ' + F.time(T.updated) + ' CT' : '—');
+        tr.sub = 'Updated ' + (T.updated ? F.day(T.updated) + ' ' + F.time(T.updated) + ' ' + window.TZL : '—');
         tr.recentSub = tr.recent.length ? 'Newest first, up to 40' : ''; tr.pendSub = pendN + ' logged' + (prog ? ', ' + prog + ' in progress' : '');
         if (!st || !st.n) {
           tr.none = true;
@@ -428,7 +428,7 @@ class Component extends DCLogic {
       out.trk = tr;
     }
     if (key === 'Methodology') {
-      out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : '—',
+      out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : '—',
         rows: ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { var x = S.models[k] || {};
           return { lg: SD.LEAGUES[k].label, hfa: x.hfa !== undefined ? x.hfa + ' ' + (x.unit || '') : '…', sigma: x.sigma !== undefined ? x.sigma : '…', k: x.k !== undefined ? x.k : '…', games: x.games !== undefined ? x.games : (k === 'mlb' ? 'season totals' : '…'), src: x.source || (x.err ? 'not loaded' : '…'), start: k === 'mlb' ? 'average' : (x.prior || 'average'), fit: k === 'mlb' ? 'preset' : (x.tuned ? 'fit on past seasons' : 'preset') }; }) };
     }

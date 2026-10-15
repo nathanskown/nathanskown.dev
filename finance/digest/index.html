@@ -31,7 +31,7 @@ class Component extends DCLogic {
     var UP = '#4ade80', DN = '#ff5f56', FLAT = '#ffd89d';
     var st = this.state || {};
     var D = st.digest || {};
-    var CT = 'America/Chicago';
+    var CT = window.TZ;
     var num = function (v, d) { return v === null || v === undefined || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); };
     var sgn = function (v, d, suf) { return v === null || v === undefined || isNaN(v) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d) + (suf || ''); };
     var col = function (v) { return v === null || v === undefined || isNaN(v) ? FLAT : v > 0 ? UP : v < 0 ? DN : FLAT; };
@@ -66,9 +66,9 @@ class Component extends DCLogic {
     return {
       crt: this.props.crt ?? true,
       dateTitle: dateTitle,
-      updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' CT' : '',
+      updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL : '',
       liveTag: 'LIVE DATA · DELAYED',
-      subtitle: D.updated ? 'Updated ' + tm(D.updated) + ' CT · rebuilt with each market-hours refresh' : 'Loading…',
+      subtitle: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL + ' · rebuilt with each market-hours refresh' : 'Loading…',
       missing: !!st.err && !D.updated,
       top5: D.top || [],
       futures: futures,

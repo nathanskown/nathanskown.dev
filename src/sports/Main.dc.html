@@ -19,7 +19,7 @@
 <span class="t-chip t-hide-sm">SCOR &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">ALL TIMES CT</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -65,12 +65,12 @@
 </div>
 </section>
 
-<section class="t-panel" aria-label="My teams">
+<section class="t-panel" id="follow" aria-label="My teams">
 <div class="t-ph"><h2><span class="t-pn">1)</span>My teams</h2><span class="dim">Saved in this browser</span></div>
 <div class="t-pb">
 <div style="max-width: 520px">
 <label for="teamAdd" class="sr">Add a team to follow</label>
-<input id="teamAdd" class="s-input" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="Follow any team: Lions, Spartans, Gonzaga…" autocomplete="off">
+<input id="teamAdd" class="s-input" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="{{followHint}}" autocomplete="off">
 </div>
 <sc-if value="{{hasResults}}" hint-placeholder-val="{{false}}">
 <div role="group" aria-label="Matching teams" class="s-tabs" style="margin-top: 8px">
@@ -152,7 +152,7 @@
 
 <footer class="t-foot">
 <div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
-<span>Scores and schedules: ESPN public API (cached about 30 seconds) · Win probabilities: house model · No betting lines · All times Central</span>
+<span>Scores and schedules: ESPN public API (cached about 30 seconds) · Win probabilities: house model · No betting lines · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
 </footer>
@@ -179,7 +179,7 @@ class Component extends DCLogic {
 
   ymd(off) {
     var d = new Date(Date.now() + off * 86400000);
-    var p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+    var p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d); // ESPN's daily slate follows US Eastern
     var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
     return g('year') + g('month') + g('day');
   }
@@ -205,6 +205,14 @@ class Component extends DCLogic {
     var self = this;
     SD.schedule(f.lg, f.id).then(function (s) { var o = Object.assign({}, self.state.fsched); o[f.lg + ':' + f.id] = s; self.setState({ fsched: o }); }, function () {});
   }
+  hint(idx) {
+    // three random teams from different leagues as examples, picked once per visit
+    if (this._hint) return this._hint;
+    var lgs = Object.keys(idx).filter(function (k) { return (idx[k] || []).length; });
+    if (!lgs.length) return 'Follow any team…';
+    var picks = lgs.sort(function () { return Math.random() - 0.5; }).slice(0, 3).map(function (k) { var l = idx[k]; return l[Math.floor(Math.random() * l.length)].nick || l[0].name; });
+    return (this._hint = 'Follow any team: ' + picks.join(', ') + '…');
+  }
   saveFollows(list) {
     this.setState({ follows: list, q: '' });
     try { window.localStorage.setItem('skown.sports.follows.v2', JSON.stringify(list)); } catch (e) {}
@@ -213,8 +221,7 @@ class Component extends DCLogic {
   renderVals() {
     var S = this.state, self = this, idx = (S.index || {}).leagues || {}, day = S.day || 0;
     var info = {}; Object.keys(idx).forEach(function (k) { idx[k].forEach(function (t) { info[k + ':' + t.id] = t; }); });
-    var FAVS = [['nfl', '8', 'LIONS'], ['mlb', '6', 'TIGERS'], ['nba', '8', 'PISTONS'], ['nhl', '5', 'RED WINGS'], ['ncaaf', '127', 'MSU FB'], ['ncaab', '127', 'MSU BB'], ['ncaah', '127', 'MSU HKY']];
-    var favs = FAVS.map(function (f) { return { label: f[2], href: SD.teamHref(f[0], f[1]) }; });
+    var favs = S.follows.length ? SD.favChips() : [{ label: '+ FOLLOW TEAMS', href: '#follow' }];
     var followed = {}; S.follows.forEach(function (f) { followed[f.lg + ':' + f.id] = 1; });
 
     // follow search
@@ -266,7 +273,7 @@ class Component extends DCLogic {
       } else if (L.kind === 'tennis') {
         b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
           cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi)' }; }),
-            status: m.state === 'pre' ? F.time(m.start) + ' CT' : m.detail, stStyle: stStyle(m.state), href: '', note: e.name + ' · ' + m.round, cardStyle: '', live: m.state === 'in', st: m.state, start: m.start });
+            status: m.state === 'pre' ? F.time(m.start) + ' ' + window.TZL : m.detail, stStyle: stStyle(m.state), href: '', note: e.name + ' · ' + m.round, cardStyle: '', live: m.state === 'in', st: m.state, start: m.start });
         }); });
       } else {
         b.events.forEach(function (e) {
@@ -284,7 +291,7 @@ class Component extends DCLogic {
               scoreStyle: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
           };
           cards.push({ title: '', rows: [row(e.away), row(e.home)],
-            status: pre ? F.time(e.start) + ' CT' + (day !== 0 || !sameDay(e.start) ? ' · ' + F.day(e.start) : '') + (e.tv ? ' · ' + e.tv : '') : e.detail,
+            status: pre ? F.time(e.start) + ' ' + window.TZL + (day !== 0 || !sameDay(e.start) ? ' · ' + F.day(e.start) : '') + (e.tv ? ' · ' + e.tv : '') : e.detail,
             stStyle: stStyle(e.state), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note,
             cardStyle: fol ? 'border-color: var(--a); background: var(--band)' : '', live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });
@@ -313,11 +320,11 @@ class Component extends DCLogic {
     } else { power.none = true; power.noneText = 'Loading…'; }
     var browse = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, n: idx[k] ? idx[k].length : '', href: 'Teams.dc.html?lg=' + k }; });
 
-    var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     return {
-      favs: favs, q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
+      favs: favs, followHint: this.hint(idx), q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
       mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
-      dayLine: dl + ' · All times Central' + (liveN ? ' · ' + liveN + ' live now' : ''),
+      dayLine: dl + ' · All times ' + window.TZL + (liveN ? ' · ' + liveN + ' live now' : ''),
       statusTag: !S.loaded ? 'LOADING…' : (liveN ? 'LIVE · AUTO-REFRESH' : 'LIVE DATA')
     };
   }

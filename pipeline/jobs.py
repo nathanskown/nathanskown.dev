@@ -18,7 +18,11 @@ UNIVERSE = CONFIG["universe"]
 TILES = [("spx", "^GSPC", "S&P 500", "", 2), ("ixic", "^IXIC", "Nasdaq Comp.", "", 2), ("dji", "^DJI", "Dow Jones", "", 2),
          ("rut", "^RUT", "Russell 2000", "", 2), ("vix", "^VIX", "VIX", "", 2), ("tnx", "^TNX", "US 10Y yield", "%", 2),
          ("dxy", "DX-Y.NYB", "US Dollar Idx", "", 2), ("wti", "CL=F", "WTI crude", "$", 2), ("gold", "GC=F", "Gold", "$", 2),
-         ("btc", "BTC-USD", "Bitcoin", "$", 0)]
+         ("btc", "BTC-USD", "Bitcoin", "$", 0),
+         # global markets: off by default on the dashboard, visitors can add them from Customize
+         ("ftse", "^FTSE", "FTSE 100", "", 2), ("dax", "^GDAXI", "DAX", "", 2), ("sx5e", "^STOXX50E", "Euro Stoxx 50", "", 2),
+         ("n225", "^N225", "Nikkei 225", "", 2), ("hsi", "^HSI", "Hang Seng", "", 2), ("tsx", "^GSPTSE", "S&P/TSX", "", 2),
+         ("eurusd", "EURUSD=X", "EUR/USD", "", 4), ("usdjpy", "JPY=X", "USD/JPY", "", 2), ("gbpusd", "GBPUSD=X", "GBP/USD", "", 4)]
 SECTORS = [("XLK", "Technology"), ("XLE", "Energy"), ("XLC", "Communication"), ("XLF", "Financials"),
            ("XLY", "Cons. Discretionary"), ("XLI", "Industrials"), ("XLB", "Materials"), ("XLV", "Health Care"),
            ("XLRE", "Real Estate"), ("XLP", "Cons. Staples"), ("XLU", "Utilities")]

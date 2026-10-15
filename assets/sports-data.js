@@ -315,12 +315,34 @@
     });
   };
 
+  /* teams this visitor follows, saved in their browser only: [{lg, id, name}] */
+  var FKEY = 'skown.sports.follows.v2';
+  function follows() { try { var l = JSON.parse(window.localStorage.getItem(FKEY) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+  function setFollows(l) { try { window.localStorage.setItem(FKEY, JSON.stringify(l)); } catch (e) {} return l; }
+  function isFollowed(lg, id) { return follows().some(function (f) { return f.lg === lg && String(f.id) === String(id); }); }
+  function toggleFollow(lg, id, name) {
+    var l = follows(), on = isFollowed(lg, id);
+    setFollows(on ? l.filter(function (f) { return !(f.lg === lg && String(f.id) === String(id)); }) : l.concat([{ lg: lg, id: String(id), name: name || '' }]));
+    return !on;
+  }
+  /* chips for the "My teams" bar: the visitor's own follows, or a prompt to follow some */
+  function favChips(curLg, curId) {
+    var l = follows();
+    if (!l.length) return [{ label: '+ FOLLOW TEAMS', href: '/sports/#follow', cls: 't-chipl' }];
+    return l.map(function (f) {
+      var words = String(f.name || f.id).trim().split(/\s+/), nick = words.length > 1 && /^(red|blue|white|golden|maple|blue|trail|black|crimson|fighting|sun|tar)$/i.test(words[words.length - 2]) ? words.slice(-2).join(' ') : words[words.length - 1];
+      var college = /^ncaa/.test(f.lg);
+      return { label: (nick + (college ? ' ' + ({ ncaaf: 'FB', ncaab: 'BB', ncaah: 'HKY' }[f.lg] || '') : '')).toUpperCase(), href: teamHref(f.lg, f.id),
+        cls: 't-chipl' + (f.lg === curLg && String(f.id) === String(curId) ? ' is-on' : '') };
+    });
+  }
+
   /* team logos load from ESPN's image server; if one fails, leave its space blank instead of broken-image alt text */
   if (typeof document !== 'undefined') document.addEventListener('error', function (e) {
     var el = e.target;
     if (el && el.tagName === 'IMG' && /espncdn\.com/.test(el.src || '')) { el.style.visibility = 'hidden'; el.alt = ''; }
   }, true);
 
-  window.SD = { LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
+  window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
     standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
 })();

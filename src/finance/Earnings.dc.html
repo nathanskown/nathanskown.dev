@@ -252,7 +252,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming earnings · next two weeks</h2>
-<span style="color: #A87933; font-size: 12.5px">Largest S&amp;P 500 reporters each day · BMO before open · AMC after close</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="color: #A87933; font-size: 12.5px">Largest S&amp;P 500 reporters each day · BMO before open · AMC after close</span>
+<button type="button" class="{{ernWatchCls}}" aria-pressed="{{ernWatchOn}}" onClick="{{ernWatchToggle}}">MY WATCHLIST ONLY</button></span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 720px; font-size: 14px">
@@ -348,8 +349,10 @@ class Component extends DCLogic {
         newsUrl: 'https://finance.yahoo.com/quote/' + r.sym + '/news', secUrl: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + r.sym + '&type=8-K',
         quoteHref: 'Main.dc.html?sym=' + r.sym };
     });
-    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    var upcoming = (E.upcoming || []).map(function (u) {
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    var ernWatch = st.ernWatch !== undefined ? st.ernWatch : PREFS.get('fin.ernWatch', false);
+    var wl = PREFS.get('fin.watch', ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL']);
+    var upcoming = (E.upcoming || []).filter(function (u) { return !ernWatch || wl.indexOf(u.sym) >= 0; }).map(function (u) {
       var today = u.date === todayIso;
       return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
         nEst: u.nEst ? String(u.nEst) : '—', mcap: F.money(u.mcap, 0), rowStyle: 'text-align: right;' + (today ? ' background: #261C0C;' : '') };
@@ -360,7 +363,9 @@ class Component extends DCLogic {
       progressText: (P.reported || 0) + ' of ' + (P.total || 500) + ' · ' + Math.round(pct) + '%', progressBar: 'width: ' + pct.toFixed(1) + '%; height: 8px; background: #FFB84D;',
       weeks: weeks, score: score, sectorRows: sectorRows, themes: themes, raised: TH.raised === undefined ? '—' : String(TH.raised), lowered: TH.lowered === undefined ? '—' : String(TH.lowered),
       themeNote: TH.n ? 'Share of ' + TH.n + ' market headlines' : 'Builds as headlines accumulate',
-      filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming
+      filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
+      ernWatchOn: ernWatch ? 'true' : 'false', ernWatchCls: 't-tab' + (ernWatch ? ' is-on' : ''),
+      ernWatchToggle: function () { PREFS.set('fin.ernWatch', !ernWatch); self.setState({ ernWatch: !ernWatch }); }
     };
   }
 }

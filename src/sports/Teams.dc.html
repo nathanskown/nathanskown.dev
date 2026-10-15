@@ -19,7 +19,7 @@
 <span class="t-chip t-hide-sm">TEAMS &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">ALL TIMES CT</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -153,7 +153,7 @@ class Component extends DCLogic {
       title: q ? 'Team search' : L.label + ' teams', statusTag: S.index ? 'LIVE DATA' : (S.err ? 'DATA UNAVAILABLE' : 'LOADING…'),
       note: q ? '' : (all[lg] ? all[lg].length + ' teams. Grouped by ' + (lg.indexOf('ncaa') === 0 ? 'conference' : 'division') + '. Rating is the house model’s margin against an average team; blank until a team has played enough games.' : ''),
       empty: !!S.index && !groups.length, emptyText: q ? 'No team matches “' + S.q + '”.' : 'No teams in this league’s index yet.',
-      updated: S.status && S.status.updated ? 'Updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : ''
+      updated: S.status && S.status.updated ? 'Updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : ''
     };
   }
 }

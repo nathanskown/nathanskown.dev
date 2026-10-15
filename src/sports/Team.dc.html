@@ -19,7 +19,7 @@
 <span class="t-chip t-hide-sm">TEAM &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">ALL TIMES CT</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -70,6 +70,7 @@
 <span class="hi">{{t.standing}}</span>
 </div>
 <sc-if value="{{t.rankLine}}" hint-placeholder-val="{{true}}"><div class="dim" style="margin-top: 2px">{{t.rankLine}}</div></sc-if>
+<button type="button" class="{{followCls}}" style="margin-top: 10px" aria-pressed="{{followOn}}" onClick="{{followToggle}}">{{followLabel}}</button>
 </div>
 </div>
 <div class="s-next">
@@ -208,21 +209,14 @@
 </section>
 </div>
 
-<sc-if value="{{hasAbout}}" hint-placeholder-val="{{false}}">
-<section class="t-panel" aria-label="About">
-<div class="t-ph"><h2><span class="t-pn">8)</span>About</h2></div>
-<div class="t-pb"><div class="s-grid">
-<sc-for list="{{about}}" as="b" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{b.k}}</div><div class="hi" style="margin-top: 2px">{{b.v}}</div></div></sc-for>
-</div></div>
-</section>
-</sc-if>
+
 
 </main>
 </sc-if>
 
 <footer class="t-foot">
 <div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
-<span>Schedules, scores, standings, injuries and leaders: ESPN public API · Ratings, projections and odds: house model · {{updated}} · All times Central</span>
+<span>Schedules, scores, standings, injuries and leaders: ESPN public API · Ratings, projections and odds: house model · {{updated}} · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
 </footer>
@@ -274,10 +268,9 @@ class Component extends DCLogic {
   renderVals() {
     var S = this.state, lg = this.lg || String(S.lg || this.props.lg || ''), id = this.tid || String(S.id || this.props.id || '');
     var L = SD.LEAGUES[lg] || {};
-    var FAVS = [['nfl', '8', 'LIONS'], ['mlb', '6', 'TIGERS'], ['nba', '8', 'PISTONS'], ['nhl', '5', 'RED WINGS'], ['ncaaf', '127', 'MSU FB'], ['ncaab', '127', 'MSU BB'], ['ncaah', '127', 'MSU HKY']];
-    var favs = FAVS.map(function (f) { return { label: f[2], href: SD.teamHref(f[0], f[1]), cls: 't-chipl' + (f[0] === lg && f[1] === id ? ' is-on' : '') }; });
+    var favs = SD.favChips(lg, id), self = this;
     var lgLinks = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, href: 'Teams.dc.html?lg=' + k, cls: 't-chipl' + (k === lg ? ' is-on' : '') }; });
-    var base = { favs: favs, lgLinks: lgLinks, updated: S.status && S.status.updated ? 'Data files updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' CT' : 'Live data' };
+    var base = { favs: favs, lgLinks: lgLinks, updated: S.status && S.status.updated ? 'Data files updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : 'Live data' };
     if (S.bad) return Object.assign(base, { missing: true, ok: false, statusTag: 'NO TEAM SELECTED', missingText: 'Pick a team to see its page.' });
     if (S.schedErr && !S.index) return Object.assign(base, { missing: true, ok: false, statusTag: 'FEED UNAVAILABLE', missingText: 'The live feed did not respond. Try again in a minute.' });
 
@@ -350,7 +343,7 @@ class Component extends DCLogic {
       var nr = gameRow(nx), o2 = nr.o;
       next.title = nx.state === 'in' ? 'LIVE NOW' : 'NEXT UP';
       next.line = (nx.home || nx.neutral ? 'vs ' : 'at ') + (o2.name || 'TBD');
-      next.sub = nx.state === 'in' ? (nx.score + ' · ' + nx.detail) : [new Date(nx.start).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric' }), F.time(nx.start) + ' CT', nx.tv].filter(Boolean).join(' · ');
+      next.sub = nx.state === 'in' ? (nx.score + ' · ' + nx.detail) : [new Date(nx.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }), F.time(nx.start) + ' ' + window.TZL, nx.tv].filter(Boolean).join(' · ');
       var pp = model ? SD.project(model, nx.home ? o2.id : id, nx.home ? id : o2.id, nx.neutral) : null;
       var mo2 = model && model.teams ? model.teams[o2.id] : null;
       if (pp && nx.state !== 'in' && enough(mt) && enough(mo2)) {
@@ -433,18 +426,6 @@ class Component extends DCLogic {
     }
     if (!leaders.length) noLeadersText = S.loading ? 'Loading…' : (pro ? 'Leaders load from the daily data refresh.' : 'No completed games with box scores yet.');
 
-    // about (curated history for the site's own teams)
-    var ABOUT = {
-      'nfl:8': [['Founded', '1930 as the Portsmouth Spartans · Detroit since 1934'], ['NFL championships', '4 (1935, 1952, 1953, 1957)'], ['Super Bowl appearances', 'None'], ['Stadium', 'Ford Field (opened 2002)']],
-      'mlb:6': [['Founded', '1901 · American League charter member'], ['World Series titles', '4 (1935, 1945, 1968, 1984)'], ['AL pennants', '11 (most recent 2012)'], ['Ballpark', 'Comerica Park (opened 2000)']],
-      'nba:8': [['Founded', '1941 as the Fort Wayne Zollner Pistons · Detroit since 1957'], ['NBA titles', '3 (1989, 1990, 2004)'], ['Arena', 'Little Caesars Arena (since 2017)']],
-      'nhl:5': [['Founded', '1926 as the Detroit Cougars'], ['Stanley Cups', '11 (most recent 2008)'], ['Arena', 'Little Caesars Arena (since 2017)'], ['League status', 'Original Six franchise']],
-      'ncaaf:127': [['Program since', '1896'], ['National titles (claimed)', '6 (1951, 1952, 1955, 1957, 1965, 1966)'], ['Stadium', 'Spartan Stadium (opened 1923)'], ['Rivalry trophies', 'Paul Bunyan (Michigan) · Megaphone (Notre Dame)']],
-      'ncaab:127': [['National titles', '2 (1979, 2000)'], ['Arena', 'Breslin Center (opened 1989)'], ['Head coach since 1995', 'Tom Izzo']],
-      'ncaah:127': [['NCAA titles', '3 (1966, 1986, 2007)'], ['Arena', 'Munn Ice Arena'], ['Conference', 'Big Ten']]
-    };
-    var about = (ABOUT[lg + ':' + id] || []).map(function (x) { return { k: x[0], v: x[1] }; });
-
     return Object.assign(base, {
       ok: true, missing: false, statusTag: S.loading ? 'LOADING…' : (live.length ? 'LIVE GAME' : 'LIVE DATA'), t: t, next: next,
       profile: profile, profileNote: mt && model ? 'House rating from ' + (model.games || 'all') + ' games this season' : '',
@@ -458,7 +439,9 @@ class Component extends DCLogic {
       st: stv, odds: odds, hasOdds: odds.length > 0, outlookNote: outlookNote,
       inj: inj, hasInj: inj.length > 0, noInj: !inj.length, noInjText: noInjText, injNote: injNote,
       leaders: leaders, noLeaders: !leaders.length, noLeadersText: noLeadersText, ldTitle: ldTitle, ldNote: ldNote,
-      about: about, hasAbout: about.length > 0
+      followOn: SD.isFollowed(lg, id) ? 'true' : 'false', followLabel: SD.isFollowed(lg, id) ? '★ FOLLOWING' : '☆ FOLLOW',
+      followCls: 's-btn' + (SD.isFollowed(lg, id) ? '' : ' s-off'),
+      followToggle: function () { SD.toggleFollow(lg, id, t.name || ''); self.setState({ fv: Date.now() }); }
     });
   }
 }

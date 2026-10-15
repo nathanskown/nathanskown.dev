@@ -139,9 +139,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </header>
 
-<main style="max-width: 1320px; margin: 0 auto; padding: 20px 20px 48px; display: flex; flex-direction: column; gap: 18px">
+<main class="dash-main" style="max-width: 1320px; margin: 0 auto; padding: 20px 20px 48px">
 
-<section aria-label="Market summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
+<section aria-label="Market summary" style="flex: 1 1 100%; order: 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
 <div style="min-width: 0">
 <h1 class="big" style="margin: 0; font-size: 56px; line-height: .9; color: #ffd89d; text-shadow: 0 0 2px #ffb84d, 0 0 18px rgba(255,184,77,.4)">MARKETS TODAY</h1>
 <div style="color: #c99442; font-size: 13.5px; margin-top: 6px">{{summary}}</div>
@@ -149,10 +149,52 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
 <span class="t-badge"><span aria-hidden="true" style="{{mktDot}}"></span>{{mktStatus}}</span>
 <sc-if value="{{breadthText}}" hint-placeholder-val="{{ true }}"><span class="t-badge">{{breadthText}}</span></sc-if>
+<button type="button" class="t-badge" style="cursor: pointer; color: #ffd89d" aria-expanded="{{czOpenAttr}}" onClick="{{czToggle}}">⚙ {{czBtn}}</button>
 </div>
 </section>
 
-<section class="t-panel" aria-label="Indices and assets">
+<sc-if value="{{czOpen}}" hint-placeholder-val="{{ false }}">
+<section class="t-panel" aria-label="Customize this dashboard" style="flex: 1 1 100%; order: 0">
+<div class="t-ph"><h2>Customize</h2><span class="dim">Saved in this browser</span></div>
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px">
+<div>
+<div class="t-th" style="margin-bottom: 8px">Top strip · pick markets</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{czTiles}}" as="c" hint-placeholder-count="12"><button type="button" class="{{c.cls}}" aria-pressed="{{c.pressed}}" onClick="{{c.toggle}}">{{c.label}}</button></sc-for>
+</div>
+<div class="t-th" style="margin: 16px 0 8px">Start Market Analysis on</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{czHome}}" as="c" hint-placeholder-count="8"><button type="button" class="{{c.cls}}" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for>
+</div>
+</div>
+<div>
+<div class="t-th" style="margin-bottom: 8px">Panels · show, hide and reorder</div>
+<sc-for list="{{czPanels}}" as="c" hint-placeholder-count="10">
+<div style="display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #241a0b">
+<span style="flex: 1 1 auto; color: {{c.color}}">{{c.label}}</span>
+<button type="button" class="t-tab" aria-label="{{c.upAria}}" onClick="{{c.up}}">▲</button>
+<button type="button" class="t-tab" aria-label="{{c.downAria}}" onClick="{{c.down}}">▼</button>
+<button type="button" class="{{c.showCls}}" aria-pressed="{{c.pressed}}" onClick="{{c.toggle}}">{{c.showLabel}}</button>
+</div>
+</sc-for>
+</div>
+<div>
+<div class="t-th" style="margin-bottom: 8px">Watchlist · up to 12 tickers</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px">
+<sc-for list="{{czWatch}}" as="c" hint-placeholder-count="5"><button type="button" class="t-tab" aria-label="{{c.rmAria}}" onClick="{{c.remove}}">{{c.t}} ×</button></sc-for>
+</div>
+<form onSubmit="{{wAdd}}" style="display: flex; gap: 6px">
+<input class="cz-input" style="flex: 1 1 auto; min-width: 0; background: #000; color: #ffd89d; border: 1px solid #382811; min-height: 40px; padding: 0 10px; font: inherit; font-size: 14px; text-transform: uppercase; letter-spacing: .08em" type="text" value="{{wDraft}}" onChange="{{wInput}}" placeholder="ADD TICKER" aria-label="Add a ticker to your watchlist" autocomplete="off">
+<button type="submit" class="t-tab is-on">ADD</button>
+</form>
+<div class="dim" style="font-size: 12px; margin-top: 6px">{{wMsg}}</div>
+<button type="button" class="t-tab" style="margin-top: 16px" onClick="{{czReset}}">RESET ALL TO DEFAULTS</button>
+</div>
+</div>
+</section>
+</sc-if>
+
+<section class="t-panel" aria-label="Indices and assets" style="{{P.tiles}}">
 <div class="t-ph"><h2><span class="t-pn">10)</span>Indices &amp; Assets</h2><span class="dim">1D change</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{tiles}}" as="t" hint-placeholder-count="10">
@@ -168,9 +210,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch">
+<div class="dash-row">
 
-<section class="t-panel" aria-label="Selected index chart" style="flex: 999 1 560px">
+<section class="t-panel" aria-label="Selected index chart" style="{{P.chart}}">
 <div class="t-ph"><h2><span class="t-pn">11)</span>{{selName}} · Intraday</h2><span class="dim">Tap a tile to switch · dashed line = prior close</span></div>
 <div class="t-pb">
 <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 8px">
@@ -199,7 +241,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<section class="t-panel" aria-label="Today's economic data" style="flex: 1 1 360px">
+<section class="t-panel" aria-label="Today's economic data" style="{{P.econ}}">
 <div class="t-ph"><h2><span class="t-pn">12)</span>Latest Economic Data</h2><span class="dim">Newest releases · FRED</span></div>
 <div class="t-pb">
 <div style="overflow-x: auto">
@@ -236,9 +278,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr)); gap: 18px">
+<div class="dash-row">
 
-<section class="t-panel" aria-label="Top movers">
+<section class="t-panel" aria-label="Top movers" style="{{P.movers}}">
 <div class="t-ph"><h2><span class="t-pn">13)</span>S&amp;P 500 Movers</h2>
 <div class="t-tabs" role="group" aria-label="Mover list">
 <sc-for list="{{moverTabs}}" as="mt" hint-placeholder-count="3">
@@ -263,7 +305,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<section class="t-panel" aria-label="Sector performance">
+<section class="t-panel" aria-label="Sector performance" style="{{P.sectors}}">
 <div class="t-ph"><h2><span class="t-pn">14)</span>S&amp;P 500 Sectors</h2><span class="dim">1D</span></div>
 <div class="t-pb">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
@@ -278,7 +320,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<section class="t-panel" aria-label="Treasury yields">
+<section class="t-panel" aria-label="Treasury yields" style="{{P.yields}}">
 <div class="t-ph"><h2><span class="t-pn">15)</span>Treasury Yields</h2><span class="dim">{{curveNote}}</span></div>
 <div class="t-pb">
 <svg viewBox="0 0 300 110" role="img" aria-label="Treasury yield curve, today and one month ago" style="display: block; width: 100%; height: 120px; background: #000; border: 1px solid #241a0b">
@@ -302,7 +344,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 </div>
 
-<section class="t-panel" aria-label="Earnings calendar">
+<section class="t-panel" aria-label="Earnings calendar" style="{{P.earnings}}">
 <div class="t-ph"><h2><span class="t-pn">16)</span>Upcoming Earnings · S&amp;P 500</h2><span class="dim">Largest reporters · BMO before open · AMC after close · EPS estimate</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{earnDays}}" as="ed" hint-placeholder-count="5">
@@ -322,9 +364,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+<div class="dash-row">
 
-<section class="t-panel" aria-label="Headlines" style="flex: 999 1 560px">
+<section class="t-panel" aria-label="Headlines" style="{{P.headlines}}">
 <div class="t-ph"><h2><span class="t-pn">17)</span>Headlines</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{headlines}}" as="h" hint-placeholder-count="6">
@@ -339,8 +381,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<aside class="t-panel" aria-label="Watchlist" style="flex: 1 1 300px">
-<div class="t-ph"><h2><span class="t-pn">18)</span>My Watchlist</h2><a href="Ownership.dc.html" style="font-size: 12px; letter-spacing: .08em">13F LOOKUP <span class="t-k">GO</span></a></div>
+<aside class="t-panel" aria-label="Watchlist" style="{{P.watch}}">
+<div class="t-ph"><h2><span class="t-pn">18)</span>My Watchlist</h2><button type="button" onClick="{{czEditWatch}}" style="background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size: 12px; letter-spacing: .08em">EDIT <span class="t-k">GO</span></button></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="5">
 <a class="t-rowlink" href="{{w.href}}" style="justify-content: space-between; align-items: center">
@@ -352,7 +394,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </aside>
 
 </div>
-<section class="t-panel" aria-label="Prediction market odds">
+<section class="t-panel" aria-label="Prediction market odds" style="{{P.odds}}">
 <div class="t-ph"><h2><span class="t-pn">19)</span>Prediction Market Odds</h2><span class="dim">Fed, CPI and recession · Kalshi</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 4px 28px; padding-top: 4px">
 <sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
@@ -381,9 +423,38 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"crt":{"editor":"boolean","default":true,"section":"Look"},"$preview":{"width":1440,"height":2400}}'>
+var CZ = {
+  // [id, label, flex basis]: the dashboard's customizable panels, in default order
+  panels: [['tiles', 'Indices & assets', '1 1 100%'], ['chart', 'Index chart', '999 1 560px'], ['econ', 'Economic data', '1 1 360px'],
+    ['movers', 'S&P 500 movers', '1 1 330px'], ['sectors', 'Sectors', '1 1 330px'], ['yields', 'Treasury yields', '1 1 330px'],
+    ['earnings', 'Earnings calendar', '1 1 100%'], ['headlines', 'Headlines', '999 1 560px'], ['watch', 'Watchlist', '1 1 300px'],
+    ['odds', 'Prediction markets', '1 1 100%']],
+  tiles: ['spx', 'ixic', 'dji', 'rut', 'vix', 'tnx', 'dxy', 'wti', 'gold', 'btc'],
+  watch: ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL'],
+  home: [['dashboard', 'Dashboard', ''], ['digest', 'Digest', 'Digest.dc.html'], ['headlines', 'Headlines', 'News.dc.html'], ['quote', 'Quotes', 'Main.dc.html'],
+    ['ownership', 'Ownership', 'Ownership.dc.html'], ['earnings', 'Earnings', 'Earnings.dc.html'], ['macro', 'Macro', 'Macro.dc.html'], ['ipo', 'IPOs', 'IPO.dc.html']]
+};
 class Component extends DCLogic {
+  pf(k, d) { var st = this.state || {}; return st.pf && st.pf[k] !== undefined ? st.pf[k] : PREFS.get('fin.' + k, d); }
+  savePf(k, v) { PREFS.set('fin.' + k, v); var pf = Object.assign({}, (this.state || {}).pf || {}); pf[k] = v; this.setState({ pf: pf }); }
+  loadWatch() {
+    // prices for watchlist tickers: the nightly core list first, then the on-demand quote API for anything else
+    var self = this, list = this.pf('watch', CZ.watch), have = (this.state || {}).wq || {};
+    var idx = {}; (((this.state || {}).qidx || {}).tickers || []).forEach(function (t) { idx[t.sym] = t; });
+    list.forEach(function (sym) {
+      if (idx[sym] || have[sym]) return;
+      fetch('/api/quote?part=price&sym=' + encodeURIComponent(sym)).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.quote) return;
+        var o = Object.assign({}, (self.state || {}).wq || {}); o[sym] = { sym: sym, name: j.quote.name, price: j.quote.price, pct: j.quote.pct }; self.setState({ wq: o });
+      }).catch(function () {});
+    });
+  }
   componentDidMount() {
     var self = this;
+    // start page: visitors who chose another page land there when they arrive from outside Market Analysis
+    var home = PREFS.get('fin.home', 'dashboard'), dest = CZ.home.filter(function (h) { return h[0] === home; })[0];
+    if (dest && dest[2] && !/\/finance\//.test(document.referrer || '') && (window.DC_ROUTES || {})[dest[2]]) { location.replace(window.DC_ROUTES[dest[2]]); return; }
+    DC.load('/data/finance/quotes/index.json').then(function (j) { self.setState({ qidx: j }); self.loadWatch(); }, function () { self.loadWatch(); });
     DC.load('/data/finance/odds.json').then(function (j) { self.setState({ odds: j }); }).catch(function () {});
     ['dashboard', 'macro', 'earnings'].forEach(function (k) {
       DC.load('/data/finance/' + k + '.json').then(function (j) { var o = {}; o[k] = j; self.setState(o); }).catch(function () { var o = {}; o[k + 'Err'] = true; self.setState(o); });
@@ -400,7 +471,9 @@ class Component extends DCLogic {
         if (part === 'tiles') {
           if (!j.tiles || !j.tiles.length) return;
           var nm = {}; (d.watch || []).forEach(function (w) { nm[w.sym] = w.name; });
-          d.tiles = j.tiles; d.asOf = j.asOf || d.asOf;
+          var byId = {}; j.tiles.forEach(function (t) { byId[t.id] = t; });
+          d.tiles = (d.tiles || []).map(function (t) { return byId[t.id] || t; }).concat(j.tiles.filter(function (t) { return !(d.tiles || []).some(function (x) { return x.id === t.id; }); }));
+          d.asOf = j.asOf || d.asOf;
           if (j.sectors && j.sectors.length) d.sectors = j.sectors;
           if (j.watch && j.watch.length) d.watch = j.watch.map(function (w) { w.name = nm[w.sym] || w.name; return w; });
         } else {
@@ -434,8 +507,10 @@ class Component extends DCLogic {
     var oddsList = oddsRows(st.odds);
     var self = this;
     var D = st.dashboard || {}, M = st.macro || {}, E = st.earnings || {};
-    var tilesRaw = D.tiles || [];
-    var sel = st.sel || (tilesRaw[0] && tilesRaw[0].id);
+    var allTiles = D.tiles || [], tilePick = this.pf('tiles', CZ.tiles);
+    var tilesRaw = allTiles.filter(function (t) { return tilePick.indexOf(t.id) >= 0; });
+    if (!tilesRaw.length) tilesRaw = allTiles.slice(0, 1);
+    var sel = st.sel && tilesRaw.some(function (t) { return t.id === st.sel; }) ? st.sel : (tilesRaw[0] && tilesRaw[0].id);
     var tab = st.tab || 'gainers';
     var fmt = function (v, d, unit) {
       if (v === null || v === undefined) return '—';
@@ -480,11 +555,11 @@ class Component extends DCLogic {
     var ny = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
     var mins = ny.getHours() * 60 + ny.getMinutes(), wd = ny.getDay();
     var open = wd > 0 && wd < 6 && mins >= 570 && mins < 960;
-    var mktStatus = open ? 'MARKET OPEN · CLOSES 3:00 PM CT' : (wd > 0 && wd < 6 && mins < 570 ? 'MARKET CLOSED · OPENS 8:30 AM CT' : 'MARKET CLOSED');
+    var mktStatus = open ? 'MARKET OPEN · CLOSES ' + F.nyTime(16, 0) + ' ' + window.TZL : (wd > 0 && wd < 6 && mins < 570 ? 'MARKET CLOSED · OPENS ' + F.nyTime(9, 30) + ' ' + window.TZL : 'MARKET CLOSED');
     var b = D.breadth;
     var tile = function (id) { return tilesRaw.filter(function (t) { return t.id === id; })[0]; };
     var spx = tile('spx'), ixic = tile('ixic'), rut = tile('rut');
-    var summary = spx ? 'S&P 500 ' + F.pct(spx.pct) + (ixic ? ' · Nasdaq ' + F.pct(ixic.pct) : '') + (rut ? ' · Russell 2000 ' + F.pct(rut.pct) : '') + (D.asOf ? ' · as of ' + F.day(D.asOf) + ' ' + F.time(D.asOf) + ' CT' : '') : (st.dashboardErr ? 'Market data is not available yet. The first refresh runs within the hour.' : 'Loading market data…');
+    var summary = spx ? 'S&P 500 ' + F.pct(spx.pct) + (ixic ? ' · Nasdaq ' + F.pct(ixic.pct) : '') + (rut ? ' · Russell 2000 ' + F.pct(rut.pct) : '') + (D.asOf ? ' · as of ' + F.day(D.asOf) + ' ' + F.time(D.asOf) + ' ' + window.TZL : '') : (st.dashboardErr ? 'Market data is not available yet. The first refresh runs within the hour.' : 'Loading market data…');
     var macroRows = (M.latest || []).slice(0, 6).map(function (m) {
       return { n: m.n, period: new Date(m.period + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }), act: m.act, prior: m.prior };
     });
@@ -515,7 +590,7 @@ class Component extends DCLogic {
     });
     var days = {};
     (E.upcoming || []).forEach(function (x) { (days[x.date] = days[x.date] || []).push(x); });
-    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var earnDays = Object.keys(days).sort().slice(0, 5).map(function (d) {
       var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, href: 'Main.dc.html?sym=' + x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
       return { day: new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase(), tag: d === todayIso ? 'TODAY' : days[d].length + ' shown', items: items, colCls: 't-day' + (d === todayIso ? ' is-today' : '') };
@@ -523,11 +598,55 @@ class Component extends DCLogic {
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
     });
-    var watch = (D.watch || []).map(function (w) {
-      return { t: w.sym, n: w.name, px: F.usd(w.price, 2), href: 'Main.dc.html?sym=' + w.sym, chg: F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+    var wlist = this.pf('watch', CZ.watch), qi = {};
+    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
+    (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
+    var watch = wlist.map(function (sym) {
+      var w = qi[sym] || (st.wq || {})[sym] || { sym: sym, name: 'Loading…' };
+      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
     });
+    // panel order, visibility and the Customize controls
+    var pp = this.pf('panels', null) || {}, order = (pp.order || []).filter(function (id) { return CZ.panels.some(function (x) { return x[0] === id; }); });
+    CZ.panels.forEach(function (x) { if (order.indexOf(x[0]) < 0) order.push(x[0]); });
+    var hidden = pp.hidden || [];
+    var P = {};
+    order.forEach(function (id, i) { var x = CZ.panels.filter(function (y) { return y[0] === id; })[0]; P[id] = hidden.indexOf(id) >= 0 ? 'display: none' : 'order: ' + (i + 1) + '; flex: ' + x[2] + ';'; });
+    var savePanels = function (o, h) { self.savePf('panels', { order: o, hidden: h }); };
+    var czPanels = order.map(function (id, i) {
+      var x = CZ.panels.filter(function (y) { return y[0] === id; })[0], on = hidden.indexOf(id) < 0;
+      var move = function (d) { var o = order.slice(), j = i + d; if (j < 0 || j >= o.length) return; o[i] = o[j]; o[j] = id; savePanels(o, hidden); };
+      return { label: x[1], color: on ? '#ffd89d' : '#664a1f', upAria: 'Move ' + x[1] + ' up', downAria: 'Move ' + x[1] + ' down',
+        up: function () { move(-1); }, down: function () { move(1); }, pressed: on ? 'true' : 'false', showLabel: on ? 'SHOWN' : 'HIDDEN',
+        showCls: 't-tab' + (on ? ' is-on' : ''), toggle: function () { savePanels(order, on ? hidden.concat([id]) : hidden.filter(function (h) { return h !== id; })); } };
+    });
+    var czTiles = allTiles.map(function (t) {
+      var on = tilePick.indexOf(t.id) >= 0;
+      return { label: t.name, cls: 't-tab' + (on ? ' is-on' : ''), pressed: on ? 'true' : 'false',
+        toggle: function () { self.savePf('tiles', on ? tilePick.filter(function (x) { return x !== t.id; }) : tilePick.concat([t.id])); } };
+    });
+    var homeNow = this.pf('home', 'dashboard');
+    var czHome = CZ.home.map(function (h) { var on = h[0] === homeNow; return { label: h[1], cls: 't-tab' + (on ? ' is-on' : ''), pressed: on ? 'true' : 'false', pick: function () { self.savePf('home', h[0]); } }; });
+    var czWatch = wlist.map(function (sym) { return { t: sym, rmAria: 'Remove ' + sym, remove: function () { self.savePf('watch', wlist.filter(function (x) { return x !== sym; })); } }; });
+    var addWatch = function (e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var v = String(st.wDraft || '').trim().toUpperCase().replace(/\./g, '-');
+      if (!v) return;
+      if (wlist.indexOf(v) >= 0) { self.setState({ wMsg: v + ' is already on your watchlist.' }); return; }
+      if (wlist.length >= 12) { self.setState({ wMsg: 'The watchlist holds 12 tickers. Remove one first.' }); return; }
+      DC.tickers().then(function (T) {
+        var hit = T.bySym[v] ? v : null;
+        if (!hit && !/^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(v)) { self.setState({ wMsg: '"' + v + '" is not a ticker we recognize.' }); return; }
+        self.savePf('watch', wlist.concat([hit || v])); self.setState({ wDraft: '', wMsg: '' });
+        setTimeout(function () { self.loadWatch(); }, 0);
+      });
+    };
     var fomc = M.fomc ? new Date(M.fomc + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase() : '—';
     return {
+      P: P, czOpen: !!st.czOpen, czOpenAttr: st.czOpen ? 'true' : 'false', czBtn: st.czOpen ? 'DONE' : 'CUSTOMIZE',
+      czToggle: function () { self.setState({ czOpen: !st.czOpen }); }, czEditWatch: function () { self.setState({ czOpen: true }); window.scrollTo(0, 0); },
+      czTiles: czTiles, czPanels: czPanels, czHome: czHome, czWatch: czWatch, wDraft: st.wDraft || '', wMsg: st.wMsg || '',
+      wInput: function (e) { self.setState({ wDraft: e.target.value, wMsg: '' }); }, wAdd: addWatch,
+      czReset: function () { ['tiles', 'panels', 'watch', 'home'].forEach(function (k) { try { localStorage.removeItem('nskn.fin.' + k); } catch (e) {} }); self.setState({ pf: {}, wq: {} }); setTimeout(function () { self.loadWatch(); }, 0); },
       odds: oddsList, noOdds: !!st.odds && !oddsList.length,
       crt: this.props.crt !== false,
       liveTag: F.updated(D.updated), summary: summary,

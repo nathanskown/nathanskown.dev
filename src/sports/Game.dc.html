@@ -19,7 +19,7 @@
 <span class="t-chip t-hide-sm">GAME &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
-<span class="dim">ALL TIMES CT</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
 <span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
@@ -200,7 +200,7 @@
 
 <footer class="t-foot">
 <div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
-<span>Scores, box scores and play text: ESPN public API · Projections: house model · No betting lines or third-party win probabilities · All times Central</span>
+<span>Scores, box scores and play text: ESPN public API · Projections: house model · No betting lines or third-party win probabilities · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
 </footer>
@@ -260,7 +260,7 @@ class Component extends DCLogic {
             var pre = e.state === 'pre';
             return { href: e.href, away: (e.away.rank ? e.away.rank + ' ' : '') + e.away.short, home: (e.home.rank ? e.home.rank + ' ' : '') + e.home.short,
               as: pre ? '' : e.away.score, hs: pre ? '' : e.home.score, aLogo: logo(e.away), hLogo: logo(e.home),
-              status: pre ? F.day(e.start) + ' · ' + F.time(e.start) + ' CT' + (e.tv ? ' · ' + e.tv : '') : e.detail, stStyle: stStyle(e.state) };
+              status: pre ? F.day(e.start) + ' · ' + F.time(e.start) + ' ' + window.TZL + (e.tv ? ' · ' + e.tv : '') : e.detail, stStyle: stStyle(e.state) };
           }) } });
     }
 
@@ -277,7 +277,7 @@ class Component extends DCLogic {
     var vals = {
       note: g.note, away: side(A), home: side(H), info: info, detail: g.detail,
       score: pre ? 'vs' : (A.score || '0') + '–' + (H.score || '0'),
-      status: pre ? new Date(g.start).toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + F.time(g.start) + ' CT' : g.detail,
+      status: pre ? new Date(g.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + F.time(g.start) + ' ' + window.TZL : g.detail,
       stStyle: stStyle(g.state)
     };
 

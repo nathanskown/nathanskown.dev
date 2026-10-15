@@ -160,6 +160,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </div>
 
+<div role="group" aria-label="Sources" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center">
+<span style="color: #A87933; font-size: 12px; letter-spacing: .1em; margin-right: 4px">SOURCES</span>
+<sc-for list="{{sources}}" as="sr" hint-placeholder-count="8">
+<button type="button" onClick="{{sr.toggle}}" aria-pressed="{{sr.pressed}}" style="{{sr.btnStyle}}">{{sr.label}} <span style="font-size: 11.5px; color: #A87933">{{sr.n}}</span></button>
+</sc-for>
+</div>
+
 <sc-if value="{{hasUnseen}}" hint-placeholder-val="{{ false }}">
 <button type="button" onClick="{{markSeen}}" style="align-self: flex-start; height: 40px; padding: 0 16px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFFFFF; font-family: inherit; font-size: 13.5px; cursor: pointer">{{unseenText}} · mark as read</button>
 </sc-if>
@@ -282,9 +289,12 @@ class Component extends DCLogic {
   renderVals() {
     var self = this;
     var st = this.state || {};
-    var paused = !!st.paused, watchOnly = !!st.watchOnly, notableOnly = !!st.notableOnly;
-    var tab = st.tab || 'all';
-    var watchList = (st.config && st.config.watchlist) || [];
+    // filters are remembered in this browser (nskn.fin.news); the watchlist is the one set on the dashboard
+    var NP = st.np || PREFS.get('fin.news', {}) || {};
+    var saveNP = function (patch) { var n = Object.assign({}, NP, patch); PREFS.set('fin.news', n); self.setState({ np: n }); };
+    var paused = !!st.paused, watchOnly = !!NP.watchOnly, notableOnly = !!NP.notableOnly, hiddenSrc = NP.hidden || [];
+    var tab = NP.tab || 'all';
+    var watchList = PREFS.get('fin.watch', ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL']);
     var all = st.items || [];
     var now = Date.now();
     var typeMap = { all: null, pr: 'Press release', sec: 'SEC filing', pub: 'Publication' };
@@ -294,8 +304,11 @@ class Component extends DCLogic {
       var c = type === 'Press release' ? ['#261C0C', '#8A6326', '#FFFFFF'] : (type === 'SEC filing' ? ['#0E0A05', '#8A6326', '#FFE9C7'] : ['#1A1309', '#4A3517', '#FFB84D']);
       return 'font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
     };
+    var srcCount = {}; all.forEach(function (it) { if (it.source) srcCount[it.source] = (srcCount[it.source] || 0) + 1; });
+    var srcList = Object.keys(srcCount).sort();
     var items = all.filter(function (it) {
       if (typeMap[tab] && it.type !== typeMap[tab]) return false;
+      if (hiddenSrc.indexOf(it.source) >= 0) return false;
       if (notableOnly && !it.notable) return false;
       if (watchOnly && !(it.tickers || []).some(function (t) { return watchList.indexOf(t) >= 0; })) return false;
       return true;
@@ -323,7 +336,7 @@ class Component extends DCLogic {
       return { rank: i + 1, h: t + ' · ' + mention[t] + ' headline' + (mention[t] > 1 ? 's' : ''), meta: latest ? latest.title.slice(0, 90) : '' };
     });
     var watch = watchList.map(function (t) { return { t: t, c: all.filter(function (it) { return (it.tickers || []).indexOf(t) >= 0; }).length }; });
-    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var sched = ((st.macro || {}).calendar || []).filter(function (c) { return c.date === todayIso; }).map(function (c) { return { t: 'Today', e: c.name }; })
       .concat(((st.earnings || {}).upcoming || []).filter(function (x) { return x.date === todayIso; }).slice(0, 5).map(function (x) { return { t: x.when, e: x.name + ' (' + x.sym + ') earnings' }; }));
     var sources = [];
@@ -338,11 +351,16 @@ class Component extends DCLogic {
       dotStyle: 'width: 8px; height: 8px; border-radius: 0; background: ' + (paused ? '#664A1F' : '#4ADE80') + ';' + (paused ? '' : ' animation: pulse 1.6s infinite;'),
       pauseLabel: paused ? 'Resume' : 'Pause',
       togglePause: function () { self.setState({ paused: !paused }); },
-      toggleWatch: function () { self.setState({ watchOnly: !watchOnly }); },
-      toggleNotable: function () { self.setState({ notableOnly: !notableOnly }); },
+      toggleWatch: function () { saveNP({ watchOnly: !watchOnly }); },
+      toggleNotable: function () { saveNP({ notableOnly: !notableOnly }); },
+      sources: srcList.map(function (sname) {
+        var on = hiddenSrc.indexOf(sname) < 0;
+        return { label: sname, n: srcCount[sname], pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),
+          toggle: function () { saveNP({ hidden: on ? hiddenSrc.concat([sname]) : hiddenSrc.filter(function (x) { return x !== sname; }) }); } };
+      }),
       watchPressed: watchOnly ? 'true' : 'false', notablePressed: notableOnly ? 'true' : 'false',
       watchStyle: toggle(watchOnly), notableStyle: toggle(notableOnly),
-      tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], pressed: t[0] === tab ? 'true' : 'false', pick: function () { self.setState({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
+      tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], pressed: t[0] === tab ? 'true' : 'false', pick: function () { saveNP({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
       hasUnseen: unseen > 0, unseenText: unseen + ' new since you opened this page', markSeen: function () { self.setState({ unseen: 0 }); },
       items: items, empty: !!st.items && items.length === 0, top: top, watch: watch, sched: sched, noSched: !sched.length,
       sourceList: sources.join(', ') || 'press wires, SEC EDGAR and financial publications'

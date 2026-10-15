@@ -146,3 +146,6 @@ position:relative;min-height:100vh;background:#020607;color:var(--a);font-family
 @media (max-width:760px){.s-hero-logo{width:60px;height:60px}.s-stat .v{font-size:26px}}
 /* phones: team-name links in tables get a thumb-sized hit area */
 @media (max-width:760px){.t .s-team{min-height:40px}}
+.t button.s-btn{border:0;cursor:pointer;font:inherit;font-weight:600}
+.t .s-btn.s-off{background:transparent;color:var(--a);box-shadow:inset 0 0 0 1px var(--a)}
+.t .s-btn.s-off:hover{background:var(--a);color:#000}

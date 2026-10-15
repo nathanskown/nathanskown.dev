@@ -89,3 +89,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-card > h2:first-child{justify-content:flex-start}
 /* phones: give inline ticker and panel links a thumb-sized hit area */
 @media (max-width:760px){.t .t-row a,.t .t-ph a{display:inline-flex;align-items:center;min-height:40px}.t .t-day a{display:inline-flex;align-items:center;min-height:36px}}
+/* dashboard: panels live in one wrapping layout so visitors can reorder and hide them */
+.t .dash-main{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;box-sizing:border-box}
+.t .dash-main>*{min-width:0}
+.t .dash-row{display:contents}

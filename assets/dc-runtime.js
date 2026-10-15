@@ -9,7 +9,28 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
   /* page-wide values any template can use, e.g. {{todayLabel}} */
   var G = window.DC_G = window.DC_G || {};
-  G.todayLabel = new Date().toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).replace(/,/g, '');
+
+  /* the visitor's own time zone: every time on the site is shown in it, with a short label (ET, CT, BST, GMT+9...) */
+  var TZ = 'America/New_York';
+  try { TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || TZ; } catch (e) {}
+  function zoneLabel(tz) {
+    try {
+      var n = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(new Date())
+        .filter(function (p) { return p.type === 'timeZoneName'; })[0].value;
+      var us = n.match(/^(E|C|M|P|AK|H)[SD]T$/);
+      return us ? us[1] + 'T' : n;
+    } catch (e) { return 'local'; }
+  }
+  window.TZ = TZ;
+  window.TZL = zoneLabel(TZ);
+  G.tzLabel = window.TZL;
+  G.todayLabel = new Date().toLocaleDateString('en-US', { timeZone: TZ, weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).replace(/,/g, '');
+
+  /* visitor preferences, kept in this browser only (no accounts): sports follows, watchlist, panels, music mix... */
+  window.PREFS = {
+    get: function (k, d) { try { var v = window.localStorage.getItem('nskn.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { window.localStorage.setItem('nskn.' + k, JSON.stringify(v)); } catch (e) {} return v; }
+  };
 
   /* formatting helpers shared by every page */
   var F = window.F = {
@@ -27,14 +48,22 @@
       return s + a.toFixed(2);
     },
     big: function (v) { if (v === null || v === undefined) return '—'; var a = Math.abs(v), s = v < 0 ? '−' : ''; return a >= 1e9 ? s + (a / 1e9).toFixed(2) + 'B' : a >= 1e6 ? s + (a / 1e6).toFixed(2) + 'M' : a >= 1e3 ? s + (a / 1e3).toFixed(0) + 'K' : s + a.toFixed(0); },
-    time: function (iso) { if (!iso) return ''; var d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(iso); return d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }); },
-    day: function (iso) { if (!iso) return ''; var d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso); return d.toLocaleDateString('en-US', { timeZone: 'America/Chicago', month: 'short', day: 'numeric' }); },
+    time: function (iso) { if (!iso) return ''; var d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(iso); return d.toLocaleTimeString('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }); },
+    /* a New York wall-clock time today (e.g. the 9:30 open) shown in the visitor's zone */
+    nyTime: function (h, m) {
+      var now = new Date(), p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
+      var nyAsUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute), off = nyAsUtc - Math.floor(now.getTime() / 60000) * 60000;
+      return F.time(new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, m) - off).toISOString());
+    },
+    day: function (iso) { if (!iso) return ''; var dateOnly = String(iso).length === 10, d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(dateOnly ? iso + 'T12:00:00Z' : iso); return d.toLocaleDateString('en-US', { timeZone: dateOnly ? 'UTC' : TZ, month: 'short', day: 'numeric' }); },
     ago: function (iso) {
       if (!iso) return '';
       var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
       return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' hr ago' : Math.round(m / 1440) + ' d ago';
     },
-    updated: function (iso) { return iso ? 'LIVE · UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' CT' : 'LOADING…'; }
+    updated: function (iso) { return iso ? 'LIVE · UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; }
   };
   var ROUTES = window.DC_ROUTES || {};
   function route(href) {
@@ -185,9 +214,6 @@
     TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
     NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',
     NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
-    LIONS: '/sports/team/lions/', TIGERS: '/sports/team/tigers/', PISTONS: '/sports/team/pistons/',
-    REDWINGS: '/sports/team/red-wings/', WINGS: '/sports/team/red-wings/', MSU: '/sports/team/msu-football/', MSUFB: '/sports/team/msu-football/',
-    MSUBB: '/sports/team/msu-basketball/', MSUHKY: '/sports/team/msu-hockey/',
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', SPOT: '/sports/spots/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
     SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/'
   };
@@ -218,7 +244,7 @@
   function runCmd(input) {
     var raw = input.value.trim().toUpperCase().replace(/\s*<?GO>?$/, '').trim();
     if (!raw) return;
-    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL HDS · WEI · TOP · ERN · SCOR · LIONS · HOME'; return; }
+    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL HDS · WEI · TOP · ERN · SCOR · ANY TEAM NAME · HOME'; return; }
     var compact = raw.replace(/[\s-]+/g, '');
     var parts = raw.split(/\s+/), fn = parts.length > 1 && FN[parts[parts.length - 1]] ? parts.pop() : null;
     if (!fn && CMDS[compact]) { location.href = CMDS[compact]; return; }
