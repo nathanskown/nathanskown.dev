@@ -524,7 +524,15 @@ MAJOR = ("consumer price", "employment situation", "gross domestic", "personal i
 
 
 def _yoy(obs, lag=12):
-    return [(obs[i][0], (obs[i][1] / obs[i - lag][1] - 1) * 100) for i in range(lag, len(obs)) if obs[i - lag][1]]
+    """Year-over-year % change, matched by calendar month. Counting 12 observations back is wrong when a month is
+    missing (BLS did not publish October 2025 CPI), which shifted every later reading by about a month."""
+    by = {d[:7]: v for d, v in obs}
+    out = []
+    for d, v in obs:
+        prev = by.get(f"{int(d[:4]) - 1}-{d[5:7]}")
+        if prev:
+            out.append((d, (v / prev - 1) * 100))
+    return out
 
 
 def _monthly(obs):
