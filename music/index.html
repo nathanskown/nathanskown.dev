@@ -14,15 +14,30 @@
 </head>
 <body>
 <div class="mx">
-  <div id="chrome"></div>
-  <main class="wrap">
+  <header id="chrome"></header>
+  <main class="wrap" id="main">
     <div class="mx-ph"><span>NSKN &raquo; Music</span><span class="dim">Page 1 of 1</span></div>
+
+    <section class="mx-hero" aria-labelledby="pgTitle">
+      <div>
+        <div class="mx-kicker">MUS · two games · a new daily every midnight CT</div>
+        <h1 class="mx-h1" id="pgTitle">Music</h1>
+        <p class="mx-lede">Name the song from a one-second clip, or name the artist from their deep cuts. Same daily challenge for everyone, worldwide.</p>
+      </div>
+      <div class="mx-hero-side">
+        <div class="mx-viz" id="heroViz"></div>
+        <span class="mx-pill">NEXT DAILY IN <b class="mxCd">--:--:--</b></span>
+        <span class="mx-pill" id="pillTrk">TRCK DAILY <b>—</b></span>
+        <span class="mx-pill" id="pillArt">ARTS DAILY <b>—</b></span>
+      </div>
+    </section>
 
     <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> Placeholder songs, artists and stand-in audio. Nothing external is called. See assets/config.js.</div>
 
     <div class="tiles">
       <a class="tile" href="/music/track/">
         <span class="tile-top"><span>2)</span><span class="k">TRCK</span><span class="mx-sp"></span><span aria-hidden="true">&rarr;</span></span>
+        <span class="tile-viz" id="tileViz"></span>
         <span class="tile-t">GUESS THE<br>TRACK</span>
         <span class="tile-d">Name the song from a one-second clip. Every wrong guess unlocks more audio.</span>
         <span class="tile-chips"><span>1s</span><span>2s</span><span>4s</span><span>8s</span></span>
@@ -30,6 +45,7 @@
       </a>
       <a class="tile" href="/music/artist/">
         <span class="tile-top"><span>3)</span><span class="k">ARTS</span><span class="mx-sp"></span><span aria-hidden="true">&rarr;</span></span>
+        <span class="tile-cl" aria-hidden="true"><span>TRACK 1</span><span>TRACK 2</span><span>TRACK 3</span><span>BIG HIT ?</span></span>
         <span class="tile-t">GUESS THE<br>ARTIST</span>
         <span class="tile-d">Three of their lesser-known top tracks. Every wrong guess reveals another clue.</span>
         <span class="tile-chips"><span>3 TRACKS</span><span>+2</span><span>TAGS &amp; ERA</span><span>BIG HIT</span></span>
@@ -67,7 +83,12 @@
       MX.$(p[1] + "B").textContent = g.best + " / " + g.bestMax;
     }
     if (t) MX.$(p[1] + "D").textContent = t.dailyScore + " / " + t.dailyMax;
+    var pill = MX.$(p[0] === "track" ? "pillTrk" : "pillArt");
+    pill.querySelector("b").textContent = t ? t.dailyScore + " / " + t.dailyMax : "NOT PLAYED";
+    pill.classList.toggle("done", !!t);
   });
+  MX.viz(MX.$("heroViz"), 18, 64);
+  MX.viz(MX.$("tileViz"), 10, 46);
   MX.renderCredits("credits", "hub");
   MX.renderFooter("foot");
 </script>

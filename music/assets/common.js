@@ -247,10 +247,21 @@
       '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
       '<input id="mxCmdIn" type="text" placeholder="TYPE HELP, THEN GO" spellcheck="false" aria-label="Command line">' +
       '<button type="submit">GO</button></form>' +
-      '<div class="mx-msg" id="mxMsg"></div>' +
-      '<div class="mx-fbar"><span class="t">Music</span>' +
-      keys.map(k => '<a href="' + k[0] + '"' + (k[2] === page.key ? ' class="on"' : "") + ">" + k[1] + "</a>").join("") +
-      '<span class="r">NSKN Terminal</span></div>';
+      '<div class="mx-msg" id="mxMsg" role="status" aria-live="polite"></div>' +
+      '<nav class="mx-fbar" aria-label="Music"><span class="t">Music</span>' +
+      keys.map(k => '<a href="' + k[0] + '"' + (k[2] === page.key ? ' class="on" aria-current="page"' : "") + ">" + k[1] + "</a>").join("") +
+      '<span class="r">NSKN Terminal</span></nav>';
+    // skip link past the header, outside the header so it is the first thing a keyboard reaches
+    if (!document.querySelector(".mx-skip")) {
+      const sk = document.createElement("a");
+      sk.className = "mx-skip"; sk.href = "#main"; sk.textContent = "Skip to content";
+      sk.addEventListener("click", ev => {
+        const m = document.querySelector("main");
+        if (!m) return;
+        ev.preventDefault(); m.setAttribute("tabindex", "-1"); m.focus(); m.scrollIntoView();
+      });
+      document.body.insertBefore(sk, document.body.firstChild);
+    }
     const msg = MX.$("mxMsg");
     MX.$("mxCmd").onsubmit = e => {
       e.preventDefault();
@@ -341,6 +352,93 @@
   };
 
   MX.isLive = () => (window.MUSIC_CONFIG || {}).MODE === "live";
+
+  /* ---------- when the next daily starts (midnight US Central), found by bisecting on Chicago's calendar date ---------- */
+  let NEXT_DAILY = null;
+  MX.nextDaily = function () {
+    const now = Date.now();
+    if (NEXT_DAILY && NEXT_DAILY > now) return NEXT_DAILY;
+    try {
+      const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" });
+      const k0 = fmt.format(new Date(now));
+      let lo = now, hi = now + 49 * 3600000;
+      while (hi - lo > 1000) { const mid = Math.floor((lo + hi) / 2); if (fmt.format(new Date(mid)) === k0) lo = mid; else hi = mid; }
+      NEXT_DAILY = hi;
+    } catch (e) { NEXT_DAILY = now + 86400000; }
+    return NEXT_DAILY;
+  };
+  MX.countdown = function () {
+    const s = Math.max(0, Math.round((MX.nextDaily() - Date.now()) / 1000)), p = n => String(n).padStart(2, "0");
+    return p(Math.floor(s / 3600)) + ":" + p(Math.floor(s / 60) % 60) + ":" + p(s % 60);
+  };
+
+  /* ---------- decorative visualizer bars (hidden from screen readers) ---------- */
+  MX.viz = function (el, n, max) {
+    if (!el) return;
+    el.setAttribute("aria-hidden", "true");
+    el.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement("i");
+      b.style.setProperty("--h", (10 + Math.round(Math.abs(Math.sin(i * 1.3 + 0.4)) * (max - 10))) + "px");
+      b.style.setProperty("--d", ((i * 97) % 700) / 1000 + "s");
+      el.appendChild(b);
+    }
+  };
+
+  /* ---------- bottom tape on every music page: countdown to the next daily, today's top scores, your status ----------
+     It pauses on hover or keyboard focus, has a pause button (moving content must be stoppable), and sits still for
+     people who ask their system for reduced motion. */
+  MX.tape = function () {
+    if (document.querySelector(".mx-tape")) return;
+    const box = document.createElement("aside");
+    box.className = "mx-tape";
+    box.setAttribute("aria-label", "Today's daily challenge: time until the next one, and the leaderboard");
+    box.innerHTML = '<span class="mx-tape-l">DAILY<span class="x"> · NEXT IN</span> <b id="mxTapeCd">--:--:--</b></span>' +
+      '<div class="mx-tape-win"><div class="mx-tape-track" id="mxTape"><div class="mx-tape-run"><a href="/music/leaderboard/"><span class="s">Loading today\'s board…</span></a></div></div></div>' +
+      '<button type="button" aria-pressed="false" aria-label="Pause the scrolling scores" title="Pause">❚❚</button>';
+    document.body.appendChild(box);
+    document.body.classList.add("has-tape");
+    const btn = box.querySelector("button");
+    let paused = false;
+    try { paused = localStorage.getItem("nskn.music.tape.paused") === "1"; } catch (e) {}
+    const setPaused = v => {
+      paused = v; box.classList.toggle("is-paused", v);
+      btn.setAttribute("aria-pressed", String(v)); btn.textContent = v ? "▶" : "❚❚";
+      btn.setAttribute("aria-label", v ? "Play the scrolling scores" : "Pause the scrolling scores"); btn.title = v ? "Play" : "Pause";
+      try { localStorage.setItem("nskn.music.tape.paused", v ? "1" : "0"); } catch (e) {}
+    };
+    setPaused(paused);
+    btn.addEventListener("click", () => setPaused(!paused));
+    const cd = MX.$("mxTapeCd");
+    const tick = () => { const c = MX.countdown(); cd.textContent = c; document.querySelectorAll(".mxCd").forEach(x => { x.textContent = c; }); };
+    tick(); setInterval(tick, 1000);
+    const GAMES = [["track", "TRCK", "Guess the Track", "/music/track/"], ["artist", "ARTS", "Guess the Artist", "/music/artist/"]];
+    const mine = g => {
+      const t = MX.stats.dailyToday(g[0]);
+      return '<a href="' + g[3] + '"><span class="g">' + g[1] + '</span> <span class="s">YOUR DAILY</span> ' +
+        (t ? '<span class="ok">' + t.dailyScore + " / " + t.dailyMax + "</span>" : '<span class="r">not played yet · play now</span>') + "</a>";
+    };
+    const render = boards => {
+      let html = GAMES.map(mine).join("");
+      GAMES.forEach((g, gi) => {
+        const b = boards[gi];
+        if (b && b.entries && b.entries.length) {
+          html += b.entries.slice(0, 5).map((e, i) => '<a href="/music/leaderboard/"><span class="g">' + g[1] + '</span> <span class="r">#' + (i + 1) + "</span> " +
+            MX.esc(e.name) + ' <span class="s">' + e.score + " / " + e.max + "</span></a>").join("");
+        } else if (b) {
+          html += '<a href="' + g[3] + '"><span class="g">' + g[1] + '</span> <span class="s">No scores posted today. Be the first.</span></a>';
+        }
+      });
+      const tr = MX.$("mxTape");
+      // second copy makes the loop seamless; hidden from screen readers and the tab order so each item is read once
+      tr.innerHTML = '<div class="mx-tape-run">' + html + '</div><div class="mx-tape-run" aria-hidden="true">' + html.replace(/<a /g, '<a tabindex="-1" ') + "</div>";
+    };
+    const load = () => {
+      if (!MX.lb.enabled()) { render([null, null]); return; }
+      Promise.all(GAMES.map(g => MX.lb.board(g[0], "today").catch(() => null))).then(render);
+    };
+    load(); setInterval(load, 300000);
+  };
 
   window.MX = MX;
 })();

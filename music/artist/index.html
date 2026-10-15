@@ -13,9 +13,17 @@
 </head>
 <body>
 <div class="mx">
-  <div id="chrome"></div>
-  <main class="wrap">
-  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Artist</span><span class="dim">Name the artist from three of their lesser-known top tracks. Every wrong guess unlocks another clue.</span></div>
+  <header id="chrome"></header>
+  <main class="wrap" id="main">
+  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Artist</span></div>
+  <section class="mx-hero" aria-labelledby="pgTitle">
+    <div>
+      <div class="mx-kicker">ARTS · deep cuts · daily at midnight CT</div>
+      <h1 class="mx-h1" id="pgTitle">Guess the Artist</h1>
+      <p class="mx-lede">Name the artist from three of their lesser-known top tracks. Every wrong guess reveals another clue.</p>
+    </div>
+    <div class="mx-hero-side"><span class="mx-pill">NEXT DAILY IN <b class="mxCd">--:--:--</b></span></div>
+  </section>
 
   <div id="modeBanner" class="mock hidden"></div>
 
@@ -53,7 +61,7 @@
       <button id="skipBtn">SKIP (0 PTS)</button>
       <button id="peekBtn" class="hidden">[DEV] PEEK</button>
     </div>
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
 
     <div class="reveal hidden" id="reveal">
       <div class="t" id="rName"></div>
@@ -211,6 +219,7 @@
     const base = daily ? ARTISTS : SEEN.fresh(filtered(), a => a.name, ROUND * 3);
     const queue = (frozen || spreadArtists(base, rnd, ROUND)).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
     S = { queue, i: 0, stage: 0, score: 0, results: [], daily, done: false };
+    document.body.classList.add("in-game");             // shrink the page heading so the game sits near the top
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
     $("game").classList.remove("hidden");
@@ -273,6 +282,7 @@
 
   function finishArtist(got) {
     const c = cur(), a = c.artist, pts = got ? worth(S.stage) : 0;
+    $("reveal").classList.toggle("win", got); $("reveal").classList.toggle("lose", !got);
     S.score += pts; S.done = true;
     S.results.push({ artist: a, got, pts, stage: S.stage, stages: c.stages.length });
     $("guessIn").disabled = true; $("guessBtn").disabled = true; $("skipBtn").disabled = true;
@@ -356,7 +366,7 @@
   $("guessBtn").onclick = submitGuess;
   $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
   $("nextBtn").onclick = next;
-  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
+  $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
   $("peekBtn").onclick = () => { if (S && !S.done) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(cur().artist.name) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });

@@ -89,5 +89,6 @@
       "<span>&copy; 2026 NATHAN SKOWN</span>" +
       (dev ? '<label><input type="checkbox" id="devToggle"> show dev tools</label>' : "");
     MX.initDevToggle();
+    if (MX.tape) MX.tape();
   };
 })();

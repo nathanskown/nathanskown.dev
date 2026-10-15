@@ -13,9 +13,17 @@
 </head>
 <body>
 <div class="mx">
-  <div id="chrome"></div>
-  <main class="wrap">
-  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Track</span><span class="dim">Name that tune from the shortest clip you can. Fewer reveals, more points.</span></div>
+  <header id="chrome"></header>
+  <main class="wrap" id="main">
+  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Track</span></div>
+  <section class="mx-hero" aria-labelledby="pgTitle">
+    <div>
+      <div class="mx-kicker">TRCK · one-second clips · daily at midnight CT</div>
+      <h1 class="mx-h1" id="pgTitle">Guess the Track</h1>
+      <p class="mx-lede">Name the song from the shortest clip you can. Every wrong guess unlocks more audio.</p>
+    </div>
+    <div class="mx-hero-side"><span class="mx-pill">NEXT DAILY IN <b class="mxCd">--:--:--</b></span></div>
+  </section>
 
   <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> The song list is placeholder data and the audio is a synthesized stand-in melody, so you can test the whole flow without any live source. Switch to live in assets/config.js.</div>
 
@@ -73,7 +81,7 @@
     <div class="row" style="margin-top:10px">
       <button class="primary" id="guessBtn">SUBMIT GUESS</button>
     </div>
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
 
     <div class="reveal hidden" id="reveal">
       <div class="t" id="rTitle"></div>
@@ -191,6 +199,7 @@
     const base = frozen || (daily ? POOL : SEEN.fresh(filtered(), songKey, ROUND * 3));
     S = { pool: frozen ? base : MXV.spread(base, rnd, { limit: ROUND * 4 }), p: 0, n: 0, total: Math.min(ROUND, base.length),
           score: 0, results: [], daily, stage: 0, done: false, cur: null };
+    document.body.classList.add("in-game");             // shrink the page heading so the game sits near the top
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
     $("game").classList.remove("hidden");
@@ -205,7 +214,7 @@
 
   async function nextSong() {
     const sess = S;
-    src.stop(); EQ.off();
+    src.stop(); EQ.off(); $("art").classList.remove("playing");
     sess.stage = 0; sess.done = true;           // locked while loading
     $("reveal").classList.add("hidden");
     $("guessIn").value = "";
@@ -291,10 +300,10 @@
   function playClip() {
     if (S.done) return;
     const sess = S, secs = CLIPS[S.stage], total = CLIPS[CLIPS.length - 1];
-    $("playBtn").textContent = "■ PLAYING…"; EQ.on();
+    $("playBtn").textContent = "■ PLAYING…"; EQ.on(); $("art").classList.add("playing");
     src.play(S.cur, secs,
       e => { if (sess === S) $("head").style.width = (e / total * 100) + "%"; },
-      () => { if (sess === S) { $("playBtn").textContent = "▶ REPLAY CLIP"; EQ.off(); } },
+      () => { if (sess === S) { $("playBtn").textContent = "▶ REPLAY CLIP"; EQ.off(); $("art").classList.remove("playing"); } },
       () => {                                   // clip wouldn't load: swap in another song
         if (sess !== S || sess.done) return;
         $("msg").innerHTML = '<span class="bad">That clip wouldn\'t load.</span> Switching songs…';
@@ -318,7 +327,8 @@
   }
 
   function finishSong(got) {
-    src.stop(); EQ.off();
+    src.stop(); EQ.off(); $("art").classList.remove("playing");
+    $("reveal").classList.toggle("win", got); $("reveal").classList.toggle("lose", !got);
     const s = S.cur, pts = got ? POINTS[S.stage] : 0;
     S.score += pts; S.done = true;
     S.results.push({ song: s, got, pts, stage: S.stage });
@@ -392,7 +402,7 @@
   $("guessBtn").onclick = submitGuess;
   $("skipBtn").onclick = () => { if (S && !S.done) finishSong(false); };
   $("nextBtn").onclick = next;
-  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
+  $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
   $("peekBtn").onclick = () => { if (S && S.cur) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(S.cur.title) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
