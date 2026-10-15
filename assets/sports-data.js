@@ -281,7 +281,9 @@
     var hfa = neutral ? 0 : (model.hfa || 0);
     if (model.divHfa !== undefined && A.group && A.group === H.group && !neutral) hfa = model.divHfa;
     var m = H.rating - A.rating + hfa;
-    var p = Phi(m / (model.sigma || 13.5));
+    // when the model says so (pv), widen the spread by how unsure both ratings still are (w = weight of evidence in games)
+    var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
+    var p = Phi(m / sg);
     return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, coverage: model.coverage || null, basis: model.basis || '' };
   }
 

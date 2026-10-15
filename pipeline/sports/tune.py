@@ -5,18 +5,35 @@ season: a week's games are projected using only games from earlier weeks, plus a
 carry x last season's rating. Settings are chosen to minimise log loss (how well the stated win
 probabilities fit what happened).
 
-  searched   k (how many games of average-team weight each rating starts with), carry (how much of last
-             season's rating is kept), home edge, and for college the margin cap
-  not searched   sigma, which is simply the spread of projection errors (the maximum-likelihood value)
+  searched   k        how many games of weight each team's starting point gets
+             carry    how much of last season's rating is kept as that starting point
+             hfa      home edge (not for the NFL, see below)
+             cap/soft margin of victory limits: a hard cap, or a soft one (c x tanh(margin / c)) so a
+                      blowout still counts a little more than a comfortable win (football, college basketball)
+             hl       recency: a game's weight halves every hl weeks (None = all games equal)
+             pv       1 = widen each win probability by how unsure the two ratings still are (early season,
+                      thin schedules), 0 = one spread for every game
+             newp     college only: a program new to the division starts at last season's level of the
+                      pooled outsiders instead of at the division average
+             ps       college only: 1 = fit the spread used for win probabilities to wins and losses (log
+                      loss) instead of to margins; blowouts inflate the margin spread and flatten the
+                      probabilities (college football favorites won more often than the margin spread implied)
+  not searched   sigma, the spread of projection errors (fit directly), and the NFL home edge, which is
+             taken from the market: the average closing line on non-neutral games over the last five
+             non-pandemic seasons (history/market_nfl.json). Game outcomes are too noisy to pin the home
+             edge down (about +/-0.4 points over five seasons) and the edge has fallen since the 2000s;
+             closing lines measure it with far less noise and show no division-game discount since 2021.
 
-Honesty check: for each of the newest seasons (four when there are eight or more stored, otherwise two) the settings are fit on the seasons before it, then scored on
-that season, which they never saw. They are adopted only if they beat the current settings across them by a
-clear margin (a paired test, game by game), or if there are four folds, every one of them improved and the
-paired test is at least z 1.0 (added after the NFL, with only 272 games a year, improved in all four folds but
-landed at z 1.49); otherwise the current settings stay. model/tuned.json records both sets of numbers.
-
-The search is coordinate-wise (one setting at a time, two passes) on a coarse grid, so it cannot
-overfit much, and every season's contribution is equal-weighted per game."""
+Honesty check (rolling origin): for each of the newest four seasons (fewer when history is short) the
+settings are fit on the seasons before it, then scored on that season, which they never saw, using the
+spread measured on the training seasons. They are adopted only if they beat the league's preset settings
+across those held-out seasons: pooled log loss better by at least MIN_GAIN, a paired game-by-game z of at
+least MIN_Z (or MIN_Z_CONSISTENT when most folds improved), and no held-out season clearly worse.
+Pandemic seasons (no or few fans, odd schedules) are left out of fitting and scoring; they still serve as
+"last season" for the year after. Only the newest WINDOW seasons are used, so a long-gone era does not
+set today's numbers. model/tuned.json records every fold, the calibration of the held-out projections
+and, for the NFL, how the model compares with closing lines over the same seasons."""
+import json
 import math
 
 import numpy as np
@@ -25,221 +42,412 @@ from . import history
 from . import model as M
 from .common import now_iso, read, write
 
-LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]
-MIN_GAIN = 0.0005          # log-loss improvement needed on the held-out season to adopt new settings...
-MIN_Z = 1.5                # ...and it must be at least this many standard errors (paired, game by game)...
-MIN_Z_CONSISTENT = 1.0     # ...or this many if every one of four or more folds improved
+LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah", "mlb"]
+WINDOW = 12
+NFOLDS = 4
+MIN_GAIN = 0.0005
+MIN_Z = 1.5
+MIN_Z_CONSISTENT = 1.0
+WORST_FOLD = -0.004        # no held-out season may get worse by more than this
+COVID = {"nfl": {2020}, "ncaaf": {2020}, "nba": {2020, 2021}, "nhl": {2020, 2021}, "ncaab": {2021}, "ncaah": {2021}, "mlb": {2020}}
 GRID = {
-    "k": [0.4, 0.7, 1.0, 1.6, 2.5, 4.0, 6.0, 10.0],  # multiples of the current k
-    "carry": [0.0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1.0],
-    "hfa": [0.5, 0.75, 1.0, 1.25, 1.5],             # multiples of the current home edge
-    "cap": {"nfl": [14, 21, 28, None], "ncaaf": [21, 28, 35, 45, None], "ncaab": [25, 30, 40, 60, None]},
+    "k": [0.5, 0.7, 1.0, 1.4, 2.0, 2.8, 4.0, 5.6],                # multiples of the preset k
+    "carry": [0.0, 0.3, 0.45, 0.6, 0.7, 0.8, 0.9, 1.0],
+    "hfa": [0.6, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0],   # multiples of the preset home edge
+    "hl": [None, 4, 8, 12, 20, 30],
+    "pv": [0, 1],
+    "cap": {"ncaaf": [21, 28, 35, 45, None], "ncaab": [25, 30, 40, 60, None]},
+    "soft": {"nfl": [None, 14, 20, 28], "ncaaf": [None, 15, 25, 35], "ncaab": [None, 15, 25, 35]},
+    "newp": {"ncaaf": ["zero", "pool"], "ncaab": ["zero", "pool"]},
+    "ps": {"ncaaf": [0, 1], "ncaab": [0, 1]},
 }
 
 
+# ---------------------------------------------------------------- data
+class League:
+    """Stored seasons as arrays over one shared team list (current members plus the pooled outsider)."""
+
+    def __init__(self, lg):
+        self.lg = lg
+        smap = M._standings_map(lg)
+        members = set(M._members(lg))
+        group = {t: smap.get(t, {}).get("group") for t in members}
+        div = M.PARAMS[lg].get("divHfa") is not None
+        ids = sorted(members | {M.POOL})
+        self.ix = {t: i for i, t in enumerate(ids)}
+        self.n = len(ids)
+        self.pool = self.ix[M.POOL]
+        self.seasons = {}
+        self.dropped = 0
+        for y, games in history.load(lg).items():
+            rows = []
+            for g in games:
+                h, a = M.alias(lg, g["h"]), M.alias(lg, g["a"])
+                if lg in M.PRO_ONLY and (h not in members or a not in members):
+                    self.dropped += 1                 # all-star games, international exhibitions
+                    continue
+                hn, an = (h if h in members else M.POOL), (a if a in members else M.POOL)
+                if hn == an:
+                    continue
+                same = div and bool(group.get(h)) and group.get(h) == group.get(a)
+                rows.append((g["d"], self.ix[hn], self.ix[an], g["hs"] - g["as"], bool(g["n"]), same, g.get("wk"), g.get("sp")))
+            if not rows:
+                continue
+            rows.sort(key=lambda r: r[0])
+            S = Season()
+            S.d = [r[0] for r in rows]
+            S.h = np.array([r[1] for r in rows]); S.a = np.array([r[2] for r in rows])
+            S.m = np.array([r[3] for r in rows], float); S.n = np.array([r[4] for r in rows], bool)
+            S.same = np.array([r[5] for r in rows], bool)
+            if all(r[6] is not None for r in rows):
+                S.week = np.array([r[6] for r in rows], int)
+            else:
+                d0 = _ord(rows[0][0])
+                S.week = np.array([(_ord(r[0]) - d0) // 7 for r in rows], int)
+            self.seasons[y] = S
+        self.years = sorted(self.seasons)
+
+
 class Season:
-    """One stored season turned into arrays, indexed over a shared team list."""
-
-    def __init__(self, games, ix, norm, same_group):
-        games = sorted(games, key=lambda g: g["d"])
-        self.h = np.array([ix[norm(g["h"])] for g in games])
-        self.a = np.array([ix[norm(g["a"])] for g in games])
-        self.m = np.array([g["hs"] - g["as"] for g in games], float)
-        self.n = np.array([g["n"] for g in games], bool)
-        self.same = np.array([same_group(g["h"], g["a"]) for g in games], bool)
-        d0 = datetime_ord(games[0]["d"])
-        wk = [g.get("wk") for g in games]
-        if all(w is not None for w in wk):
-            self.week = np.array(wk, int)
-        else:
-            self.week = np.array([(datetime_ord(g["d"]) - d0) // 7 for g in games], int)
-        keep = self.h != self.a
-        for f in ("h", "a", "m", "n", "same", "week"):
-            setattr(self, f, getattr(self, f)[keep])
+    pass
 
 
-def datetime_ord(d):
+def _ord(d):
     from datetime import date
     return date(int(d[:4]), int(d[5:7]), int(d[8:10])).toordinal()
 
 
-def _hfa_vec(S, hfa, div):
-    h = np.full(len(S.m), float(hfa))
-    if div is not None:
-        h[S.same] = div
-    h[S.n] = 0.0
-    return h
+# ---------------------------------------------------------------- replay
+def _y(S, p):
+    m = S.m
+    if p.get("soft"):
+        m = p["soft"] * np.tanh(m / p["soft"])
+    elif p.get("cap"):
+        m = np.clip(m, -p["cap"], p["cap"])
+    hv = np.full(len(m), float(p["hfa"]))
+    if p.get("divHfa") is not None:
+        hv[S.same] = p["divHfa"]
+    hv[S.n] = 0.0
+    return m - hv, hv
 
 
-def _solve(deg, adj, b, lam, prior):
-    A = adj.copy()
-    A[np.diag_indices_from(A)] += deg + lam
-    return np.linalg.solve(A, b + lam * prior)
-
-
-def _lam(n, k, pool):
-    lam = np.full(n, float(k))
-    if pool is not None:
-        lam[pool] = max(k, 50)
+def _lam(L, k):
+    lam = np.full(L.n, float(k))
+    lam[L.pool] = max(k, 50)
     return lam
 
 
-def final_rating(S, n, k, cap, hfa, div, pool):
-    y = np.clip(S.m, -cap, cap) if cap else S.m
-    y = y - _hfa_vec(S, hfa, div)
-    deg = np.bincount(S.h, minlength=n) + np.bincount(S.a, minlength=n)
-    b = np.bincount(S.h, y, n) - np.bincount(S.a, y, n)
-    adj = np.zeros((n, n))
-    np.add.at(adj, (S.h, S.a), -1.0)
-    np.add.at(adj, (S.a, S.h), -1.0)
-    seen = deg > 0
-    R = _solve(deg.astype(float), adj, b, _lam(n, k, pool), np.zeros(n))
-    return R, seen
+def _decay(p):
+    return 0.5 ** (1.0 / p["hl"]) if p.get("hl") else 1.0
 
 
-def replay(S, n, p, prior, pool):
-    """Walk-forward projections for one season. Returns (home margin projection, actual margin, neutral)."""
-    k, cap, hfa, div = p["k"], p["cap"], p["hfa"], p.get("divHfa")
-    y_all = np.clip(S.m, -cap, cap) if cap else S.m
-    hv = _hfa_vec(S, hfa, div)
-    y_all = y_all - hv
-    lam = _lam(n, k, pool)
-    deg = np.zeros(n); b = np.zeros(n); adj = np.zeros((n, n))
-    proj = np.zeros(len(S.m))
+def final(L, S, p):
+    """End-of-season ratings (same recency weighting) and which teams played."""
+    y, _ = _y(S, p)
+    n, f = L.n, _decay(p)
+    deg = np.zeros(n); b = np.zeros(n); adj = np.zeros((n, n)); last = None
     for wk in np.unique(S.week):
+        if last is not None and f != 1.0:
+            dec = f ** (wk - last); deg *= dec; b *= dec; adj *= dec
+        last = wk
         idx = np.nonzero(S.week == wk)[0]
-        R = _solve(deg, adj, b, lam, prior)
-        proj[idx] = R[S.h[idx]] - R[S.a[idx]] + hv[idx]
-        h, a, y = S.h[idx], S.a[idx], y_all[idx]
+        h, a, yy = S.h[idx], S.a[idx], y[idx]
         deg += np.bincount(h, minlength=n) + np.bincount(a, minlength=n)
-        b += np.bincount(h, y, n) - np.bincount(a, y, n)
-        np.add.at(adj, (h, a), -1.0)
-        np.add.at(adj, (a, h), -1.0)
-    return proj
+        b += np.bincount(h, yy, n) - np.bincount(a, yy, n)
+        np.add.at(adj, (h, a), -1.0); np.add.at(adj, (a, h), -1.0)
+    A = adj.copy()
+    A[np.diag_indices_from(A)] += deg + _lam(L, p["k"])
+    return np.linalg.solve(A, b), deg > 0
 
 
-def metrics(proj, actual, sigma=None):
-    """sigma defaults to the spread of these errors; pass a sigma fit elsewhere to score honestly out of sample."""
-    err = actual - proj
-    sigma = sigma or float(math.sqrt(np.mean(err ** 2)))
-    p = 0.5 * (1 + np.vectorize(math.erf)(proj / sigma / math.sqrt(2)))
-    p = np.clip(p, 1e-4, 1 - 1e-4)
-    res = np.where(actual > 0, 1.0, np.where(actual < 0, 0.0, 0.5))
-    ll = -(res * np.log(p) + (1 - res) * np.log(1 - p))
-    dec = actual != 0
-    hits = ((p >= 0.5) == (res == 1.0))[dec]
-    home = res.mean()
-    return {"ll": ll, "n": int(len(actual)), "sigma": round(sigma, 3), "logloss": float(ll.mean()),
-            "brier": float(((p - res) ** 2).mean()), "acc": float(hits.mean()) if dec.any() else None,
-            "homeBrier": float(((home - res) ** 2).mean()), "mae": float(np.abs(err).mean())}
+def prior_for(L, y, p):
+    pr = np.zeros(L.n)
+    if not p.get("carry") or (y - 1) not in L.seasons:
+        return pr
+    R, seen = final(L, L.seasons[y - 1], p)
+    pr = np.where(seen, p["carry"] * R, 0.0)
+    if p.get("newp") == "pool" and seen[L.pool]:
+        pr = np.where(seen, pr, p["carry"] * R[L.pool])
+    return pr
 
 
-def evaluate(seasons, years, n, p, pool, sigma=None):
-    """Pooled metrics over `years`, each using last season's ratings as its prior."""
-    projs, acts = [], []
+def replay(L, S, p, prior):
+    """Walk forward week by week: (projected home margin, rating-uncertainty term) for every game."""
+    y, hv = _y(S, p)
+    n, f, lam = L.n, _decay(p), _lam(L, p["k"])
+    deg = np.zeros(n); b = np.zeros(n); adj = np.zeros((n, n))
+    proj = np.zeros(len(S.m)); u = np.zeros(len(S.m)); last = None
+    for wk in np.unique(S.week):
+        if last is not None and f != 1.0:
+            dec = f ** (wk - last); deg *= dec; b *= dec; adj *= dec
+        last = wk
+        idx = np.nonzero(S.week == wk)[0]
+        A = adj.copy()
+        A[np.diag_indices_from(A)] += deg + lam
+        R = np.linalg.solve(A, b + lam * prior)
+        h, a = S.h[idx], S.a[idx]
+        proj[idx] = R[h] - R[a] + hv[idx]
+        u[idx] = 1.0 / (deg[h] + lam[h]) + 1.0 / (deg[a] + lam[a])
+        yy = y[idx]
+        deg += np.bincount(h, minlength=n) + np.bincount(a, minlength=n)
+        b += np.bincount(h, yy, n) - np.bincount(a, yy, n)
+        np.add.at(adj, (h, a), -1.0); np.add.at(adj, (a, h), -1.0)
+    return proj, u
+
+
+def run(L, years, p):
+    P, U, A = [], [], []
     for y in years:
-        prior = np.zeros(n)
-        if p["carry"]:
-            R, seen = final_rating(seasons[y - 1], n, p["k"], p["cap"], p["hfa"], p.get("divHfa"), pool)
-            prior = np.where(seen, p["carry"] * R, 0.0)
-        projs.append(replay(seasons[y], n, p, prior, pool))
-        acts.append(seasons[y].m)
-    return metrics(np.concatenate(projs), np.concatenate(acts), sigma)
+        pr, uu = replay(L, L.seasons[y], p, prior_for(L, y, p))
+        P.append(pr); U.append(uu); A.append(L.seasons[y].m)
+    return np.concatenate(P), np.concatenate(U), np.concatenate(A)
 
 
-def search(seasons, years, n, start, ref_params, pool, lg):
-    """Coordinate search from `start`; grids are always multiples of the league's original settings."""
+def fit_sigma(P, U, A, pv, ps=0):
+    """Spread of projection errors. ps=1: the spread that best fits wins and losses instead (log loss)."""
+    err = A - P
+    s = float(math.sqrt(np.mean(err ** 2 / (1 + U)))) if pv else float(math.sqrt(np.mean(err ** 2)))
+    if not ps:
+        return s
+    res = np.where(A > 0, 1.0, np.where(A < 0, 0.0, 0.5))
+    best, bs = None, s
+    for f in np.arange(0.80, 1.101, 0.01):
+        p = probs(P, U, s * f, pv)
+        ll = float(-(res * np.log(p) + (1 - res) * np.log(1 - p)).mean())
+        if best is None or ll < best:
+            best, bs = ll, s * f
+    return float(bs)
+
+
+def margin_sigma(P, U, A, pv):
+    return fit_sigma(P, U, A, pv, 0)
+
+
+_erf = np.vectorize(math.erf)
+
+
+def probs(P, U, s0, pv):
+    sig = s0 * np.sqrt(1 + U) if pv else s0
+    return np.clip(0.5 * (1 + _erf(P / sig / math.sqrt(2))), 1e-4, 1 - 1e-4)
+
+
+def score(P, U, A, s0, pv):
+    p = probs(P, U, s0, pv)
+    res = np.where(A > 0, 1.0, np.where(A < 0, 0.0, 0.5))
+    ll = -(res * np.log(p) + (1 - res) * np.log(1 - p))
+    dec = A != 0
+    return {"ll": ll, "p": p, "res": res, "n": int(len(A)), "sigma": round(s0, 3), "logloss": float(ll.mean()),
+            "brier": float(((p - res) ** 2).mean()), "acc": float(((p >= 0.5) == (res == 1.0))[dec].mean()) if dec.any() else None,
+            "homeBrier": float(((res.mean() - res) ** 2).mean()), "mae": float(np.abs(A - P).mean())}
+
+
+def train_ll(L, years, p):
+    P, U, A = run(L, years, p)
+    return score(P, U, A, fit_sigma(P, U, A, p.get("pv"), p.get("ps")), p.get("pv"))["logloss"]
+
+
+def holdout(L, train, test, p):
+    Pt, Ut, At = run(L, train, p)
+    s0 = fit_sigma(Pt, Ut, At, p.get("pv"), p.get("ps"))
+    P, U, A = run(L, test, p)
+    return score(P, U, A, s0, p.get("pv"))
+
+
+def calibration(p, res, bins=(0.0, 0.2, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0001)):
+    out = []
+    for lo, hi in zip(bins[:-1], bins[1:]):
+        m = (p >= lo) & (p < hi)
+        if m.sum():
+            out.append({"lo": lo, "hi": min(hi, 1.0), "n": int(m.sum()), "exp": round(float(p[m].mean()), 3), "act": round(float(res[m].mean()), 3)})
+    return out
+
+
+# ---------------------------------------------------------------- search
+def _grid(lg, preset, fixed):
+    out = [("k", sorted({round(preset["k"] * f, 3) for f in GRID["k"]})), ("carry", GRID["carry"])]
+    if "hfa" not in fixed:
+        out.append(("hfa", sorted({round(preset["hfa"] * f, 3) for f in GRID["hfa"]})))
+    for key in ("cap", "soft", "newp", "ps"):
+        if lg in GRID[key]:
+            out.append((key, GRID[key][lg]))
+    out += [("hl", GRID["hl"]), ("pv", GRID["pv"])]
+    return out
+
+
+def search(L, years, start, preset, fixed):
     p = dict(start)
-    best = evaluate(seasons, years, n, p, pool)["logloss"]
-    ref = {"k": ref_params["k"], "hfa": ref_params["hfa"], "divHfa": ref_params.get("divHfa")}
-    for _ in range(2):
+    best = train_ll(L, years, p)
+    grid = _grid(L.lg, preset, fixed)
+    for _ in range(3):
         moved = False
-        cands = [("k", [ref["k"] * f for f in GRID["k"]]), ("carry", GRID["carry"]),
-                 ("hfa", [ref["hfa"] * f for f in GRID["hfa"]])]
-        if lg in GRID["cap"]:
-            cands.append(("cap", GRID["cap"][lg]))
-        for name, vals in cands:
+        for name, vals in grid:
             for v in vals:
                 q = dict(p)
-                q[name] = round(v, 3) if isinstance(v, float) else v
-                if name == "hfa" and ref["divHfa"] is not None:
-                    q["divHfa"] = round(ref["divHfa"] * v / ref["hfa"], 3)
+                q[name] = v
+                if name == "hfa" and preset.get("divHfa") is not None and "divHfa" not in fixed:
+                    q["divHfa"] = round(preset["divHfa"] * v / preset["hfa"], 3)
+                if name == "soft" and v:
+                    q["cap"] = None
                 if q == p:
                     continue
-                ll = evaluate(seasons, years, n, q, pool)["logloss"]
-                if ll < best - 1e-6:
+                ll = train_ll(L, years, q)
+                if ll < best - 1e-7:
                     best, p, moved = ll, q, True
         if not moved:
             break
     return p, best
 
 
+# every team plays about as many home games as away games. Not MLB: a home team that leads after 8 1/2
+# innings never bats in the 9th, so run margin understates the home edge there; MLB's edge is fitted.
+BALANCED = {"nba", "nhl"}
+
+
+def fixed_hfa(L, years):
+    """Home edge measured directly from the seasons in `years` (never from a held-out season), or None to fit it.
+
+    NFL: mean closing line on non-neutral games over the last five of them (market_nfl.json).
+    NBA, NHL: mean home margin on non-neutral games over the last three. With balanced home and away
+    schedules team strength cancels out, so this is the home edge itself, measured on 3,700+ games
+    (standard error about 0.2 points in the NBA) instead of inferred from win/loss log loss, and it tracks
+    the drop since the late 2010s that a 12-season fit would average away."""
+    if L.lg == "nfl":
+        mh = market_hfa(L, years)
+        return {"hfa": mh[0], "divHfa": mh[0], "how": f"mean closing line, {mh[1]} non-neutral games, {years[-5]}-{years[-1]}"} if mh else None
+    if L.lg in BALANCED:
+        recent = years[-3:]
+        m = np.concatenate([L.seasons[y].m[~L.seasons[y].n] for y in recent])
+        return {"hfa": round(float(m.mean()), 3), "how": f"mean home margin, {len(m)} non-neutral games, {recent[0]}-{recent[-1]}"}
+    return None
+
+
+def market_hfa(L, years):
+    """NFL home edge from closing lines: mean home line on non-neutral games over the last five of `years`."""
+    mk = (read("history/market_nfl.json") or {}).get("spread") or {}
+    if not mk:
+        return None
+    vals = []
+    hist = history.load(L.lg)
+    for y in years[-5:]:
+        for g in hist.get(y, []):
+            if g["n"]:
+                continue
+            v = mk.get(f"{g['d'][:10]}|{g['h']}|{g['a']}")
+            if v is None:
+                from datetime import date, timedelta
+                d = (date.fromisoformat(g["d"][:10]) - timedelta(days=1)).isoformat()
+                v = mk.get(f"{d}|{g['h']}|{g['a']}")
+            if v is not None:
+                vals.append(v)
+    return (round(float(np.mean(vals)), 2), len(vals)) if len(vals) > 500 else None
+
+
+def market_check(L, years, p):
+    """NFL only: the model's walk-forward projections next to the closing lines on the same games."""
+    mk = (read("history/market_nfl.json") or {}).get("spread") or {}
+    if not mk:
+        return None
+    inv = {i: t for t, i in L.ix.items()}
+    from datetime import date, timedelta
+    P, U, A = run(L, years, p)
+    sp = []
+    for y in years:
+        S = L.seasons[y]
+        for d, h, a in zip(S.d, S.h, S.a):
+            v = None
+            for dd in (0, -1):
+                v = mk.get(f"{(date.fromisoformat(d[:10]) + timedelta(days=dd)).isoformat()}|{inv[h]}|{inv[a]}")
+                if v is not None:
+                    break
+            sp.append(np.nan if v is None else v)
+    sp = np.array(sp)
+    ok = ~np.isnan(sp)
+    if ok.sum() < 200:
+        return None
+    Pm, Um, Am, Sm = P[ok], U[ok], A[ok], sp[ok]
+    s_mod = fit_sigma(Pm, Um, Am, p.get("pv"), p.get("ps"))
+    s_mk = float(math.sqrt(np.mean((Am - Sm) ** 2)))
+    m_mod = score(Pm, Um, Am, s_mod, p.get("pv"))
+    m_mk = score(Sm, np.zeros_like(Sm), Am, s_mk, 0)
+    return {"games": int(ok.sum()), "seasons": [min(years), max(years)],
+            "model": {k: round(m_mod[k], 4) for k in ("logloss", "brier", "mae", "acc")},
+            "market": {k: round(m_mk[k], 4) for k in ("logloss", "brier", "mae", "acc")},
+            "gapMean": round(float((Pm - Sm).mean()), 2), "gapSd": round(float((Pm - Sm).std()), 2),
+            "slope": round(float(np.polyfit(Pm, Sm, 1)[0]), 3)}
+
+
 def tune(lg):
-    base = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry")}
-    base.setdefault("carry", 0.0)
-    hist = history.load(lg)
-    years = sorted(hist)
-    # seasons must be consecutive so "last season" really is the season before
-    years = [y for y in years if y - 1 in hist]
-    if len(years) < 2:
-        return {"adopt": False, "reason": f"needs at least 3 consecutive stored seasons, have {sorted(hist)}"}
-    smap = M._standings_map(lg)
-    members = set(M._members(lg))
-    group, _, norm = M.context(lg, smap, members)
-    ids = sorted(members | {M.POOL})
-    ix = {t: i for i, t in enumerate(ids)}
-    pool = ix[M.POOL]
-    same = (lambda h, a: bool(group.get(h)) and group.get(h) == group.get(a)) if base.get("divHfa") is not None else (lambda h, a: False)
-    seasons = {y: Season(g, ix, norm, same) for y, g in hist.items()}
-    n = len(ids)
-    default = dict(base)
-    # Rolling check: for each of the newest two seasons, fit on the seasons before it and score it. The
-    # sigma used on the held-out season is the one measured on the training seasons, as it would be live.
-    # more history means more folds, which is what lets a small effect show up in a league with few games
-    folds = years[-4:] if len(years) >= 8 else years[-2:] if len(years) >= 4 else years[-1:]
-    diffs, rec = [], []
+    preset = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp")}
+    preset.setdefault("carry", 0.0)
+    preset.setdefault("cap", None)
+    L = League(lg)
+    covid = COVID.get(lg, set())
+    usable = [y for y in L.years if (y - 1) in L.seasons and y not in covid][-WINDOW:]
+    if len(usable) < 3:
+        return {"adopt": False, "reason": f"needs at least 3 usable seasons with a season before them, have {usable}"}
+    folds = usable[-NFOLDS:] if len(usable) >= 6 else usable[-2:]
+    rec, diffs, held_p, held_r, hdiffs = [], [], [], [], []
     for hold in folds:
-        train = [y for y in years if y < hold]
-        fit, _ = search(seasons, train, n, default, default, pool, lg)
-        d_train = evaluate(seasons, train, n, default, pool)
-        f_train = evaluate(seasons, train, n, fit, pool)
-        d_hold = evaluate(seasons, [hold], n, default, pool, d_train["sigma"])
-        f_hold = evaluate(seasons, [hold], n, fit, pool, f_train["sigma"])
-        diff = d_hold["ll"] - f_hold["ll"]
+        train = [y for y in usable if y < hold]
+        if len(train) < 2:
+            continue
+        fx = fixed_hfa(L, train) or {}
+        fixed = {k: v for k, v in fx.items() if k in ("hfa", "divHfa")}
+        fit, _ = search(L, train, dict(preset, **fixed), preset, fixed)
+        d = holdout(L, train, [hold], preset)
+        f = holdout(L, train, [hold], fit)
+        if fixed:      # does the measured home edge alone beat the preset one on this held-out season?
+            hdiffs.append(d["ll"] - holdout(L, train, [hold], dict(preset, **fixed))["ll"])
+        diff = d["ll"] - f["ll"]
         diffs.append(diff)
-        for m in (d_train, f_train, d_hold, f_hold):
-            m.pop("ll", None)
-        rec.append({"holdout": hold, "train": train, "fit": fit, "gain": round(float(diff.mean()), 5),
-                    "default_train": d_train, "fit_train": f_train, "default_holdout": d_hold, "fit_holdout": f_hold})
+        held_p.append(f["p"]); held_r.append(f["res"])
+        rec.append({"holdout": hold, "train": [train[0], train[-1]], "fit": fit, "gain": round(float(diff.mean()), 5),
+                    "preset": {k: round(d[k], 4) for k in ("logloss", "brier", "mae")}, "fitted": {k: round(f[k], 4) for k in ("logloss", "brier", "mae")}})
     pooled = np.concatenate(diffs)
     gain = float(pooled.mean())
     sd = float(pooled.std(ddof=1)) if len(pooled) > 2 else 0.0
     z = gain / (sd / math.sqrt(len(pooled))) if sd > 0 else 0.0
-    last = rec[-1]
-    fit = last["fit"]
-    consistent = len(rec) >= 4 and all(r["gain"] > 0 for r in rec)
-    adopt = (gain >= MIN_GAIN and (z >= MIN_Z or (consistent and z >= MIN_Z_CONSISTENT)) and rec[-1]["gain"] > 0 and fit != default)
-    params = dict(fit)
+    pos = sum(1 for r in rec if r["gain"] > 0)
+    worst = min(r["gain"] for r in rec)
+    consistent = pos * 2 > len(rec)
+    adopt = gain >= MIN_GAIN and (z >= MIN_Z or (consistent and z >= MIN_Z_CONSISTENT)) and worst > WORST_FOLD
+    final_fit = None
+    fx = fixed_hfa(L, usable) or {}
+    fixed = {k: v for k, v in fx.items() if k in ("hfa", "divHfa")}
+    hcheck = None
+    if hdiffs:
+        hd = np.concatenate(hdiffs)
+        hsd = float(hd.std(ddof=1))
+        hcheck = {"gain": round(float(hd.mean()), 5), "z": round(float(hd.mean()) / (hsd / math.sqrt(len(hd))), 2) if hsd > 0 else 0.0}
+    # the measured home edge goes live with the preset settings unless it did worse than the preset edge held out
+    fixed_live = fixed if (fixed and hcheck and hcheck["gain"] >= 0) else {}
     if adopt:
-        # refit on every season now that the check passed
-        params, _ = search(seasons, years, n, fit, default, pool, lg)
-    allm = evaluate(seasons, years, n, params, pool)
-    sigma = allm["sigma"]
-    allm.pop("ll", None)
-    out = {"adopt": bool(adopt), "params": dict(params, sigma=sigma) if adopt else None, "default": default, "fit": fit,
-           "holdout": last["holdout"], "train": last["train"], "gain": round(gain, 5), "z": round(z, 2), "games": int(len(pooled)),
-           "folds": [{"holdout": r["holdout"], "gain": r["gain"], "fit": r["fit"]} for r in rec],
-           "metrics": {"default_train": last["default_train"], "fit_train": last["fit_train"], "default_holdout": last["default_holdout"],
-                       "fit_holdout": last["fit_holdout"], "final_all": allm}}
+        final_fit, _ = search(L, usable, dict(rec[-1]["fit"], **fixed), preset, fixed)      # refit on every usable season
+    params = final_fit or dict(preset, **fixed_live)
+    P, U, A = run(L, usable, params)
+    s0 = fit_sigma(P, U, A, params.get("pv"), params.get("ps"))
+    sm = margin_sigma(P, U, A, params.get("pv"))
+    allm = score(P, U, A, s0, params.get("pv"))
+    out = {"adopt": bool(adopt), "params": dict(final_fit, sigma=round(s0, 3), sigmaMargin=round(sm, 3)) if adopt else None, "preset": preset,
+           "fixed": (dict(fixed, **{"from": fx["how"], "heldOutVsPreset": hcheck}) if fx else None),
+           "fixedLive": fixed_live or None,
+           "sigma": round(s0, 3),     # measured spread for whichever settings are live (fitted or preset)
+           "sigmaMargin": round(sm, 3),
+           "seasons": [usable[0], usable[-1]], "covidExcluded": sorted(covid & set(L.years)), "droppedGames": L.dropped,
+           "gain": round(gain, 5), "z": round(z, 2), "games": int(len(pooled)), "foldsImproved": f"{pos}/{len(rec)}",
+           "folds": rec, "heldOutCalibration": calibration(np.concatenate(held_p), np.concatenate(held_r)),
+           "all": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in allm.items() if k not in ("ll", "p", "res")}}
+    if lg == "nfl":
+        out["market"] = market_check(L, [y for y in usable if y >= usable[-1] - 9], params)
     if not adopt:
-        out["reason"] = (f"the best fit did not beat the current settings clearly enough on held-out seasons (gain {gain:.4f}, z {z:.1f} "
-                         f"over {len(pooled)} games; needs {MIN_GAIN} and z {MIN_Z})" if fit != default else "current settings were already the best on the grid")
+        out["reason"] = (f"held-out gain {gain:.4f} (z {z:.1f}, {pos}/{len(rec)} seasons better, worst {worst:+.4f}) did not clear the bar "
+                         f"(gain {MIN_GAIN}, z {MIN_Z}, or z {MIN_Z_CONSISTENT} with most seasons better; no season worse than {WORST_FOLD})")
     return out
 
 
 def job_tune():
     prev = read("model/tuned.json") or {}
-    out = {"updated": now_iso()}
+    out = {"updated": now_iso(), "version": 2}
     brief = {}
     for lg in LEAGUES:
         try:
@@ -248,9 +456,7 @@ def job_tune():
             import traceback; traceback.print_exc()
             out[lg] = prev.get(lg) or {"adopt": False, "reason": f"error: {e}"[:160]}
         t = out[lg]
-        m = t.get("metrics", {})
-        brief[lg] = ({"adopt": t["adopt"], "gain": t.get("gain"), "z": t.get("z"), "fit": t.get("fit"),
-                      "holdout_ll": [round(m["default_holdout"]["logloss"], 4), round(m["fit_holdout"]["logloss"], 4)]}
-                     if m else t.get("reason"))
+        brief[lg] = {"adopt": t.get("adopt"), "gain": t.get("gain"), "z": t.get("z"), "folds": t.get("foldsImproved"),
+                     "params": t.get("params")} if "folds" in t else t.get("reason")
     write("model/tuned.json", out)
     return brief

@@ -6,10 +6,17 @@ advantage removed, and pulled toward a prior (0, or last season for the NBA) wit
 `k` games. That is the same shrinkage as SRS x GP/(GP+k) on the methodology page, but it stays
 stable early in a season and in college, where schedules barely connect.
 
-  P(home wins) = Phi((rating_home - rating_away + HFA) / sigma)
+  P(home wins) = Phi((rating_home - rating_away + HFA) / s),  s = sigma x sqrt(1 + 1/w_home + 1/w_away)
+
+where w is a team's weight of evidence (games played, recency-weighted, plus k), when the league's fitted
+settings say that widening helps (pv); otherwise s = sigma. Recent games can count more (hl, a half-life
+in weeks) and blowouts can be damped (cap, or soft = c x tanh(margin / c)). tune.py fits all of these on
+past seasons; see its docstring for the checks.
 
 Season simulations (NFL, NHL) replay the rest of the schedule thousands of times with the
-ratings plus their uncertainty, then apply each league's playoff format.
+ratings plus their uncertainty and, for the NFL, a week-to-week drift in each team's true strength
+(injuries, form), then apply each league's playoff format. The drift was set by replaying 2003-2025
+seasons from weeks 4, 8 and 12 and checking the playoff odds against who actually made it.
 
 Completed games are cached in data/sports/model/_games_{lg}.json so each hourly run only asks
 ESPN for the days or weeks that are not final yet."""
@@ -28,9 +35,12 @@ from .leagues import LEAGUES, path
 
 PARAMS = {
     #        HFA    div HFA  sigma  k (prior weight in games)  margin cap  min GP before showing projections
-    "nfl":   dict(hfa=1.8, divHfa=0.9, sigma=13.5, k=5, cap=None, minGp=1, unit="points"),
+    "nfl":   dict(hfa=1.8, divHfa=0.9, sigma=13.5, k=5, cap=None, minGp=1, unit="points", drift=1.0),
     "ncaaf": dict(hfa=2.5, sigma=16.0, k=4, cap=35, minGp=2, unit="points"),
-    "nhl":   dict(hfa=0.2, sigma=2.4, k=10, cap=None, minGp=3, unit="goals"),
+    # NHL preset: game-to-game noise is about 2.5 goals while true team strength spreads only about
+    # 0.45 goals, so a rating needs about (2.5 / 0.45)^2 = 30 games of weight before its own results
+    # dominate; last season carries over strongly (fit on 2023-2026 held-out seasons, October 2026).
+    "nhl":   dict(hfa=0.2, sigma=2.4, k=30, cap=None, minGp=3, unit="goals", carry=0.9),
     "nba":   dict(hfa=2.5, sigma=12.0, k=10, cap=None, minGp=0, unit="points", carry=0.65),
     "mlb":   dict(hfa=0.15, sigma=4.2, k=20, cap=None, minGp=10, unit="runs"),
     "ncaab": dict(hfa=3.0, sigma=11.0, k=6, cap=40, minGp=3, unit="points"),
@@ -41,30 +51,74 @@ PARAMS = {
 # writes model/tuned.json; get_params() applies them only where the held-out season improved.
 CACHE_VERSION = 3          # bump to force a full rescan after a scan fix
 POOL = "_other"            # opponents outside the covered division (FCS, non-D-I) share one rating
+PRO_ONLY = {"nfl", "nba", "nhl", "mlb"}   # games against non-members (all-star teams, 4 Nations) are dropped
+ALIAS = {"nhl": {"24": "129764"}}           # Arizona Coyotes -> Utah: the same roster moved in 2024
 RNG = np.random.default_rng()
+
+
+def alias(lg, t):
+    return ALIAS.get(lg, {}).get(t, t)
 
 
 def get_params(lg):
     P = dict(PARAMS[lg])
     t = (read("model/tuned.json") or {}).get(lg)
-    if t and t.get("adopt"):
+    if t and t.get("adopt") and t.get("params"):
         P.update(t["params"])
         P["tuned"] = True
+    elif t and t.get("sigma"):
+        # preset settings, with the home edge measured on recent seasons (when that held up out of sample)
+        # and the error spread measured on past seasons
+        P.update(t.get("fixedLive") or {})
+        P["sigma"] = t["sigma"]
+        P["sigmaMargin"] = t.get("sigmaMargin", t["sigma"])
     return P
 
 
+def recency(P, dates, now=None):
+    """Per-game weights: halve every hl weeks back from now (all 1 when the league has no half-life)."""
+    if not P.get("hl"):
+        return [1.0] * len(dates)
+    now = now or datetime.now(timezone.utc)
+    out = []
+    for d in dates:
+        try:
+            t = datetime.fromisoformat(d[:16] + ":00+00:00")
+            age = max(0.0, (now - t).total_seconds() / (7 * 86400))
+        except ValueError:
+            age = 0.0
+        out.append(0.5 ** (age / P["hl"]))
+    return out
+
+
 def season_prior(lg, year, P, members, hfa_fn, norm_id):
-    """{team: carry x rating from last season's full schedule} using stored history, or {} if there is none."""
+    """{team: carry x rating from last season's full schedule} using stored history, or {} if there is none.
+    Last season is rated with the same settings as this one, recency weighting measured from its last game."""
     from . import history
     carry = P.get("carry", 0)
     prev = history.load(lg).get(year - 1) if carry else None
     if not prev:
         return {}
-    rows = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in prev]
+    games = []
+    for g in prev:
+        h, a = alias(lg, g["h"]), alias(lg, g["a"])
+        if lg in PRO_ONLY and (h not in members or a not in members):
+            continue
+        games.append(dict(g, h=h, a=a))
+    rows = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in games]
     rows = [r for r in rows if r[0] != r[1]]
-    R = ridge(rows, members, hfa_fn, P["k"], None, P["cap"])
+    if not rows:
+        return {}
+    end = max(datetime.fromisoformat(g["d"][:16] + ":00+00:00") for g in games)
+    w = recency(P, [r[4]["d"] for r in rows], end)
+    R, _ = ridge(rows, members, hfa_fn, P["k"], None, P.get("cap"), P.get("soft"), w)
     seen = {t for r in rows for t in r[:2]}
-    return {t: carry * R[t] for t in seen if t in members}
+    out = {t: carry * R[t] for t in seen if t in members}
+    if P.get("newp") == "pool" and POOL in seen:
+        # programs new to the division start where last season's outsiders were, not at the division average
+        for t in members:
+            out.setdefault(t, carry * R[POOL])
+    return out
 
 
 def phi(x):
@@ -161,7 +215,24 @@ def _scan_cfbd(year, cache):
     return 1
 
 
+def _from_history(lg, year):
+    """A finished regular season already stored by history.py, in the games-cache format, or None."""
+    h = read(f"history/{lg}_{year}.json")
+    if not h or not h.get("complete"):
+        return None
+    ev = {}
+    for i, r in enumerate(h["g"]):
+        ev[f"h{year}-{i}"] = {"d": r[0], "t": 2, "h": r[1], "a": r[2], "hs": r[3], "as": r[4], "n": bool(r[5]), "cc": False,
+                             "done": True, "off": False, "wk": r[6]}
+    return ev
+
+
 def games(lg, si):
+    if si.get("type") in (3, 4):
+        # regular season over (postseason / offseason): its games are final and history.py has stored them
+        ev = _from_history(lg, si["year"])
+        if ev:
+            return ev, "ESPN scoreboard (stored season)"
     rel = f"model/_games_{lg}.json"
     cache = read(rel) or {}
     if cache.get("season") != si["year"] or cache.get("v") != CACHE_VERSION:
@@ -181,27 +252,33 @@ def games(lg, si):
 
 
 # ---------------------------------------------------------------- ratings
-def ridge(results, members, hfa_fn, k, prior=None, cap=None):
-    """results: list of (home, away, home_margin, neutral, game). Returns {team: rating}."""
+def ridge(results, members, hfa_fn, k, prior=None, cap=None, soft=None, weights=None):
+    """results: list of (home, away, home_margin, neutral, game). Returns ({team: rating}, {team: weight of
+    evidence}), where weight of evidence = recency-weighted games played + k (the prior's weight)."""
     prior = prior or {}
     ids = sorted({t for r in results for t in r[:2]} | set(members))
     ix = {t: i for i, t in enumerate(ids)}
     n = len(ids)
     A = np.zeros((n, n))
     b = np.zeros(n)
-    for h, a, m, neutral, g in results:
-        if cap:
+    for gi, (h, a, m, neutral, g) in enumerate(results):
+        if soft:
+            m = soft * math.tanh(m / soft)
+        elif cap:
             m = max(-cap, min(cap, m))
+        w = weights[gi] if weights is not None else 1.0
         y = m - (0.0 if neutral else hfa_fn(g))
         i, j = ix[h], ix[a]
-        A[i, i] += 1; A[j, j] += 1; A[i, j] -= 1; A[j, i] -= 1
-        b[i] += y; b[j] -= y
+        A[i, i] += w; A[j, j] += w; A[i, j] -= w; A[j, i] -= w
+        b[i] += w * y; b[j] -= w * y
+    lam = {t: (k if t != POOL else max(k, 50)) for t in ix}   # the pooled outsider is one rating for many teams
+    eff = {}
     for t, i in ix.items():
-        lam = k if t != POOL else max(k, 50)     # the pooled outsider is one rating for many teams
-        A[i, i] += lam
-        b[i] += lam * prior.get(t, 0.0)
+        eff[t] = float(A[i, i]) + lam[t]
+        A[i, i] += lam[t]
+        b[i] += lam[t] * prior.get(t, 0.0)
     r = np.linalg.solve(A, b)
-    return {t: float(r[ix[t]]) for t in ids}
+    return {t: float(r[ix[t]]) for t in ids}, eff
 
 
 def _standings_map(lg):
@@ -257,12 +334,14 @@ def build(lg):
     smap = _standings_map(lg)
     members = set(_members(lg))
     res = {"lg": lg, "season": si["year"], "seasonType": si["type"], "hfa": P["hfa"], "sigma": P["sigma"],
+           "sigmaMargin": P.get("sigmaMargin", P["sigma"]),
            "k": P["k"], "unit": P["unit"], "minGp": P["minGp"], "teams": {}, "odds": None}
     if P.get("divHfa") is not None:
         res["divHfa"] = P["divHfa"]
 
-    if lg == "mlb":
+    if lg == "mlb" and not P.get("tuned"):
         # Full-season run margin from the standings (162 games makes schedule adjustment negligible).
+        # Once tune.py has a game-by-game MLB fit that beats this on past seasons, the general path below runs instead.
         for tid, r in smap.items():
             gp = r.get("gp") or 0
             if gp and r.get("pf") is not None:
@@ -273,7 +352,10 @@ def build(lg):
     else:
         events, source = games(lg, si)
         res["source"] = source
-        played = [g for g in events.values() if g["done"] and g["hs"] is not None and g["as"] is not None]
+        played = [dict(g, h=alias(lg, g["h"]), a=alias(lg, g["a"])) for g in events.values()
+                  if g["done"] and g["hs"] is not None and g["as"] is not None]
+        if lg in PRO_ONLY:
+            played = [g for g in played if g["h"] in members and g["a"] in members]
         group, hfa_fn, norm_id = context(lg, smap, members)
         results = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in played]
         results = [r for r in results if r[0] != r[1]]
@@ -286,7 +368,7 @@ def build(lg):
                 res["prior"] = "0.65 x last season's point margin per game"
             except Exception as e:
                 print("NBA prior failed:", e)
-        R = ridge(results, members, hfa_fn, P["k"], prior, P["cap"])
+        R, eff = ridge(results, members, hfa_fn, P["k"], prior, P.get("cap"), P.get("soft"), recency(P, [r[4]["d"] for r in results]))
         # Same inputs -> same simulation, so the committed files only change when a result does.
         RNG = np.random.default_rng(zlib.crc32(json.dumps([sorted((r[0], r[1], r[2]) for r in results),
                                                               sorted((t, v.get("gp"), v.get("pts")) for t, v in smap.items())]).encode()))
@@ -297,7 +379,7 @@ def build(lg):
         for t in members:
             if t not in R:
                 continue
-            row = {"rating": round(R[t], 2), "gp": gp[t]}
+            row = {"rating": round(R[t], 2), "gp": gp[t], "w": round(eff[t], 2)}
             if gp[t]:
                 row["mov"] = round(margin[t] / gp[t], 2)
                 row["sos"] = round(float(np.mean([R[o] for o in opp[t]])), 2)
@@ -305,9 +387,17 @@ def build(lg):
                 row["prior"] = round(prior[t], 2)
             res["teams"][t] = row
         res["games"] = len(results)
+        res["pv"] = bool(P.get("pv"))
+        if P.get("hl"):
+            res["hl"] = P["hl"]
+        if P.get("soft"):
+            res["soft"] = P["soft"]
         res["basis"] = (f"Ridge-regularised SRS from {len(results)} completed games, home edge removed"
-                        + (f", margins capped at {P['cap']}" if P["cap"] else "")
-                        + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']} games of weight.")
+                        + (f", margins capped at {P['cap']}" if P.get("cap") else "")
+                        + (f", blowouts damped (soft limit {P['soft']})" if P.get("soft") else "")
+                        + (f", recent games weighted more (half-life {P['hl']} weeks)" if P.get("hl") else "")
+                        + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
+                        + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))
         res["tuned"] = bool(P.get("tuned"))
         if lg == "nfl":
             res["odds"], res["oddsBasis"] = nfl_odds(res, events, smap)
@@ -335,10 +425,23 @@ def nfl_odds(res, events, smap, N=10000):
     conf = {t: ("AFC" if "AFC" in (div[t] or "") or "American" in (smap[t].get("parent") or "") else "NFC") for t in ids}
     T = res["teams"]
     rating = np.array([T[t]["rating"] for t in ids])
-    gp = np.array([T[t]["gp"] for t in ids], float)
+    weight = np.array([T[t].get("w") or (T[t]["gp"] + res["k"]) for t in ids], float)
     SIG, HFA, DIVH = res["sigma"], res["hfa"], res.get("divHfa", res["hfa"])
-    unc = SIG / np.sqrt(gp + res["k"])
+    unc = SIG / np.sqrt(weight)
     true = rating[None, :] + RNG.normal(0, 1, (N, 32)) * unc[None, :]
+    drift = PARAMS["nfl"].get("drift", 0.0)          # variance per team per week (points^2)
+    now_wk = min((g.get("wk") or 99) for g in events.values() if not g["done"] and not g["off"] and g.get("t") == 2) if any(
+        not g["done"] and not g["off"] and g.get("t") == 2 for g in events.values()) else 99
+    # one random walk per simulation, built week by week in order, so a team's form carries from week to week
+    walks, cur, last = {}, true, now_wk
+    if drift:
+        for wk in sorted({g["wk"] for g in events.values() if g.get("wk") and g["wk"] > now_wk and not g["done"] and not g["off"]}):
+            cur = cur + RNG.normal(0, math.sqrt(drift * (wk - last)), (N, 32))
+            walks[wk], last = cur, wk
+
+    def strength(wk):
+        """true strength in a future week: today's draw plus the walk up to that week."""
+        return walks.get(wk, true) if wk is not None else true
     wins = np.zeros((N, 32)); divw = np.zeros((N, 32)); pdiff = np.zeros((N, 32))
     hfa = lambda h, a: DIVH if div[h] == div[a] else HFA
     played = rem = 0
@@ -356,7 +459,8 @@ def nfl_odds(res, events, smap, N=10000):
                 divw[:, h] += hw; divw[:, a] += 1 - hw
         else:
             rem += 1
-            m = true[:, h] - true[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + RNG.normal(0, SIG, N)
+            tr = strength(g.get("wk"))
+            m = tr[:, h] - tr[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + RNG.normal(0, SIG, N)
             hw = m > 0
             wins[:, h] += hw; wins[:, a] += ~hw; pdiff[:, h] += m; pdiff[:, a] -= m
             if same:
@@ -369,8 +473,10 @@ def nfl_odds(res, events, smap, N=10000):
         divs[div[t]].append(ix[t])
     P = {t: collections.Counter() for t in ids}
 
+    end = walks[max(walks)] if walks else true    # strength at season's end for the playoffs
+
     def play(hi, lo, s, neutral=False):
-        m = true[s, hi] - true[s, lo] + (0 if neutral else HFA) + RNG.normal(0, SIG)
+        m = end[s, hi] - end[s, lo] + (0 if neutral else HFA) + RNG.normal(0, SIG)
         return hi if m > 0 else lo
     for s in range(N):
         champs = {}
@@ -397,7 +503,7 @@ def nfl_odds(res, events, smap, N=10000):
         out[t] = {"wins": round(float(w.mean()), 1), "w10": round(float(np.percentile(w, 10)), 1), "w90": round(float(np.percentile(w, 90)), 1),
                   "playoff": round(P[t]["playoff"] / N, 3), "div": round(P[t]["div"] / N, 3), "seed1": round(P[t]["seed1"] / N, 3),
                   "conf": round(P[t]["conf"] / N, 3), "title": round(P[t]["title"] / N, 3)}
-    return out, (f"{N:,} simulations of the {rem} remaining regular-season games, then the 14-team bracket "
+    return out, (f"{N:,} simulations of the {rem} remaining regular-season games, each team's strength drifting week to week, then the 14-team bracket "
                  "(division winners seeded 1-4, three wild cards). Tiebreakers simplified to division record, then point margin.")
 
 
@@ -416,7 +522,8 @@ def nhl_odds(res, smap, N=10000):
     gp = np.array([smap[t].get("gp") or 0 for t in ids], float)
     pts0 = np.array([smap[t].get("pts") or 0 for t in ids], float)
     rating = np.array([T[t]["rating"] for t in ids])
-    tr = rating[None, :] + RNG.normal(0, 1, (N, n)) * (SIG / np.sqrt(gp + res["k"]))[None, :]
+    weight = np.array([T[t].get("w") or (T[t]["gp"] + res["k"]) for t in ids], float)
+    tr = rating[None, :] + RNG.normal(0, 1, (N, n)) * (SIG / np.sqrt(weight))[None, :]
     pts = np.tile(pts0, (N, 1))
     for i in range(n):
         rem = int(max(0, 82 - gp[i]))

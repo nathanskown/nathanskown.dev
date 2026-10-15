@@ -11,8 +11,8 @@ Backtest (daily run)
   strictly before it. It shows how the same method would have done on games that are already
   over. It is a backtest, not a track record, and the page labels it that way.
 
-MLB is not logged: its ratings come from season totals in the standings, with no game history to
-replay.  Games ESPN postpones or cancels are dropped, not graded."""
+MLB is not logged yet (its projections leave out starting pitchers, which decide most of a baseball
+game's odds). Games ESPN postpones or cancels are dropped, not graded."""
 import math
 from datetime import datetime, timezone
 
@@ -43,7 +43,15 @@ def project(model, h, a, neutral):
     if not neutral and model.get("divHfa") is not None and H.get("group") and H.get("group") == A.get("group"):
         hfa = model["divHfa"]
     m = H["rating"] - A["rating"] + hfa
-    return m, M.phi(m / model["sigma"])
+    return m, M.phi(m / spread(model, H, A))
+
+
+def spread(model, H, A):
+    """The league's sigma, widened by how unsure both ratings still are when the model says so (pv)."""
+    s = model["sigma"]
+    if model.get("pv") and H.get("w") and A.get("w"):
+        s *= math.sqrt(1 + 1 / H["w"] + 1 / A["w"])
+    return s
 
 
 def _result(hs, as_):
@@ -190,22 +198,27 @@ def backtest(lg):
         train = [g for g in ev if g["d"] < t0]
         if len(train) < 10:
             continue
+        train = [dict(g, h=M.alias(lg, g["h"]), a=M.alias(lg, g["a"])) for g in train]
+        if lg in M.PRO_ONLY:
+            train = [g for g in train if g["h"] in members and g["a"] in members]
         results = [(norm(g["h"]), norm(g["a"]), g["hs"] - g["as"], g["n"], g) for g in train]
         results = [r for r in results if r[0] != r[1]]
         gp = {}
         for h, a, *_ in results:
             gp[h] = gp.get(h, 0) + 1
             gp[a] = gp.get(a, 0) + 1
-        R = M.ridge(results, members, hfa_fn, P["k"], prior, P["cap"])
+        now = M.datetime.fromisoformat(t0[:16] + ":00+00:00")
+        R, eff = M.ridge(results, members, hfa_fn, P["k"], prior, P.get("cap"), P.get("soft"), M.recency(P, [r[4]["d"] for r in results], now))
         for g in batch:
-            h, a = g["h"], g["a"]
+            h, a = M.alias(lg, g["h"]), M.alias(lg, g["a"])
             if h not in members or a not in members or h not in R or a not in R:
                 continue
             ok = lambda t: gp.get(t, 0) >= P["minGp"] or t in prior
             if not (ok(h) and ok(a)):
                 continue
-            m = R[h] - R[a] + (0.0 if g["n"] else hfa_fn(g))
-            p = M.phi(m / P["sigma"])
+            m = R[h] - R[a] + (0.0 if g["n"] else hfa_fn(dict(g, h=h, a=a)))
+            sg = P["sigma"] * (math.sqrt(1 + 1 / eff[h] + 1 / eff[a]) if P.get("pv") else 1.0)
+            p = M.phi(m / sg)
             rows.append({"p": p, "res": _result(g["hs"], g["as"]), "err": (g["hs"] - g["as"]) - m, "d": g["d"]})
     if not rows:
         return {"n": 0, "games": len(ev)}
