@@ -8,7 +8,7 @@ name: Sports history and tuning
 on:
   push:
     branches: [main]
-    paths: ["pipeline/sports/history.py"]
+    paths: ["pipeline/sports/history.py", "pipeline/sports/extra.py"]
   workflow_dispatch:
     inputs:
       leagues:
@@ -58,6 +58,21 @@ jobs:
           print(f"::notice title=history {lg}::" + " ".join(rows))
           PY
           done
+          echo "::group::extra (MoneyPuck expected goals, MLB starting pitchers)"
+          python -m pipeline.sports.run extra || echo "extra exited with an error"
+          echo "::endgroup::"
+          save "sports extra data (NHL expected goals, MLB starters)"
+          python - <<'PY'
+          import json
+          s = json.load(open("data/sports/status.json")).get("extra", {})
+          r = (s.get("sources") or {}).get("extra", {})
+          print("::notice title=extra::" + json.dumps(r.get("result") or r.get("error"))[:3000])
+          try:
+              x = json.load(open("data/sports/history/xg_nhl.json"))
+              print("::notice title=moneypuck columns::" + ",".join(x.get("csvColumns", []))[:3000])
+          except Exception as e:
+              print("::notice title=moneypuck::missing " + str(e)[:200])
+          PY
           if [ "${{ github.event_name }}" = "push" ]; then echo "fetch-only run (push): skipping the refit"; exit 0; fi
           echo "::group::tune"
           python -m pipeline.sports.run tune || echo "tune exited with an error"
