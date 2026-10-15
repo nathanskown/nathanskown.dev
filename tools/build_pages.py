@@ -41,6 +41,7 @@ GAME_PRESETS = {"football": "nfl", "baseball": "mlb", "basketball": "nba", "hock
 # section -> css, theme color, and pages: (route, source file, props, title)
 SECTIONS = {
     "finance": {
+        "desc": "Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.",
         "css": "assets/finance.css",
         "theme": "#050403",
         "pages": [
@@ -60,6 +61,7 @@ SECTIONS = {
         },
     },
     "sports": {
+        "desc": "Live scores, team pages, playoff odds, a matchup simulator and injury reports, with Detroit and Michigan State up front.",
         "css": "assets/sports.css",
         "theme": "#020607",
         "scripts": ["/assets/sports-data.js"],
@@ -129,6 +131,8 @@ def build_page(path, cfg, props, title):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)} · NSKN Terminal</title>
+<meta name="description" content="{html.escape(cfg.get("desc", ""))}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="{cfg["theme"]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

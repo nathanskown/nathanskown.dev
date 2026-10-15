@@ -4,6 +4,7 @@
 .gitignore
 .assetsignore
 wrangler.jsonc
+.wrangler
 worker
 pipeline
 tools
@@ -13,7 +14,6 @@ README.md
 data/finance/cusip_map.json
 data/finance/earnings_cache.json
 data/finance/ipo_cache.json
-.git/
 data/sports/model/_games_*
 data/sports/track/_picks_*
 data/sports/history/*

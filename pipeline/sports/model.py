@@ -22,7 +22,7 @@ from datetime import datetime, timedelta, timezone
 
 import numpy as np
 
-from .common import ESPN, get, read, write, now_iso
+from .common import ESPN, get, read, write
 from .espn import season_info
 from .leagues import LEAGUES, path
 

@@ -1,10 +1,6 @@
 """SEC EDGAR: company facts, Form 4 insiders, 13D/13G holders, 13F data sets."""
-import csv
-import io
 import re
-import statistics
 import xml.etree.ElementTree as ET
-import zipfile
 from collections import defaultdict
 from datetime import date, datetime
 
@@ -131,15 +127,6 @@ def cover_shares(cik, filings):
     return {"asOf": f["reportDate"] or f["filingDate"], "classes": out}
 
 
-def shares_at(fin, day):
-    """Shares outstanding closest to (and not long after) a date."""
-    best = None
-    for end, val in fin.get("shares", []):
-        if end <= day or best is None:
-            best = val
-    return best
-
-
 # ---------------- Form 4 insider transactions ----------------
 CODES = {"P": "Open-market buy", "S": "Sale", "M": "Option exercise", "A": "Award / grant", "F": "Tax withholding",
          "G": "Gift", "D": "Disposition to issuer", "C": "Conversion", "X": "Option exercise"}
@@ -227,65 +214,3 @@ def dataset_links():
         m = re.match(r"(\d{4})q(\d)", name)
         return datetime(int(m.group(1)), int(m.group(2)) * 3, 28) if m else datetime(1900, 1, 1)
     return sorted(links, key=key, reverse=True)
-
-
-def _tsv(zf, name):
-    member = next(n for n in zf.namelist() if n.upper().endswith(name))
-    with zf.open(member) as fh:
-        yield from csv.DictReader(io.TextIOWrapper(fh, encoding="latin-1"), delimiter="\t")
-
-
-def holdings_from_zip(blob, cusips):
-    """-> {(cik, period): {"acc", "filed", "name", "pos": {cusip: shares}}} for 13F-HR filings."""
-    zf = zipfile.ZipFile(io.BytesIO(blob))
-    subs = {}
-    for row in _tsv(zf, "SUBMISSION.TSV"):
-        if row.get("SUBMISSIONTYPE", "").upper() != "13F-HR":
-            continue
-        try:
-            period = datetime.strptime(row["PERIODOFREPORT"], "%d-%b-%Y").strftime("%Y-%m-%d")
-            filed = datetime.strptime(row["FILING_DATE"], "%d-%b-%Y").strftime("%Y-%m-%d")
-        except (KeyError, ValueError):
-            continue
-        subs[row["ACCESSION_NUMBER"]] = (int(row["CIK"]), period, filed)
-    names = {row["ACCESSION_NUMBER"]: row.get("FILINGMANAGER_NAME", "") for row in _tsv(zf, "COVERPAGE.TSV")
-             if row["ACCESSION_NUMBER"] in subs}
-    rows = []
-    issuer = {}
-    for row in _tsv(zf, "INFOTABLE.TSV"):
-        cu = (row.get("CUSIP") or "").upper()
-        if cu not in cusips or row["ACCESSION_NUMBER"] not in subs:
-            continue
-        if (row.get("PUTCALL") or "").strip() or (row.get("SSHPRNAMTTYPE") or "SH").upper() != "SH":
-            continue
-        try:
-            rows.append((row["ACCESSION_NUMBER"], cu, float(row["SSHPRNAMT"]), float(row.get("VALUE") or 0)))
-        except ValueError:
-            continue
-        issuer.setdefault(cu, row.get("NAMEOFISSUER"))
-    # Filers sometimes key shares in the wrong unit (off by 1000x). The dollar value usually stays right,
-    # so a row whose value/shares is far from the median price that quarter is dropped.
-    px = defaultdict(list)
-    for acc, cu, sh, val in rows:
-        if sh > 0 and val > 0:
-            px[(cu, subs[acc][1])].append(val / sh)
-    med = {k: statistics.median(v) for k, v in px.items() if len(v) >= 20}
-    pos = defaultdict(lambda: defaultdict(float))
-    dropped = 0
-    for acc, cu, sh, val in rows:
-        m = med.get((cu, subs[acc][1]))
-        # some filers still report value in thousands; their share counts are fine
-        if m and sh > 0 and val > 0 and not (m / 3 < val / sh < m * 3) and not (m / 3 < val * 1000 / sh < m * 3):
-            dropped += 1
-            continue
-        pos[acc][cu] += sh
-    out = {}
-    for acc, held in pos.items():
-        cik, period, filed = subs[acc]
-        prev = out.get((cik, period))
-        if prev is None or filed > prev["filed"]:
-            out[(cik, period)] = {"acc": acc, "filed": filed, "name": names.get(acc, ""), "pos": dict(held)}
-    filers = defaultdict(set)  # every manager that filed for a period, holders or not
-    for cik, period, _ in subs.values():
-        filers[period].add(cik)
-    return out, issuer, filers, dropped

@@ -179,7 +179,7 @@
   var CMDS = {
     HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest',
     BRIEF: '/finance/digest/', MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
-    DES: '/finance/quote/', QUOTE: '/finance/quote/', NWND: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
+    DES: '/finance/quote/', QUOTE: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
     ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
     SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
     TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
@@ -297,7 +297,7 @@
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];
       var c = new Component(props);
-      // deep links: ?mode=1&sport=football or ?ticker=PRSM preset the page's state
+      // deep links: ?mode=1&sport=football or ?sym=AAPL preset the page's state
       var init = {};
       new URLSearchParams(location.search).forEach(function (v, k) { init[k] = /^-?\d+$/.test(v) ? Number(v) : v; });
       if (Object.keys(init).length) c.state = Object.assign({}, c.state || {}, init);

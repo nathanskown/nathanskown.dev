@@ -18,7 +18,6 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from .common import SESSION, UA, read, write, now_iso
-from .leagues import LEAGUES
 
 BASE = "https://api.the-odds-api.com/v4"
 SPORT = {"nfl": "americanfootball_nfl", "ncaaf": "americanfootball_ncaaf", "nba": "basketball_nba",

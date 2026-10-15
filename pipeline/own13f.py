@@ -358,10 +358,3 @@ def build(max_sets=9, force=False):
              "tickers": sorted(done_core, key=lambda x: list(universe).index(x["sym"])), "all": sorted(all_syms)}
     write("ownership/index.json", index)
     return index
-
-
-def attempt_quiet(fn, *args):
-    try:
-        return fn(*args)
-    except Exception:  # noqa: BLE001 - a company without the cover-page tag just has no share count
-        return []

@@ -1,4 +1,4 @@
-name: Check live quote API
+name: Check live site
 
 # After Cloudflare deploys a change to the on-demand API, call it from outside and
 # report what came back as annotations on the run (visible without opening logs).
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Wait for the deploy, then call each part
         run: |
           base=https://nathanskown.dev/api/quote

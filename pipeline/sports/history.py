@@ -9,7 +9,7 @@ is never stored here (the hourly model keeps its own cache).
 
 MLB is not covered: its ratings come from season totals in the standings."""
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from .common import ESPN, get, read, write
 from .espn import season_info

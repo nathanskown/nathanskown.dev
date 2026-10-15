@@ -17,7 +17,6 @@ import math
 from datetime import datetime, timezone
 
 from .common import read, write, now_iso
-from .leagues import LEAGUES as LG_INFO
 from . import model as M
 
 LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]

@@ -9,7 +9,7 @@ Live scores and game pages do not come from here; the Worker passes those throug
 ESPN's written injury notes and recaps are editorial text and are deliberately not copied."""
 import re
 
-from .common import ESPN, ESPN_V2, get, read, write, now_iso
+from .common import ESPN, ESPN_V2, get, read, write
 from .leagues import LEAGUES, PRO, TEAM_LEAGUES, path
 
 CORE = "https://sports.core.api.espn.com/v2/sports/"
