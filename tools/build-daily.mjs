@@ -7,6 +7,7 @@
 // - Days are keyed by Chicago's calendar date (the site and leaderboard use the same clock).
 // - Existing days are never rewritten. Only missing days (up to DAYS_AHEAD) are added.
 // - Days older than KEEP_PAST_DAYS are dropped so the file stays small.
+// - THEMED lists one-off days that use a special song pool (2026-10-14 = 2010s songs, data/tracks-2010s.js).
 // - Each track day lists 8 songs: the game plays the first 5 that load, so a song Deezer cannot
 //   play is skipped for everyone in the same order.
 // - Each artist day stores the 5 full artist records plus the exact clue tracks ("picked").
@@ -44,6 +45,9 @@ const curated = load(join(DIR, "data/tracks.js")).TRACK_SEEDS || [];
 const generated = load(join(DIR, "data/tracks-generated.js")).TRACK_SEEDS_GENERATED || [];
 const seen = new Set(curated.map(s => norm(s.title) + "|" + normArtist(s.artist)));
 const seeds = curated.concat(generated.filter(s => !seen.has(norm(s.title) + "|" + normArtist(s.artist))));
+// One-off themed days for Guess the Track. Every other day draws from all songs.
+const decade = load(join(DIR, "data/tracks-2010s.js")).TRACK_SEEDS_2010S || [];
+const THEMED = { "2026-10-14": decade };   // 2010s songs only, for this one day
 
 const A = load(join(DIR, "data/artists.js")).ARTIST_DATA || { meta: {}, artists: [] };
 const lesserFrom = (A.meta && A.meta.lesserFrom) || 3;
@@ -67,7 +71,7 @@ for (let i = 0; i <= DAYS_AHEAD; i++) {
   const key = addDays(today, i);
   if (days[key]) continue;                                   // never change a day that already exists
   const rt = mulberry32(hashStr("daily-track-" + key)), ra = mulberry32(hashStr("daily-artist-" + key));
-  const track = shuffle(seeds, rt).slice(0, TRACKS_PER_DAY);
+  const track = shuffle(THEMED[key] && THEMED[key].length >= 30 ? THEMED[key] : seeds, rt).slice(0, TRACKS_PER_DAY);
   const artist = shuffle(playable, ra).slice(0, ARTISTS_PER_DAY).map(a => {
     const picked = shuffle(lesserOf(a), ra).slice(0, 5).sort((x, y) => y.rank - x.rank).map(t => t.name);
     return { name: a.name, aliases: a.aliases || [], tier: a.tier, tags: a.tags || [], country: a.country || null,

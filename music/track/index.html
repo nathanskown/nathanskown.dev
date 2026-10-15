@@ -28,6 +28,7 @@
       <button id="dailyBtn">DAILY CHALLENGE</button>
     </div>
     <div class="hint">Clips unlock in steps: <b>1s → 2s → 4s → 8s</b>. Points: <b>5 / 3 / 2 / 1</b>.</div>
+    <div class="hint">A longer clip only unlocks when you <b>submit a wrong guess</b>. Skip gives up the song for 0 points and does not unlock more audio.</div>
     <div class="hint" id="dailyNote"></div>
     <div id="setupMsg" class="msg"></div>
   </section>
@@ -55,6 +56,7 @@
           <div class="head" id="head"></div>
         </div>
         <div class="labels" id="labels"></div>
+        <div class="hint" id="clipHint">Submit a guess to unlock a longer clip. A wrong guess adds time; Skip does not.</div>
         <div id="eq" aria-hidden="true"></div>
         <div class="credit">
           <span id="inlineCredit"></span>
@@ -132,8 +134,10 @@
   const src = MX.trackSource(), PROV = MX.trackProvider;
   let POOL = [], S = null, EQ = { on() {}, off() {} };
   const dailyNote = () => {
+    const day = ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
+    const themed = !!(day && day.track && day.track.slice(0, 5).every(x => x.year >= 2010 && x.year <= 2019));
     const t = MX.stats.dailyToday("track");
-    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "A new daily challenge starts at midnight Chicago time.";
+    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + (themed ? "Today's daily is a special: songs from the 2010s only. " : "") + "A new daily challenge starts at midnight Chicago time.";
   };
 
   const decadeOf = s => (s.year ? Math.floor(s.year / 10) * 10 : (s.era || null));
