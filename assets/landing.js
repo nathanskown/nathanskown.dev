@@ -102,9 +102,9 @@
   var hlTimer;
   function flash(id) {
     clearTimeout(hlTimer);
-    ['secMkt', 'secSprt', 'secDgst'].forEach(function (x) { $(x).classList.toggle('is-hl', x === id || (x === 'secDgst' && state.active === 'digest')); });
+    ['secMkt', 'secSprt', 'secMusic', 'secDgst'].forEach(function (x) { $(x).classList.toggle('is-hl', x === id || (x === 'secDgst' && state.active === 'digest')); });
     hlTimer = setTimeout(function () {
-      ['secMkt', 'secSprt'].forEach(function (x) { $(x).classList.remove('is-hl'); });
+      ['secMkt', 'secSprt', 'secMusic'].forEach(function (x) { $(x).classList.remove('is-hl'); });
       $('secDgst').classList.toggle('is-hl', state.active === 'digest');
     }, 2600);
   }
@@ -122,11 +122,13 @@
   var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/' };
   var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages' };
   var SPRT_URL = { SCOR: '/sports/', GAME: '/sports/game/football/', TEAM: '/sports/team/lions/' };
+  var MUS = { TRCK: 'Guess the Track', ARTS: 'Guess the Artist' };
+  var MUS_URL = { TRCK: '/music/track/', ARTS: '/music/artist/' };
   function helpLines() {
     var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
-    return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('DGST', 'Morning digest signup        4'), '',
-      'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Profile  (WHOAMI)            5'), r('CONTACT', 'Get in touch                 6'), '',
-      'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM', '',
+    return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('MUS', 'Music games                 4'), r('DGST', 'Morning digest signup        5'), '',
+      'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Profile  (WHOAMI)            6'), r('CONTACT', 'Get in touch                 7'), '',
+      'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ·  TRCK  ARTS', '',
       'SYSTEM', r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
   }
   function renderDrawer() {
@@ -149,11 +151,13 @@
     if (c === 'HELP' || c === 'H' || c === '?') helpLines().forEach(function (t) { out.push(L(t)); });
     else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '2'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · 8 PAGES · LIVE DATA')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
     else if (['SPRT', 'SPORT', 'SPORTS', '3'].indexOf(c) > -1) { flash('secSprt'); out.push(L('SPORTS · SCORES, GAME CENTER, TEAMS, ODDS, SIMULATOR')); out.push(LINK('▸ OPEN SPORTS', '/sports/')); }
+    else if (['MUS', 'MUSIC', '4'].indexOf(c) > -1) { flash('secMusic'); out.push(L('MUSIC · GUESS THE TRACK, GUESS THE ARTIST')); out.push(LINK('▸ OPEN MUSIC', '/music/')); }
+    else if (MUS[c]) { flash('secMusic'); out.push(L(c + ' · ' + MUS[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, MUS_URL[c])); }
     else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, FIN_URL[c])); }
     else if (SPRT[c]) { flash('secSprt'); out.push(L(c + ' · ' + SPRT[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, SPRT_URL[c])); }
-    else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '4'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
-    else if (['ABOUT', 'WHOAMI', 'BIO', '5'].indexOf(c) > -1) { active = 'about'; out.push(L('NATHAN SKOWN · CHICAGO, IL · MARKETS + SPORTS')); }
-    else if (['CONTACT', 'MSG', '6'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
+    else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '5'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
+    else if (['ABOUT', 'WHOAMI', 'BIO', '6'].indexOf(c) > -1) { active = 'about'; out.push(L('NATHAN SKOWN · CHICAGO, IL · MARKETS + SPORTS')); }
+    else if (['CONTACT', 'MSG', '7'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
     else if (['HOME', 'MENU', 'OVERVIEW', '1'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
     else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
     else if (c === 'REBOOT') { setLast('REBOOT <GO>'); $('drawer').hidden = true; reboot(); return; }
@@ -214,7 +218,7 @@
     ['HANDSHAKE  nathanskown.dev:443', 'OK'],
     ['SYNC CLOCKS  CHI · NYC · LDN · TYO', 'OK'],
     ['BUILD SURFACE  IV(K,T) · 36x22 MESH', 'OK'],
-    ['INDEX SECTIONS  MARKET ANALYSIS · SPORTS', 'OK']
+    ['INDEX SECTIONS  MARKET ANALYSIS · SPORTS · MUSIC', 'OK']
   ];
   var bootN = 0, bt = null;
   function bootLine(b) {
@@ -370,4 +374,5 @@
   try { seen = sessionStorage.getItem('nskn-booted') === '1'; sessionStorage.setItem('nskn-booted', '1'); } catch (e) { seen = false; }
   if (!reduced && !seen) runBoot(); else scramble();
   if (location.hash === '#digest') setActive('digest');
+  if (location.hash === '#contact') setActive('contact');
 })();
