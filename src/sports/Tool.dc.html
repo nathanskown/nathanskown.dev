@@ -176,7 +176,7 @@
 <div class="t-pb">
 <sc-if value="{{trk.noPend}}" hint-placeholder-val="{{false}}"><div class="s-empty">No upcoming games logged right now.</div></sc-if>
 <div class="s-scroll"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Game</th><th scope="col">Kickoff (UTC)</th><th scope="col">Pick</th><th scope="col">Win prob.</th></tr></thead>
+<thead><tr><th scope="col" class="l">Game</th><th scope="col">Kickoff</th><th scope="col">Pick</th><th scope="col">Win prob.</th></tr></thead>
 <tbody><sc-for list="{{trk.pend}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a> <span class="dim">{{r.lg}}</span></th><td>{{r.date}}</td><td>{{r.pick}}</td><td>{{r.prob}}</td></tr></sc-for></tbody>
 </table></div>
 <p class="s-note" style="margin: 10px 0 0">A pick is refreshed every hour until the game starts, then frozen. What gets graded is the last projection made before the start.</p>
@@ -346,7 +346,8 @@ class Component extends DCLogic {
           sim.margin = ((idx[fav] || {}).abbr || '') + ' ' + Math.abs(p.margin).toFixed(1); sim.mNote = m.unit + (p.hfa ? ' · home edge ' + p.hfa : ' · neutral site');
           var lo = p.margin - z, hi = p.margin + z, f = function (v) { return (v > 0 ? (idx[h] || {}).abbr + ' +' : (idx[a] || {}).abbr + ' +') + Math.abs(v).toFixed(0); };
           sim.range = f(lo) + ' to ' + f(hi);
-          sim.foot = 'Ratings: ' + sim.aName + ' ' + A.rating.toFixed(1) + ', ' + sim.hName + ' ' + H.rating.toFixed(1) + ' (' + m.unit + ' vs. average). σ = ' + m.sigma + '. ' + m.basis;
+          var sEff = z / 1.2816;   // the spread actually used for the range above, after widening for uncertain ratings
+          sim.foot = 'Ratings: ' + sim.aName + ' ' + A.rating.toFixed(1) + ', ' + sim.hName + ' ' + H.rating.toFixed(1) + ' (' + m.unit + ' vs. average). σ = ' + sEff.toFixed(1) + (Math.abs(sEff - m.sigma) > 0.05 ? ' (league ' + Number(m.sigma).toFixed(1) + ', widened while ratings are uncertain)' : '') + '. ' + m.basis;
         } else sim.foot = 'One of these teams has not played enough games for a fair rating yet (needs ' + m.minGp + ').';
       } else sim.foot = 'Pick two different teams.';
       out.sim = sim;
@@ -396,7 +397,7 @@ class Component extends DCLogic {
         if (graded) {
           var tie = r.hs === r.as, won = !tie && ((r.p >= 0.5) === (r.hs > r.as));
           row.final = a.abbr + ' ' + r.as + ', ' + h.abbr + ' ' + r.hs; row.res = tie ? 'Tie' : won ? 'Right' : 'Wrong'; row.style = tie ? '' : won ? 'color: var(--up)' : 'color: var(--dn)';
-        } else row.date = r.d.replace('T', ' ');
+        } else row.date = F.day(r.d + ':00Z') + ' · ' + F.time(r.d + ':00Z') + ' ' + window.TZL;   // the log stores UTC; show the visitor's clock
         return row;
       };
       if (!T) { tr.none = true; tr.noneText = 'Loading…'; }

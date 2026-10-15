@@ -274,11 +274,29 @@ class Component extends DCLogic {
       var B = { name: L.label, sub: '', games: [], msg: '', more: false, moreLabel: '', showAll: function () { self.setState({ lg: lg }); history.replaceState(null, '', '?lg=' + lg); } };
       if (!b) { B.msg = 'Loading…'; boards.push(B); return; }
       if (b.err) { B.msg = 'The live feed did not respond. It retries automatically.'; boards.push(B); return; }
+      // ESPN's default board for weekly leagues (NFL, college football, soccer) is the whole week or matchday:
+      // keep only games on the selected day (plus anything still live), and say when the next one is.
+      if (L.kind !== 'golf') {
+        var dk = function (iso) { return iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: window.TZ }) : ''; };
+        var target = new Date(Date.now() + day * 86400000).toLocaleDateString('en-CA', { timeZone: window.TZ });
+        var keep = function (e) { return e.state === 'in' || dk(e.start) === target; };
+        var kept = L.kind === 'tennis'
+          ? b.events.map(function (e) { return Object.assign({}, e, { matches: e.matches.filter(keep) }); }).filter(function (e) { return e.matches.length; })
+          : b.events.filter(keep);
+        if (!kept.length) {
+          var flat = L.kind === 'tennis' ? [].concat.apply([], b.events.map(function (e) { return e.matches; })) : b.events;
+          var nx = flat.filter(function (e) { return e.state === 'pre' && dk(e.start) > target; }).sort(function (x, y) { return x.start > y.start ? 1 : -1; })[0];
+          B.msg = 'No games ' + (day === 0 ? 'today' : day < 0 ? 'yesterday' : 'tomorrow') + (nx ? '. Next: ' + new Date(nx.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + F.time(nx.start) + ' ' + window.TZL : '.');
+          boards.push(B); return;
+        }
+        b = Object.assign({}, b, { events: kept });
+      }
       var cards = [];
       if (L.kind === 'golf') {
         b.events.forEach(function (e) {
           cards.push({ title: e.name, rows: e.players.slice(0, 5).map(function (p) { return { name: p.pos + ' ' + p.name, rec: p.thru, href: '#', style: '', score: p.score, scoreStyle: 'color: var(--hi); font-size: 20px', tc: 'display: none' }; }),
-            status: e.detail, stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state), href: '', note: '', live: e.state === 'in', st: e.state, start: e.start });
+            // before it starts ESPN sends a placeholder midnight time in Eastern; show the start date in the visitor's terms
+            status: e.state === 'pre' && e.start ? 'Starts ' + new Date(e.start).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }) : e.detail, stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state), href: '', note: '', live: e.state === 'in', st: e.state, start: e.start });
         });
       } else if (L.kind === 'tennis') {
         b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
@@ -302,7 +320,7 @@ class Component extends DCLogic {
               scoreStyle: won ? 'color: var(--wh); text-shadow: 0 0 12px rgba(255,255,255,.4)' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
           };
           cards.push({ title: '', rows: [row(e.away), row(e.home)],
-            status: pre ? F.time(e.start) + ' ' + window.TZL : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
+            status: pre ? (e.tbd ? 'Time TBD' : F.time(e.start) + ' ' + window.TZL) : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
             stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
             live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });

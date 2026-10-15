@@ -82,6 +82,8 @@
     var series = c.series && c.series.summary ? c.series.summary : '';
     return {
       lg: lg, id: String(e.id), start: e.date, name: e.name || '', short: e.shortName || '', week: e.week ? e.week.number : null,
+      // ESPN marks games without a set start time (it fills in 11:59 PM Eastern as a placeholder)
+      tbd: c.timeValid === false || /\bTBD\b/i.test(st.detail || '') || /T0[34]:59/.test(e.date || ''),
       state: st.state, done: st.done, detail: st.detail, period: st.period, clock: st.clock,
       neutral: !!c.neutralSite, venue: (c.venue || {}).fullName || '', city: ((c.venue || {}).address || {}).city || '',
       tv: tv, note: note || series, away: teams[0] || null, home: teams[1] || null,
@@ -224,7 +226,7 @@
         standings.push({ name: g.header || '', rows: rows });
       });
       return {
-        lg: lg, id: String(id), start: c.date, state: st.state, done: st.done, detail: st.detail, neutral: !!c.neutralSite,
+        lg: lg, id: String(id), start: c.date, state: st.state, done: st.done, detail: st.detail, period: st.period, clock: st.clock, neutral: !!c.neutralSite,
         away: teams[0] || null, home: teams[1] || null, note: ((c.notes || [])[0] || {}).headline || '',
         venue: (gi.venue || {}).fullName || '', city: [((gi.venue || {}).address || {}).city, ((gi.venue || {}).address || {}).state].filter(Boolean).join(', '),
         attendance: gi.attendance || null, weather: gi.weather ? (gi.weather.displayValue || '') + (gi.weather.temperature ? ' · ' + gi.weather.temperature + '°' : '') : '',
@@ -299,6 +301,25 @@
     var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
     var p = Phi(m / sg);
     return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, coverage: model.coverage || null, basis: model.basis || '' };
+  }
+
+  /* In-game win probability: the current score plus the pre-game edge scaled to the time left, with the
+     model's spread shrinking as the game runs out: P(home) = Φ((lead + edge·r) ÷ (σ·√r)), r = share of game left. */
+  var GAME_SECS = { nfl: [4, 900], ncaaf: [4, 900], nba: [4, 720], ncaab: [2, 1200], nhl: [3, 1200], ncaah: [3, 1200] };
+  function liveProb(model, lg, g, pre) {
+    if (!model || !pre || !g || g.state !== 'in' || !g.home || !g.away) return null;
+    var lead = (num(g.home.score) || 0) - (num(g.away.score) || 0), f = null, per = +g.period || 0;
+    if (lg === 'mlb') {
+      var d = String(g.detail || ''), half = /^top/i.test(d) ? 0 : (/^(mid|bot)/i.test(d) ? 1 : (/^end/i.test(d) ? 2 : 0));
+      f = Math.min(0.97, ((per - 1) * 2 + half) / 18);
+    } else if (GAME_SECS[lg]) {
+      var P = GAME_SECS[lg], m = /(\d+):(\d+)/.exec(g.clock || ''), left = m ? +m[1] * 60 + +m[2] : P[1] / 2;
+      f = per > P[0] ? 0.97 : Math.min(0.99, ((per - 1) * P[1] + (P[1] - left)) / (P[0] * P[1]));
+    }
+    if (f === null || f < 0) return null;
+    var r = Math.max(0.01, 1 - f), sg = (model.sigma || 13.5) * Math.sqrt(r), mu = lead + pre.margin * r;
+    var p = Phi(mu / sg);
+    return { pHome: p, pAway: 1 - p, margin: mu, left: r };
   }
 
   /* team search for the command line on every Sports page: "lions", "gonzaga", "Michigan State Spartans (NCAAB)" */
@@ -438,5 +459,5 @@
   }
 
   window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
-    standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
+    standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, liveProb: liveProb, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
 })();

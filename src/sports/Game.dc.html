@@ -297,14 +297,18 @@ class Component extends DCLogic {
     var m = S.model, p = m ? SD.project(m, A.id, H.id, g.neutral, g.start) : null, proj = { has: false, note: '' };
     var MA = m && m.teams ? m.teams[A.id] : null, MH = m && m.teams ? m.teams[H.id] : null;
     var enough = function (t) { return t && (t.gp >= (m.minGp || 0) || t.prior !== undefined); };
+    var lp = p && g.state === 'in' ? SD.liveProb(m, lg, g, p) : null;
     if (p && enough(MA) && enough(MH)) {
+      var pre0 = p;
+      if (lp) p = Object.assign({}, p, lp);
       var fav = p.margin >= 0 ? H : A;
       proj = { has: true, aName: A.short || A.abbr, hName: H.short || H.abbr, aP: Math.round(p.pAway * 100) + '%', hP: Math.round(p.pHome * 100) + '%',
         margin: (fav.abbr || '') + ' by ' + Math.abs(p.margin).toFixed(1), marginNote: m.unit + (p.hfa ? ' · includes ' + p.hfa + ' home edge' : ' · neutral site'),
         bar: 'width: ' + (p.pAway * 100).toFixed(1) + '%; background: ' + acolor + '; box-shadow: 0 0 12px ' + acolor + '88',
         vs: 'background: ' + color,
-        note: (pre ? 'Pre-game read from the house ratings (' + (A.abbr || '') + ' ' + MA.rating.toFixed(1) + ', ' + (H.abbr || '') + ' ' + MH.rating.toFixed(1) + ').' :
+        note: lp ? 'Live estimate: the current score plus the pre-game edge (' + ((pre0.margin >= 0 ? H : A).abbr || '') + ' by ' + Math.abs(pre0.margin).toFixed(1) + ') over the ' + Math.round(lp.left * 100) + '% of the game left. Bar: ' + (A.abbr || 'away') + ' share.' : (pre ? 'Pre-game read from the house ratings (' + (A.abbr || '') + ' ' + MA.rating.toFixed(1) + ', ' + (H.abbr || '') + ' ' + MH.rating.toFixed(1) + ').' :
           'What the house ratings say about this matchup today. Ratings update after every game, so for a finished game this includes its result.') + ' Bar: ' + (A.abbr || 'away') + ' share.' };
+      if (lp) proj.marginNote = m.unit + ' · projected final';
     } else proj.note = !m ? 'The house model file has not loaded.' : (!MA || !MH ? 'One of these teams is outside the divisions the house model rates.' : 'Too few games played this season for a fair projection (needs ' + m.minGp + ' each).');
 
     // stats
