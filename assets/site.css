@@ -94,7 +94,7 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 
 /* the two big section buttons */
 .nk-secs{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
-.nk-sec{position:relative;flex:1 1 250px;min-width:0;min-height:178px;display:flex;flex-direction:column;gap:8px;padding:13px 16px 14px;border:1px solid var(--g);background:rgba(0,0,0,.74);color:var(--hi);transition:background .15s,color .15s,box-shadow .2s}
+.nk-sec{position:relative;flex:1 1 250px;min-width:0;min-height:178px;display:flex;flex-direction:column;gap:8px;padding:13px 16px 14px;border:1px solid var(--g);background:rgba(0,0,0,.93);color:var(--hi);transition:background .15s,color .15s,box-shadow .2s}
 .nk-sec::before{content:"";position:absolute;inset:4px;border:1px dashed var(--line);pointer-events:none}
 .nk-sec:hover,.nk-sec:focus-visible{background:var(--g);color:#000;text-shadow:none;box-shadow:0 0 0 1px var(--g),0 0 40px var(--glow);outline:none}
 .nk-sec:hover::before,.nk-sec:focus-visible::before{border-color:rgba(0,0,0,.35)}
@@ -111,7 +111,7 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 .nk-sec-chips span{border:1px solid currentColor;padding:0 6px;font-size:10.5px;letter-spacing:.12em}
 .nk-sec-go{display:flex;align-items:center;justify-content:space-between;font-size:12px;letter-spacing:.16em;border-top:1px solid currentColor;padding-top:8px;opacity:.9}
 
-.nk-dg{position:relative;flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;min-height:66px;padding:12px 16px;border:1px dashed var(--g);background:rgba(0,0,0,.74);color:var(--hi);text-align:left;cursor:pointer;transition:background .15s,color .15s,box-shadow .2s}
+.nk-dg{position:relative;flex:1 1 100%;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;min-height:66px;padding:12px 16px;border:1px dashed var(--g);background:rgba(0,0,0,.93);color:var(--hi);text-align:left;cursor:pointer;transition:background .15s,color .15s,box-shadow .2s}
 .nk-dg:hover,.nk-dg:focus-visible{background:var(--g);color:#000;text-shadow:none;border-style:solid;box-shadow:0 0 40px var(--glow);outline:none}
 .nk-dg:hover .nk-num,.nk-dg:hover .nk-dg-d,.nk-dg:focus-visible .nk-num,.nk-dg:focus-visible .nk-dg-d{color:#000}
 .nk-dg.is-hl{border-style:solid;box-shadow:0 0 0 2px var(--g),0 0 44px var(--glow)}
@@ -235,3 +235,19 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 .nk-tape-win{overflow-x:auto}
 }
 .nk [hidden]{display:none !important}
+
+/* Right Now panel (live markets + next Detroit/MSU games) */
+.nk-now{margin:0;display:grid;grid-template-columns:1fr auto auto;gap:2px 10px;padding:8px 12px 10px;font-size:12.5px;align-items:baseline}
+.nk-now dt{color:var(--dim);letter-spacing:.08em}
+.nk-now dd{margin:0;text-align:right;color:var(--hi);font-variant-numeric:tabular-nums}
+.nk-now dd.nk-chg{min-width:64px}
+.nk-now .nk-dn{opacity:.62}
+.nk-now-h{grid-column:1/-1;margin-top:8px;color:var(--dim);font-size:10.5px;letter-spacing:.16em}
+.nk-now-h:first-child{margin-top:0}
+.nk-now a{grid-column:1/-1;display:flex;justify-content:space-between;gap:10px;padding:4px 0;color:var(--hi);border-bottom:1px dotted var(--line);text-decoration:none}
+.nk-now a:hover{color:#000;background:var(--g)}
+.nk-now a span:last-child{color:var(--dim);white-space:nowrap}
+.nk-now a:hover span:last-child{color:#000}
+.nk-now .nk-live{color:var(--hi);font-weight:600}
+.nk-now-note{grid-column:1/-1;color:var(--dim);font-size:11px;padding-top:4px}
+@media (max-width:760px){.nk-rail .nk-rp-now{order:-1}}

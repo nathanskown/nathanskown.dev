@@ -315,6 +315,12 @@
     });
   };
 
+  /* team logos load from ESPN's image server; if one fails, leave its space blank instead of broken-image alt text */
+  document.addEventListener('error', function (e) {
+    var el = e.target;
+    if (el && el.tagName === 'IMG' && /espncdn\.com/.test(el.src || '')) { el.style.visibility = 'hidden'; el.alt = ''; }
+  }, true);
+
   window.SD = { LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
     standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
 })();

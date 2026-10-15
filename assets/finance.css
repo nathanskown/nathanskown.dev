@@ -87,3 +87,5 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 }
 @media (prefers-reduced-motion:reduce){.t *{animation:none !important;transition:none !important}}
 .t .t-card > h2:first-child{justify-content:flex-start}
+/* phones: give inline ticker and panel links a thumb-sized hit area */
+@media (max-width:760px){.t .t-row a,.t .t-ph a{display:inline-flex;align-items:center;min-height:40px}.t .t-day a{display:inline-flex;align-items:center;min-height:36px}}

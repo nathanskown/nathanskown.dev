@@ -144,3 +144,5 @@ position:relative;min-height:100vh;background:#020607;color:var(--a);font-family
 .s-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center}
 .s-live{color:var(--dn);font-weight:600}
 @media (max-width:760px){.s-hero-logo{width:60px;height:60px}.s-stat .v{font-size:26px}}
+/* phones: team-name links in tables get a thumb-sized hit area */
+@media (max-width:760px){.t .s-team{min-height:40px}}

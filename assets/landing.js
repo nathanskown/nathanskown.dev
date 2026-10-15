@@ -120,15 +120,15 @@
   /* ---------- command line ---------- */
   var FIN = { WEI: 'Market dashboard', TOP: 'Live headlines', DES: 'Stock quote & company page', HDS: '13F ownership tracker', ERN: 'Earnings dashboard', ECO: 'Macro monitor (FRED)', IPO: 'IPO tracker' };
   var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/' };
-  var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages' };
-  var SPRT_URL = { SCOR: '/sports/', GAME: '/sports/game/football/', TEAM: '/sports/team/lions/' };
+  var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages', ODDS: 'Playoff odds', SIM: 'Matchup simulator', INJ: 'Injury report' };
+  var SPRT_URL = { SCOR: '/sports/', GAME: '/sports/game/football/', TEAM: '/sports/team/lions/', ODDS: '/sports/odds/', SIM: '/sports/simulator/', INJ: '/sports/injuries/' };
   var MUS = { TRCK: 'Guess the Track', ARTS: 'Guess the Artist' };
   var MUS_URL = { TRCK: '/music/track/', ARTS: '/music/artist/' };
   function helpLines() {
     var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
     return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('MUS', 'Music games                 4'), r('DGST', 'Morning digest signup        5'), '',
       'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Profile  (WHOAMI)            6'), r('CONTACT', 'Get in touch                 7'), '',
-      'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ·  TRCK  ARTS', '',
+      'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ODDS  SIM  INJ  ·  TRCK  ARTS', '',
       'SYSTEM', r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
   }
   function renderDrawer() {
@@ -345,14 +345,18 @@
       ctx.stroke(); ctx.shadowBlur = 0;
       ctx.font = '10px "IBM Plex Mono", ui-monospace, monospace';
       ctx.fillStyle = 'rgba(' + RGB + ',0.72)';
-      var lab = function (u2, v2, txt, dx, dy) { var p4 = proj(u2, v2, zF); ctx.fillText(txt, p4[0] + dx, p4[1] + dy); };
-      [['80%', -1], ['100%', 0], ['120%', 1]].forEach(function (x) { lab(x[1], -1.12, x[0], -12, 13); });
-      lab(0, -1.4, 'STRIKE / SPOT', -38, 15);
-      [['1M', -1], ['6M', 0], ['2Y', 1]].forEach(function (x) { lab(1.12, x[1], x[0], 6, 4); });
-      lab(1.42, 0, 'TENOR', 6, 18);
+      // keep every label fully inside the frame (narrow screens used to clip them)
+      var put = function (txt, x, y) { var tw2 = ctx.measureText(txt).width; ctx.fillText(txt, Math.max(4, Math.min(x, w - tw2 - 4)), y); };
+      var lab = function (u2, v2, txt, dx, dy) { var p4 = proj(u2, v2, zF); put(txt, p4[0] + dx, p4[1] + dy); };
+      if (w >= 560) {  // axis labels only where there's room for them
+        [['80%', -1], ['100%', 0], ['120%', 1]].forEach(function (x) { lab(x[1], -1.12, x[0], -12, 13); });
+        lab(0, -1.4, 'STRIKE / SPOT', -38, 15);
+        [['1M', -1], ['6M', 0], ['2Y', 1]].forEach(function (x) { lab(1.12, x[1], x[0], 6, 4); });
+        lab(1.42, 0, 'TENOR', 6, 18);
+      }
       var sl = pts[js][NU - 1];
       ctx.fillStyle = 'rgba(' + RGB + ',0.95)';
-      ctx.fillText('T=' + TENORS[js], sl[0] + 8, sl[1] + 3);
+      put('T=' + TENORS[js], sl[0] + 8, sl[1] + 3);
       if (best) {
         var bx = best[0], by = best[1], iv = (16 + (best[3] + 0.2) * 22).toFixed(1);
         var txt = 'MAX IV ' + iv + '%  [SIM]', tw = ctx.measureText(txt).width, left = bx + 20 + tw > w - 8;
@@ -360,7 +364,7 @@
         ctx.strokeRect(bx - 3.5, by - 3.5, 7, 7);
         ctx.beginPath(); ctx.moveTo(bx, by - 5); ctx.lineTo(bx, by - 34); ctx.lineTo(left ? bx - 14 : bx + 14, by - 34); ctx.stroke();
         ctx.fillStyle = 'rgba(' + RGB + ',1)';
-        ctx.fillText(txt, left ? bx - 18 - tw : bx + 18, by - 30);
+        put(txt, left ? bx - 18 - tw : bx + 18, by - 30);
       }
     }
     if (!reduced) requestAnimationFrame(draw);
@@ -375,4 +379,65 @@
   if (!reduced && !seen) runBoot(); else scramble();
   if (location.hash === '#digest') setActive('digest');
   if (location.hash === '#contact') setActive('contact');
+
+  /* ---------- Right Now: live markets + the next Detroit / MSU games ---------- */
+  (function rightNow() {
+    var box = document.getElementById('now');
+    if (!box || !window.fetch) return;
+    var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var v5 = Math.floor(Date.now() / 300000);
+    var j = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
+    var TILES = [['spx', 'S&P 500', 2], ['ixic', 'NASDAQ', 2], ['tnx', 'US 10Y', 2], ['vix', 'VIX', 2]];
+    // Detroit first, then MSU, in the order they matter
+    var TEAMS = [
+      ['Lions', 'football/nfl', '8', 'lions'], ['Tigers', 'baseball/mlb', '6', 'tigers'], ['Pistons', 'basketball/nba', '8', 'pistons'],
+      ['Red Wings', 'hockey/nhl', '5', 'red-wings'], ['MSU Hoops', 'basketball/mens-college-basketball', '127', 'msu-basketball'],
+      ['MSU Football', 'football/college-football', '127', 'msu-football'], ['MSU Hockey', 'hockey/mens-college-hockey', '127', 'msu-hockey']];
+    var mk = '', games = '';
+    function render() { box.innerHTML = mk + games; }
+    function when(iso) {
+      var d = new Date(iso), now = new Date();
+      var day = d.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }).toUpperCase();
+      var same = d.toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) === now.toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+      var t = d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }).replace(':00', '');
+      return (same ? 'TODAY' : day) + ' ' + t;
+    }
+    j('/data/finance/dashboard.json?v=' + v5).then(function (d) {
+      var by = {}; (d.tiles || []).forEach(function (t) { by[t.id] = t; });
+      mk = '<dt class="nk-now-h">MARKETS</dt>' + TILES.map(function (x) {
+        var t = by[x[0]]; if (!t || t.price == null) return '';
+        var up = (t.pct || 0) >= 0;
+        var px = x[0] === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: x[2], maximumFractionDigits: x[2] });
+        return '<dt>' + esc(x[1]) + '</dt><dd>' + px + '</dd><dd class="nk-chg' + (up ? '' : ' nk-dn') + '">' + (up ? '▲ +' : '▼ −') + Math.abs(t.pct || 0).toFixed(2) + '%</dd>';
+      }).join('');
+      var asof = document.getElementById('nowAsOf');
+      if (asof && d.asOf) asof.textContent = 'As of ' + new Date(d.asOf * 1000).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ' CT';
+      render();
+    }).catch(function () { mk = ''; render(); });
+    // next game for each team, then show the soonest few
+    Promise.all(TEAMS.map(function (t) {
+      return j('/api/espn/site/v2/sports/' + t[1] + '/teams/' + t[2] + '/schedule').then(function (s) {
+        var now = Date.now();
+        var next = (s.events || []).map(function (e) {
+          var c = (e.competitions || [])[0] || {}, st = ((c.status || {}).type || {});
+          var cs = c.competitors || [], me = cs.filter(function (x) { return String((x.team || {}).id) === t[2]; })[0] || {}, op = cs.filter(function (x) { return x !== me; })[0] || {};
+          var sc = function (x) { return x.score && typeof x.score === 'object' ? x.score.displayValue : (x.score || ''); };
+          return { t: t, at: Date.parse(e.date), state: st.state, detail: st.shortDetail || '', home: me.homeAway === 'home',
+            opp: ((op.team || {}).abbreviation || (op.team || {}).shortDisplayName || 'TBD'), my: sc(me), their: sc(op) };
+        }).filter(function (g) { return g.state === 'in' || (g.state === 'pre' && g.at > now - 3600000); })
+          .sort(function (a, b) { return (a.state === 'in' ? -1 : 0) - (b.state === 'in' ? -1 : 0) || a.at - b.at; })[0];
+        return next || null;
+      }).catch(function () { return { err: true }; });
+    })).then(function (list) {
+      var week = Date.now() + 8 * 86400000;
+      var failed = list.every(function (g) { return g && g.err; });
+      var up = list.filter(function (g) { return g && !g.err && (g.state === 'in' || g.at < week); })
+        .sort(function (a, b) { return (a.state === 'in' ? -1 : 0) - (b.state === 'in' ? -1 : 0) || a.at - b.at; }).slice(0, 5);
+      games = '<dt class="nk-now-h">NEXT UP · DETROIT + MSU</dt>' + (up.length ? up.map(function (g) {
+        var right = g.state === 'in' ? '<span class="nk-live">LIVE ' + esc(g.my) + '–' + esc(g.their) + ' · ' + esc(g.detail) + '</span>' : esc(when(g.at));
+        return '<a href="/sports/team/' + g.t[3] + '/"><span>' + esc(g.t[0].toUpperCase()) + (g.home ? ' vs ' : ' @ ') + esc(g.opp) + '</span><span>' + right + '</span></a>';
+      }).join('') : '<dd class="nk-now-note">' + (failed ? 'Schedules are unavailable right now.' : 'No Detroit or MSU games in the next week.') + '</dd>');
+      render();
+    });
+  })();
 })();
