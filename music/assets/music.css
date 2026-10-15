@@ -373,3 +373,12 @@ button.big{padding:15px 28px;font-size:15px;letter-spacing:.12em}
 button.ghost{color:var(--dim);border-style:dashed}
 button.ghost:hover:not(:disabled){border-style:solid}
 .custom-card button.big{border-color:var(--g);color:var(--hi);box-shadow:0 0 14px color-mix(in srgb,var(--g) 22%,transparent);font-weight:600}
+
+/* today's leaderboard inside the Daily Challenge card */
+.dc-board{margin-top:16px;padding:12px 14px 6px;border:1px solid var(--line);background:rgba(0,0,0,.55)}
+.db-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 12px;font-size:12px}
+.db-t{color:var(--wh);font-weight:600;letter-spacing:.16em}
+.dc-board table.lb{margin:8px 0 6px}
+.dc-board table.lb td,.dc-board table.lb th{padding:6px 8px}
+.dc-board table.lb tbody tr:first-child td{color:#fff}
+table.lb th.n{text-align:right}

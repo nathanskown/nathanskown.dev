@@ -46,6 +46,7 @@
       <p class="dc-desc">Everyone gets the same 5 artists today, with the same clues, so scores are directly comparable. Post your score to the <a href="/music/leaderboard/">leaderboard</a>.</p>
       <div class="row"><button class="primary big" id="dailyBtn">PLAY TODAY'S CHALLENGE &#9654;</button></div>
       <div class="hint" id="dailyNote"></div>
+      <div class="dc-board" id="dayBoard" aria-live="polite"></div>
     </div>
 
     <div class="custom-card">
@@ -388,6 +389,7 @@
   };
   const ac = MX.Autocomplete($("guessIn"), $("sugg"), suggest, { onEnter: submitGuess });
   $("startBtn").onclick = () => startRound(false);
+  const DAYBOARD = MX.dailyBoard("dayBoard", "artist");
   $("dailyBtn").onclick = () => startRound(true);
   $("guessBtn").onclick = submitGuess;
   $("moreBtn").onclick = () => {
@@ -399,7 +401,7 @@
   };
   $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
   $("nextBtn").onclick = next;
-  $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
+  $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); DAYBOARD.refresh(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
 

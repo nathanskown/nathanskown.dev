@@ -359,6 +359,31 @@
 
   MX.isLive = () => (window.MUSIC_CONFIG || {}).MODE === "live";
 
+  /* ---------- today's daily leaderboard, shown under the Daily Challenge button ---------- */
+  MX.dailyBoard = function (id, game) {
+    const el = MX.$(id);
+    if (!el) return { refresh() {} };
+    let seq = 0;
+    const head = (date) => '<div class="db-head"><span class="db-t">TODAY\'S LEADERBOARD</span>' +
+      '<span class="dim">' + (date ? MX.esc(date) + " · " : "") + '<a href="/music/leaderboard/">full board &rsaquo;</a></span></div>';
+    const refresh = async () => {
+      const mine = ++seq;
+      if (!MX.lb.enabled()) { el.innerHTML = head() + '<p class="hint" style="margin:8px 0 0">The leaderboard isn\'t switched on yet.</p>'; return; }
+      if (!el.innerHTML) el.innerHTML = head() + '<p class="hint" style="margin:8px 0 0">Loading today\'s scores…</p>';
+      try {
+        const j = await MX.lb.board(game, "today");
+        if (mine !== seq) return;
+        el.innerHTML = head(j.date) + MX.lb.table((j.entries || []).slice(0, 10), false, MX.lb.savedName());
+      } catch (e) {
+        if (mine !== seq) return;
+        el.innerHTML = head() + '<p class="hint" style="margin:8px 0 0"><span class="bad">' + MX.esc(MX.lb.message(e.code)) + "</span></p>";
+      }
+    };
+    refresh();
+    setInterval(() => { if (!document.hidden && el.offsetParent) refresh(); }, 120000);
+    return { refresh };
+  };
+
   /* ---------- when the next daily starts (midnight US Central), found by bisecting on Chicago's calendar date ---------- */
   let NEXT_DAILY = null;
   MX.nextDaily = function () {
