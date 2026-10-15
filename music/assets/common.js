@@ -243,7 +243,7 @@
       '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
       '<span class="dim">TRCK &middot; ARTS &middot; LB &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
       '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
-      '<input id="mxCmdIn" type="text" placeholder="TICKER, TEAM OR HELP" spellcheck="false" aria-label="Command line">' +
+      '<input id="mxCmdIn" type="text" placeholder="TICKER OR TEAM" spellcheck="false" aria-label="Command line">' +
       '<button type="submit">GO</button></form>' +
       '<div class="mx-msg" id="mxMsg" role="status" aria-live="polite"></div>' +
       '<nav class="mx-fbar" aria-label="Music"><span class="t">Music</span>' +
