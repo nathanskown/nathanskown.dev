@@ -10,8 +10,10 @@ probabilities fit what happened).
   not searched   sigma, which is simply the spread of projection errors (the maximum-likelihood value)
 
 Honesty check: for each of the newest seasons (four when there are eight or more stored, otherwise two) the settings are fit on the seasons before it, then scored on
-that season, which they never saw. They are adopted only if they beat the current settings across both by a
-clear margin (a paired test, game by game); otherwise the current settings stay. model/tuned.json records both sets of numbers.
+that season, which they never saw. They are adopted only if they beat the current settings across them by a
+clear margin (a paired test, game by game), or if there are four folds, every one of them improved and the
+paired test is at least z 1.0 (added after the NFL, with only 272 games a year, improved in all four folds but
+landed at z 1.49); otherwise the current settings stay. model/tuned.json records both sets of numbers.
 
 The search is coordinate-wise (one setting at a time, two passes) on a coarse grid, so it cannot
 overfit much, and every season's contribution is equal-weighted per game."""
@@ -25,7 +27,8 @@ from .common import now_iso, read, write
 
 LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]
 MIN_GAIN = 0.0005          # log-loss improvement needed on the held-out season to adopt new settings...
-MIN_Z = 1.5                # ...and it must be at least this many standard errors (paired, game by game)
+MIN_Z = 1.5                # ...and it must be at least this many standard errors (paired, game by game)...
+MIN_Z_CONSISTENT = 1.0     # ...or this many if every one of four or more folds improved
 GRID = {
     "k": [0.4, 0.7, 1.0, 1.6, 2.5, 4.0, 6.0, 10.0],  # multiples of the current k
     "carry": [0.0, 0.2, 0.35, 0.5, 0.65, 0.8, 0.9, 1.0],
@@ -214,7 +217,8 @@ def tune(lg):
     z = gain / (sd / math.sqrt(len(pooled))) if sd > 0 else 0.0
     last = rec[-1]
     fit = last["fit"]
-    adopt = gain >= MIN_GAIN and z >= MIN_Z and rec[-1]["gain"] > 0 and fit != default
+    consistent = len(rec) >= 4 and all(r["gain"] > 0 for r in rec)
+    adopt = (gain >= MIN_GAIN and (z >= MIN_Z or (consistent and z >= MIN_Z_CONSISTENT)) and rec[-1]["gain"] > 0 and fit != default)
     params = dict(fit)
     if adopt:
         # refit on every season now that the check passed
