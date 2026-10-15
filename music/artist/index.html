@@ -3,14 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GUESS.ARTIST · nathanskown.dev</title>
-<link rel="stylesheet" href="../assets/music.css">
+<title>Guess the Artist · NSKN Terminal</title>
+<meta name="theme-color" content="#050007">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/music/assets/music.css">
 </head>
 <body>
-<div class="wrap">
-  <div class="crumb"><a href="../../">NATHANSKOWN.DEV</a> / <a href="../">MUSIC</a> / <b>GUESS.ARTIST</b></div>
-  <h1>GUESS.ARTIST</h1>
-  <div class="sub">Name the artist from three of their lesser-known top tracks. Every wrong guess unlocks another clue.</div>
+<div class="mx">
+  <div id="chrome"></div>
+  <main class="wrap">
+  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Artist</span><span class="dim">Name the artist from three of their lesser-known top tracks. Every wrong guess unlocks another clue.</span></div>
 
   <div id="modeBanner" class="mock hidden"></div>
 
@@ -23,7 +27,8 @@
       <button class="primary" id="startBtn">START · 5 ARTISTS</button>
       <button id="dailyBtn">DAILY CHALLENGE</button>
     </div>
-    <div class="sub" style="margin:10px 0 0">Clues: 3 tracks → a 4th → a 5th → genre, era &amp; country → their biggest hit. Points: 5 / 4 / 3 / 2 / 1.</div>
+    <div class="hint">Clues: <b>3 tracks → a 4th → a 5th → genre, era &amp; country → their biggest hit</b>. Points: <b>5 / 4 / 3 / 2 / 1</b>.</div>
+    <div class="hint" id="dailyNote"></div>
   </section>
 
   <!-- GAME -->
@@ -39,6 +44,7 @@
     <ul class="clues" id="clues"></ul>
 
     <div class="guess">
+      <span class="pfx">ARTIST &rsaquo;</span>
       <input type="text" id="guessIn" placeholder="Type an artist name…" autocomplete="off" spellcheck="false">
       <div class="sugg hidden" id="sugg"></div>
     </div>
@@ -83,13 +89,14 @@
   </section>
 
   <section id="credits"></section>
+  </main>
   <footer id="foot"></footer>
 </div>
 
-<script src="../assets/config.js"></script>
-<script src="../assets/common.js"></script>
-<script src="../assets/credits.js"></script>
-<script src="../data/artists.js"></script>
+<script src="/music/assets/config.js"></script>
+<script src="/music/assets/common.js"></script>
+<script src="/music/assets/credits.js"></script>
+<script src="/music/data/artists.js"></script>
 <script>
 (function () {
   "use strict";
@@ -98,6 +105,10 @@
   const LESSER_FROM = DATA.meta.lesserFrom || 3;
   const MAX_POINTS = 5;
   let S = null;
+  const dailyNote = () => {
+    const t = MX.stats.dailyToday("artist");
+    $("dailyNote").textContent = t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it." : "";
+  };
 
   /* an artist is playable if it has at least 3 lesser-known tracks that don't give away the name */
   const leaks = (title, a) => MX.norm(title).includes(MX.normArtist(a.name));
@@ -124,6 +135,8 @@
 
   /* ---------------- setup ---------------- */
   function init() {
+    MX.chrome("chrome", { key: "artist", label: "GUESS THE ARTIST" });
+    dailyNote();
     const note = $("modeBanner");
     if (DATA.meta.mode === "mock") {
       note.innerHTML = "<b>MOCK MODE.</b> These " + ARTISTS.length + " artists and their tracks are placeholder sample data. " +
@@ -268,6 +281,7 @@
     $("shareTxt").textContent = "GUESS.ARTIST " + (S.daily ? MX.todayKey() + " (daily)" : "") + "\n" + grid + "\n" +
       S.score + "/" + (R.length * MAX_POINTS) + "  nathanskown.dev";
     $("copyMsg").textContent = "";
+    MX.stats.record("artist", S.score, R.length * MAX_POINTS, S.daily);
   }
 
   /* ---------------- wiring ---------------- */
@@ -289,7 +303,7 @@
   $("guessBtn").onclick = submitGuess;
   $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
   $("nextBtn").onclick = next;
-  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); };
+  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
   $("peekBtn").onclick = () => { if (S && !S.done) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(cur().artist.name) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });

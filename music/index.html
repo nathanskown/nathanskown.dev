@@ -3,39 +3,70 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MUSIC · nathanskown.dev</title>
-<link rel="stylesheet" href="assets/music.css">
+<title>Music · NSKN Terminal</title>
+<meta name="description" content="Two music guessing games: name the song from a one-second clip, or name the artist from their deep cuts.">
+<meta name="theme-color" content="#050007">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/music/assets/music.css">
 </head>
 <body>
-<div class="wrap">
-  <div class="crumb"><a href="../">NATHANSKOWN.DEV</a> / <b>MUSIC</b></div>
-  <h1>MUSIC</h1>
-  <div class="sub">Two guessing games. Pick one.</div>
+<div class="mx">
+  <div id="chrome"></div>
+  <main class="wrap">
+    <div class="mx-ph"><span>NSKN &raquo; Music</span><span class="dim">Page 1 of 1</span></div>
 
-  <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> Placeholder songs, artists and stand-in audio. Nothing external is called. See assets/config.js.</div>
+    <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> Placeholder songs, artists and stand-in audio. Nothing external is called. See assets/config.js.</div>
 
-  <div class="cards">
-    <a class="card" href="track/">
-      <div class="card-title">GUESS.TRACK</div>
-      <div class="card-sub">Name the song from a 1-second clip. Each wrong guess unlocks more audio.</div>
-      <div class="card-meta">1s → 2s → 4s → 8s · 5 songs a round · daily challenge</div>
-    </a>
-    <a class="card" href="artist/">
-      <div class="card-title">GUESS.ARTIST</div>
-      <div class="card-sub">Name the artist from three of their lesser-known top tracks. Wrong guesses reveal more.</div>
-      <div class="card-meta">3 → 4 → 5 tracks → tags &amp; era → biggest hit · daily challenge</div>
-    </a>
-  </div>
+    <div class="tiles">
+      <a class="tile" href="/music/track/">
+        <span class="tile-top"><span>2)</span><span class="k">TRCK</span><span class="mx-sp"></span><span aria-hidden="true">&rarr;</span></span>
+        <span class="tile-t">GUESS THE<br>TRACK</span>
+        <span class="tile-d">Name the song from a one-second clip. Every wrong guess unlocks more audio.</span>
+        <span class="tile-chips"><span>1s</span><span>2s</span><span>4s</span><span>8s</span></span>
+        <span class="tile-go"><span>ENTER</span><span class="k">GO</span></span>
+      </a>
+      <a class="tile" href="/music/artist/">
+        <span class="tile-top"><span>3)</span><span class="k">ARTS</span><span class="mx-sp"></span><span aria-hidden="true">&rarr;</span></span>
+        <span class="tile-t">GUESS THE<br>ARTIST</span>
+        <span class="tile-d">Three of their lesser-known top tracks. Every wrong guess reveals another clue.</span>
+        <span class="tile-chips"><span>3 TRACKS</span><span>+2</span><span>TAGS &amp; ERA</span><span>BIG HIT</span></span>
+        <span class="tile-go"><span>ENTER</span><span class="k">GO</span></span>
+      </a>
+    </div>
 
-  <section id="credits"></section>
+    <section class="panel">
+      <h2>YOUR BOARD</h2>
+      <table class="board">
+        <thead><tr><th>CODE</th><th>GAME</th><th class="n">ROUNDS</th><th class="n">BEST</th><th class="n">TODAY'S DAILY</th></tr></thead>
+        <tbody>
+          <tr><td><span class="k">TRCK</span></td><td><a href="/music/track/">Guess the Track</a></td><td class="n" id="bTrkP">0</td><td class="n" id="bTrkB">&mdash;</td><td class="n" id="bTrkD">not played</td></tr>
+          <tr><td><span class="k">ARTS</span></td><td><a href="/music/artist/">Guess the Artist</a></td><td class="n" id="bArtP">0</td><td class="n" id="bArtB">&mdash;</td><td class="n" id="bArtD">not played</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">Scores are kept in this browser only. Nothing is sent anywhere.</p>
+    </section>
+
+    <section id="credits"></section>
+  </main>
   <footer id="foot"></footer>
 </div>
 
-<script src="assets/config.js"></script>
-<script src="assets/common.js"></script>
-<script src="assets/credits.js"></script>
+<script src="/music/assets/config.js"></script>
+<script src="/music/assets/common.js"></script>
+<script src="/music/assets/credits.js"></script>
 <script>
+  MX.chrome("chrome", { key: "hub", label: "" });
   if (!MX.isLive()) MX.$("modeBanner").classList.remove("hidden");
+  [["track", "bTrk"], ["artist", "bArt"]].forEach(function (p) {
+    var g = MX.stats.get(p[0]), t = MX.stats.dailyToday(p[0]);
+    if (g) {
+      MX.$(p[1] + "P").textContent = g.plays;
+      MX.$(p[1] + "B").textContent = g.best + " / " + g.bestMax;
+    }
+    if (t) MX.$(p[1] + "D").textContent = t.dailyScore + " / " + t.dailyMax;
+  });
   MX.renderCredits("credits", "hub");
   MX.renderFooter("foot");
 </script>

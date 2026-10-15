@@ -122,6 +122,88 @@
       if (peek) peek.classList.toggle("hidden", !t.checked);
     };
   };
+
+  /* ---------- terminal chrome: title bar, command line, function keys ---------- */
+  const ROUTES = {
+    HOME: "/", MENU: "/", "1": "/", NSKN: "/",
+    MUS: "/music/", MUSIC: "/music/",
+    TRCK: "/music/track/", TRACK: "/music/track/", "2": "/music/track/",
+    ARTS: "/music/artist/", ARTIST: "/music/artist/", "3": "/music/artist/",
+    MKT: "/finance/", MARKET: "/finance/", FIN: "/finance/", FINANCE: "/finance/",
+    SPRT: "/sports/", SPORTS: "/sports/", SPORT: "/sports/",
+    CONTACT: "/#contact", ABOUT: "/"
+  };
+  MX.chrome = function (id, page) {
+    const el = MX.$(id);
+    if (!el) return;
+    const keys = [["/", "1) HOME", ""], ["/music/track/", "2) TRCK", "track"], ["/music/artist/", "3) ARTS", "artist"], ["/music/", "4) MUSIC", "hub"]];
+    el.innerHTML =
+      '<div class="mx-title"><span class="mx-brand">1-NSKN</span>' +
+      '<a class="mx-chip" href="/">Main Menu</a><span class="mx-chip on">MUSIC</span>' +
+      (page.label ? '<span class="mx-chip">' + MX.esc(page.label) + "</span>" : "") +
+      '<span class="mx-sp"></span><span class="mx-live"><span class="mx-dot"></span>LIVE <span id="mxClock" class="dim">CHI</span></span></div>' +
+      '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
+      '<span class="dim">TRCK &middot; ARTS &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
+      '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
+      '<input id="mxCmdIn" type="text" placeholder="TYPE HELP, THEN GO" spellcheck="false" aria-label="Command line">' +
+      '<button type="submit">GO</button></form>' +
+      '<div class="mx-msg" id="mxMsg"></div>' +
+      '<div class="mx-fbar"><span class="t">Music</span>' +
+      keys.map(k => '<a href="' + k[0] + '"' + (k[2] === page.key ? ' class="on"' : "") + ">" + k[1] + "</a>").join("") +
+      '<span class="r">NSKN Terminal</span></div>';
+    const msg = MX.$("mxMsg");
+    MX.$("mxCmd").onsubmit = e => {
+      e.preventDefault();
+      const input = MX.$("mxCmdIn"), c = input.value.trim().toUpperCase().replace(/(\s+|<)GO>?$/, "").trim();
+      input.value = "";
+      if (!c) { msg.textContent = "Type a function, e.g. TRCK or ARTS, then press GO."; return; }
+      if (c === "HELP" || c === "H" || c === "?") {
+        msg.innerHTML = "TRCK guess the track &middot; ARTS guess the artist &middot; MUS music home &middot; HOME site menu &middot; MKT market analysis &middot; SPRT sports &middot; CONTACT";
+        return;
+      }
+      if (ROUTES[c]) { msg.textContent = "Opening " + c + "…"; location.href = ROUTES[c]; return; }
+      msg.innerHTML = '<span class="err">"' + MX.esc(c) + '" IS NOT A RECOGNIZED FUNCTION.</span> TRY HELP &lt;GO&gt;';
+    };
+    const clock = MX.$("mxClock");
+    const tick = () => {
+      try { clock.textContent = "CHI " + new Intl.DateTimeFormat("en-GB", { timeZone: "America/Chicago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()); }
+      catch (e) { clock.textContent = ""; }
+    };
+    tick(); setInterval(tick, 1000);
+  };
+
+  /* ---------- per-viewer best scores (browser storage; works without it) ---------- */
+  const SKEY = "nskn.music.v1";
+  const sread = () => { try { return JSON.parse(localStorage.getItem(SKEY)) || {}; } catch (e) { return {}; } };
+  MX.stats = {
+    get: game => sread()[game] || null,
+    record: (game, score, max, daily) => {
+      try {
+        const all = sread(), g = all[game] || { plays: 0 };
+        g.plays++;
+        if (!g.best || score / max > g.best / g.bestMax) { g.best = score; g.bestMax = max; }
+        if (daily) { g.dailyKey = MX.todayKey(); g.dailyScore = score; g.dailyMax = max; }
+        all[game] = g;
+        localStorage.setItem(SKEY, JSON.stringify(all));
+      } catch (e) { /* storage blocked: nothing to save */ }
+    },
+    dailyToday: game => { const g = MX.stats.get(game); return g && g.dailyKey === MX.todayKey() ? g : null; }
+  };
+
+  /* ---------- little equalizer that dances while a clip plays ---------- */
+  MX.eq = function (id) {
+    const el = MX.$(id);
+    if (!el) return { on() {}, off() {} };
+    el.className = "eq"; el.innerHTML = "";
+    for (let i = 0; i < 28; i++) {
+      const b = document.createElement("i");
+      b.style.setProperty("--h", (8 + Math.round(Math.abs(Math.sin(i * 1.7)) * 24)) + "px");
+      b.style.setProperty("--d", ((i * 73) % 600) / 1000 + "s");
+      el.appendChild(b);
+    }
+    return { on: () => el.classList.add("on"), off: () => el.classList.remove("on") };
+  };
+
   MX.isLive = () => (window.MUSIC_CONFIG || {}).MODE === "live";
 
   window.MX = MX;

@@ -3,14 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GUESS.TRACK · nathanskown.dev</title>
-<link rel="stylesheet" href="../assets/music.css">
+<title>Guess the Track · NSKN Terminal</title>
+<meta name="theme-color" content="#050007">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/music/assets/music.css">
 </head>
 <body>
-<div class="wrap">
-  <div class="crumb"><a href="../../">NATHANSKOWN.DEV</a> / <a href="../">MUSIC</a> / <b>GUESS.TRACK</b></div>
-  <h1>GUESS.TRACK</h1>
-  <div class="sub">Name that tune from the shortest clip you can. Fewer reveals, more points.</div>
+<div class="mx">
+  <div id="chrome"></div>
+  <main class="wrap">
+  <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Guess the Track</span><span class="dim">Name that tune from the shortest clip you can. Fewer reveals, more points.</span></div>
 
   <div id="modeBanner" class="mock hidden"><b>MOCK MODE.</b> The song list is placeholder data and the audio is a synthesized stand-in melody, so you can test the whole flow without any live source. Switch to live in assets/config.js.</div>
 
@@ -23,7 +27,8 @@
       <button class="primary" id="startBtn">START · 5 SONGS</button>
       <button id="dailyBtn">DAILY CHALLENGE</button>
     </div>
-    <div class="sub" style="margin:10px 0 0">Clips unlock in steps: 1s → 2s → 4s → 8s. Points: 5 / 3 / 2 / 1.</div>
+    <div class="hint">Clips unlock in steps: <b>1s → 2s → 4s → 8s</b>. Points: <b>5 / 3 / 2 / 1</b>.</div>
+    <div class="hint" id="dailyNote"></div>
     <div id="setupMsg" class="msg"></div>
   </section>
 
@@ -50,6 +55,7 @@
           <div class="head" id="head"></div>
         </div>
         <div class="labels" id="labels"></div>
+        <div id="eq" aria-hidden="true"></div>
         <div class="credit">
           <span id="inlineCredit"></span>
           <span class="badge" id="inlineBadge"></span>
@@ -58,6 +64,7 @@
     </div>
 
     <div class="guess">
+      <span class="pfx">TITLE &rsaquo;</span>
       <input type="text" id="guessIn" placeholder="Type a song title…" autocomplete="off" spellcheck="false">
       <div class="sugg hidden" id="sugg"></div>
     </div>
@@ -99,28 +106,36 @@
   </section>
 
   <section id="credits"></section>
+  </main>
   <footer id="foot"></footer>
 </div>
 
-<script src="../assets/config.js"></script>
-<script src="../assets/common.js"></script>
-<script src="../assets/credits.js"></script>
-<script src="../data/tracks.js"></script>
-<script src="../data/tracks-generated.js"></script>
-<script src="../assets/sources.js"></script>
+<script src="/music/assets/config.js"></script>
+<script src="/music/assets/common.js"></script>
+<script src="/music/assets/credits.js"></script>
+<script src="/music/data/tracks.js"></script>
+<script src="/music/data/tracks-generated.js"></script>
+<script src="/music/assets/sources.js"></script>
 <script>
 (function () {
   "use strict";
   const $ = MX.$, CFG = window.MUSIC_CONFIG, ROUND = CFG.ROUND_SIZE || 5;
   const CLIPS = [1, 2, 4, 8], POINTS = [5, 3, 2, 1];
   const src = MX.trackSource(), PROV = MX.trackProvider;
-  let POOL = [], S = null;
+  let POOL = [], S = null, EQ = { on() {}, off() {} };
+  const dailyNote = () => {
+    const t = MX.stats.dailyToday("track");
+    $("dailyNote").textContent = t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it." : "";
+  };
 
   const decadeOf = s => (s.year ? Math.floor(s.year / 10) * 10 : (s.era || null));
   const yearLabel = s => (s.year ? String(s.year) : (s.era ? s.era + "s" : ""));
 
   /* ---------------- setup ---------------- */
   async function init() {
+    MX.chrome("chrome", { key: "track", label: "GUESS THE TRACK" });
+    EQ = MX.eq("eq");
+    dailyNote();
     if (!MX.isLive()) $("modeBanner").classList.remove("hidden");
     MX.renderCredits("credits", "track");
     MX.renderFooter("foot");
@@ -169,7 +184,7 @@
 
   async function nextSong() {
     const sess = S;
-    src.stop();
+    src.stop(); EQ.off();
     sess.stage = 0; sess.done = true;           // locked while loading
     $("reveal").classList.add("hidden");
     $("guessIn").value = "";
@@ -239,10 +254,10 @@
   function playClip() {
     if (S.done) return;
     const sess = S, secs = CLIPS[S.stage], total = CLIPS[CLIPS.length - 1];
-    $("playBtn").textContent = "■ PLAYING…";
+    $("playBtn").textContent = "■ PLAYING…"; EQ.on();
     src.play(S.cur, secs,
       e => { if (sess === S) $("head").style.width = (e / total * 100) + "%"; },
-      () => { if (sess === S) $("playBtn").textContent = "▶ REPLAY CLIP"; },
+      () => { if (sess === S) { $("playBtn").textContent = "▶ REPLAY CLIP"; EQ.off(); } },
       () => {                                   // clip wouldn't load: swap in another song
         if (sess !== S || sess.done) return;
         $("msg").innerHTML = '<span class="bad">That clip wouldn\'t load.</span> Switching songs…';
@@ -266,7 +281,7 @@
   }
 
   function finishSong(got) {
-    src.stop();
+    src.stop(); EQ.off();
     const s = S.cur, pts = got ? POINTS[S.stage] : 0;
     S.score += pts; S.done = true;
     S.results.push({ song: s, got, pts, stage: S.stage });
@@ -287,7 +302,7 @@
 
   /* ---------------- summary ---------------- */
   function showSummary() {
-    src.stop();
+    src.stop(); EQ.off();
     $("game").classList.add("hidden");
     $("summary").classList.remove("hidden");
     const R = S.results, hits = R.filter(r => r.got);
@@ -303,6 +318,7 @@
     $("shareTxt").textContent = "GUESS.TRACK " + (S.daily ? MX.todayKey() + " (daily)" : "") + "\n" + grid + "\n" +
       S.score + "/" + (R.length * POINTS[0]) + "  nathanskown.dev";
     $("copyMsg").textContent = "";
+    MX.stats.record("track", S.score, R.length * POINTS[0], S.daily);
   }
 
   /* ---------------- wiring ---------------- */
@@ -313,7 +329,7 @@
   $("guessBtn").onclick = submitGuess;
   $("skipBtn").onclick = () => { if (S && !S.done) finishSong(false); };
   $("nextBtn").onclick = next;
-  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); };
+  $("againBtn").onclick = () => { $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));
   $("peekBtn").onclick = () => { if (S && S.cur) $("msg").innerHTML = '<span class="ok">[DEV] Answer: ' + MX.esc(S.cur.title) + "</span>"; };
   $("rLink").addEventListener("click", e => { if ($("rLink").getAttribute("href") === "#") e.preventDefault(); });
