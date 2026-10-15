@@ -17,7 +17,8 @@ from .leagues import LEAGUES, path
 from .model import _event
 
 HISTORY = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah"]
-SEASONS = 5                                  # how many completed seasons to keep
+SEASONS = {"nfl": 12}                       # completed seasons to keep per league (default 5); the NFL plays
+DEFAULT_SEASONS = 5                          # only 272 games a year, so it needs more years to tell settings apart
 WEEKS = {"nfl": range(1, 19), "ncaaf": range(0, 16)}
 # regular-season window by league as (month, day) in the starting and ending calendar year
 WINDOW = {"nhl": ((10, 1), (4, 30)), "nba": ((10, 15), (4, 15)), "ncaab": ((11, 1), (3, 12)), "ncaah": ((10, 1), (3, 25))}
@@ -102,7 +103,7 @@ def job_history():
     for lg in only:
         cur = season_info(lg)["year"]
         got = {}
-        for year in range(cur - SEASONS, cur):
+        for year in range(cur - SEASONS.get(lg, DEFAULT_SEASONS), cur):
             have = read(f"history/{lg}_{year}.json")
             if have and have.get("complete"):
                 got[year] = len(have["g"])
