@@ -35,7 +35,7 @@ SAME_YEAR = {"mlb"}                          # MLB's season sits inside one cale
 RANGE_DAYS = {"nhl": 7, "nba": 7, "ncaah": 7, "ncaab": 1, "mlb": 5}      # days per request (ncaab has too many games per week)
 # a season we could read almost nothing from is a failed fetch, not an empty season; floors allow for the
 # short seasons (2012-13 lockouts, 2020-21 pandemic schedules)
-FLOOR = {"nfl": 240, "ncaaf": 500, "nhl": 650, "nba": 900, "ncaab": 3000, "ncaah": 650, "mlb": 850}
+FLOOR = {"nfl": 240, "ncaaf": 500, "nhl": 650, "nba": 900, "ncaab": 3000, "ncaah": 500, "mlb": 850}
 
 
 def _spread(e):
@@ -67,7 +67,10 @@ def _spread(e):
 
 
 def _row(e):
-    r = _event(e)
+    try:
+        r = _event(e)
+    except (KeyError, IndexError, TypeError):      # old seasons carry a few placeholder events with no matchup
+        return None
     if not r or r["t"] != 2 or r["off"] or not r["done"] or r["hs"] is None or r["as"] is None:
         return None
     return [r["d"], r["h"], r["a"], r["hs"], r["as"], int(r["n"]), r["wk"], _spread(e)]
@@ -151,7 +154,12 @@ def job_history():
             if have and have.get("complete") and (have.get("v", 1) >= VERSION or have.get("source", "").startswith("nflverse")):
                 got[year] = len(have["g"])
                 continue
-            n, ok = fetch_season(lg, year)
+            try:
+                n, ok = fetch_season(lg, year)
+            except Exception as e:                    # one bad season must not stop the others
+                print(f"{lg} {year}: failed ({str(e)[:120]})", flush=True)
+                got[year] = "error"
+                continue
             print(f"{lg} {year}: {n} games{'' if ok else '  (INCOMPLETE)'}", flush=True)
             got[year] = n if ok else f"{n}!"
         out[lg] = got
