@@ -5,7 +5,7 @@ name: Check live site
 on:
   push:
     branches: [main]
-    paths: ["worker/**", "wrangler.jsonc", ".assetsignore", ".github/workflows/smoke-api.yml"]
+    paths: ["worker/**", "wrangler.jsonc", ".assetsignore", "assets/sports-data.js", "tools/verify-espn-trim.mjs", ".github/workflows/smoke-api.yml"]
   workflow_dispatch:
 
 jobs:
