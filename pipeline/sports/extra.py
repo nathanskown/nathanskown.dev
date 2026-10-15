@@ -268,3 +268,71 @@ def job_mlb_current():
     if si["type"] not in (2, 3):
         return "offseason: nothing to refresh"
     return {si["year"]: mlb_season(si["year"])}
+
+
+# ---------------------------------------------------------------- NHL expected goals -> per-game margin
+_XG = None
+
+
+def job_nhl_current():
+    """Daily: refresh MoneyPuck expected goals while the NHL regular season is on (one file download)."""
+    global _XG
+    from .espn import season_info
+    if season_info("nhl")["type"] != 2:
+        return "not regular season: nothing to refresh"
+    out = nhl_xg()
+    _XG = None
+    return {"latest season games": list(out.items())[-1]}
+
+
+def _xg_file():
+    global _XG
+    if _XG is None:
+        _XG = read("history/xg_nhl.json") or {}
+    return _XG
+
+
+def nhl_team_map():
+    """MoneyPuck team code -> ESPN team id, learned by matching games on date and final score (votes)."""
+    import collections
+    from . import history
+    x = _xg_file().get("seasons") or {}
+    votes = collections.defaultdict(collections.Counter)
+    hist = history.load("nhl")
+    for season, rows in x.items():
+        esp = {}
+        for g in hist.get(int(season) + 1, []):
+            for dd in (0, -1):
+                d = (date.fromisoformat(g["d"][:10]) + timedelta(days=dd)).isoformat()
+                esp.setdefault((d, g["hs"], g["as"]), []).append(g)
+        for r in rows:
+            if r[5] is None or r[6] is None:
+                continue
+            for g in esp.get((r[0], int(r[5]), int(r[6])), []):
+                votes[r[1]][g["h"]] += 1
+                votes[r[2]][g["a"]] += 1
+    return {k: v.most_common(1)[0][0] for k, v in votes.items() if v}
+
+
+def nhl_xg_lookup(espn_year, adjusted=False):
+    """{(date, home espn id, away espn id): home xG minus away xG} for an ESPN NHL season year (2026 = 2025-26).
+    Keyed by MoneyPuck's local game date and also the next day (ESPN dates are UTC)."""
+    x = _xg_file().get("seasons") or {}
+    rows = x.get(str(espn_year - 1))
+    if not rows:
+        return {}
+    from . import model as M
+    tm = nhl_team_map()
+    out = {}
+    for r in rows:
+        h, a = tm.get(r[1]), tm.get(r[2])
+        if not (h and a):
+            continue
+        h, a = M.alias("nhl", h), M.alias("nhl", a)       # Arizona -> Utah, as the model rates them
+        hx, ax = (r[7], r[8]) if adjusted and r[7] is not None else (r[3], r[4])
+        if hx is None or ax is None:
+            continue
+        v = hx - ax
+        out[(r[0], h, a)] = v
+        out.setdefault(((date.fromisoformat(r[0]) + timedelta(days=1)).isoformat(), h, a), v)
+    return out

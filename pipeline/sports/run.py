@@ -15,7 +15,7 @@ JOBS = {
     "live": [("standings", espn.job_standings), ("injuries", espn.job_injuries), ("model", model.job_model),
              ("track", track.job_track)],
     "daily": [("standings", espn.job_standings), ("teams", espn.teams_index), ("leaders", espn.job_leaders),
-              ("injuries", espn.job_injuries), ("mlb_sp", extra.job_mlb_current), ("model", model.job_model), ("track", track.job_track),
+              ("injuries", espn.job_injuries), ("mlb_sp", extra.job_mlb_current), ("nhl_xg", extra.job_nhl_current), ("model", model.job_model), ("track", track.job_track),
               ("backtest", track.job_backtest), ("odds", odds.job_odds)],
     # one-off, started by hand from the "Sports history and tuning" workflow
     "history": [("history", history.job_history)],

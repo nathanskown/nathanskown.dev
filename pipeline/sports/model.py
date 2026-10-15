@@ -52,6 +52,10 @@ PARAMS = {
 CACHE_VERSION = 3          # bump to force a full rescan after a scan fix
 POOL = "_other"            # opponents outside the covered division (FCS, non-D-I) share one rating
 PRO_ONLY = {"nfl", "nba", "nhl", "mlb"}   # games against non-members (all-star teams, 4 Nations) are dropped
+# Rest: days since a team's previous game this season, capped where more rest stops mattering. A league's
+# fitted settings give the edge per day (P["rest"]); 0 or missing means rest is ignored.
+REST_CAP = {"nfl": 14, "ncaaf": 14, "nba": 3, "nhl": 3, "mlb": 2, "ncaab": 4, "ncaah": 3}
+REST_AHEAD = 10                             # days of upcoming schedule written to the model file for rest
 ALIAS = {"nhl": {"24": "129764"}}           # Arizona Coyotes -> Utah: the same roster moved in 2024
 RNG = np.random.default_rng()
 
@@ -73,6 +77,50 @@ def get_params(lg):
         P["sigma"] = t["sigma"]
         P["sigmaMargin"] = t.get("sigmaMargin", t["sigma"])
     return P
+
+
+def _day(d):
+    return datetime.fromisoformat(d[:10] + "T00:00:00+00:00").toordinal()
+
+
+def annotate_rest(lg, games, P):
+    """Set g["restEdge"] = rest edge per day x (home rest - away rest) on every game dict, in date order.
+    A team's first game counts as fully rested. Uses UTC calendar dates, as the tuner does."""
+    per = P.get("rest") or 0.0
+    cap = REST_CAP.get(lg, 7)
+    last = {}
+    for g in sorted(games, key=lambda g: g["d"]):
+        o = _day(g["d"])
+        rh = min(cap, o - last[g["h"]]) if g["h"] in last else cap
+        ra = min(cap, o - last[g["a"]]) if g["a"] in last else cap
+        g["restEdge"] = per * (rh - ra)
+        last[g["h"]] = last[g["a"]] = o
+    return games
+
+
+def annotate_xg(lg, year, games, P):
+    """NHL: set g["xgm"] = home minus away expected goals (MoneyPuck) where the game is matched."""
+    if lg != "nhl" or not P.get("xg"):
+        return games
+    from . import extra
+    try:
+        lk = extra.nhl_xg_lookup(year)
+    except Exception as e:
+        print("NHL xG lookup failed:", str(e)[:120])
+        return games
+    for g in games:
+        v = lk.get((g["d"][:10], g["h"], g["a"]))
+        if v is not None:
+            g["xgm"] = v
+    return games
+
+
+def target(g, P):
+    """Rating input for a finished game: the real margin, blended with the expected-goals margin when tuned to."""
+    m = g["hs"] - g["as"]
+    if P.get("xg") and g.get("xgm") is not None:
+        m = (1 - P["xg"]) * m + P["xg"] * g["xgm"]
+    return m
 
 
 def recency(P, dates, now=None):
@@ -105,7 +153,12 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
         if lg in PRO_ONLY and (h not in members or a not in members):
             continue
         games.append(dict(g, h=h, a=a))
-    rows = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in games]
+    annotate_rest(lg, games, P)
+    annotate_xg(lg, year - 1, games, P)
+    if lg == "mlb" and P.get("sp"):
+        from . import extra
+        extra.annotate_sp(year - 1, games, P["sp"])
+    rows = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in games]
     rows = [r for r in rows if r[0] != r[1]]
     if not rows:
         return {}
@@ -251,6 +304,39 @@ def games(lg, si):
     return cache["events"], source
 
 
+def team_dates(lg, si, events, members):
+    """{team: sorted UTC dates of its regular-season games from 14 days ago to REST_AHEAD days ahead}, horizon.
+    Week leagues already hold the whole schedule in the cache; day leagues read the next days' scoreboards."""
+    now = datetime.now(timezone.utc)
+    lo, hi = (now - timedelta(days=14)).date().isoformat(), (now + timedelta(days=REST_AHEAD)).date().isoformat()
+    seen = {}
+    for g in events.values():
+        if not g.get("off") and lo <= g["d"][:10] <= hi:
+            seen[(g["d"][:16], alias(lg, g["h"]), alias(lg, g["a"]))] = 1
+    if not (si.get("calendarType") == "list" or (si.get("calendar") and isinstance(si["calendar"][0], dict))):
+        L = LEAGUES[lg]
+        base = {"limit": "300"}
+        if L.get("groups"):
+            base["groups"] = L["groups"]
+        for i in range(0, REST_AHEAD + 1):
+            day = (now + timedelta(days=i)).strftime("%Y%m%d")
+            try:
+                d = get(ESPN + path(lg) + "/scoreboard", dict(base, dates=day))
+            except Exception as e:
+                print("rest: scoreboard", lg, day, "failed:", str(e)[:80])
+                continue
+            for e in d.get("events", []):
+                r = _event(e)
+                if r and r["t"] == 2 and not r["off"]:
+                    seen[(r["d"][:16], alias(lg, r["h"]), alias(lg, r["a"]))] = 1
+    out = {}
+    for d, h, a in seen:
+        for t in (h, a):
+            if t in members:
+                out.setdefault(t, set()).add(d[:10])
+    return {t: sorted(v) for t, v in out.items()}, hi
+
+
 # ---------------------------------------------------------------- ratings
 def ridge(results, members, hfa_fn, k, prior=None, cap=None, soft=None, weights=None):
     """results: list of (home, away, home_margin, neutral, game). Returns ({team: rating}, {team: weight of
@@ -267,7 +353,7 @@ def ridge(results, members, hfa_fn, k, prior=None, cap=None, soft=None, weights=
         elif cap:
             m = max(-cap, min(cap, m))
         w = weights[gi] if weights is not None else 1.0
-        y = m - (0.0 if neutral else hfa_fn(g))
+        y = m - (0.0 if neutral else hfa_fn(g)) - g.get("restEdge", 0.0) - g.get("spEdge", 0.0)
         i, j = ix[h], ix[a]
         A[i, i] += w; A[j, j] += w; A[i, j] -= w; A[j, i] -= w
         b[i] += w * y; b[j] -= w * y
@@ -356,8 +442,13 @@ def build(lg):
                   if g["done"] and g["hs"] is not None and g["as"] is not None]
         if lg in PRO_ONLY:
             played = [g for g in played if g["h"] in members and g["a"] in members]
+        annotate_rest(lg, played, P)
+        if lg == "mlb" and P.get("sp"):
+            from . import extra
+            extra.annotate_sp(si["year"], played, P["sp"])       # starting-pitcher edge comes out of the results
         group, hfa_fn, norm_id = context(lg, smap, members)
-        results = [(norm_id(g["h"]), norm_id(g["a"]), g["hs"] - g["as"], g["n"], g) for g in played]
+        annotate_xg(lg, si["year"], played, P)
+        results = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in played]
         results = [r for r in results if r[0] != r[1]]
         prior = season_prior(lg, si["year"], P, members, hfa_fn, norm_id)
         if prior:
@@ -373,7 +464,8 @@ def build(lg):
         RNG = np.random.default_rng(zlib.crc32(json.dumps([sorted((r[0], r[1], r[2]) for r in results),
                                                               sorted((t, v.get("gp"), v.get("pts")) for t, v in smap.items())]).encode()))
         gp = collections.Counter(); margin = collections.Counter(); opp = collections.defaultdict(list)
-        for h, a, m, n, g in results:
+        for h, a, _, n, g in results:
+            m = g["hs"] - g["as"]                          # per-game margin shown on pages stays the real score
             for t, o, mm in ((h, a, m), (a, h, -m)):
                 gp[t] += 1; margin[t] += mm; opp[t].append(o)
         for t in members:
@@ -387,7 +479,25 @@ def build(lg):
                 row["prior"] = round(prior[t], 2)
             res["teams"][t] = row
         res["games"] = len(results)
+        if P.get("rest"):
+            # each team's game dates from two weeks back to REST_AHEAD days ahead, so pages can work out rest
+            res["rest"], res["restCap"] = P["rest"], REST_CAP.get(lg, 7)
+            dates, horizon = team_dates(lg, si, events, members)
+            res["restUntil"] = horizon
+            for t, ds in dates.items():
+                if t in res["teams"]:
+                    res["teams"][t]["dates"] = ds
+        if lg == "mlb" and P.get("sp"):
+            from . import extra
+            try:
+                res["sp"] = P["sp"]
+                res["spEdges"] = extra.upcoming_sp(si["year"], P["sp"])     # announced starters, next 7 days
+            except Exception as e:
+                print("MLB starters failed:", str(e)[:120])
         res["pv"] = bool(P.get("pv"))
+        if lg == "nhl" and P.get("xg"):
+            res["xg"] = P["xg"]
+            res["xgGames"] = sum(1 for r in results if r[4].get("xgm") is not None)
         if P.get("hl"):
             res["hl"] = P["hl"]
         if P.get("soft"):
@@ -396,6 +506,9 @@ def build(lg):
                         + (f", margins capped at {P['cap']}" if P.get("cap") else "")
                         + (f", blowouts damped (soft limit {P['soft']})" if P.get("soft") else "")
                         + (f", recent games weighted more (half-life {P['hl']} weeks)" if P.get("hl") else "")
+                        + (f", rest days counted ({P['rest']:g} per day of rest advantage)" if P.get("rest") else "")
+                        + (", starting pitchers counted (MLB Stats API)" if lg == "mlb" and P.get("sp") else "")
+                        + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
                         + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))
         res["tuned"] = bool(P.get("tuned"))
@@ -444,6 +557,12 @@ def nfl_odds(res, events, smap, N=10000):
         return walks.get(wk, true) if wk is not None else true
     wins = np.zeros((N, 32)); divw = np.zeros((N, 32)); pdiff = np.zeros((N, 32))
     hfa = lambda h, a: DIVH if div[h] == div[a] else HFA
+    if res.get("rest"):
+        sched = [dict(g) for g in events.values() if g.get("t") == 2 and not g["off"]]
+        annotate_rest("nfl", sched, {"rest": res["rest"]})
+        redge = {(g["d"], g["h"], g["a"]): g["restEdge"] for g in sched}
+    else:
+        redge = {}
     played = rem = 0
     for g in events.values():
         if g.get("t") != 2 or g["off"] or g["h"] not in ix or g["a"] not in ix:
@@ -460,7 +579,8 @@ def nfl_odds(res, events, smap, N=10000):
         else:
             rem += 1
             tr = strength(g.get("wk"))
-            m = tr[:, h] - tr[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + RNG.normal(0, SIG, N)
+            m = (tr[:, h] - tr[:, a] + (0 if g["n"] else hfa(g["h"], g["a"])) + redge.get((g["d"], g["h"], g["a"]), 0.0)
+                 + RNG.normal(0, SIG, N))
             hw = m > 0
             wins[:, h] += hw; wins[:, a] += ~hw; pdiff[:, h] += m; pdiff[:, a] -= m
             if same:

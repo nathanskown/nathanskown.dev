@@ -33,7 +33,21 @@ def _enough(model, t):
     return t is not None and (t.get("gp", 0) >= model.get("minGp", 0) or t.get("prior") is not None)
 
 
-def project(model, h, a, neutral):
+def rest_edge(model, H, A, start):
+    """Rest edge for a game starting at `start` (ISO), from each team's game dates in the model file.
+    Zero when the league has no rest setting, no start is given, or the game is beyond the dates written."""
+    if not model.get("rest") or not start or start[:10] > model.get("restUntil", ""):
+        return 0.0
+    cap = model.get("restCap", 7)
+    day = M._day(start)
+
+    def rest(T):
+        prev = [d for d in (T.get("dates") or []) if d < start[:10]]
+        return min(cap, day - M._day(prev[-1])) if prev else cap
+    return model["rest"] * (rest(H) - rest(A))
+
+
+def project(model, h, a, neutral, start=None):
     """(home margin, P(home win)) from a model file, or None if either team is too thin."""
     T = model.get("teams") or {}
     H, A = T.get(h), T.get(a)
@@ -42,7 +56,9 @@ def project(model, h, a, neutral):
     hfa = 0.0 if neutral else model.get("hfa", 0.0)
     if not neutral and model.get("divHfa") is not None and H.get("group") and H.get("group") == A.get("group"):
         hfa = model["divHfa"]
-    m = H["rating"] - A["rating"] + hfa
+    m = H["rating"] - A["rating"] + hfa + rest_edge(model, H, A, start)
+    if model.get("spEdges") and start:
+        m += model["spEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)
     return m, M.phi(m / spread(model, H, A))
 
 
@@ -112,7 +128,7 @@ def update_picks(lg, now=None):
             continue                                      # already graded
         start = _parse(g["d"])
         if not g["done"] and start > now:                 # not started: save or refresh
-            pr = project(model, g["h"], g["a"], g["n"])
+            pr = project(model, g["h"], g["a"], g["n"], g["d"])
             if pr is None:
                 picks.pop(eid, None)
                 continue
@@ -181,6 +197,11 @@ def backtest(lg):
         return {"n": 0, "games": len(ev)}
     smap = M._standings_map(lg)
     members = set(M._members(lg))
+    ev = [dict(g, h=M.alias(lg, g["h"]), a=M.alias(lg, g["a"])) for g in ev]
+    if lg in M.PRO_ONLY:
+        ev = [g for g in ev if g["h"] in members and g["a"] in members]
+    M.annotate_rest(lg, ev, P)
+    M.annotate_xg(lg, cache["season"], ev, P)
     group, hfa_fn, norm = M.context(lg, smap, members)
     prior = M.season_prior(lg, cache["season"], P, members, hfa_fn, norm)
     if not prior and lg == "nba":
@@ -198,10 +219,7 @@ def backtest(lg):
         train = [g for g in ev if g["d"] < t0]
         if len(train) < 10:
             continue
-        train = [dict(g, h=M.alias(lg, g["h"]), a=M.alias(lg, g["a"])) for g in train]
-        if lg in M.PRO_ONLY:
-            train = [g for g in train if g["h"] in members and g["a"] in members]
-        results = [(norm(g["h"]), norm(g["a"]), g["hs"] - g["as"], g["n"], g) for g in train]
+        results = [(norm(g["h"]), norm(g["a"]), M.target(g, P), g["n"], g) for g in train]
         results = [r for r in results if r[0] != r[1]]
         gp = {}
         for h, a, *_ in results:
@@ -216,7 +234,7 @@ def backtest(lg):
             ok = lambda t: gp.get(t, 0) >= P["minGp"] or t in prior
             if not (ok(h) and ok(a)):
                 continue
-            m = R[h] - R[a] + (0.0 if g["n"] else hfa_fn(dict(g, h=h, a=a)))
+            m = R[h] - R[a] + (0.0 if g["n"] else hfa_fn(dict(g, h=h, a=a))) + g.get("restEdge", 0.0)
             sg = P["sigma"] * (math.sqrt(1 + 1 / eff[h] + 1 / eff[a]) if P.get("pv") else 1.0)
             p = M.phi(m / sg)
             rows.append({"p": p, "res": _result(g["hs"], g["as"]), "err": (g["hs"] - g["as"]) - m, "d": g["d"]})

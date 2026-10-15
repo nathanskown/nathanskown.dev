@@ -288,7 +288,7 @@ class Component extends DCLogic {
       } else {
         b.events.forEach(function (e) {
           var pre = e.state === 'pre', fol = followed[lg + ':' + e.away.id] || followed[lg + ':' + e.home.id];
-          var p = pre && model ? SD.project(model, e.away.id, e.home.id, e.neutral) : null;
+          var p = pre && model ? SD.project(model, e.away.id, e.home.id, e.neutral, e.start) : null;
           var MA = model && model.teams ? model.teams[e.away.id] : null, MH = model && model.teams ? model.teams[e.home.id] : null;
           var en = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
           var house = p && en(MA) && en(MH) ? 'House: ' + (p.pHome >= 0.5 ? e.home.abbr + ' ' + Math.round(p.pHome * 100) : e.away.abbr + ' ' + Math.round(p.pAway * 100)) + '% to win' : '';

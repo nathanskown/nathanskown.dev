@@ -326,7 +326,7 @@ class Component extends DCLogic {
     var results = S.showAllRes ? resultsAll : resultsAll.slice(0, 8);
     var upAll = up.map(function (g) {
       var r = gameRow(g), o = r.o;
-      var p = model ? SD.project(model, g.home ? o.id : id, g.home ? id : o.id, g.neutral) : null;
+      var p = model ? SD.project(model, g.home ? o.id : id, g.home ? id : o.id, g.neutral, g.start) : null;
       var mo = model && model.teams ? model.teams[o.id] : null;
       var useP = p && enough(mt) && enough(mo);
       r.prob = useP ? Math.round((g.home ? p.pHome : p.pAway) * 100) + '%' : '';
@@ -344,7 +344,7 @@ class Component extends DCLogic {
       next.title = nx.state === 'in' ? 'LIVE NOW' : 'NEXT UP';
       next.line = (nx.home || nx.neutral ? 'vs ' : 'at ') + (o2.name || 'TBD');
       next.sub = nx.state === 'in' ? (nx.score + ' · ' + nx.detail) : [new Date(nx.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }), F.time(nx.start) + ' ' + window.TZL, nx.tv].filter(Boolean).join(' · ');
-      var pp = model ? SD.project(model, nx.home ? o2.id : id, nx.home ? id : o2.id, nx.neutral) : null;
+      var pp = model ? SD.project(model, nx.home ? o2.id : id, nx.home ? id : o2.id, nx.neutral, nx.start) : null;
       var mo2 = model && model.teams ? model.teams[o2.id] : null;
       if (pp && nx.state !== 'in' && enough(mt) && enough(mo2)) {
         var mine = nx.home ? pp.pHome : pp.pAway, mm = nx.home ? pp.margin : -pp.margin;

@@ -15,6 +15,13 @@ probabilities fit what happened).
                       thin schedules), 0 = one spread for every game
              newp     college only: a program new to the division starts at last season's level of the
                       pooled outsiders instead of at the division average
+             rest     points (goals, runs) per day of rest advantage, rest = days since the team's previous
+                      game this season, capped per league (REST_CAP) so only the part that matters counts
+                      (NFL byes and short weeks, NBA/NHL back-to-backs); a team's first game counts as rested
+             xg       NHL only: share of each game's rating input taken from expected-goals margin (MoneyPuck)
+                      instead of actual goal margin (0 = goals only); projections still predict real results
+             sp       MLB only: weight on the starting-pitcher edge (runs the two starters should differ by over a
+                      typical start, from extra.mlb_sp_edges; 1 = take it at face value)
              ps       college only: 1 = fit the spread used for win probabilities to wins and losses (log
                       loss) instead of to margins; blowouts inflate the margin spread and flatten the
                       probabilities (college football favorites won more often than the margin spread implied)
@@ -60,7 +67,12 @@ GRID = {
     "soft": {"nfl": [None, 14, 20, 28], "ncaaf": [None, 15, 25, 35], "ncaab": [None, 15, 25, 35]},
     "newp": {"ncaaf": ["zero", "pool"], "ncaab": ["zero", "pool"]},
     "ps": {"ncaaf": [0, 1], "ncaab": [0, 1]},
+    "sp": {"mlb": [0, 0.5, 0.75, 1.0, 1.25, 1.5]},
+    "xg": {"nhl": [0, 0.15, 0.25, 0.35, 0.5, 0.75, 1.0]},
+    "rest": {"nfl": [0, 0.1, 0.2, 0.3], "nba": [0, 0.5, 1.0, 1.5, 2.0], "nhl": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
+             "mlb": [0, 0.05, 0.1], "ncaab": [0, 0.25, 0.5, 1.0], "ncaaf": [0, 0.1, 0.2, 0.3], "ncaah": [0, 0.05, 0.1]},
 }
+REST_CAP = M.REST_CAP           # shared with the live model so a fitted rest edge means the same thing in both
 
 
 # ---------------------------------------------------------------- data
@@ -90,7 +102,7 @@ class League:
                 if hn == an:
                     continue
                 same = div and bool(group.get(h)) and group.get(h) == group.get(a)
-                rows.append((g["d"], self.ix[hn], self.ix[an], g["hs"] - g["as"], bool(g["n"]), same, g.get("wk"), g.get("sp")))
+                rows.append((g["d"], self.ix[hn], self.ix[an], g["hs"] - g["as"], bool(g["n"]), same, g.get("wk"), g.get("sp"), (g["hs"], g["as"])))
             if not rows:
                 continue
             rows.sort(key=lambda r: r[0])
@@ -99,6 +111,13 @@ class League:
             S.h = np.array([r[1] for r in rows]); S.a = np.array([r[2] for r in rows])
             S.m = np.array([r[3] for r in rows], float); S.n = np.array([r[4] for r in rows], bool)
             S.same = np.array([r[5] for r in rows], bool)
+            S.rd = rest_diff([r[0] for r in rows], [r[1] for r in rows], [r[2] for r in rows], REST_CAP.get(lg, 7))
+            S.sp = np.zeros(len(rows))
+            S.xgm = S.m.copy()
+            if lg == "nhl":
+                S.xgm, S.xgCover = xg_margins(y, rows, {i: t for t, i in self.ix.items()})
+            if lg == "mlb":
+                S.sp, S.spCover = sp_edges(y, rows, {i: t for t, i in self.ix.items()})
             if all(r[6] is not None for r in rows):
                 S.week = np.array([r[6] for r in rows], int)
             else:
@@ -112,6 +131,53 @@ class Season:
     pass
 
 
+def xg_margins(year, rows, inv):
+    """NHL expected-goals margin (home minus away) for each stored game, matched to MoneyPuck by date and goals;
+    falls back to the real goal margin where MoneyPuck has no row."""
+    from . import extra
+    xg = extra.nhl_xg_lookup(year)
+    out, hit = [], 0
+    for r in rows:
+        v = xg.get((r[0][:10], inv[r[1]], inv[r[2]])) if xg else None
+        out.append(v if v is not None else float(r[3]))
+        hit += v is not None
+    return np.array(out, float), hit / max(1, len(rows))
+
+
+def sp_edges(year, rows, inv):
+    """MLB starting-pitcher edge (runs, home perspective) for each stored game, matched on start time and score,
+    falling back to the calendar day; 0 where the starters are unknown."""
+    from datetime import date, timedelta
+    from . import extra
+    e = extra.mlb_sp_edges(year)
+    out, hit = [], 0
+    for r in rows:
+        h, a, hs, as_ = inv[r[1]], inv[r[2]], None, None
+        g = r[8] if len(r) > 8 else None
+        v = e.get((r[0][:16], h, a) + (g or ())) if g else None
+        if v is None:
+            for dd in (0, -1):
+                k = ("day", (date.fromisoformat(r[0][:10]) + timedelta(days=dd)).isoformat(), h, a) + (g or ())
+                v = e.get(k)
+                if v is not None:
+                    break
+        out.append(v if v is not None else 0.0)
+        hit += v is not None
+    return np.array(out, float), hit / max(1, len(rows))
+
+
+def rest_diff(dates, homes, aways, cap):
+    """home rest minus away rest in days (each capped at `cap`); a team's first game counts as fully rested."""
+    last, out = {}, []
+    for d, h, a in zip(dates, homes, aways):
+        o = _ord(d)
+        rh = min(cap, o - last[h]) if h in last else cap
+        ra = min(cap, o - last[a]) if a in last else cap
+        out.append(rh - ra)
+        last[h] = last[a] = o
+    return np.array(out, float)
+
+
 def _ord(d):
     from datetime import date
     return date(int(d[:4]), int(d[5:7]), int(d[8:10])).toordinal()
@@ -120,6 +186,8 @@ def _ord(d):
 # ---------------------------------------------------------------- replay
 def _y(S, p):
     m = S.m
+    if p.get("xg"):
+        m = (1 - p["xg"]) * m + p["xg"] * S.xgm
     if p.get("soft"):
         m = p["soft"] * np.tanh(m / p["soft"])
     elif p.get("cap"):
@@ -128,6 +196,10 @@ def _y(S, p):
     if p.get("divHfa") is not None:
         hv[S.same] = p["divHfa"]
     hv[S.n] = 0.0
+    if p.get("rest"):
+        hv = hv + p["rest"] * S.rd          # rest edge travels with the home edge: removed from results, added to projections
+    if p.get("sp"):
+        hv = hv + p["sp"] * S.sp            # same for the starting-pitcher edge (MLB)
     return m - hv, hv
 
 
@@ -267,7 +339,7 @@ def _grid(lg, preset, fixed):
     out = [("k", sorted({round(preset["k"] * f, 3) for f in GRID["k"]})), ("carry", GRID["carry"])]
     if "hfa" not in fixed:
         out.append(("hfa", sorted({round(preset["hfa"] * f, 3) for f in GRID["hfa"]})))
-    for key in ("cap", "soft", "newp", "ps"):
+    for key in ("cap", "soft", "newp", "ps", "rest", "sp", "xg"):
         if lg in GRID[key]:
             out.append((key, GRID[key][lg]))
     out += [("hl", GRID["hl"]), ("pv", GRID["pv"])]

@@ -99,7 +99,7 @@ class Component extends DCLogic {
     var lineRows = [A, H].map(function (t) { var ls = t.lines || []; return { abbr: t.abbr, lines: heads.map(function (_, i) { return ls[i] === undefined ? '' : ls[i]; }), total: t.score }; });
 
     // projection
-    var m = S.model, p = m ? SD.project(m, A.id, H.id, g.neutral) : null, proj = { has: false, note: '' };
+    var m = S.model, p = m ? SD.project(m, A.id, H.id, g.neutral, g.start) : null, proj = { has: false, note: '' };
     var MA = m && m.teams ? m.teams[A.id] : null, MH = m && m.teams ? m.teams[H.id] : null;
     var enough = function (t) { return t && (t.gp >= (m.minGp || 0) || t.prior !== undefined); };
     if (p && enough(MA) && enough(MH)) {

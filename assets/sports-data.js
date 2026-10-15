@@ -274,13 +274,27 @@
 
   /* house model: projected margin and win probability from /data/sports/model/<lg>.json */
   function Phi(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)); var d = 0.3989423 * Math.exp(-z * z / 2); var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
-  function project(model, awayId, homeId, neutral) {
+  /* rest edge for a game starting at `start` (ISO): per-day edge x (home rest - away rest), rest = days since the
+     team's previous game (capped), from the game dates in the model file; 0 beyond those dates or without a start */
+  function dayNo(d) { return Math.round(Date.parse(String(d).slice(0, 10) + 'T00:00:00Z') / 864e5); }
+  function restEdge(model, H, A, start) {
+    if (!model.rest || !start || String(start).slice(0, 10) > (model.restUntil || '')) return 0;
+    var cap = model.restCap || 7, day = dayNo(start), s0 = String(start).slice(0, 10);
+    var rest = function (T) {
+      var prev = (T.dates || []).filter(function (d) { return d < s0; });
+      return prev.length ? Math.min(cap, day - dayNo(prev[prev.length - 1])) : cap;
+    };
+    return model.rest * (rest(H) - rest(A));
+  }
+  function project(model, awayId, homeId, neutral, start) {
     if (!model || !model.teams) return null;
     var A = model.teams[String(awayId)], H = model.teams[String(homeId)];
     if (!A || !H || A.rating === null || H.rating === null || A.rating === undefined || H.rating === undefined) return null;
     var hfa = neutral ? 0 : (model.hfa || 0);
     if (model.divHfa !== undefined && A.group && A.group === H.group && !neutral) hfa = model.divHfa;
-    var m = H.rating - A.rating + hfa;
+    var m = H.rating - A.rating + hfa + restEdge(model, H, A, start);
+    // MLB: announced starting pitchers' edge for this exact game, when the model file has it
+    if (model.spEdges && start) m += model.spEdges[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || 0;
     // when the model says so (pv), widen the spread by how unsure both ratings still are (w = weight of evidence in games)
     var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
     var p = Phi(m / sg);
