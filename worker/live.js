@@ -33,6 +33,7 @@ function isEnglish(text) {
   if (nonLatin / letters.length > 0.2) return false;
   const accents = letters.filter((c) => { const k = c.codePointAt(0); return k >= 0xc0 && k <= 0x24f; }).length;
   if (accents / letters.length > 0.06) return false;
+  if (letters.filter((c) => { const k = c.codePointAt(0); return k >= 0x100 && k <= 0x17f; }).length >= 2) return false;
   const words = (text.toLowerCase().match(/[a-zà-ÿ']+/g) || []);
   let en = 0, fo = 0;
   for (const w of words) { if (EN.has(w)) en++; if (FOREIGN.has(w)) fo++; }

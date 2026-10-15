@@ -147,6 +147,8 @@ def is_english(text):
     accents = sum(1 for c in letters if 0xC0 <= ord(c) <= 0x24F)
     if accents / len(letters) > 0.06:
         return False
+    if sum(1 for c in letters if 0x100 <= ord(c) <= 0x17F) >= 2:  # Polish, Czech, Turkish and similar letters (ł, ś, č, ř ...)
+        return False
     words = re.findall(r"[a-zA-Zà-ÿ']+", text.lower())
     en = sum(1 for w in words if w in _EN)
     fo = sum(1 for w in words if w in _FOREIGN)

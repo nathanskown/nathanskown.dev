@@ -255,6 +255,8 @@ class Component extends DCLogic {
       var nonLatin = 0, accents = 0;
       letters.forEach(function (c) { var k = c.codePointAt(0); if (k > 0x24f) nonLatin++; else if (k >= 0xc0) accents++; });
       if (nonLatin / letters.length > 0.2 || accents / letters.length > 0.06) return false;
+      var ext = 0; letters.forEach(function (c) { var k = c.codePointAt(0); if (k >= 0x100 && k <= 0x17f) ext++; });
+      if (ext >= 2) return false;
       var words = text.toLowerCase().match(/[a-zà-ÿ']+/g) || [], en = 0, fo = 0;
       words.forEach(function (w) { if (EN[w]) en++; if (FO[w]) fo++; });
       if (fo >= 2 && fo > en) return false;
