@@ -12,7 +12,6 @@ Expected goals measure the quality of chances a team created and allowed; over a
 predict future results better than actual goals, which swing on shooting and goaltending luck. Starting
 pitchers are the single biggest game-to-game factor in baseball that a team rating cannot see."""
 import csv
-import io
 import os
 from datetime import date, timedelta
 
@@ -33,9 +32,11 @@ def _num(v):
 
 def nhl_xg():
     """Download MoneyPuck's all-teams game-by-game file and keep one row per regular-season game."""
-    r = SESSION.get(MP_ALL_TEAMS, headers={"User-Agent": UA}, timeout=300, stream=True)
+    r = SESSION.get(MP_ALL_TEAMS, headers={"User-Agent": UA}, timeout=600, stream=True)
     r.raise_for_status()
-    rows = csv.DictReader(io.TextIOWrapper(r.raw, encoding="utf-8", errors="replace"))
+    r.encoding = r.encoding or "utf-8"
+    # iter_lines undoes any gzip transfer encoding and streams, so the large file never sits in memory whole
+    rows = csv.DictReader(line for line in r.iter_lines(decode_unicode=True) if line)
     cols = rows.fieldnames or []
     seasons, seen = {}, set()
     for x in rows:
