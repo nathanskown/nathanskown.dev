@@ -31,8 +31,15 @@
     for (var k in (params || {})) if (params[k] !== undefined && params[k] !== null && params[k] !== '') q.push(k + '=' + encodeURIComponent(params[k]));
     return base + L.sport + '/' + L.slug + '/' + kind + (q.length ? '?' + q.join('&') : '');
   }
+  // live feeds are shared for 20 seconds, so the page and the score crawl don't fetch the same scoreboard twice
+  var recent = {};
   function get(url) {
-    return fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); });
+    var hit = recent[url];
+    if (hit && Date.now() - hit.at < 20000) return hit.p;
+    var p = fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); });
+    recent[url] = { at: Date.now(), p: p };
+    p.catch(function () { delete recent[url]; });
+    return p;
   }
   function data(path) { return window.DC ? DC.load('/data/sports/' + path) : get('/data/sports/' + path); }
 
@@ -342,6 +349,77 @@
     var el = e.target;
     if (el && el.tagName === 'IMG' && /espncdn\.com/.test(el.src || '')) { el.style.visibility = 'hidden'; el.alt = ''; }
   }, true);
+
+  /* ---------- bottom-line score crawl on every sports page ----------
+     Live games first, then upcoming, then finals, across the major leagues. Teams the visitor follows lead.
+     It pauses on hover or keyboard focus, has a pause button (moving content must be stoppable), and sits
+     still for people who ask their system for reduced motion. */
+  function crawl() {
+    if (typeof document === 'undefined' || document.querySelector('.s-crawl')) return;
+    var LGS = ['nfl', 'mlb', 'nba', 'nhl', 'ncaaf', 'ncaab'];
+    var box = document.createElement('aside');
+    box.className = 's-crawl';
+    box.setAttribute('aria-label', 'Scores across the major leagues');
+    box.innerHTML = '<span class="s-crawl-l"><span aria-hidden="true">●</span> SCORES<span class="x"> · ALL LEAGUES</span></span>' +
+      '<div class="s-crawl-win"><div class="s-crawl-track" id="sCrawl"><div class="s-crawl-run"><a href="/sports/"><span class="st">Loading scores…</span></a></div></div></div>' +
+      '<button type="button" aria-pressed="false" aria-label="Pause the score crawl" title="Pause">❚❚</button>';
+    document.body.appendChild(box);
+    document.body.classList.add('has-crawl');
+    // skip link past the long header to the page's main content
+    var skip = document.createElement('a');
+    skip.className = 't-skip'; skip.href = '#main'; skip.textContent = 'Skip to content';
+    skip.addEventListener('click', function (ev) {
+      var m = document.querySelector('main');
+      if (!m) return;
+      ev.preventDefault(); m.setAttribute('tabindex', '-1'); m.focus(); m.scrollIntoView();
+    });
+    document.body.insertBefore(skip, document.body.firstChild);   // outside the page's rendered tree, which the runtime owns
+    var btn = box.querySelector('button');
+    var paused = false;
+    try { paused = localStorage.getItem('nskn.crawl.paused') === '1'; } catch (e) {}
+    var setPaused = function (v) {
+      paused = v; box.classList.toggle('is-paused', v);
+      btn.setAttribute('aria-pressed', String(v)); btn.textContent = v ? '▶' : '❚❚';
+      btn.setAttribute('aria-label', v ? 'Play the score crawl' : 'Pause the score crawl'); btn.title = v ? 'Play' : 'Pause';
+      try { localStorage.setItem('nskn.crawl.paused', v ? '1' : '0'); } catch (e) {}
+    };
+    setPaused(paused);
+    btn.addEventListener('click', function () { setPaused(!paused); });
+    var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    // game links are written as design-file names (Game.dc.html?...); outside the page renderer, map them to real URLs
+    var R = window.DC_ROUTES || {}, url = function (h) { var q = String(h || '').indexOf('?'), b = q < 0 ? h : h.slice(0, q); return R[b] ? R[b] + (q < 0 ? '' : h.slice(q)) : (h || '/sports/'); };
+    var tz = window.TZ, tm = function (iso) {
+      try { return new Date(iso).toLocaleString('en-US', { timeZone: tz, weekday: 'short', hour: 'numeric', minute: '2-digit' }).replace(':00', ''); } catch (e) { return ''; }
+    };
+    var timer;
+    function load() {
+      Promise.all(LGS.map(function (lg) { return scores(lg).then(function (b) { return b.events.map(function (e) { e.lg = lg; return e; }); }, function () { return []; }); }))
+        .then(function (lists) {
+          var all = [].concat.apply([], lists), fol = follows();
+          var mine = function (e) { return fol.some(function (f) { return f.lg === e.lg && (String(f.id) === String(e.away.id) || String(f.id) === String(e.home.id)); }); };
+          var rank = { 'in': 0, pre: 1, post: 2 }, soon = Date.now() + 36 * 3600000;
+          all = all.filter(function (e) { return e.away && e.home && (e.state !== "pre" || Date.parse(e.start) < soon); })
+            .sort(function (a, b) { return (mine(b) - mine(a)) || (rank[a.state] - rank[b.state]) || (a.start < b.start ? -1 : 1); }).slice(0, 40);
+          var live = all.some(function (e) { return e.state === 'in'; });
+          var item = function (e) {
+            var A = e.away, H = e.home, pre = e.state === 'pre';
+            var nm = function (t) { return (t.rank ? t.rank + ' ' : '') + esc(t.abbr || t.short); };
+            var sc = function (t) { return pre ? '' : ' <span class="' + (e.done && t.winner ? 'w' : '') + '">' + esc(t.score) + '</span>'; };
+            var st = e.state === 'in' ? '<span class="lv">' + esc(e.detail) + '</span>' : '<span class="st">' + esc(pre ? tm(e.start) : (e.detail || 'Final')) + '</span>';
+            return '<a href="' + esc(url(e.href)) + '"><b>' + LEAGUES[e.lg].short + '</b> ' + nm(A) + sc(A) + ' <span class="st">' + (pre ? '@' : '·') + '</span> ' + nm(H) + sc(H) + ' ' + st + '</a>';
+          };
+          var html = all.length ? all.map(item).join('') : '<a href="/sports/"><span class="st">No games in the next day and a half. Full schedules on the scores page.</span></a>';
+          var tr = document.getElementById('sCrawl');
+          // second copy makes the loop seamless; hidden from screen readers so each game is announced once
+          tr.innerHTML = '<div class="s-crawl-run">' + html + '</div><div class="s-crawl-run" aria-hidden="true">' + html.replace(/<a /g, '<a tabindex="-1" ') + '</div>';
+          clearTimeout(timer); timer = setTimeout(load, live ? 30000 : 300000);
+        });
+    }
+    load();
+  }
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', crawl); else setTimeout(crawl, 0);
+  }
 
   window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
     standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };

@@ -70,22 +70,26 @@
 </main>
 </sc-if>
 
+<sc-if value="{{waiting}}" hint-placeholder-val="{{false}}">
+<main class="s-wrap"><div class="s-empty" role="status">{{waitText}} <a href="{{lgPick}}">Pick another game →</a></div></main>
+</sc-if>
+
 <sc-if value="{{ok}}" hint-placeholder-val="{{true}}">
 <div class="s-band" style="{{bandStyle}}">
 <div style="max-width: 1280px; margin: 0 auto; padding: 20px 16px">
 <nav aria-label="Breadcrumb" class="dim" style="font-size: 12.5px"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
 <sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="t-th" style="margin-top: 6px">{{g.note}}</div></sc-if>
-<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 12px">
-<a href="{{g.away.href}}" style="display: flex; align-items: center; gap: 12px; min-width: 0">
+<div class="s-match" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 12px">
+<a class="s-side" href="{{g.away.href}}" style="display: flex; align-items: center; gap: 12px; min-width: 0">
 <img class="s-hero-logo" src="{{g.away.logo}}" alt="">
-<span style="min-width: 0"><span style="display: block; font-size: 20px; color: var(--wh)">{{g.away.name}}</span><span class="dim">{{g.away.sub}}</span></span>
+<span style="min-width: 0"><span class="t-th" style="display: block; color: var(--hi)">AWAY</span><span class="s-side-n" style="display: block; font-size: 22px; color: var(--wh); font-weight: 500">{{g.away.name}}</span><span class="s-side-a">{{g.away.abbr}}</span><span class="dim">{{g.away.sub}}</span></span>
 </a>
 <div style="text-align: center">
-<div class="big" style="font-size: 64px; line-height: 1; color: var(--wh)">{{g.score}}</div>
-<div style="{{g.stStyle}}">{{g.status}}</div>
+<div class="s-bigscore" role="status" aria-live="polite" aria-label="{{g.aria}}">{{g.score}}</div>
+<div style="margin-top: 8px"><span class="{{g.pill}}">{{g.status}}</span></div>
 </div>
-<a href="{{g.home.href}}" style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; text-align: right">
-<span style="min-width: 0"><span style="display: block; font-size: 20px; color: var(--wh)">{{g.home.name}}</span><span class="dim">{{g.home.sub}}</span></span>
+<a class="s-side s-side-h" href="{{g.home.href}}" style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; text-align: right">
+<span style="min-width: 0"><span class="t-th" style="display: block; color: var(--hi)">HOME</span><span class="s-side-n" style="display: block; font-size: 22px; color: var(--wh); font-weight: 500">{{g.home.name}}</span><span class="s-side-a">{{g.home.abbr}}</span><span class="dim">{{g.home.sub}}</span></span>
 <img class="s-hero-logo" src="{{g.home.logo}}" alt="">
 </a>
 </div>
@@ -120,7 +124,8 @@
 <div class="s-stat"><div class="k">{{proj.hName}}</div><div class="v">{{proj.hP}}</div><div class="s">win probability</div></div>
 <div class="s-stat"><div class="k">Projected margin</div><div class="v">{{proj.margin}}</div><div class="s">{{proj.marginNote}}</div></div>
 </div>
-<div class="s-bar" style="margin-top: 10px; height: 10px" aria-hidden="true"><i style="{{proj.bar}}"></i></div>
+<div class="s-vs" style="{{proj.vs}}; margin-top: 12px" aria-hidden="true"><i style="{{proj.bar}}"></i></div>
+<div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{proj.aName}}</span><span>{{proj.hName}}</span></div>
 </sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{proj.note}}</p>
 </div>
@@ -246,7 +251,7 @@ class Component extends DCLogic {
     var lgLinks = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, href: 'Game.dc.html?lg=' + k, cls: 't-chipl' + (k === lg ? ' is-on' : '') }; });
     var idx = {}; (((S.index || {}).leagues || {})[lg] || []).forEach(function (t) { idx[t.id] = t; });
     var logo = function (t) { return (idx[t.id] || {}).logo || ''; };
-    var stStyle = function (st) { return st === 'in' ? 'color: var(--dn); font-weight: 600' : 'color: var(--dim)'; };
+    var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600' : 'color: var(--dim)'; };
     var base = { lgLinks: lgLinks, lgLabel: L.label, lgHref: 'Teams.dc.html?lg=' + lg };
 
     if (!this.gid) {
@@ -265,7 +270,8 @@ class Component extends DCLogic {
     }
 
     var g = S.g;
-    if (!g) return Object.assign(base, { picker: false, ok: false, statusTag: S.err ? 'FEED UNAVAILABLE' : 'LOADING…' });
+    if (!g) return Object.assign(base, { picker: false, ok: false, statusTag: S.err ? 'FEED UNAVAILABLE' : 'LOADING…', waiting: true, lgPick: 'Game.dc.html?lg=' + lg,
+      waitText: S.err ? 'The live feed for this game did not respond. It may be too old or not posted yet; try again in a minute.' : 'Loading the game…' });
     if (typeof document !== 'undefined') document.title = (g.away ? g.away.abbr : '') + ' at ' + (g.home ? g.home.abbr : '') + ' · NSKN Terminal';
     var A = g.away || {}, H = g.home || {};
     var pre = g.state === 'pre';
@@ -273,12 +279,14 @@ class Component extends DCLogic {
       return { name: t.name || t.short || 'TBD', abbr: t.abbr || '', logo: logo(t) || '', href: t.href || '#', sub: [t.rank ? 'No. ' + t.rank : '', t.record].filter(Boolean).join(' · ') };
     };
     var info = [g.venue, g.city, g.tv, g.attendance ? F.n(g.attendance) + ' attendance' : '', g.weather].filter(Boolean).join(' · ');
-    var color = '#' + String((idx[H.id] || {}).color || '12363B').replace('#', '');
+    var hexOf = function (t, fb) { return '#' + String((idx[t.id] || {}).color || t.color || fb).replace('#', ''); };
+    var color = hexOf(H, '12363B'), acolor = hexOf(A, '18434c');
     var vals = {
       note: g.note, away: side(A), home: side(H), info: info, detail: g.detail,
       score: pre ? 'vs' : (A.score || '0') + '–' + (H.score || '0'),
       status: pre ? new Date(g.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + F.time(g.start) + ' ' + window.TZL : g.detail,
-      stStyle: stStyle(g.state)
+      stStyle: stStyle(g.state), pill: 's-pill ' + (g.state === 'in' ? 'live' : pre ? 'pre' : 'final'),
+      aria: pre ? (A.name || '') + ' at ' + (H.name || '') : (A.name || '') + ' ' + (A.score || '0') + ', ' + (H.name || '') + ' ' + (H.score || '0') + ', ' + (g.detail || '')
     };
 
     // line score
@@ -293,7 +301,8 @@ class Component extends DCLogic {
       var fav = p.margin >= 0 ? H : A;
       proj = { has: true, aName: A.short || A.abbr, hName: H.short || H.abbr, aP: Math.round(p.pAway * 100) + '%', hP: Math.round(p.pHome * 100) + '%',
         margin: (fav.abbr || '') + ' by ' + Math.abs(p.margin).toFixed(1), marginNote: m.unit + (p.hfa ? ' · includes ' + p.hfa + ' home edge' : ' · neutral site'),
-        bar: 'width: ' + (p.pAway * 100).toFixed(1) + '%; background: var(--a)',
+        bar: 'width: ' + (p.pAway * 100).toFixed(1) + '%; background: ' + acolor + '; box-shadow: 0 0 12px ' + acolor + '88',
+        vs: 'background: ' + color,
         note: (pre ? 'Pre-game read from the house ratings (' + (A.abbr || '') + ' ' + MA.rating.toFixed(1) + ', ' + (H.abbr || '') + ' ' + MH.rating.toFixed(1) + ').' :
           'What the house ratings say about this matchup today. Ratings update after every game, so for a finished game this includes its result.') + ' Bar: ' + (A.abbr || 'away') + ' share.' };
     } else proj.note = !m ? 'The house model file has not loaded.' : (!MA || !MH ? 'One of these teams is outside the divisions the house model rates.' : 'Too few games played this season for a fair projection (needs ' + m.minGp + ' each).');
@@ -320,7 +329,7 @@ class Component extends DCLogic {
 
     return Object.assign(base, {
       picker: false, ok: true, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
-      bandStyle: 'background: linear-gradient(180deg, ' + color + '55 0%, #020607 100%);',
+      bandStyle: 'background: linear-gradient(100deg, ' + acolor + 'aa 0%, ' + acolor + '33 32%, rgba(3,7,12,.4) 50%, ' + color + '33 68%, ' + color + 'aa 100%), linear-gradient(180deg, transparent 40%, #03070c 100%), #03070c;',
       heads: heads, lineRows: lineRows, hasLines: heads.length > 0, noLines: !heads.length, noLinesText: pre ? 'Line score fills in once the game starts.' : 'No period scores in the feed.',
       proj: proj, stats: stats, hasStats: stats.length > 0, noStats: !stats.length, noStatsText: pre ? 'Box score fills in once the game starts.' : 'No team stats in the feed for this game.', statsNote: g.done ? 'Final' : (pre ? '' : 'Live'),
       leaders: leaders, noLeaders: !leaders.length, ldTitle: pre ? 'Season leaders' : 'Game leaders',

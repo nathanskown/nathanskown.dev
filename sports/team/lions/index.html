@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Detroit Lions · NSKN Terminal</title>
-<meta name="description" content="Live scores, team pages, playoff odds, a matchup simulator and injury reports, with Detroit and Michigan State up front.">
+<meta name="description" content="Live scores for every major league, game centers, team pages, playoff odds, a matchup simulator and injury reports.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#020607">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -92,7 +92,7 @@ class Component extends DCLogic {
       group: me.group || (group ? group.name : ''),
       record: st.record || (row && row.overall) || (S.loading ? '' : '0-0'),
       standing: st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || '',
-      bandStyle: 'background: linear-gradient(180deg, ' + color + '55 0%, #020607 100%);',
+      bandStyle: 'background: radial-gradient(900px 320px at 12% 40%, ' + color + 'cc, transparent 70%), linear-gradient(100deg, ' + color + '66 0%, ' + color + '18 55%, transparent 80%), linear-gradient(180deg, transparent 50%, #03070c 100%), #03070c;',
       rankLine: mt && enough(mt) ? 'House rating ' + sign(mt.rating) + ' ' + unit + ' vs. an average team · No. ' + mt.rank + ' of ' + teamN : ''
     };
 

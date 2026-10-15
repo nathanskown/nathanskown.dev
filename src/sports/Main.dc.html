@@ -55,10 +55,16 @@
 
 <main class="s-wrap">
 
-<section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+<section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
 <div>
+<div class="s-kicker">SCOR · every league · live</div>
 <h1 style="margin: 0">Scores &amp; schedule</h1>
 <div class="dim" style="margin-top: 6px">{{dayLine}}</div>
+</div>
+<div class="s-strip" role="status" aria-live="polite" aria-label="Slate summary">
+<div><span class="k">LIVE NOW</span><span class="{{strip.liveCls}}">{{strip.live}}</span></div>
+<div><span class="k">ON THE SLATE</span><span class="v">{{strip.total}}</span></div>
+<div><span class="k">{{strip.nextK}}</span><span class="s">{{strip.next}}</span><span class="s dim">{{strip.nextWhen}}</span></div>
 </div>
 <div class="s-tabs" role="group" aria-label="Day">
 <sc-for list="{{days}}" as="d" hint-placeholder-count="3"><button type="button" class="{{d.cls}}" aria-pressed="{{d.on}}" onClick="{{d.pick}}">{{d.label}}</button></sc-for>
@@ -109,16 +115,16 @@
 <sc-if value="{{B.msg}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{B.msg}}</div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{B.games}}" as="g" hint-placeholder-count="6">
-<div class="s-card" style="{{g.cardStyle}}">
+<div class="{{g.cls}}">
 <sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>
 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
-<div class="s-line" style="min-height: 28px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 11.5px">{{r.rec}}</span></a><span style="{{r.scoreStyle}}">{{r.score}}</span></div>
+<div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 11.5px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
 </sc-for>
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 4px">
-<span style="{{g.stStyle}}">{{g.status}}</span>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 6px">
+<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"><span class="{{g.pill}}">{{g.status}}</span><sc-if value="{{g.sub}}" hint-placeholder-val="{{false}}"><span class="dim" style="font-size: 11.5px">{{g.sub}}</span></sc-if></span>
 <sc-if value="{{g.href}}" hint-placeholder-val="{{true}}"><a class="s-go" href="{{g.href}}" aria-label="{{g.aria}}" style="width: auto; padding: 0 10px; height: 32px; font-size: 12px">{{g.cta}} →</a></sc-if>
 </div>
-<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 11.5px; margin-top: 2px">{{g.note}}</div></sc-if>
+<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 11.5px; margin-top: 6px">{{g.note}}<sc-if value="{{g.house}}" hint-placeholder-val="{{false}}"><span class="s-house">{{g.house}}</span></sc-if></div></sc-if>
 </div>
 </sc-for>
 </div>
@@ -134,7 +140,7 @@
 <div class="t-pb">
 <sc-if value="{{power.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{power.noneText}}</div></sc-if>
 <table class="s-tbl"><tbody>
-<sc-for list="{{power.rows}}" as="r" hint-placeholder-count="10"><tr><td class="dim" style="width: 28px">{{r.rank}}</td><td class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a></td><td class="hi">{{r.rating}}</td></tr></sc-for>
+<sc-for list="{{power.rows}}" as="r" hint-placeholder-count="10"><tr><td class="s-rank" style="width: 28px">{{r.rank}}</td><td class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a></td><td class="hi">{{r.rating}}</td></tr></sc-for>
 </tbody></table>
 <p class="s-note" style="margin: 8px 0 0">{{power.note}}</p>
 </div>
@@ -256,7 +262,11 @@ class Component extends DCLogic {
 
     // scoreboards
     var all = S.lg === 'all', CAP = 4, liveN = 0;
-    var stStyle = function (st) { return st === 'in' ? 'color: var(--dn); font-weight: 600; font-size: 12.5px' : 'color: var(--dim); font-size: 12.5px'; };
+    var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600; font-size: 12.5px' : 'color: var(--dim); font-size: 12.5px'; };
+    var pill = function (st) { return 's-pill ' + (st === 'in' ? 'live' : st === 'pre' ? 'pre' : 'final'); };
+    var cardCls = function (st, fol) { return 'sb' + (st === 'in' ? ' is-live' : st === 'post' ? ' is-final' : '') + (fol ? ' is-fol' : ''); };
+    var tc = function (t) { return 'background: ' + (t.color || '#18434c') + '; box-shadow: 0 0 0 1px ' + (t.alt || '#dcfcff') + '66, 0 0 10px ' + (t.color || '#18434c') + '88'; };
+    var slate = [];
     var rankSt = { 'in': 0, pre: 1, post: 2 };
     var boards = [];
     this.leaguesShown().forEach(function (lg) {
@@ -267,13 +277,13 @@ class Component extends DCLogic {
       var cards = [];
       if (L.kind === 'golf') {
         b.events.forEach(function (e) {
-          cards.push({ title: e.name, rows: e.players.slice(0, 5).map(function (p) { return { name: p.pos + ' ' + p.name, rec: p.thru, href: '#', style: '', score: p.score, scoreStyle: 'color: var(--hi)' }; }),
-            status: e.detail, stStyle: stStyle(e.state), href: '', note: '', cardStyle: '', live: e.state === 'in', st: e.state, start: e.start });
+          cards.push({ title: e.name, rows: e.players.slice(0, 5).map(function (p) { return { name: p.pos + ' ' + p.name, rec: p.thru, href: '#', style: '', score: p.score, scoreStyle: 'color: var(--hi); font-size: 20px', tc: 'display: none' }; }),
+            status: e.detail, stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state), href: '', note: '', live: e.state === 'in', st: e.state, start: e.start });
         });
       } else if (L.kind === 'tennis') {
         b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
-          cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi)' }; }),
-            status: m.state === 'pre' ? F.time(m.start) + ' ' + window.TZL : m.detail, stStyle: stStyle(m.state), href: '', note: e.name + ' · ' + m.round, cardStyle: '', live: m.state === 'in', st: m.state, start: m.start });
+          cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi); font-size: 18px', tc: 'display: none' }; }),
+            status: m.state === 'pre' ? F.time(m.start) + ' ' + window.TZL : m.detail, stStyle: stStyle(m.state), pill: pill(m.state), cls: cardCls(m.state), href: '', note: e.name + ' · ' + m.round, live: m.state === 'in', st: m.state, start: m.start });
         }); });
       } else {
         b.events.forEach(function (e) {
@@ -281,24 +291,25 @@ class Component extends DCLogic {
           var p = pre && model ? SD.project(model, e.away.id, e.home.id, e.neutral) : null;
           var MA = model && model.teams ? model.teams[e.away.id] : null, MH = model && model.teams ? model.teams[e.home.id] : null;
           var en = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
-          var note = p && en(MA) && en(MH) ? 'House: ' + (p.pHome >= 0.5 ? e.home.abbr + ' ' + Math.round(p.pHome * 100) : e.away.abbr + ' ' + Math.round(p.pAway * 100)) + '% to win' : '';
-          if (e.note) note = e.note + (note ? ' · ' + note : '');
+          var house = p && en(MA) && en(MH) ? 'House: ' + (p.pHome >= 0.5 ? e.home.abbr + ' ' + Math.round(p.pHome * 100) : e.away.abbr + ' ' + Math.round(p.pAway * 100)) + '% to win' : '';
+          var note = e.note ? e.note + (house ? ' · ' : '') : (house ? ' ' : '');
+          if (day === 0) slate.push({ e: e, lg: lg });
           var row = function (t) {
             var won = e.done && t.winner, lost = e.done && !t.winner && (e.away.winner || e.home.winner);
             var lg2 = info[lg + ':' + t.id] || {};
-            return { name: (t.rank ? t.rank + ' ' : '') + (lg.indexOf('ncaa') === 0 ? (t.loc || t.short) : t.short), rec: pre ? t.record : '', logo: lg2.logo || '', href: t.href || '#',
-              style: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : '', score: pre ? '' : t.score,
-              scoreStyle: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
+            return { name: (lg.indexOf('ncaa') === 0 ? (t.loc || t.short) : t.short), rank: t.rank || '', rec: pre ? t.record : '', logo: lg2.logo || '', href: t.href || '#',
+              style: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : '', score: pre ? '' : t.score, tc: tc(t),
+              scoreStyle: won ? 'color: var(--wh); text-shadow: 0 0 12px rgba(255,255,255,.4)' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
           };
           cards.push({ title: '', rows: [row(e.away), row(e.home)],
-            status: pre ? F.time(e.start) + ' ' + window.TZL + (day !== 0 || !sameDay(e.start) ? ' · ' + F.day(e.start) : '') + (e.tv ? ' · ' + e.tv : '') : e.detail,
-            stStyle: stStyle(e.state), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note,
-            cardStyle: fol ? 'border-color: var(--a); background: var(--band)' : '', live: e.state === 'in', st: e.state, start: e.start, fol: fol });
+            status: pre ? F.time(e.start) + ' ' + window.TZL : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
+            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
+            live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });
       }
       cards.sort(function (a, b) { return ((b.fol ? 1 : 0) - (a.fol ? 1 : 0)) || (rankSt[a.st] - rankSt[b.st]) || (a.start < b.start ? -1 : 1); });
       var nLive = cards.filter(function (c) { return c.live; }).length; liveN += nLive;
-      B.sub = [nLive ? nLive + ' live' : '', cards.length ? cards.length + (L.kind === 'golf' ? ' event' : (L.kind === 'tennis' ? ' matches' : ' games')) : '', b.week ? 'Week ' + b.week : ''].filter(Boolean).join(' · ');
+      B.sub = [nLive ? nLive + ' live' : '', cards.length ? cards.length + (L.kind === 'golf' ? (cards.length === 1 ? ' event' : ' events') : (L.kind === 'tennis' ? (cards.length === 1 ? ' match' : ' matches') : (cards.length === 1 ? ' game' : ' games'))) : '', b.week ? 'Week ' + b.week : ''].filter(Boolean).join(' · ');
       if (!cards.length) B.msg = 'No ' + L.label + ' ' + (L.kind === 'golf' ? 'events' : 'games') + ' ' + (day === 0 ? 'on the current slate.' : (day < 0 ? 'yesterday.' : 'tomorrow.'));
       B.games = all ? cards.slice(0, CAP) : cards;
       if (all && cards.length > CAP) { B.more = true; B.moreLabel = 'All ' + cards.length + ' ' + L.short + ' →'; }
@@ -320,10 +331,17 @@ class Component extends DCLogic {
     } else { power.none = true; power.noneText = 'Loading…'; }
     var browse = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, n: idx[k] ? idx[k].length : '', href: 'Teams.dc.html?lg=' + k }; });
 
+    // summary strip: live count, games on the slate, and the next game to start
+    var nx = slate.filter(function (x) { return x.e.state === 'pre'; }).sort(function (a, b) { return a.e.start < b.e.start ? -1 : 1; })[0];
+    var lv = slate.filter(function (x) { return x.e.state === 'in'; })[0];
+    var strip = { live: S.loaded ? String(liveN) : '–', liveCls: 'v' + (liveN ? ' live' : ''), total: S.loaded ? String(slate.length || boards.reduce(function (n, B) { return n + B.games.length; }, 0)) : '–',
+      nextK: day !== 0 ? 'SLATE' : (nx ? 'NEXT UP' : (lv ? 'NOW PLAYING' : 'NEXT UP')),
+      next: day !== 0 ? (day < 0 ? 'Yesterday’s results' : 'Tomorrow’s schedule') : nx ? SD.LEAGUES[nx.lg].short + ' ' + nx.e.away.abbr + ' @ ' + nx.e.home.abbr : lv ? SD.LEAGUES[lv.lg].short + ' ' + lv.e.away.abbr + ' ' + lv.e.away.score + '–' + lv.e.home.score + ' ' + lv.e.home.abbr : (S.loaded ? 'Nothing else today' : 'Loading…'),
+      nextWhen: day === 0 && nx ? F.day(nx.e.start) + ' · ' + F.time(nx.e.start) + ' ' + window.TZL : (day === 0 && lv ? lv.e.detail : '') };
     var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     return {
       favs: favs, followHint: this.hint(idx), q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
-      mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
+      strip: strip, mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
       dayLine: dl + ' · All times ' + window.TZL + (liveN ? ' · ' + liveN + ' live now' : ''),
       statusTag: !S.loaded ? 'LOADING…' : (liveN ? 'LIVE · AUTO-REFRESH' : 'LIVE DATA')
     };

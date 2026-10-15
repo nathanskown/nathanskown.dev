@@ -103,6 +103,8 @@
 <div class="s-stat"><div class="k">Projected margin</div><div class="v">{{sim.margin}}</div><div class="s">{{sim.mNote}}</div></div>
 <div class="s-stat"><div class="k">Likely range</div><div class="v">{{sim.range}}</div><div class="s">middle 80% of outcomes</div></div>
 </div>
+<div class="s-vs" style="{{sim.vs}}; margin-top: 14px; height: 14px" aria-hidden="true"><i style="{{sim.bar}}"></i></div>
+<div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{sim.aName}} {{sim.aP}}</span><span>{{sim.hP}} {{sim.hName}}</span></div>
 </sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{sim.foot}}</p>
 </div>
@@ -116,7 +118,7 @@
 <sc-if value="{{odds.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{odds.noneText}}</div></sc-if>
 <div class="s-scroll"><table class="s-tbl">
 <thead><tr><th scope="col">Team</th><sc-for list="{{odds.cols}}" as="c" hint-placeholder-count="5"><th scope="col">{{c}}</th></sc-for></tr></thead>
-<tbody><sc-for list="{{odds.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a> <span class="dim">{{r.grp}}</span></th><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
+<tbody><sc-for list="{{odds.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a> <span class="dim">{{r.grp}}</span></th><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td style="{{c.st}}">{{c.v}}</td></sc-for></tr></sc-for></tbody>
 </table></div>
 <p class="s-note" style="margin: 10px 0 0">{{odds.note}}</p>
 </div>
@@ -311,6 +313,15 @@ class Component extends DCLogic {
     var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, soon: !live[key], plan: PLANS[key] || { items: [], data: '', links: [] }, tag: live[key] ? 'LIVE DATA' : 'COMING SOON',
       showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord' };
     var m = S.models[lg];
+    // odds cells: the number plus a cyan heat shade that deepens with the probability; near-locks turn gold
+    var heat = function (p) {
+      if (p === undefined || p === null) return { v: '—', st: '' };
+      var a = Math.max(0, Math.min(1, p));
+      return { v: pct(p), st: p >= 0.995 ? 'color: #000; background: #ffc53d; font-weight: 600; text-shadow: none' :
+        'background: rgba(61,242,255,' + (0.04 + a * 0.42).toFixed(3) + '); color: ' + (a >= 0.5 ? '#ffffff' : a >= 0.1 ? '#dcfcff' : '#80d4de') + (a >= 0.5 ? '; font-weight: 600' : '') };
+    };
+    var rate = function (v, dp) { return { v: (v > 0 ? '+' : '') + (v || 0).toFixed(dp), st: v > 0 ? 'color: var(--up)' : v < 0 ? 'color: var(--dn)' : '' }; };
+    var plain = function (v) { return { v: v, st: 'color: var(--wh)' }; };
     var pct = function (p) { return p === undefined || p === null ? '—' : p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
 
     if (key === 'Simulator') {
@@ -328,6 +339,9 @@ class Component extends DCLogic {
           var fav = p.margin >= 0 ? h : a, z = 1.2816 * m.sigma;
           sim.has = true; sim.aName = (idx[a] || {}).short || a; sim.hName = (idx[h] || {}).short || h;
           sim.aP = pct(p.pAway); sim.hP = pct(p.pHome);
+          var col = function (id) { return '#' + String((idx[id] || {}).color || '3df2ff').replace('#', ''); };
+          sim.bar = 'width: ' + (p.pAway * 100).toFixed(1) + '%; background: ' + col(a) + '; box-shadow: 0 0 14px ' + col(a) + '99';
+          sim.vs = 'background: ' + col(h);
           sim.margin = ((idx[fav] || {}).abbr || '') + ' ' + Math.abs(p.margin).toFixed(1); sim.mNote = m.unit + (p.hfa ? ' · home edge ' + p.hfa : ' · neutral site');
           var lo = p.margin - z, hi = p.margin + z, f = function (v) { return (v > 0 ? (idx[h] || {}).abbr + ' +' : (idx[a] || {}).abbr + ' +') + Math.abs(v).toFixed(0); };
           sim.range = f(lo) + ' to ' + f(hi);
@@ -345,11 +359,11 @@ class Component extends DCLogic {
         if (lg === 'nfl') {
           o.cols = ['Rating', 'Proj. W', 'Playoffs', 'Division', 'No. 1 seed', 'Conf.', 'Title'];
           ids.sort(function (x, y) { return m.odds[y].title - m.odds[x].title || m.odds[y].playoff - m.odds[x].playoff; });
-          o.rows = ids.map(function (id) { var r = m.odds[id], t = m.teams[id] || {}; return { name: (idx[id] || {}).name || id, logo: (idx[id] || {}).logo || '', href: SD.teamHref(lg, id), grp: t.group || '', cells: [(t.rating > 0 ? '+' : '') + (t.rating || 0).toFixed(1), r.wins.toFixed(1), pct(r.playoff), pct(r.div), pct(r.seed1), pct(r.conf), pct(r.title)] }; });
+          o.rows = ids.map(function (id) { var r = m.odds[id], t = m.teams[id] || {}; return { name: (idx[id] || {}).name || id, logo: (idx[id] || {}).logo || '', href: SD.teamHref(lg, id), grp: t.group || '', cells: [rate(t.rating, 1), plain(r.wins.toFixed(1)), heat(r.playoff), heat(r.div), heat(r.seed1), heat(r.conf), heat(r.title)] }; });
         } else {
           o.cols = ['Rating', 'Proj. PTS', 'Playoffs', 'Division', 'Conf.', 'Cup'];
           ids.sort(function (x, y) { return m.odds[y].title - m.odds[x].title || m.odds[y].playoff - m.odds[x].playoff; });
-          o.rows = ids.map(function (id) { var r = m.odds[id], t = m.teams[id] || {}; return { name: (idx[id] || {}).name || id, logo: (idx[id] || {}).logo || '', href: SD.teamHref(lg, id), grp: t.group || '', cells: [(t.rating > 0 ? '+' : '') + (t.rating || 0).toFixed(2), r.pts.toFixed(0), pct(r.playoff), pct(r.div), pct(r.conf), pct(r.title)] }; });
+          o.rows = ids.map(function (id) { var r = m.odds[id], t = m.teams[id] || {}; return { name: (idx[id] || {}).name || id, logo: (idx[id] || {}).logo || '', href: SD.teamHref(lg, id), grp: t.group || '', cells: [rate(t.rating, 2), plain(r.pts.toFixed(0)), heat(r.playoff), heat(r.div), heat(r.conf), heat(r.title)] }; });
         }
         o.note = m.oddsBasis + ' Ratings: ' + m.basis;
       }

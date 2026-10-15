@@ -61,7 +61,7 @@ SECTIONS = {
         },
     },
     "sports": {
-        "desc": "Live scores, team pages, playoff odds, a matchup simulator and injury reports, with Detroit and Michigan State up front.",
+        "desc": "Live scores for every major league, game centers, team pages, playoff odds, a matchup simulator and injury reports.",
         "css": "assets/sports.css",
         "theme": "#020607",
         "scripts": ["/assets/sports-data.js"],
