@@ -22,9 +22,8 @@
   <!-- SETUP -->
   <section id="setup" class="panel">
     <h2>NEW ROUND</h2>
+    <div id="filter" class="mx-pool"></div>
     <div class="row">
-      <label for="filter" class="sub" style="margin:0">POOL</label>
-      <select id="filter"></select>
       <button class="primary" id="startBtn">START · 5 SONGS</button>
       <button id="dailyBtn">DAILY CHALLENGE</button>
     </div>
@@ -122,6 +121,7 @@
 
 <script src="/music/assets/config.js"></script>
 <script src="/music/assets/common.js"></script>
+<script src="/music/assets/variety.js"></script>
 <script src="/music/assets/credits.js"></script>
 <script src="/music/data/tracks.js"></script>
 <script src="/music/data/tracks-generated.js"></script>
@@ -136,7 +136,7 @@
   let POOL = [], S = null, EQ = { on() {}, off() {} };
   const dailyNote = () => {
     const t = MX.stats.dailyToday("track");
-    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "A new daily challenge starts at midnight Chicago time.";
+    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + MX.dailyResetText();
   };
 
   const decadeOf = s => (s.year ? Math.floor(s.year / 10) * 10 : (s.era || null));
@@ -156,44 +156,31 @@
     $("rCredit").textContent = PROV.revealCredit;
     $("startBtn").textContent = "START · " + ROUND + " SONGS";
     POOL = await src.pool();
-    const opts = [["all", "All eras & genres (" + POOL.length + ")"]];
-    const decades = [...new Set(POOL.map(decadeOf).filter(Boolean))].sort();
-    decades.forEach(d => {
-      const n = POOL.filter(s => decadeOf(s) === d).length;
-      if (n >= ROUND) opts.push(["d" + d, d + "s (" + n + ")"]);
-    });
-    [...new Set(POOL.map(s => s.genre).filter(Boolean))].sort().forEach(g => {
-      const n = POOL.filter(s => s.genre === g).length;
-      if (n >= ROUND) opts.push(["g" + g, g + " (" + n + ")"]);
-    });
-    $("filter").innerHTML = opts.map(o => '<option value="' + MX.esc(o[0]) + '">' + MX.esc(o[1]) + "</option>").join("");
+    const famN = {}, decN = {};
+    POOL.forEach(s => { const f = MXV.family(s.genre); famN[f] = (famN[f] || 0) + 1; const d = decadeOf(s); if (d) decN[d] = (decN[d] || 0) + 1; });
+    FILTER = MX.chipFilter("filter", "track", [
+      { key: "f", label: "GENRE", opts: MXV.FAMILIES.filter(f => famN[f] >= ROUND && f !== "Other").map(f => ({ v: f, label: f, n: famN[f] })) },
+      { key: "d", label: "ERA", opts: Object.keys(decN).sort().filter(d => decN[d] >= ROUND).map(d => ({ v: d, label: d + "s", n: decN[d] })) }
+    ], () => poolNote());
+    poolNote();
+  }
+  let FILTER = null;
+  function poolNote() {
+    if (!FILTER) return;
+    const n = filtered().length;
+    FILTER.note(n >= ROUND ? n + " songs in this pool. Rounds mix genres, artists and eras." : "Only " + n + " songs match. Pick more genres or eras.");
+    $("startBtn").disabled = n < 1;
   }
 
   function filtered() {
-    const v = $("filter").value;
-    if (v === "all") return POOL;
-    if (v[0] === "d") return POOL.filter(s => decadeOf(s) === +v.slice(1));
-    return POOL.filter(s => s.genre === v.slice(1));
+    if (!FILTER) return POOL;
+    return FILTER.apply(POOL, (s, g, v) => g === "f" ? MXV.family(s.genre) === v : String(decadeOf(s)) === v);
   }
 
-  /* Spread a shuffled pool across genres (and artists): take one song from each genre in turn, so a round
-     of 5 mixes genres instead of landing on five rock songs. Songs from the same artist are held back
-     until the other artists in that genre are used up. */
-  function variety(list, rnd) {
-    const byGenre = {};
-    MX.shuffle(list, rnd).forEach(s => { (byGenre[s.genre || "Other"] = byGenre[s.genre || "Other"] || []).push(s); });
-    const buckets = MX.shuffle(Object.keys(byGenre), rnd).map(g => byGenre[g]);
-    const out = [], lastArtist = [];
-    while (buckets.some(b => b.length)) {
-      for (const b of buckets) {
-        if (!b.length) continue;
-        let i = b.findIndex(s => !out.slice(-3).some(o => o.artist === s.artist));
-        if (i < 0) i = 0;
-        out.push(b.splice(i, 1)[0]);
-      }
-    }
-    return out;
-  }
+  /* Rounds come out of MXV.spread: genre families take turns (weighted by size), no artist repeats within a few
+     songs, and back-to-back songs from the same decade are avoided where the pool allows. */
+  const SEEN = MX.seen("track", 600);
+  const songKey = s => MX.norm(s.title) + "|" + MX.normArtist(s.artist);
 
   function startRound(daily) {
     // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change
@@ -201,8 +188,8 @@
     const day = daily && ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
     const frozen = day && day.track && day.track.length >= ROUND ? day.track.map(s => Object.assign({}, s)) : null;
     const rnd = daily ? MX.mulberry32(MX.hashStr("guess-track-" + MX.todayKey())) : Math.random;
-    const base = frozen || (daily ? POOL : filtered());
-    S = { pool: frozen ? base : (daily ? MX.shuffle(base, rnd) : variety(base, rnd)), p: 0, n: 0, total: Math.min(ROUND, base.length),
+    const base = frozen || (daily ? POOL : SEEN.fresh(filtered(), songKey, ROUND * 3));
+    S = { pool: frozen ? base : MXV.spread(base, rnd, { limit: ROUND * 4 }), p: 0, n: 0, total: Math.min(ROUND, base.length),
           score: 0, results: [], daily, stage: 0, done: false, cur: null };
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
@@ -232,6 +219,7 @@
         await ensure(song);
         if (sess !== S) return;
         sess.cur = song; sess.n++; sess.done = false;
+        SEEN.add(songKey(song));
         renderSong();
         return;
       } catch (e) { if (sess !== S) return; /* unplayable: quietly try the next song */ }

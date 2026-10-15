@@ -5,7 +5,10 @@
 // Here every day is chosen once, written down, and never changed afterwards.
 //
 // - Days are keyed by Chicago's calendar date (the site and leaderboard use the same clock).
-// - Existing days are never rewritten. Only missing days (up to DAYS_AHEAD) are added.
+// - Existing days are never rewritten once they arrive, with one exception: a future day picked by an older
+//   picking method (its "v" is below PICK_VERSION) is picked again. Today and past days are never touched.
+// - Picks go through music/assets/variety.js (the same helper the pages use): genre families take turns,
+//   no artist repeats, and back-to-back decades are avoided, so a day is not five pop songs.
 // - Days older than KEEP_PAST_DAYS are dropped so the file stays small.
 // - THEMED lists one-off days that use a special song pool (2026-10-14 = 2010s songs, data/tracks-2010s.js).
 // - Each track day lists 8 songs: the game plays the first 5 that load, so a song Deezer cannot
@@ -20,6 +23,7 @@ const DIR = process.env.MUSIC_DIR || "music";
 const DAYS_AHEAD = Number(process.env.DAYS_AHEAD || 30);
 const KEEP_PAST_DAYS = 3;
 const TRACKS_PER_DAY = 8, ARTISTS_PER_DAY = 5;
+const PICK_VERSION = 2;
 
 const load = file => {
   if (!existsSync(file)) return {};
@@ -27,6 +31,9 @@ const load = file => {
   new Function("window", readFileSync(file, "utf8"))(w);
   return w;
 };
+
+const V = load(join(DIR, "assets/variety.js")).MXV;
+if (!V) { console.error("Missing " + DIR + "/assets/variety.js"); process.exit(1); }
 
 /* same small helpers the pages use */
 const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -69,22 +76,23 @@ for (const k of Object.keys(days)) if (k < first) delete days[k];
 let added = 0;
 for (let i = 0; i <= DAYS_AHEAD; i++) {
   const key = addDays(today, i);
-  if (days[key]) continue;                                   // never change a day that already exists
+  if (days[key] && (i === 0 || (days[key].v || 1) >= PICK_VERSION)) continue;   // never change today or an up-to-date day
   const rt = mulberry32(hashStr("daily-track-" + key)), ra = mulberry32(hashStr("daily-artist-" + key));
-  const track = shuffle(THEMED[key] && THEMED[key].length >= 30 ? THEMED[key] : seeds, rt).slice(0, TRACKS_PER_DAY);
-  const artist = shuffle(playable, ra).slice(0, ARTISTS_PER_DAY).map(a => {
+  const track = V.spread(THEMED[key] && THEMED[key].length >= 30 ? THEMED[key] : seeds, rt, { limit: TRACKS_PER_DAY });
+  const artist = V.spread(playable, ra, { fam: a => V.familyOfTags(a.tags), artist: a => a.name, decade: a => a.debutDecade || null,
+                                         limit: ARTISTS_PER_DAY }).map(a => {
     const picked = shuffle(lesserOf(a), ra).slice(0, 5).sort((x, y) => y.rank - x.rank).map(t => t.name);
     return { name: a.name, aliases: a.aliases || [], tier: a.tier, tags: a.tags || [], country: a.country || null,
              debutDecade: a.debutDecade || null, url: a.url || null, tracks: a.tracks, picked };
   });
-  days[key] = { track, artist };
+  days[key] = { v: PICK_VERSION, track, artist };
   added++;
 }
 
 const sorted = {};
 for (const k of Object.keys(days).sort()) sorted[k] = days[k];
-const body = "/* Frozen daily challenges, written by tools/build-daily.mjs. Days are never rewritten once they exist. */\n" +
+const body = "/* Frozen daily challenges, written by tools/build-daily.mjs. Today and past days are never rewritten. */\n" +
   "window.DAILY_SCHEDULE = " + JSON.stringify({ generatedAt: new Date().toISOString(), days: sorted }) + ";\n";
 writeFileSync(out + ".tmp", body);
 renameSync(out + ".tmp", out);
-console.log("Daily schedule: " + Object.keys(sorted).length + " days (" + added + " added), " + Object.keys(sorted)[0] + " to " + Object.keys(sorted).slice(-1)[0] + ". " + (body.length / 1024).toFixed(0) + " KB.");
+console.log("Daily schedule: " + Object.keys(sorted).length + " days (" + added + " added or re-picked), " + Object.keys(sorted)[0] + " to " + Object.keys(sorted).slice(-1)[0] + ". " + (body.length / 1024).toFixed(0) + " KB.");

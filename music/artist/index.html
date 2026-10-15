@@ -22,9 +22,8 @@
   <!-- SETUP -->
   <section id="setup" class="panel">
     <h2>NEW ROUND</h2>
+    <div id="filter" class="mx-pool"></div>
     <div class="row">
-      <label for="filter" class="sub" style="margin:0">POOL</label>
-      <select id="filter"></select>
       <button class="primary" id="startBtn">START · 5 ARTISTS</button>
       <button id="dailyBtn">DAILY CHALLENGE</button>
     </div>
@@ -103,6 +102,7 @@
 
 <script src="/music/assets/config.js"></script>
 <script src="/music/assets/common.js"></script>
+<script src="/music/assets/variety.js"></script>
 <script src="/music/assets/credits.js"></script>
 <script src="/music/data/artists.js"></script>
 <script src="/music/data/daily.js"></script>
@@ -116,7 +116,7 @@
   let S = null;
   const dailyNote = () => {
     const t = MX.stats.dailyToday("artist");
-    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "A new daily challenge starts at midnight Chicago time.";
+    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + MX.dailyResetText();
   };
 
   /* an artist is playable if it has at least 3 lesser-known tracks that don't give away the name */
@@ -163,42 +163,53 @@
     MX.renderFooter("foot");
     $("startBtn").textContent = "START · " + ROUND + " ARTISTS";
 
-    const opts = [["all", "All artists (" + ARTISTS.length + ")"]];
-    const count = fn => ARTISTS.filter(fn).length;
-    ["easy", "medium", "hard"].forEach(t => {
-      const n = count(a => a.tier === t);
-      if (n >= ROUND) opts.push(["t:" + t, t[0].toUpperCase() + t.slice(1) + " (" + n + ")"]);
-    });
-    const tagN = {}, decN = {}, ctryN = {};
-    ARTISTS.forEach(a => {
-      (a.tags || []).forEach(g => { tagN[g] = (tagN[g] || 0) + 1; });
-      if (a.debutDecade) decN[a.debutDecade] = (decN[a.debutDecade] || 0) + 1;
-      if (a.country) ctryN[a.country] = (ctryN[a.country] || 0) + 1;
-    });
-    Object.keys(decN).sort().forEach(d => { if (decN[d] >= ROUND) opts.push(["d:" + d, "Started in the " + d + "s (" + decN[d] + ")"]); });
-    Object.keys(tagN).sort().forEach(g => { if (tagN[g] >= ROUND) opts.push(["g:" + g, "Genre: " + g + " (" + tagN[g] + ")"]); });
-    Object.keys(ctryN).sort().forEach(c => { if (ctryN[c] >= ROUND) opts.push(["c:" + c, "From: " + c + " (" + ctryN[c] + ")"]); });
-    $("filter").innerHTML = opts.map(o => '<option value="' + MX.esc(o[0]) + '">' + MX.esc(o[1]) + "</option>").join("");
-    $("startBtn").disabled = $("dailyBtn").disabled = ARTISTS.length < 1;
+    const tierN = {}, famN = {}, decN = {}, regN = {};
+    const bump = (o, k) => { if (k) o[k] = (o[k] || 0) + 1; };
+    ARTISTS.forEach(a => { bump(tierN, a.tier); bump(famN, famOf(a)); bump(decN, a.debutDecade && String(a.debutDecade)); bump(regN, regionOf(a)); });
+    const keep = (o, order) => (order || Object.keys(o).sort()).filter(k => o[k] >= ROUND);
+    FILTER = MX.chipFilter("filter", "artist", [
+      { key: "t", label: "LEVEL", opts: keep(tierN, ["easy", "medium", "hard"]).map(t => ({ v: t, label: t, n: tierN[t] })) },
+      { key: "f", label: "GENRE", opts: keep(famN, MXV.FAMILIES.filter(f => f !== "Other")).map(f => ({ v: f, label: f, n: famN[f] })) },
+      { key: "d", label: "STARTED", opts: keep(decN).map(d => ({ v: d, label: d + "s", n: decN[d] })) },
+      { key: "r", label: "FROM", opts: keep(regN, REGIONS.map(r => r[0])).map(r => ({ v: r, label: r, n: regN[r] })) }
+    ], () => poolNote());
+    poolNote();
+    $("dailyBtn").disabled = ARTISTS.length < 1;
+  }
+
+  const famOf = a => MXV.familyOfTags(a.tags);
+  const REGIONS = [
+    ["North America", ["United States", "Canada"]],
+    ["UK & Ireland", ["United Kingdom", "Ireland"]],
+    ["Europe", ["France", "Germany", "Sweden", "Norway", "Denmark", "Finland", "Iceland", "Netherlands", "Belgium", "Spain", "Italy", "Austria", "Poland", "Czechia", "Russia", "Malta", "Portugal", "Switzerland", "Greece", "Ukraine"]],
+    ["Latin America & Caribbean", ["Puerto Rico", "Colombia", "Brazil", "Argentina", "Jamaica", "Mexico", "Chile", "Cuba", "Dominican Republic", "Venezuela", "Peru"]],
+    ["Asia & Pacific", ["South Korea", "Japan", "Philippines", "Australia", "New Zealand", "Bangladesh", "India", "China", "Taiwan", "Indonesia", "Thailand"]],
+    ["Africa & Middle East", ["Senegal", "Nigeria", "South Africa", "Ghana", "Israel", "Egypt", "Morocco", "Lebanon", "Turkey"]]
+  ];
+  const regionOf = a => { const r = a.country && REGIONS.find(r => r[1].includes(a.country)); return r ? r[0] : null; };
+  let FILTER = null;
+  function poolNote() {
+    if (!FILTER) return;
+    const n = filtered().length;
+    FILTER.note(n >= ROUND ? n + " artists in this pool. Rounds mix genres, eras and countries." : "Only " + n + " artists match. Pick more options.");
+    $("startBtn").disabled = n < 1;
   }
 
   function filtered() {
-    const v = $("filter").value, k = v.slice(0, 2), x = v.slice(2);
-    if (v === "all") return ARTISTS;
-    if (k === "t:") return ARTISTS.filter(a => a.tier === x);
-    if (k === "d:") return ARTISTS.filter(a => String(a.debutDecade) === x);
-    if (k === "g:") return ARTISTS.filter(a => (a.tags || []).includes(x));
-    if (k === "c:") return ARTISTS.filter(a => a.country === x);
-    return ARTISTS;
+    if (!FILTER) return ARTISTS;
+    return FILTER.apply(ARTISTS, (a, g, v) =>
+      g === "t" ? a.tier === v : g === "f" ? famOf(a) === v : g === "d" ? String(a.debutDecade) === v : regionOf(a) === v);
   }
+  const SEEN = MX.seen("artist", 300);
+  const spreadArtists = (list, rnd, n) => MXV.spread(list, rnd, { fam: famOf, artist: a => a.name, decade: a => a.debutDecade || null, limit: n });
 
   function startRound(daily) {
     const rnd = daily ? MX.mulberry32(MX.hashStr("guess-artist-" + MX.todayKey())) : Math.random;
     // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change today's artists.
     const day = daily && ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
     const frozen = day && day.artist && day.artist.length >= ROUND ? day.artist.slice(0, ROUND) : null;
-    const base = daily ? ARTISTS : filtered();
-    const queue = (frozen || MX.shuffle(base, rnd).slice(0, ROUND)).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
+    const base = daily ? ARTISTS : SEEN.fresh(filtered(), a => a.name, ROUND * 3);
+    const queue = (frozen || spreadArtists(base, rnd, ROUND)).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
     S = { queue, i: 0, stage: 0, score: 0, results: [], daily, done: false };
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
@@ -212,6 +223,7 @@
 
   function loadArtist() {
     S.stage = 0; S.done = false;
+    SEEN.add(cur().artist.name);
     $("guessIn").value = ""; $("guessIn").disabled = false;
     $("guessBtn").disabled = false; $("skipBtn").disabled = false;
     $("msg").textContent = "";

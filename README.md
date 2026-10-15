@@ -20,12 +20,27 @@ Cloudflare Worker with static assets; every push to `main` deploys automatically
 - `assets/dc-runtime.js` renders those designs in the browser: links, deep links (`?sym=AAPL`,
   `?lg=nfl&id=8`), formatters and the command line with type-ahead over every US ticker.
 
+## Visitor settings
+
+Nothing is tuned to one person. Choices are kept in the visitor's own browser (localStorage), so they
+don't follow anyone to another device:
+
+- Times show in the visitor's time zone; market hours and "today" for the exchanges stay on New York time.
+- Sports: followed teams (★ FOLLOW on any team page) fill the favorites bar and lead the landing page's Right Now.
+- Market Analysis: dashboard tiles, panel order, watchlist and start page (⚙ CUSTOMIZE); headline and earnings
+  filters; recently viewed tickers.
+- Music: pool filters (genre families and eras, multi-select) and recently played songs and artists, which
+  random rounds skip. Rounds and daily challenges are spread across genres with `music/assets/variety.js`.
+  The daily challenge rolls over at midnight US Central for everyone so the leaderboard is one shared day.
+
 ## Live data
 
 - **Static data files** under `data/` are written by GitHub Actions and committed, which redeploys the site:
   - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/IPOs/macro, monthly 13F check
   - `refresh-sports.yml`: hourly while games are on (9 AM to 1 AM Central) plus a daily run
-  - `refresh-daily.yml`, `refresh-artists.yml`, `history-sports.yml`: digest, music catalog, one-off sports history
+  - `refresh-daily.yml`: tops up the music daily-challenge schedule weekly
+  - `refresh-artists.yml`: rebuilds the music catalog (manual, and once whenever the builder or genre mapping changes)
+  - `history-sports.yml`: one-off sports history
 - **On-demand APIs** run in the Worker (`worker/`, config in `wrangler.jsonc`):
   - `/api/quote`: prices (Yahoo), financials and filings (SEC) for any ticker outside the core list
   - `/api/espn/...`: cached, trimmed pass-through to ESPN's public scoreboards and schedules

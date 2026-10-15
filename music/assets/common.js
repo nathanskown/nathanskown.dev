@@ -38,6 +38,95 @@
       return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
     }
   };
+  /* The visitor's own short time-zone label (ET, CT, GMT+9…) for the header clock. */
+  MX.zoneLabel = function () {
+    try {
+      const n = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" }).formatToParts(new Date()).find(p => p.type === "timeZoneName");
+      return n ? n.value.replace(/^([ECMP])[SD]T$/, "$1T") : "";
+    } catch (e) { return ""; }
+  };
+  /* When today's daily ends, in the visitor's own clock: "at 1:00 AM your time" (midnight US Central). */
+  MX.dailyResetText = function () {
+    try {
+      const now = new Date(), key = MX.todayKey();
+      for (let h = 0; h < 48; h++) {                    // first hour from now where Chicago's date changes
+        const t = new Date(Math.floor(now / 3600000) * 3600000 + h * 3600000);
+        const k = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(t);
+        if (k !== key) {
+          const loc = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(t);
+          return "A new daily challenge starts every day at " + loc + " your time (midnight US Central), the same moment for everyone.";
+        }
+      }
+    } catch (e) {}
+    return "A new daily challenge starts at midnight US Central time, the same moment for everyone.";
+  };
+
+  /* ---------- no recent repeats (per browser; harmless without storage) ---------- */
+  /* Remembers what this browser has been shown so random rounds skip it until the pool runs low. */
+  MX.seen = function (game, cap) {
+    const key = "nskn.music.seen." + game;
+    cap = cap || 400;
+    const read = () => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; } };
+    return {
+      add(id) {
+        if (!id) return;
+        const a = read().filter(x => x !== id); a.push(id);
+        try { localStorage.setItem(key, JSON.stringify(a.slice(-cap))); } catch (e) {}
+      },
+      /* list minus recently seen; if that leaves fewer than `need`, forget the oldest half and try again */
+      fresh(list, idOf, need) {
+        let s = read();
+        while (s.length) {
+          const set = new Set(s), left = list.filter(x => !set.has(idOf(x)));
+          if (left.length >= need) return left;
+          s = s.slice(Math.ceil(s.length / 2));
+          try { localStorage.setItem(key, JSON.stringify(s)); } catch (e) {}
+        }
+        return list;
+      }
+    };
+  };
+
+  /* ---------- multi-select pool filter ---------- */
+  /* groups: [{ key, label, opts: [{ v, label, n }] }]. Picks within a group widen the pool (OR),
+     picks across groups narrow it (AND). Nothing picked in a group means "any". Choices persist per game. */
+  MX.chipFilter = function (id, game, groups, onChange) {
+    const el = MX.$(id), skey = "nskn.music.pool." + game;
+    let sel = {};
+    try { sel = JSON.parse(localStorage.getItem(skey)) || {}; } catch (e) {}
+    groups.forEach(g => { sel[g.key] = (sel[g.key] || []).filter(v => g.opts.some(o => o.v === v)); });
+    const save = () => { try { localStorage.setItem(skey, JSON.stringify(sel)); } catch (e) {} };
+    const render = () => {
+      el.innerHTML = groups.map(g =>
+        '<div class="mx-cg" role="group" aria-label="' + MX.esc(g.label) + '"><span class="mx-cgl">' + MX.esc(g.label) + "</span>" +
+        '<button type="button" class="mx-fc' + (sel[g.key].length ? "" : " on") + '" data-g="' + g.key + '" data-v="" aria-pressed="' + !sel[g.key].length + '">ANY</button>' +
+        g.opts.map(o => {
+          const on = sel[g.key].includes(o.v);
+          return '<button type="button" class="mx-fc' + (on ? " on" : "") + '" data-g="' + g.key + '" data-v="' + MX.esc(o.v) + '" aria-pressed="' + on + '">' +
+            MX.esc(o.label) + ' <span class="dim">' + o.n + "</span></button>";
+        }).join("") + "</div>").join("") +
+        '<div class="mx-cgn" id="' + id + 'N"></div>';
+      onChange && onChange();
+    };
+    el.addEventListener("click", e => {
+      const b = e.target.closest("button.mx-fc");
+      if (!b) return;
+      const g = b.dataset.g, v = b.dataset.v;
+      if (!v) sel[g] = [];
+      else sel[g] = sel[g].includes(v) ? sel[g].filter(x => x !== v) : sel[g].concat(v);
+      save(); render();
+    });
+    render();
+    return {
+      get: () => sel,
+      note: txt => { const n = MX.$(id + "N"); if (n) n.textContent = txt; },
+      /* test(item, groupKey, value) -> bool */
+      apply(list, test) {
+        return list.filter(x => groups.every(g => !sel[g.key].length || sel[g.key].some(v => test(x, g.key, v))));
+      }
+    };
+  };
+
   /* Autocomplete is only a convenience (answers are matched on what you type, never on what was
      suggested). It waits for SUGGEST_MIN characters and only matches at the start of a word. */
   MX.suggestMin = () => Math.max(2, +((window.MUSIC_CONFIG || {}).SUGGEST_MIN) || 4);
@@ -152,7 +241,7 @@
       '<div class="mx-title"><span class="mx-brand">1-NSKN</span>' +
       '<a class="mx-chip" href="/">Main Menu</a><span class="mx-chip on">MUSIC</span>' +
       (page.label ? '<span class="mx-chip">' + MX.esc(page.label) + "</span>" : "") +
-      '<span class="mx-sp"></span><span class="mx-live"><span class="mx-dot"></span>LIVE <span id="mxClock" class="dim">CHI</span></span></div>' +
+      '<span class="mx-sp"></span><span class="mx-live"><span class="mx-dot"></span>LIVE <span id="mxClock" class="dim"></span></span></div>' +
       '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
       '<span class="dim">TRCK &middot; ARTS &middot; LB &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
       '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
@@ -177,7 +266,7 @@
     };
     const clock = MX.$("mxClock");
     const tick = () => {
-      try { clock.textContent = "CHI " + new Intl.DateTimeFormat("en-GB", { timeZone: "America/Chicago", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()); }
+      try { clock.textContent = MX.zoneLabel() + " " + new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()); }
       catch (e) { clock.textContent = ""; }
     };
     tick(); setInterval(tick, 1000);
@@ -207,7 +296,7 @@
     leaderboard_not_configured: "The leaderboard isn't switched on yet.",
     name_not_allowed: "Please pick a different name.",
     bad_name: "Names need 2 to 16 letters or numbers.",
-    wrong_day: "The day changed while you were playing (new daily at midnight Chicago time). Play today's daily to post.",
+    wrong_day: "The day changed while you were playing (a new daily starts at midnight US Central). Play today's daily to post.",
     too_many: "Too many posts from this connection today. Try again tomorrow.",
     origin_not_allowed: "This address isn't allowed to post scores."
   };

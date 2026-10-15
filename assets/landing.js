@@ -23,7 +23,17 @@
   function p2(n) { return String(n).padStart(2, '0'); }
 
   /* ---------- clocks, uptime, session ---------- */
-  var CLOCKS = [['CHI', 'America/Chicago'], ['NYC', 'America/New_York'], ['LDN', 'Europe/London'], ['TYO', 'Asia/Tokyo']];
+  /* The visitor's own zone first, then three market cities (a fourth stands in if the visitor is in one of them). */
+  var LOCAL_TZ = 'UTC';
+  try { LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) {}
+  var ZONE = (function () {
+    try {
+      var n = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date()).filter(function (p) { return p.type === 'timeZoneName'; })[0];
+      return n ? n.value.replace(/^([ECMP])[SD]T$/, '$1T') : 'LOCAL';
+    } catch (e) { return 'LOCAL'; }
+  })();
+  var CLOCKS = [['LOCAL', LOCAL_TZ]].concat([['NYC', 'America/New_York'], ['LDN', 'Europe/London'], ['TYO', 'Asia/Tokyo'], ['HKG', 'Asia/Hong_Kong']]
+    .filter(function (c) { return c[1] !== LOCAL_TZ; }).slice(0, 3));
   var fmt = {};
   CLOCKS.forEach(function (c) {
     fmt[c[1]] = new Intl.DateTimeFormat('en-US', { timeZone: c[1], hourCycle: 'h23', weekday: 'short', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -53,25 +63,26 @@
       if (i === 0) chiNow = time;
     });
     setBind('chiTime', chiNow);
+    setBind('zoneLabel', ZONE);
     var up = Math.floor((Date.now() - started) / 1000);
     setBind('uptime', p2(Math.floor(up / 3600)) + ':' + p2(Math.floor(up / 60) % 60) + ':' + p2(up % 60));
     setBind('viewport', window.innerWidth + ' × ' + window.innerHeight);
     var chiTape = document.getElementById('tapeChi');
-    if (chiTape) chiTape.textContent = 'CHI ' + chiNow;
+    if (chiTape) chiTape.textContent = ZONE + ' ' + chiNow;
     var chiTape2 = document.getElementById('tapeChi2');
-    if (chiTape2) chiTape2.textContent = 'CHI ' + chiNow;
+    if (chiTape2) chiTape2.textContent = ZONE + ' ' + chiNow;
   }
   try { setBind('tz', Intl.DateTimeFormat().resolvedOptions().timeZone || '—'); } catch (e) { setBind('tz', '—'); }
 
   /* ---------- system log tape ---------- */
-  var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · LIVE · QUOTES FOR ANY US TICKER', 'SPORTS · LIVE SCORES, ODDS & TEAM PAGES', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
+  var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · LIVE · QUOTES FOR ANY US TICKER', 'SPORTS · LIVE SCORES, ODDS & TEAM PAGES', 'MUSIC · GUESS THE TRACK & GUESS THE ARTIST', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
   (function buildTape() {
     var track = $('tape');
     [0, 1].forEach(function (copy) {
       var wrap = copy ? el('span', 'nk-dup') : track;
       if (copy) wrap.setAttribute('aria-hidden', 'true');
       SYSLOG.forEach(function (t) {
-        var q = el('span', 'nk-q', t === '@CHI' ? 'CHI --:--:--' : t);
+        var q = el('span', 'nk-q', t === '@CHI' ? ZONE + ' --:--:--' : t);
         if (t === '@CHI') q.id = copy ? 'tapeChi2' : 'tapeChi';
         wrap.appendChild(q);
       });
@@ -181,7 +192,7 @@
   /* ---------- headline scramble + typing ---------- */
   var scr = null, typ = null, typedOnce = false;
   function type() {
-    var T = 'a personal terminal for market analysis & sports';
+    var T = 'a personal terminal for markets, sports & music';
     var out = $('typed');
     if (reduced) { out.textContent = T; return; }
     var i = 0; clearInterval(typ);
@@ -216,7 +227,7 @@
     ['MOUNT  /website/finance', 'OK'],
     ['MOUNT  /website/sports', 'OK'],
     ['HANDSHAKE  nathanskown.dev:443', 'OK'],
-    ['SYNC CLOCKS  CHI · NYC · LDN · TYO', 'OK'],
+    ['SYNC CLOCKS  ' + CLOCKS.map(function (c) { return c[0]; }).join(' · '), 'OK'],
     ['BUILD SURFACE  IV(K,T) · 36x22 MESH', 'OK'],
     ['INDEX SECTIONS  MARKET ANALYSIS · SPORTS · MUSIC', 'OK']
   ];
@@ -388,17 +399,19 @@
     var v5 = Math.floor(Date.now() / 300000);
     var j = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
     var TILES = [['spx', 'S&P 500', 2], ['ixic', 'NASDAQ', 2], ['tnx', 'US 10Y', 2], ['vix', 'VIX', 2]];
-    // league-wide scoreboards (trimmed by the site's ESPN proxy); Detroit + MSU games are highlighted
+    // league-wide scoreboards (trimmed by the site's ESPN proxy); teams this visitor follows on the Sports page come first
     var LGS = [['NFL', 'football/nfl', 'nfl'], ['MLB', 'baseball/mlb', 'mlb'], ['NBA', 'basketball/nba', 'nba'], ['NHL', 'hockey/nhl', 'nhl'],
       ['CFB', 'football/college-football', 'ncaaf'], ['CBB', 'basketball/mens-college-basketball', 'ncaab']];
-    var MINE = { nfl: '8', mlb: '6', nba: '8', nhl: '5', ncaaf: '127', ncaab: '127' };
+    var FOLLOWS = [];
+    try { FOLLOWS = JSON.parse(localStorage.getItem('skown.sports.follows.v2')) || []; } catch (e) {}
+    var followed = function (lg, id) { return FOLLOWS.some(function (f) { return f && f.lg === lg && String(f.id) === String(id); }); };
     var mk = '', games = '';
     function render() { box.innerHTML = mk + games; }
     function when(iso) {
       var d = new Date(iso), now = new Date();
-      var day = d.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }).toUpperCase();
-      var same = d.toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) === now.toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
-      var t = d.toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }).replace(':00', '');
+      var day = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      var same = d.toLocaleDateString('en-US') === now.toLocaleDateString('en-US');
+      var t = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(':00', '');
       return (same ? 'TODAY' : day) + ' ' + t;
     }
     j('/data/finance/dashboard.json?v=' + v5).then(function (d) {
@@ -410,10 +423,10 @@
         return '<dt>' + esc(x[1]) + '</dt><dd>' + px + '</dd><dd class="nk-chg' + (up ? '' : ' nk-dn') + '">' + (up ? '▲ +' : '▼ −') + Math.abs(t.pct || 0).toFixed(2) + '%</dd>';
       }).join('');
       var asof = document.getElementById('nowAsOf');
-      if (asof && d.asOf) asof.textContent = 'As of ' + new Date(d.asOf * 1000).toLocaleTimeString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' }) + ' CT';
+      if (asof && d.asOf) asof.textContent = 'As of ' + new Date(d.asOf * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' ' + ZONE;
       render();
     }).catch(function () { mk = ''; render(); });
-    var day = function (ms) { return new Date(ms).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }); };
+    var day = function (ms) { return new Date(ms).toLocaleDateString('en-US'); };
     Promise.all(LGS.map(function (L) {
       return j('/api/espn/site/v2/sports/' + L[1] + '/scoreboard').then(function (sb) {
         return (sb.events || []).map(function (e) {
@@ -422,7 +435,7 @@
           var home = cs.filter(function (x) { return x.homeAway === 'home'; })[0] || cs[1] || {}, away = cs.filter(function (x) { return x.homeAway === 'away'; })[0] || cs[0] || {};
           var ab = function (x) { return ((x.team || {}).abbreviation || (x.team || {}).shortDisplayName || '?'); };
           var sc = function (x) { return x.score && typeof x.score === 'object' ? x.score.displayValue : (x.score == null ? '' : x.score); };
-          var mine = cs.some(function (x) { return String((x.team || {}).id) === MINE[L[2]]; });
+          var mine = cs.some(function (x) { return followed(L[2], (x.team || {}).id); });
           return { L: L, id: e.id, at: Date.parse(e.date), state: st.state, done: !!st.completed, detail: st.shortDetail || '', away: ab(away), home: ab(home),
             as: sc(away), hs: sc(home), mine: mine };
         });
@@ -446,4 +459,31 @@
       render();
     });
   })();
+})();
+
+/* "Last updated": the newest site change on GitHub, skipping the bots' data refreshes. Cached for the visit;
+   the date written in index.html stays if GitHub can't be reached. */
+(function () {
+  var out = document.getElementById('lastUpd');
+  if (!out || !window.fetch) return;
+  var show = function (iso) {
+    var d = new Date(iso);
+    if (!isNaN(d)) out.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+  };
+  try { var c = sessionStorage.getItem('nskn.lastUpd'); if (c) { show(c); return; } } catch (e) {}
+  var DATA = /^(data:|refresh |daily challenge|sports data|music: daily)/i;
+  fetch('https://api.github.com/repos/nathanskown/nathanskown.dev/commits?sha=main&per_page=100')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (list) {
+      var hit = (list || []).filter(function (x) {
+        var msg = ((x.commit || {}).message || '').split('\n')[0];
+        var who = ((x.author || {}).login || '') + ' ' + (((x.commit || {}).author || {}).name || '');
+        return !DATA.test(msg) && !/\[bot\]|actions|-bot\b/i.test(who);
+      })[0];
+      if (!hit) return;
+      var iso = hit.commit.committer.date;
+      show(iso);
+      try { sessionStorage.setItem('nskn.lastUpd', iso); } catch (e) {}
+    })
+    .catch(function () {});
 })();

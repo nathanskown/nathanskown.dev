@@ -30,7 +30,7 @@
       </div>
       <div id="lbMeta" class="hint"></div>
       <div id="lbBody" style="margin-top:6px"></div>
-      <p class="hint">Only the daily challenge counts (same songs and artists for everyone, new ones at midnight Chicago time). Scores are self-reported and unverified, so treat the board as for fun. One entry per name per day; the best score is kept.</p>
+      <p class="hint">Only the daily challenge counts (same songs and artists for everyone, new ones at midnight US Central, the same moment worldwide). Scores are self-reported and unverified, so treat the board as for fun. One entry per name per day; the best score is kept.</p>
     </section>
 
     <section id="credits"></section>
@@ -58,7 +58,7 @@
     try {
       const j = await MX.lb.board(game, scope);
       if (mine !== seq) return;
-      $("lbMeta").textContent = scope === "today" ? "Daily challenge for " + j.date + " (Chicago time). Top " + j.entries.length + "." : "Best single-day scores ever posted.";
+      $("lbMeta").textContent = scope === "today" ? "Daily challenge for " + j.date + " (US Central calendar day). Top " + j.entries.length + "." : "Best single-day scores ever posted.";
       $("lbBody").innerHTML = MX.lb.table(j.entries, scope === "alltime", MX.lb.savedName());
     } catch (e) {
       if (mine !== seq) return;

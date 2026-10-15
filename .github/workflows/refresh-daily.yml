@@ -1,6 +1,6 @@
 name: Refresh daily challenge schedule
 
-# Adds any missing future days to music/data/daily.js. Days that already exist are never changed.
+# Adds any missing future days to music/data/daily.js. Today and past days are never changed.
 on:
   workflow_dispatch:
   schedule:

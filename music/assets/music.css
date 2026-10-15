@@ -83,6 +83,16 @@ button:hover:not(:disabled){background:var(--g);color:#000;border-color:var(--g)
 button:disabled{opacity:.3;cursor:not-allowed}
 button.primary{border-color:var(--g);color:var(--g);font-weight:600}
 button.primary:hover:not(:disabled){color:#000}
+/* multi-select pool filter */
+.mx-pool{margin-bottom:12px}
+.mx-cg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.mx-cgl{color:var(--dim);font-size:11px;letter-spacing:.14em;min-width:64px}
+button.mx-fc{padding:6px 10px;font-size:11.5px;min-height:32px;color:var(--dim)}
+button.mx-fc .dim{color:var(--mute);font-size:.9em}
+button.mx-fc.on{color:#000;background:var(--g);border-color:var(--g);text-shadow:none}
+button.mx-fc.on .dim{color:#000}
+.mx-cgn{color:var(--mute);font-size:12px}
+.mx-cgn b{color:var(--hi);font-weight:500}
 .hint{color:var(--mute);font-size:12px;margin-top:12px}
 .hint b{color:var(--dim);font-weight:500}
 
