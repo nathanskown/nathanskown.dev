@@ -10,7 +10,8 @@
 // - Picks go through music/assets/variety.js (the same helper the pages use): genre families take turns,
 //   no artist repeats, and back-to-back decades are avoided, so a day is not five pop songs.
 // - Days older than KEEP_PAST_DAYS are dropped so the file stays small.
-// - THEMED lists one-off days that use a special song pool (2026-10-14 = 2010s songs, data/tracks-2010s.js).
+// - Track days draw only from songs of 1970 or later in Pop, Hip-Hop, R&B & Soul, Rock & Alt and Country & Folk.
+//   THEMED lists one-off days with a fixed song list (2026-10-15 = well-known rock).
 // - Each track day lists 8 songs: the game plays the first 5 that load, so a song Deezer cannot
 //   play is skipped for everyone in the same order.
 // - Each artist day stores the 5 full artist records plus the exact clue tracks ("picked").
@@ -23,7 +24,7 @@ const DIR = process.env.MUSIC_DIR || "music";
 const DAYS_AHEAD = Number(process.env.DAYS_AHEAD || 30);
 const KEEP_PAST_DAYS = 3;
 const TRACKS_PER_DAY = 8, ARTISTS_PER_DAY = 5;
-const PICK_VERSION = 2;
+const PICK_VERSION = 3;
 
 const load = file => {
   if (!existsSync(file)) return {};
@@ -52,9 +53,29 @@ const curated = load(join(DIR, "data/tracks.js")).TRACK_SEEDS || [];
 const generated = load(join(DIR, "data/tracks-generated.js")).TRACK_SEEDS_GENERATED || [];
 const seen = new Set(curated.map(s => norm(s.title) + "|" + normArtist(s.artist)));
 const seeds = curated.concat(generated.filter(s => !seen.has(norm(s.title) + "|" + normArtist(s.artist))));
-// One-off themed days for Guess the Track. Every other day draws from all songs.
-const decade = load(join(DIR, "data/tracks-2010s.js")).TRACK_SEEDS_2010S || [];
-const THEMED = { "2026-10-14": decade };   // 2010s songs only, for this one day
+// One-off themed days: a fixed list of songs used instead of the random pick.
+const R = (t, a, y) => ({ id: "rock-" + norm(t).replace(/ /g, ""), title: t, artist: a, year: y, genre: "Rock" });
+const THEMED = {
+  "2026-10-15": [R("Sweet Child o' Mine", "Guns N' Roses", 1987), R("Smells Like Teen Spirit", "Nirvana", 1991), R("Livin' on a Prayer", "Bon Jovi", 1986),
+    R("Back in Black", "AC/DC", 1980), R("Mr. Brightside", "The Killers", 2003), R("Seven Nation Army", "The White Stripes", 2003),
+    R("Don't Stop Believin'", "Journey", 1981), R("Hotel California", "Eagles", 1976)]   // today: well-known rock
+};
+
+const themedKeys = new Set(Object.values(THEMED).flat().map(x => norm(x.title) + "|" + normArtist(x.artist)));
+// Guess the Track daily pool: songs from 1970 onward, in five broad genre families only. Songs that only have an
+// artist-debut decade (no release year) use that decade. Only the most popular artists ("easy" tier, top third by
+// Last.fm listeners) are used so every daily song is recognizable. Curated songs and data/tracks-2010s.js are included.
+const FIVE = ["Pop", "Hip-Hop", "R&B & Soul", "Rock & Alt", "Country & Folk"];
+const decade2010s = load(join(DIR, "data/tracks-2010s.js")).TRACK_SEEDS_2010S || [];
+const tierOf = {}; ((load(join(DIR, "data/artists.js")).ARTIST_DATA || { artists: [] }).artists).forEach(a => { tierOf[normArtist(a.name)] = a.tier; });
+const dseen = new Set();
+const dailyPool = seeds.concat(decade2010s).filter(s => {
+  if (themedKeys.has(norm(s.title) + "|" + normArtist(s.artist))) return false;   // themed songs are not reused in random days
+  const k = norm(s.title) + "|" + normArtist(s.artist);
+  if (dseen.has(k)) return false; dseen.add(k);
+  if (String(s.id).startsWith("g") && tierOf[normArtist(s.artist)] !== "easy") return false;
+  return (s.year || s.era) >= 1970 && FIVE.includes(V.family(s.genre));
+});
 
 const A = load(join(DIR, "data/artists.js")).ARTIST_DATA || { meta: {}, artists: [] };
 const lesserFrom = (A.meta && A.meta.lesserFrom) || 3;
@@ -81,7 +102,7 @@ for (let i = 0; i <= DAYS_AHEAD; i++) {
   const key = addDays(today, i);
   if (days[key] && (i === 0 || (days[key].v || 1) >= PICK_VERSION)) continue;   // never change today or an up-to-date day
   const rt = mulberry32(hashStr("daily-track-" + key)), ra = mulberry32(hashStr("daily-artist-" + key));
-  const track = V.spread(THEMED[key] && THEMED[key].length >= 30 ? THEMED[key] : seeds, rt, { limit: TRACKS_PER_DAY });
+  const track = THEMED[key] ? shuffle(THEMED[key], rt) : V.spread(dailyPool, rt, { limit: TRACKS_PER_DAY });
   const artist = V.spread(playable, ra, { fam: a => V.familyOfTags(a.tags), artist: a => a.name, decade: a => a.debutDecade || null,
                                          limit: ARTISTS_PER_DAY }).map(a => {
     const picked = shuffle(lesserOf(a), ra).slice(0, 5).sort((x, y) => y.rank - x.rank).map(t => t.name);
