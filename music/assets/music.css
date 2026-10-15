@@ -193,3 +193,14 @@ body.dev .devnote{display:block}
   .mx-ph{flex-direction:column;gap:2px}
   .tile-t{font-size:44px}
 }
+
+/* ---------- leaderboard ---------- */
+.lbbox{margin-top:16px;padding:12px;border:1px solid var(--line);background:#000}
+.lbhead{color:var(--hi);font-size:12px;letter-spacing:.16em;font-weight:600;margin-bottom:10px}
+table.lb{margin:10px 0 0;width:100%}
+table.lb td:first-child{color:var(--dim);width:48px}
+table.lb tr.me td{background:var(--hover);color:var(--hi)}
+.lbbox table.lb{width:100%;margin-left:0;margin-right:0}
+.tabs{gap:8px}
+.tab{padding:7px 12px;font-size:12px}
+.tab.on{background:var(--g);color:#000;border-color:var(--g);text-shadow:none}

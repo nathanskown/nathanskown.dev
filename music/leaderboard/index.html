@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leaderboard · NSKN Terminal</title>
+<meta name="description" content="Daily leaderboard for the Music guessing games.">
+<meta name="theme-color" content="#050007">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/music/assets/music.css">
+</head>
+<body>
+<div class="mx">
+  <div id="chrome"></div>
+  <main class="wrap">
+    <div class="mx-ph"><span>NSKN &raquo; Music &raquo; Leaderboard</span><span class="dim">Daily challenge scores · names are self-entered</span></div>
+
+    <section class="panel">
+      <h2>LEADERBOARD</h2>
+      <div class="row tabs" id="tabsGame" role="tablist" aria-label="Game">
+        <button class="tab on" data-game="track" role="tab" aria-selected="true">TRCK · GUESS THE TRACK</button>
+        <button class="tab" data-game="artist" role="tab" aria-selected="false">ARTS · GUESS THE ARTIST</button>
+      </div>
+      <div class="row tabs" id="tabsScope" role="tablist" aria-label="Period" style="margin-top:8px">
+        <button class="tab on" data-scope="today" role="tab" aria-selected="true">TODAY</button>
+        <button class="tab" data-scope="alltime" role="tab" aria-selected="false">ALL-TIME BEST DAYS</button>
+      </div>
+      <div id="lbMeta" class="hint"></div>
+      <div id="lbBody" style="margin-top:6px"></div>
+      <p class="hint">Only the daily challenge counts (same songs and artists for everyone, new ones at midnight Chicago time). Scores are self-reported and unverified, so treat the board as for fun. One entry per name per day; the best score is kept.</p>
+    </section>
+
+    <section id="credits"></section>
+  </main>
+  <footer id="foot"></footer>
+</div>
+
+<script src="/music/assets/config.js"></script>
+<script src="/music/assets/common.js"></script>
+<script src="/music/assets/credits.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = MX.$;
+  let game = "track", scope = "today", seq = 0;
+  MX.chrome("chrome", { key: "board", label: "LEADERBOARD" });
+  MX.renderCredits("credits", "hub");
+  MX.renderFooter("foot");
+
+  async function load() {
+    const mine = ++seq;
+    $("lbMeta").textContent = "";
+    if (!MX.lb.enabled()) { $("lbBody").innerHTML = '<p class="hint">The leaderboard needs the music Worker (WORKER_URL in assets/config.js).</p>'; return; }
+    $("lbBody").innerHTML = '<p class="hint">Loading…</p>';
+    try {
+      const j = await MX.lb.board(game, scope);
+      if (mine !== seq) return;
+      $("lbMeta").textContent = scope === "today" ? "Daily challenge for " + j.date + " (Chicago time). Top " + j.entries.length + "." : "Best single-day scores ever posted.";
+      $("lbBody").innerHTML = MX.lb.table(j.entries, scope === "alltime", MX.lb.savedName());
+    } catch (e) {
+      if (mine !== seq) return;
+      $("lbBody").innerHTML = '<p class="hint"><span class="bad">' + MX.esc(MX.lb.message(e.code)) + "</span></p>";
+    }
+  }
+  function tabs(id, attr, set) {
+    $(id).addEventListener("click", e => {
+      const b = e.target.closest("button[data-" + attr + "]");
+      if (!b) return;
+      Array.prototype.forEach.call($(id).children, x => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      set(b.dataset[attr]); load();
+    });
+  }
+  tabs("tabsGame", "game", v => { game = v; });
+  tabs("tabsScope", "scope", v => { scope = v; });
+  load();
+})();
+</script>
+</body>
+</html>

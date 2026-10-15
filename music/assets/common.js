@@ -28,10 +28,20 @@
     }
     return a;
   };
+  /* "today" is Chicago's calendar day for everyone, so the daily challenge and leaderboard
+     roll over at the same moment worldwide. */
   MX.todayKey = function () {
-    const d = new Date(), p = n => String(n).padStart(2, "0");
-    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    try {
+      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    } catch (e) {
+      const d = new Date(), p = n => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+    }
   };
+  /* Autocomplete is only a convenience (answers are matched on what you type, never on what was
+     suggested). It waits for SUGGEST_MIN characters and only matches at the start of a word. */
+  MX.suggestMin = () => Math.max(2, +((window.MUSIC_CONFIG || {}).SUGGEST_MIN) || 4);
+  MX.wordStart = (hay, needle) => hay.startsWith(needle) || hay.includes(" " + needle);
 
   /* ---------- guess matching ---------- */
   /* Normalize: lowercase, strip accents, drop (parentheticals), [brackets],
@@ -129,6 +139,7 @@
     MUS: "/music/", MUSIC: "/music/",
     TRCK: "/music/track/", TRACK: "/music/track/", "2": "/music/track/",
     ARTS: "/music/artist/", ARTIST: "/music/artist/", "3": "/music/artist/",
+    LB: "/music/leaderboard/", BOARD: "/music/leaderboard/", LEADERBOARD: "/music/leaderboard/", "5": "/music/leaderboard/",
     MKT: "/finance/", MARKET: "/finance/", FIN: "/finance/", FINANCE: "/finance/",
     SPRT: "/sports/", SPORTS: "/sports/", SPORT: "/sports/",
     CONTACT: "/#contact", ABOUT: "/"
@@ -136,14 +147,14 @@
   MX.chrome = function (id, page) {
     const el = MX.$(id);
     if (!el) return;
-    const keys = [["/", "1) HOME", ""], ["/music/track/", "2) TRCK", "track"], ["/music/artist/", "3) ARTS", "artist"], ["/music/", "4) MUSIC", "hub"]];
+    const keys = [["/", "1) HOME", ""], ["/music/track/", "2) TRCK", "track"], ["/music/artist/", "3) ARTS", "artist"], ["/music/", "4) MUSIC", "hub"], ["/music/leaderboard/", "5) BOARD", "board"]];
     el.innerHTML =
       '<div class="mx-title"><span class="mx-brand">1-NSKN</span>' +
       '<a class="mx-chip" href="/">Main Menu</a><span class="mx-chip on">MUSIC</span>' +
       (page.label ? '<span class="mx-chip">' + MX.esc(page.label) + "</span>" : "") +
       '<span class="mx-sp"></span><span class="mx-live"><span class="mx-dot"></span>LIVE <span id="mxClock" class="dim">CHI</span></span></div>' +
       '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
-      '<span class="dim">TRCK &middot; ARTS &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
+      '<span class="dim">TRCK &middot; ARTS &middot; LB &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
       '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
       '<input id="mxCmdIn" type="text" placeholder="TYPE HELP, THEN GO" spellcheck="false" aria-label="Command line">' +
       '<button type="submit">GO</button></form>' +
@@ -158,7 +169,7 @@
       input.value = "";
       if (!c) { msg.textContent = "Type a function, e.g. TRCK or ARTS, then press GO."; return; }
       if (c === "HELP" || c === "H" || c === "?") {
-        msg.innerHTML = "TRCK guess the track &middot; ARTS guess the artist &middot; MUS music home &middot; HOME site menu &middot; MKT market analysis &middot; SPRT sports &middot; CONTACT";
+        msg.innerHTML = "TRCK guess the track &middot; ARTS guess the artist &middot; LB leaderboard &middot; MUS music home &middot; HOME site menu &middot; MKT market analysis &middot; SPRT sports &middot; CONTACT";
         return;
       }
       if (ROUTES[c]) { msg.textContent = "Opening " + c + "…"; location.href = ROUTES[c]; return; }
@@ -188,6 +199,42 @@
       } catch (e) { /* storage blocked: nothing to save */ }
     },
     dailyToday: game => { const g = MX.stats.get(game); return g && g.dailyKey === MX.todayKey() ? g : null; }
+  };
+
+  /* ---------- leaderboard client (talks to the music-api Worker; needs WORKER_URL and its KV binding) ---------- */
+  const NAMEKEY = "nskn.music.name";
+  const LB_ERR = {
+    leaderboard_not_configured: "The leaderboard isn't switched on yet.",
+    name_not_allowed: "Please pick a different name.",
+    bad_name: "Names need 2 to 16 letters or numbers.",
+    wrong_day: "The day changed while you were playing (new daily at midnight Chicago time). Play today's daily to post.",
+    too_many: "Too many posts from this connection today. Try again tomorrow.",
+    origin_not_allowed: "This address isn't allowed to post scores."
+  };
+  MX.lb = {
+    base: () => String((window.MUSIC_CONFIG || {}).WORKER_URL || "").replace(/\/+$/, ""),
+    enabled: () => !!MX.lb.base(),
+    savedName: () => { try { return localStorage.getItem(NAMEKEY) || ""; } catch (e) { return ""; } },
+    saveName: n => { try { localStorage.setItem(NAMEKEY, n); } catch (e) { /* storage blocked */ } },
+    message: code => LB_ERR[code] || "Couldn't reach the leaderboard. Try again in a minute.",
+    async call(path, opts) {
+      let r, j = {};
+      try { r = await fetch(MX.lb.base() + path, opts); j = await r.json().catch(() => ({})); }
+      catch (e) { throw Object.assign(new Error("network"), { code: "network" }); }
+      if (!r.ok) throw Object.assign(new Error(j.error || "http " + r.status), { code: j.error || "http" });
+      return j;
+    },
+    post: (game, name, score, max) => MX.lb.call("/score", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ game, name, score, max, date: MX.todayKey() })
+    }),
+    board: (game, scope) => MX.lb.call("/board?game=" + encodeURIComponent(game) + "&scope=" + encodeURIComponent(scope)),
+    table(entries, withDate, mine) {
+      if (!entries || !entries.length) return '<p class="hint" style="margin:10px 0">No scores yet. Be the first.</p>';
+      return '<table class="lb"><thead><tr><th>#</th><th>NAME</th><th class="n">SCORE</th>' + (withDate ? "<th class=\"n\">DAY</th>" : "") + "</tr></thead><tbody>" +
+        entries.map((e, i) => '<tr' + (mine && e.name.toLowerCase() === mine.toLowerCase() ? ' class="me"' : "") + "><td>" + (i + 1) + "</td><td>" + MX.esc(e.name) + '</td><td class="n">' + e.score + " / " + e.max + "</td>" +
+          (withDate ? '<td class="n">' + MX.esc(e.date) + "</td>" : "") + "</tr>").join("") + "</tbody></table>";
+    }
   };
 
   /* ---------- little equalizer that dances while a clip plays ---------- */

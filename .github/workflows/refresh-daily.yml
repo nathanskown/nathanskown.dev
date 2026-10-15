@@ -1,0 +1,31 @@
+name: Refresh daily challenge schedule
+
+# Adds any missing future days to music/data/daily.js. Days that already exist are never changed.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"   # Mondays
+
+permissions:
+  contents: write
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/build-daily.mjs
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add music/data/daily.js
+          git diff --cached --quiet && echo "No change." && exit 0
+          git commit -m "Daily challenge schedule: top up"
+          git pull --rebase origin main
+          git push origin HEAD:main

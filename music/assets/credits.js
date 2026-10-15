@@ -6,8 +6,10 @@
   "use strict";
 
   const ABOUT =
-    "<p><b>About.</b> The Music section is a free personal project. It has no ads, no paid features and no accounts, " +
-    "and it does not ask for or store personal information.</p>";
+    "<p><b>About.</b> The Music section is a free personal project. It has no ads, no paid features and no accounts. " +
+    "Your personal bests stay in your own browser. If you choose to post a daily score to the leaderboard, the name you type " +
+    "and your score are stored on Cloudflare and shown publicly (use any name you like, not your real one if you prefer); your " +
+    "connection address is kept only as a one-way hash for about a day to limit spam. Nothing else is collected.</p>";
 
   const OWNERSHIP =
     "<p><b>Ownership.</b> Song titles, artist names, artwork and trademarks belong to their respective owners. " +

@@ -16,5 +16,6 @@
 window.MUSIC_CONFIG = {
   MODE: "live",
   WORKER_URL: "https://music-api.nskown.workers.dev",
-  ROUND_SIZE: 5
+  ROUND_SIZE: 5,
+  SUGGEST_MIN: 4   // autocomplete waits for this many characters (answers never depend on it)
 };

@@ -103,6 +103,13 @@
       <button id="againBtn">NEW ROUND</button>
     </div>
     <div class="msg" id="copyMsg"></div>
+    <div id="lbBox" class="lbbox hidden">
+      <div class="lbhead">POST TO TODAY'S LEADERBOARD</div>
+      <div class="guess"><span class="pfx">NAME &rsaquo;</span><input type="text" id="lbName" maxlength="16" placeholder="Your name (2 to 16 characters)" autocomplete="off" spellcheck="false"></div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="lbSubmit">POST MY SCORE</button><a class="badge" href="/music/leaderboard/">VIEW FULL BOARD</a></div>
+      <div class="msg" id="lbMsg"></div>
+      <div id="lbTop"></div>
+    </div>
   </section>
 
   <section id="credits"></section>
@@ -115,6 +122,7 @@
 <script src="/music/assets/credits.js"></script>
 <script src="/music/data/tracks.js"></script>
 <script src="/music/data/tracks-generated.js"></script>
+<script src="/music/data/daily.js"></script>
 <script src="/music/assets/sources.js"></script>
 <script>
 (function () {
@@ -125,7 +133,7 @@
   let POOL = [], S = null, EQ = { on() {}, off() {} };
   const dailyNote = () => {
     const t = MX.stats.dailyToday("track");
-    $("dailyNote").textContent = t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it." : "";
+    $("dailyNote").textContent = (t ? "Today's daily result: " + t.dailyScore + " / " + t.dailyMax + ". You can replay it. " : "") + "A new daily challenge starts at midnight Chicago time.";
   };
 
   const decadeOf = s => (s.year ? Math.floor(s.year / 10) * 10 : (s.era || null));
@@ -166,9 +174,13 @@
   }
 
   function startRound(daily) {
+    // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change
+    // today's songs. It lists spare songs after the first 5; unplayable ones are skipped in the same order for everyone.
+    const day = daily && ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
+    const frozen = day && day.track && day.track.length >= ROUND ? day.track.map(s => Object.assign({}, s)) : null;
     const rnd = daily ? MX.mulberry32(MX.hashStr("guess-track-" + MX.todayKey())) : Math.random;
-    const base = daily ? POOL : filtered();
-    S = { pool: MX.shuffle(base, rnd), p: 0, n: 0, total: Math.min(ROUND, base.length),
+    const base = frozen || (daily ? POOL : filtered());
+    S = { pool: frozen ? base : MX.shuffle(base, rnd), p: 0, n: 0, total: Math.min(ROUND, base.length),
           score: 0, results: [], daily, stage: 0, done: false, cur: null };
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
@@ -195,7 +207,7 @@
     while (sess.p < sess.pool.length) {
       const song = sess.pool[sess.p++];
       try {
-        await src.prepare(song);
+        await ensure(song);
         if (sess !== S) return;
         sess.cur = song; sess.n++; sess.done = false;
         renderSong();
@@ -223,7 +235,22 @@
     $("artQ").textContent = blurred ? "?" : "";
   }
 
+  // A song's preview link is resolved once and reused while it is still fresh (links expire after ~15 minutes).
+  const fresh = s => s.previewUrl && Date.now() - (s.resolvedAt || 0) < 8 * 60 * 1000;
+  function ensure(song) {
+    if (fresh(song) || (!MX.isLive() && song.prepared)) return Promise.resolve(song);
+    if (!song._p) song._p = src.prepare(song).then(x => { song.prepared = true; return x; }).finally(() => { delete song._p; });
+    return song._p;
+  }
+  // While the player is guessing, look up the next song in the background so there is no wait after "Next".
+  function prefetchNext() {
+    const sess = S, nxt = sess && sess.pool[sess.p];
+    if (!nxt || sess.n >= sess.total) return;
+    ensure(nxt).then(s => { if (src.warm) src.warm(s); }).catch(() => {});
+  }
+
   function renderSong() {
+    prefetchNext();
     setArt(S.cur, true);
     $("msg").textContent = "";
     setControls(true);
@@ -319,7 +346,33 @@
       S.score + "/" + (R.length * POINTS[0]) + "  nathanskown.dev";
     $("copyMsg").textContent = "";
     MX.stats.record("track", S.score, R.length * POINTS[0], S.daily);
+    setupBoard("track", S.score, R.length * POINTS[0]);
   }
+
+  /* ---------------- leaderboard (daily rounds only) ---------------- */
+  function setupBoard(game, score, max) {
+    const box = $("lbBox");
+    box.classList.add("hidden");
+    if (!S.daily || !MX.lb.enabled()) return;
+    box.classList.remove("hidden");
+    $("lbName").value = MX.lb.savedName();
+    $("lbMsg").textContent = ""; $("lbTop").innerHTML = ""; $("lbSubmit").disabled = false;
+    $("lbSubmit").onclick = async () => {
+      const name = $("lbName").value.trim();
+      if (name.length < 2) { $("lbMsg").innerHTML = '<span class="bad">Names need 2 to 16 letters or numbers.</span>'; return; }
+      $("lbSubmit").disabled = true; $("lbMsg").textContent = "Posting…";
+      try {
+        const j = await MX.lb.post(game, name, score, max);
+        MX.lb.saveName(name);
+        $("lbMsg").innerHTML = j.updated ? '<span class="ok">Posted. You are #' + j.rank + " today.</span>" : "You already have a better score posted today (#" + j.rank + ").";
+        $("lbTop").innerHTML = MX.lb.table(j.top, false, name);
+      } catch (e) {
+        $("lbMsg").innerHTML = '<span class="bad">' + MX.esc(MX.lb.message(e.code)) + "</span>";
+        $("lbSubmit").disabled = false;
+      }
+    };
+  }
+
 
   /* ---------------- wiring ---------------- */
   const ac = MX.Autocomplete($("guessIn"), $("sugg"), q => src.suggest(q), { onEnter: submitGuess });

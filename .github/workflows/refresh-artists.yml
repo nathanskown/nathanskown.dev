@@ -40,6 +40,8 @@ jobs:
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           MB_CONTACT: ${{ vars.MB_CONTACT }}
+      - name: Top up the frozen daily schedule
+        run: node tools/build-daily.mjs
       - name: Commit if anything changed
         run: |
           git config user.name "music-catalog-bot"

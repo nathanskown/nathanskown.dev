@@ -29,13 +29,13 @@
 
   function suggest(q) {
     const n = MX.norm(q);
-    if (n.length < 2) return Promise.resolve([]);
+    if (n.length < MX.suggestMin()) return Promise.resolve([]);
     const seen = new Set(), out = [];
     for (const s of allSeeds()) {
-      if (MX.norm(s.title).includes(n)) {
+      if (MX.wordStart(MX.norm(s.title), n)) {
         const k = MX.norm(s.title) + "|" + MX.normArtist(s.artist);
         if (!seen.has(k)) { seen.add(k); out.push({ label: s.title, sub: s.artist }); }
-        if (out.length >= 6) break;
+        if (out.length >= 5) break;
       }
     }
     return Promise.resolve(out);
@@ -136,7 +136,12 @@
         else { raf = null; audio.pause(); onEnd(); }
       })();
     }
-    return { pool: () => Promise.resolve(allSeeds()), prepare, play, stop, suggest };
+    // start downloading the next clip while the player is still guessing (best effort)
+    function warm(song) {
+      if (!song.previewUrl || song._warm) return;
+      try { const a = new Audio(); a.preload = "auto"; a.src = song.previewUrl; song._warm = a; } catch (e) { /* ignore */ }
+    }
+    return { pool: () => Promise.resolve(allSeeds()), prepare, play, stop, suggest, warm };
   }
 
   MX.trackProvider = PROVIDER;
