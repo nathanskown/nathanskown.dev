@@ -175,6 +175,25 @@
     return POOL.filter(s => s.genre === v.slice(1));
   }
 
+  /* Spread a shuffled pool across genres (and artists): take one song from each genre in turn, so a round
+     of 5 mixes genres instead of landing on five rock songs. Songs from the same artist are held back
+     until the other artists in that genre are used up. */
+  function variety(list, rnd) {
+    const byGenre = {};
+    MX.shuffle(list, rnd).forEach(s => { (byGenre[s.genre || "Other"] = byGenre[s.genre || "Other"] || []).push(s); });
+    const buckets = MX.shuffle(Object.keys(byGenre), rnd).map(g => byGenre[g]);
+    const out = [], lastArtist = [];
+    while (buckets.some(b => b.length)) {
+      for (const b of buckets) {
+        if (!b.length) continue;
+        let i = b.findIndex(s => !out.slice(-3).some(o => o.artist === s.artist));
+        if (i < 0) i = 0;
+        out.push(b.splice(i, 1)[0]);
+      }
+    }
+    return out;
+  }
+
   function startRound(daily) {
     // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change
     // today's songs. It lists spare songs after the first 5; unplayable ones are skipped in the same order for everyone.
@@ -182,7 +201,7 @@
     const frozen = day && day.track && day.track.length >= ROUND ? day.track.map(s => Object.assign({}, s)) : null;
     const rnd = daily ? MX.mulberry32(MX.hashStr("guess-track-" + MX.todayKey())) : Math.random;
     const base = frozen || (daily ? POOL : filtered());
-    S = { pool: frozen ? base : MX.shuffle(base, rnd), p: 0, n: 0, total: Math.min(ROUND, base.length),
+    S = { pool: frozen ? base : (daily ? MX.shuffle(base, rnd) : variety(base, rnd)), p: 0, n: 0, total: Math.min(ROUND, base.length),
           score: 0, results: [], daily, stage: 0, done: false, cur: null };
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
