@@ -163,6 +163,7 @@ text-shadow:0 0 5px rgba(61,242,255,.18)}
 .t a:focus-visible,.t button:focus-visible,.t input:focus-visible,.t select:focus-visible,.t [tabindex]:focus-visible{outline:2px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 4px rgba(255,197,61,.18)}
 .t-skip{position:absolute;left:12px;top:-60px;z-index:100;padding:10px 14px;background:#ffc53d;color:#000 !important;font:600 13px 'IBM Plex Mono',ui-monospace,monospace;text-decoration:none}
 .t-skip:focus{top:8px}
+.t-vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* header chrome */
 .t-title{background:linear-gradient(90deg,#071219,#05090d)}

@@ -36,7 +36,8 @@
 <a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
 <a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="TrackRecord.dc.html">6) Record</a>
+<a class="t-fkey" href="Methodology.dc.html">7) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <nav class="t-sub2" aria-label="Favorite teams">
@@ -53,7 +54,7 @@
 </div>
 </header>
 
-<main class="s-wrap">
+<main id="main" class="s-wrap">
 
 <section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
 <div>
@@ -343,7 +344,7 @@ class Component extends DCLogic {
     if (pm && pm.teams) {
       var ids = Object.keys(pm.teams).filter(function (k) { var t = pm.teams[k]; return t.gp >= (pm.minGp || 0) || t.prior !== undefined; });
       ids.sort(function (a, b) { return pm.teams[b].rating - pm.teams[a].rating; });
-      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating > 0 ? '+' : '') + pm.teams[k].rating.toFixed(1) }; });
+      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating >= 0.05 ? '+' : '') + (Math.abs(pm.teams[k].rating) < 0.05 ? '0.0' : pm.teams[k].rating.toFixed(1)) }; });
       power.none = !power.rows.length; power.noneText = 'Not enough games yet this season.';
       power.note = 'Margin vs. an average team on a neutral field, in ' + pm.unit + '.';
     } else { power.none = true; power.noneText = 'Loading…'; }

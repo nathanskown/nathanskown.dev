@@ -36,7 +36,8 @@
 <a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
 <a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="TrackRecord.dc.html">6) Record</a>
+<a class="t-fkey" href="Methodology.dc.html">7) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <div class="t-sub">
@@ -47,7 +48,7 @@
 </div>
 </header>
 
-<main class="s-wrap">
+<main id="main" class="s-wrap">
 
 <section aria-label="Filter" style="display: flex; flex-direction: column; gap: 10px">
 <h1 style="margin: 0">{{title}}</h1>
@@ -125,7 +126,7 @@ class Component extends DCLogic {
       var st = (S.standings[k] || {})[t.id], m = S.models[k], mt = m && m.teams ? m.teams[t.id] : null;
       var ok = mt && (mt.gp >= (m.minGp || 0) || mt.prior !== undefined);
       return { name: t.short && k.indexOf('ncaa') === 0 ? t.loc || t.short : t.name, href: SD.teamHref(k, t.id), logo: t.logo || '', tag: q ? SD.LEAGUES[k].short : '',
-        rec: st ? (st.overall || [st.w, st.l].join('-')) : '', rating: ok ? (mt.rating > 0 ? '+' : '') + mt.rating.toFixed(1) : '' };
+        rec: st ? (st.overall || [st.w, st.l].join('-')) : '', rating: ok ? (mt.rating >= 0.05 ? '+' : '') + (Math.abs(mt.rating) < 0.05 ? '0.0' : mt.rating.toFixed(1)) : '' };
     };
     var groups = [];
     if (q) {
