@@ -36,7 +36,8 @@
 <a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
 <a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="TrackRecord.dc.html">6) Record</a>
+<a class="t-fkey" href="Methodology.dc.html">7) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <nav class="t-sub2" aria-label="Favorite teams and leagues">
@@ -54,7 +55,7 @@
 </header>
 
 <sc-if value="{{missing}}" hint-placeholder-val="{{false}}">
-<main class="s-wrap"><div class="s-empty">{{missingText}} <a href="Teams.dc.html">Browse all teams →</a></div></main>
+<main id="main" class="s-wrap"><div class="s-empty">{{missingText}} <a href="Teams.dc.html">Browse all teams →</a></div></main>
 </sc-if>
 
 <sc-if value="{{ok}}" hint-placeholder-val="{{true}}">
@@ -83,7 +84,7 @@
 </div>
 </div>
 
-<main class="s-wrap">
+<main id="main" class="s-wrap">
 
 <section class="t-panel" aria-label="Profile">
 <div class="t-ph"><h2><span class="t-pn">1)</span>Profile</h2><span class="dim">{{profileNote}}</span></div>
@@ -96,7 +97,7 @@
 <sc-if value="{{hasMargins}}" hint-placeholder-val="{{true}}">
 <div style="margin-top: 14px">
 <div class="t-th" style="display: flex; justify-content: space-between"><span>Margin by game</span><span>oldest → newest</span></div>
-<div role="img" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
+<div role="group" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
 <sc-for list="{{margins}}" as="mg" hint-placeholder-count="8">
 <a href="{{mg.href}}" title="{{mg.title}}" style="flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column">
 <span style="flex: 1 1 0; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line)"><span style="{{mg.up}}"></span></span>
@@ -288,7 +289,7 @@ class Component extends DCLogic {
     var group = null, row = null;
     ((S.standings || {}).groups || []).forEach(function (g) { g.teams.forEach(function (r) { if (r.id === id) { group = g; row = r; } }); });
 
-    var sign = function (v, d) { if (v === null || v === undefined || isNaN(v)) return '—'; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d === undefined ? 1 : d); };
+    var sign = function (v, d) { if (v === null || v === undefined || isNaN(v)) return '—'; var dd = d === undefined ? 1 : d, r = Math.abs(v).toFixed(dd); if (+r === 0) return r; return (v > 0 ? '+' : '−') + r; };
     var pct = function (p) { return p === null || p === undefined ? '—' : (p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'); };
     var unit = model ? model.unit : (L.unit || 'pts');
     var enough = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };

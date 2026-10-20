@@ -124,8 +124,10 @@ def update_picks(lg, now=None):
         if g["off"]:
             picks.pop(eid, None)
             continue
-        if pk and "hs" in pk:
-            continue                                      # already graded
+        if pk and "hs" in pk:                             # already graded; ESPN sometimes corrects a final score
+            if g["done"] and g.get("hs") is not None and g.get("as") is not None and (pk["hs"], pk["as"]) != (g["hs"], g["as"]):
+                pk.update({"hs": g["hs"], "as": g["as"]})
+            continue
         start = _parse(g["d"])
         if not g["done"] and start > now:                 # not started: save or refresh
             pr = project(model, g["h"], g["a"], g["n"], g["d"])

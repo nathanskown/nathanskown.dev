@@ -36,7 +36,8 @@
 <a class="{{fk.Simulator}}" href="Simulator.dc.html">3) Simulator</a>
 <a class="{{fk.Odds}}" href="Odds.dc.html">4) Playoff odds</a>
 <a class="{{fk.Injuries}}" href="Injuries.dc.html">5) Injuries</a>
-<a class="{{fk.Methodology}}" href="Methodology.dc.html">6) Method</a>
+<a class="{{fk.TrackRecord}}" href="TrackRecord.dc.html">6) Record</a>
+<a class="{{fk.Methodology}}" href="Methodology.dc.html">7) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <div class="t-sub">
@@ -47,7 +48,7 @@
 </div>
 </header>
 
-<main class="s-wrap">
+<main id="main" class="s-wrap">
 <div>
 <div class="dim" style="letter-spacing: .14em; font-size: 12px">NSKN » SPORTS » {{code}}</div>
 <h1 style="margin: 6px 0 0">{{title}}</h1>
@@ -321,7 +322,7 @@ class Component extends DCLogic {
       return { v: pct(p), st: p >= 0.995 ? 'color: #000; background: #ffc53d; font-weight: 600; text-shadow: none' :
         'background: rgba(61,242,255,' + (0.04 + a * 0.42).toFixed(3) + '); color: ' + (a >= 0.5 ? '#ffffff' : a >= 0.1 ? '#dcfcff' : '#80d4de') + (a >= 0.5 ? '; font-weight: 600' : '') };
     };
-    var rate = function (v, dp) { return { v: (v > 0 ? '+' : '') + (v || 0).toFixed(dp), st: v > 0 ? 'color: var(--up)' : v < 0 ? 'color: var(--dn)' : '' }; };
+    var rate = function (v, dp) { var z = +(v || 0).toFixed(dp) === 0; return { v: (v > 0 && !z ? '+' : '') + (z ? (0).toFixed(dp) : (v || 0).toFixed(dp)), st: v > 0 ? 'color: var(--up)' : v < 0 ? 'color: var(--dn)' : '' }; };
     var plain = function (v) { return { v: v, st: 'color: var(--wh)' }; };
     var pct = function (p) { return p === undefined || p === null ? '—' : p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
 
