@@ -541,6 +541,10 @@ def build(lg):
         g = smap.get(t)
         if g:
             row["group"] = g.get("group")
+    # stable key order: team ids come out of sets, whose order changes run to run, which rewrote every file every hour
+    for k in ("teams", "odds"):
+        if isinstance(res.get(k), dict):
+            res[k] = {t: res[k][t] for t in sorted(res[k], key=lambda x: (len(x), x))}
     write(f"model/{lg}.json", res)
     return {"teams": len(res["teams"]), "games": res.get("games"), "odds": bool(res["odds"])}
 

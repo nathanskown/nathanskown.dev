@@ -51,6 +51,11 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
 <div class="wrap"><table><thead><tr><th scope="col">Job</th><th scope="col">Status</th><th scope="col">Last finished</th><th scope="col">Failed sources</th></tr></thead><tbody id="jobs"></tbody></table></div>
 </section>
 
+<section aria-labelledby="h-gate">
+<h2 id="h-gate">Publishing gate (checked before data goes live)</h2>
+<p class="dim" style="margin:0 0 10px">Every data file is checked when it is written. A file that fails (an index price outside a sane range, playoff odds that don't add up, a record that doesn't match games played) is held back, and the site keeps showing the last version that passed.</p>
+<div class="wrap"><table><thead><tr><th scope="col">Item</th><th scope="col">Status</th><th scope="col">Detail</th></tr></thead><tbody id="gate"></tbody></table></div>
+</section>
 <section aria-labelledby="h-checks">
 <h2 id="h-checks">Data sanity checks</h2>
 <div class="wrap"><table><thead><tr><th scope="col">Check</th><th scope="col">Status</th><th scope="col">Detail</th></tr></thead><tbody id="checks"></tbody></table></div>
@@ -114,6 +119,17 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
     });
     $('jobs').innerHTML = rows.join('') || row(['Status files', pill('bad', 'MISSING'), '', '']);
     lead();
+  });
+
+  // 2b) publishing gate log
+  get('/data/validation.json').then(function (r) {
+    var V = r.j;
+    if (!V) { $('gate').innerHTML = row(['Gate log', pill('warn', 'NOT YET'), 'Written after the next data refresh.']); tally('warn'); lead(); return; }
+    var rows = [row(['Last check', pill('ok', 'RAN'), esc(ago(V.at) + ' · ' + V.checks + ' checks on ' + V.checked + ' files')])];
+    var recent = (V.recent || []).filter(function (x) { return Date.now() - new Date(x.at).getTime() < 7 * 86400000; });
+    if (!recent.length) rows.push(row(['Files held back, last 7 days', pill('ok', 'NONE'), 'Every file written passed.']));
+    recent.slice(0, 5).forEach(function (x) { x.held.forEach(function (h) { tally('warn'); rows.push(row([esc(h.file), pill('warn', 'HELD'), esc(ago(x.at) + ' · ' + h.why.join('; '))])); }); });
+    $('gate').innerHTML = rows.join(''); lead();
   });
 
   // 3) sanity checks on the published data

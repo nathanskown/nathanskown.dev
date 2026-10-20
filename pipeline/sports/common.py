@@ -53,6 +53,12 @@ def write(rel, obj):
     p = DATA / rel
     p.parent.mkdir(parents=True, exist_ok=True)
     txt = json.dumps(obj, separators=(",", ":"), ensure_ascii=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
+    # same content in a different key order is not a change: leave the file alone so git sees nothing to commit
+    try:
+        if p.exists() and json.loads(p.read_text()) == json.loads(txt):
+            return p
+    except ValueError:
+        pass
     p.write_text(txt)
     return p
 

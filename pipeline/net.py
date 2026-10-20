@@ -121,7 +121,13 @@ def r(x, d=2):
 def write(name, obj):
     path = DATA / name
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, separators=(",", ":"), ensure_ascii=False))
+    txt = json.dumps(obj, separators=(",", ":"), ensure_ascii=False)
+    try:  # same content (key order aside): leave the file alone so nothing gets committed or redeployed
+        if path.exists() and json.loads(path.read_text()) == json.loads(txt):
+            return
+    except ValueError:
+        pass
+    path.write_text(txt)
 
 
 def read(name, default=None):
