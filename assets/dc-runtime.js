@@ -209,7 +209,7 @@
     HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest', STATUS: '/status/', CONTACT: '/#contact',
     BRIEF: '/finance/digest/', MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
     DES: '/finance/quote/', QUOTE: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
-    ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/',
+    ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/', EQS: '/finance/screener/', SCREEN: '/finance/screener/', SCREENER: '/finance/screener/',
     SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
     TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
     NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',

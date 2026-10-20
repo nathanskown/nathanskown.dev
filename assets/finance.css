@@ -197,3 +197,24 @@ body.has-tape{padding-bottom:34px}
 @media (prefers-reduced-motion:reduce){.f-tape-track{animation:none}.f-tape-win{overflow-x:auto}.t .tl:hover,.t .f-heat:hover{transform:none}}
 @media (max-width:760px){.f-tape{height:38px}.f-tape-l .x{display:none}body.has-tape{padding-bottom:38px}.t .f-price{font-size:56px !important}}
 @media print{.f-tape,.t-crt{display:none}}
+
+/* screener */
+.t .sel{width:100%;min-height:40px;background:#000;color:var(--hi);border:1px solid var(--line);font:inherit;font-size:13.5px;padding:0 8px;text-shadow:inherit}
+.t .sel:focus-visible{outline:1px solid var(--hi);outline-offset:2px;border-color:var(--a)}
+.t .sf{display:flex;flex-direction:column;gap:4px}
+.t .t-chipbtn{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#000;color:var(--hi);cursor:pointer;font:inherit;font-size:12px;letter-spacing:.1em}
+.t .t-chipbtn:hover{border-color:var(--a)}
+.t .t-chipbtn[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t .frow{padding:8px 0;border-bottom:1px solid var(--line2)}
+.t .flab{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--hi);margin-bottom:5px}
+.t .fcov{font-size:12px;text-align:right}
+.t .fsel{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.t .fwarn{font-size:12.5px;color:#ff9a56;margin-top:4px}
+.t .thbtn{background:transparent;border:0;color:var(--dim);font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:6px 0;min-height:32px}
+.t .thbtn:hover{color:var(--hi)}
+.t .rrow:hover{background:var(--hover)}
+.t .covrow{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(60px,1fr) 44px;gap:10px;align-items:center;padding:3px 0;font-size:12.5px;color:var(--hi)}
+.t .covbar{display:block;background:#1c1408;height:6px}
+.t .covpct{text-align:right;color:var(--dim)}
+.t .tick{font-weight:600}
+.t .fsel .sel{min-height:34px}

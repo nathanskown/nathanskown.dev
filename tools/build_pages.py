@@ -54,11 +54,12 @@ SECTIONS = {
             ("earnings", "Earnings.dc.html", {}, "Earnings dashboard"),
             ("macro", "Macro.dc.html", {}, "Macro monitor"),
             ("ipo", "IPO.dc.html", {}, "IPO tracker"),
+            ("screener", "Screener.dc.html", {}, "Stock screener"),
         ],
         "routes": {
             "Dashboard.dc.html": "/finance/", "Digest.dc.html": "/finance/digest/", "News.dc.html": "/finance/headlines/", "Main.dc.html": "/finance/quote/",
             "Ownership.dc.html": "/finance/ownership/", "Earnings.dc.html": "/finance/earnings/",
-            "Macro.dc.html": "/finance/macro/", "IPO.dc.html": "/finance/ipo/",
+            "Macro.dc.html": "/finance/macro/", "IPO.dc.html": "/finance/ipo/", "Screener.dc.html": "/finance/screener/",
         },
     },
     "sports": {
@@ -88,6 +89,7 @@ PAGE_DESC = {
     ("finance", "ownership"): "13F institutional ownership for US stocks: who owns it, who bought and sold last quarter, and how much index funds hold.",
     ("finance", "earnings"): "Earnings season tracker for the S&P 500: beat rates, surprises, stock reactions and the reporting calendar.",
     ("finance", "macro"): "The US economy in numbers from FRED: inflation, jobs, growth, rates, recession signals and the release calendar.",
+    ("finance", "screener"): "Stock screener for the US market: filter by valuation, growth, margins, momentum and ownership, with every data gap shown.",
     ("finance", "ipo"): "US IPO tracker: deals pricing soon, first-day and since-IPO returns, new filings and lockup expirations.",
     ("sports", ""): "Live scores and schedules for the NFL, MLB, NBA, NHL, college sports, soccer, golf and tennis, with house win probabilities.",
     ("sports", "teams"): "Every team in the NFL, MLB, NBA, NHL and college sports, with records and house-model ratings.",

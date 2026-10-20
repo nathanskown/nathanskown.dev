@@ -18,6 +18,10 @@ on:
         description: "Also rebuild 13F ownership (slow: 20-60 min)"
         type: boolean
         default: false
+      jobs:
+        description: "Optional: run only these jobs (space separated: market daily screener quarterly)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -42,6 +46,7 @@ jobs:
           OPENFIGI_KEY: ${{ secrets.OPENFIGI_KEY }}
           CRON: ${{ github.event.schedule }}
           RUN_13F: ${{ inputs.run_13f && '1' || '0' }}
+          JOBS: ${{ inputs.jobs }}
         run: |
           git config user.name "finance-data-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

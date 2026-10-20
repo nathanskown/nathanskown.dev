@@ -14,13 +14,15 @@ from .net import STATUS, attempt, now_iso, read, write
 def pick():
     event = os.environ.get("GITHUB_EVENT_NAME", "")
     cron = os.environ.get("CRON", "")
+    if os.environ.get("JOBS", "").strip():  # a manual run can name the jobs it wants: market daily screener quarterly
+        return os.environ["JOBS"].split()
     if event == "schedule":
         if cron.startswith("17 11"):
-            return ["daily"]
+            return ["daily", "screener"]
         if cron.startswith("23 9"):
             return ["quarterly"]
         return ["market"]
-    want = ["market", "daily"]
+    want = ["market", "daily", "screener"]
     own = read("ownership/index.json") or {}
     if os.environ.get("RUN_13F") == "1" or own.get("v") != own13f.VERSION:
         want.append("quarterly")

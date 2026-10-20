@@ -1258,3 +1258,93 @@ def digest():
                           "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
                           "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
                           "breadth": dash.get("breadth"), "odds": od.get("groups", [])})
+
+
+SCREENER_MIN_ROWS = 500
+
+
+def screener():
+    """Stock screener table: price history for every listed stock with 13F coverage plus the S&P 1,500, joined to SEC fundamentals."""
+    import glob as _glob
+    import os as _os
+    from . import src_screen as sc
+    from .net import DATA
+    today = _ct_now().date()
+    mem = read("members.json", {}) or {}
+    t = read("tickers.json", {}) or {}
+    cols = t.get("fields") or ["sym", "name", "cik", "exch"]
+    info = {row[cols.index("sym")]: row for row in t.get("t", [])}
+    sp = {"sp500": set(mem.get("sp500", [])), "sp400": set(mem.get("sp400", [])), "sp600": set(mem.get("sp600", []))}
+    owned = {_os.path.basename(f)[:-5] for f in _glob.glob(str(DATA / "ownership" / "*.json")) if not f.endswith("index.json")}
+    universe = sorted((owned | sp["sp500"] | sp["sp400"] | sp["sp600"]) & set(info))
+    hist, spark_fail = sc.spark_year(universe)
+    failures = []
+    fund = attempt("sec frames", sc.fundamentals, today, failures, default={}) or {}
+    if not fund:
+        failures.append("SEC frames returned nothing: no fundamentals, only price columns")
+    g = lambda key, sub, cik: (fund.get(key) or {}).get(sub, {}).get(cik)  # noqa: E731
+    shares_when = (fund.get("shares") or {}).get("when", {})
+    earn = read("earnings.json", {}) or {}
+    ecache = read("earnings_cache.json", {}) or {}
+    nxt = {}
+    for d, rows in sorted((ecache.get("days") or {}).items()):
+        if d >= today.isoformat():
+            for e in rows:
+                nxt.setdefault(e["sym"], d)
+    for e in earn.get("upcoming", []):
+        nxt.setdefault(e["sym"], e["date"])
+    rows = []
+    for sym in universe:
+        if sym not in hist:
+            continue
+        row = info[sym]
+        cik = int(row[cols.index("cik")]) if row[cols.index("cik")] else None
+        pf = sc.price_features(*hist[sym])
+        own = read(f"ownership/{sym}.json", None) if sym in owned else None
+        idx = (1 if sym in sp["sp500"] else 0) | (2 if sym in sp["sp400"] else 0) | (4 if sym in sp["sp600"] else 0)
+        f = {k: g(k, "a", cik) for k in ("rev", "ni", "eps", "gp", "op", "ocf", "capex", "dps")} if cik else {}
+        rev0, ni0, eps0 = (g("rev", "a0", cik), g("ni", "a0", cik), g("eps", "a0", cik)) if cik else (None, None, None)
+        qr, qr0 = (g("rev", "q", cik), g("rev", "q0", cik)) if cik else (None, None)
+        bs = {k: g(k, "v", cik) for k in ("assets", "liab", "equity", "cash", "shares")} if cik else {}
+        so = (own or {}).get("so") or bs.get("shares")
+        has_fund = any(v is not None for v in list(f.values()) + list(bs.values()))
+        if not has_fund and not idx:
+            continue  # ETFs, funds and trusts carry no company financials in the SEC data
+        px = pf["px"]
+        mcap = px * so / 1e6 if so and px else None
+        pos = lambda x: x if (x is not None and x > 0) else None  # noqa: E731
+        pct = lambda a, b: r(a / b * 100, 1) if (a is not None and b not in (None, 0)) else None  # noqa: E731
+        fcf = (f.get("ocf") - f.get("capex")) if (f.get("ocf") is not None and f.get("capex") is not None) else None
+        tr = ((own or {}).get("trend") or [{}])[-1] if own else {}
+        tl = (own or {}).get("tiles") or {}
+        out = {"sym": sym, "name": (mem.get("names", {}).get(sym) or row[cols.index("name")] or "")[:40], "exch": row[cols.index("exch")] or "",
+               "sector": mem.get("sectors", {}).get(sym) or "", "idx": idx, **pf,
+               "mcap": r(mcap, 0), "rev": r(f["rev"] / 1e6, 0) if f.get("rev") is not None else None,
+               "revG": pct(f.get("rev") - rev0, abs(rev0)) if f.get("rev") is not None and rev0 else None,
+               "qRevG": pct(qr - qr0, abs(qr0)) if qr is not None and qr0 else None,
+               "gm": (lambda v: v if v is not None and -100 <= v <= 100 else None)(pct(f.get("gp"), f.get("rev")) if f.get("rev") and f.get("rev") > 0 else None),
+               "om": pct(f.get("op"), f.get("rev")) if f.get("rev") and f.get("rev") > 0 else None,
+               "nm": pct(f.get("ni"), f.get("rev")) if f.get("rev") and f.get("rev") > 0 else None,
+               "roe": pct(f.get("ni"), bs.get("equity")) if bs.get("equity") and bs["equity"] > 0 else None,
+               "roa": pct(f.get("ni"), bs.get("assets")) if bs.get("assets") else None,
+               "eps": r(f.get("eps"), 2), "epsG": pct(f.get("eps") - eps0, abs(eps0)) if f.get("eps") is not None and eps0 else None,
+               "pe": r(px / f["eps"], 1) if f.get("eps") and f["eps"] > 0 and px else None,
+               "ps": r(mcap / (f["rev"] / 1e6), 2) if mcap and f.get("rev") and f["rev"] > 0 else None,
+               "pb": r(mcap / (bs["equity"] / 1e6), 2) if mcap and bs.get("equity") and bs["equity"] > 0 else None,
+               "fcf": r(fcf / 1e6, 0) if fcf is not None else None,
+               "fcfY": r(fcf / 1e6 / mcap * 100, 2) if fcf is not None and mcap else None,
+               "divY": r(f["dps"] / px * 100, 2) if f.get("dps") is not None and px and f["dps"] >= 0 else None,
+               "debtEq": r(bs["liab"] / bs["equity"], 2) if bs.get("liab") is not None and bs.get("equity") and bs["equity"] > 0 else None,
+               "cash": r(bs["cash"] / 1e6, 0) if bs.get("cash") is not None else None,
+               "inst": tr.get("inst"), "holders": tr.get("holders"), "instChg": tl.get("instChg"),
+               "earnDays": (date.fromisoformat(nxt[sym]) - today).days if sym in nxt else None}
+        rows.append(out)
+    if len(rows) < SCREENER_MIN_ROWS:
+        raise RuntimeError(f"screener built only {len(rows)} rows; refusing to overwrite the last good file")
+    keys = [k for k in rows[0]]
+    table = {k: [row.get(k) for row in rows] for k in keys}
+    fill = {k: sum(1 for v in table[k] if v not in (None, "")) for k in keys}
+    write("screener.json", {"updated": now_iso(), "asOf": today.isoformat(), "n": len(rows), "cols": keys, "d": table, "fill": fill,
+                            "fy": today.year - 1, "ql": (fund.get("rev") or {}).get("ql"), "sparkBatchFails": spark_fail,
+                            "failures": failures[:40], "universe": {"owned": len(owned), "sp1500": len(sp["sp500"] | sp["sp400"] | sp["sp600"]), "priced": len(hist)}})
+    return rows

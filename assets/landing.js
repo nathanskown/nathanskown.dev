@@ -135,7 +135,7 @@
 
   /* ---------- command line ---------- */
   var FIN = { WEI: 'Market dashboard', TOP: 'Live headlines', DES: 'Stock quote & company page', HDS: '13F ownership tracker', ERN: 'Earnings dashboard', ECO: 'Macro monitor (FRED)', IPO: 'IPO tracker' };
-  var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/' };
+  var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/', EQS: '/finance/screener/' };
   var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages', ODDS: 'Playoff odds', SIM: 'Matchup simulator', INJ: 'Injury report' };
   var SPRT_URL = { SCOR: '/sports/', GAME: '/sports/game/', TEAM: '/sports/teams/', ODDS: '/sports/odds/', SIM: '/sports/simulator/', INJ: '/sports/injuries/' };
   var MUS = { TRCK: 'Guess the Track', ARTS: 'Guess the Artist' };
