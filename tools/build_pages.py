@@ -20,12 +20,12 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 FONTS = "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap"
 
 TOOLS = {
-    "Simulator": "simulator", "Odds": "odds", "Spots": "spots", "Injuries": "injuries",
+    "Simulator": "simulator", "Odds": "odds", "Injuries": "injuries",
     "LuckWatch": "luck-watch", "Schedule": "schedule-strength", "TrackRecord": "track-record",
     "Methodology": "methodology",
 }
 TOOL_TITLES = {
-    "Simulator": "Matchup simulator", "Odds": "Playoff odds", "Spots": "Situational spots", "Injuries": "Injuries",
+    "Simulator": "Matchup simulator", "Odds": "Playoff odds", "Injuries": "Injuries",
     "LuckWatch": "Luck watch", "Schedule": "Schedule strength", "TrackRecord": "Track record", "Methodology": "Methodology",
 }
 # Every team and game page is the generic Team/Game design reading ?lg=&id= (ESPN ids).

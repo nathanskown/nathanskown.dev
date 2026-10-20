@@ -317,3 +317,9 @@ text-shadow:0 0 2px var(--hg),0 0 18px color-mix(in srgb,var(--hg) 45%,transpare
 .nk-sec,.nk-dg{--hi:color-mix(in srgb,var(--g) 55%,#ffffff);--dim:color-mix(in srgb,var(--g) 66%,#000000);--mute:color-mix(in srgb,var(--g) 40%,#000000)}
 .nk-dg{--g:#8dff9c;--line:color-mix(in srgb,#8dff9c 22%,#000000);--glow:color-mix(in srgb,#8dff9c 38%,transparent)}
 @media (max-width:760px){.nk-word{font-size:19vw}.nk-word-cur{display:none}.nk-modes{gap:6px;flex-wrap:nowrap}.nk-mode{flex:1 1 0;min-width:0;padding:7px 6px 9px;font-size:12px;letter-spacing:.08em;white-space:nowrap}.nk-keys{display:none}.nk-hero .nk-kicker{font-size:12px;letter-spacing:.1em;white-space:nowrap}.nk-kick-mode{display:none}}
+
+.nk-now dd.nk-ln{grid-column:1/-1;text-align:left;margin:0}
+.nk-now dd.nk-ln a{grid-column:auto}
+.nk-status a{color:var(--hi)}
+.nk-status a:hover{text-decoration:underline}
+a.nk-fkey{display:inline-flex;align-items:center}

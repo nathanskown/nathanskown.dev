@@ -105,7 +105,6 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">BRIEF &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
@@ -171,7 +170,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <sc-if value="{{noEd}}" hint-placeholder-val="{{ false }}">
 <section class="t-panel" aria-label="The 60-second version" style="border-color: #ffb84d; box-shadow: 0 0 22px rgba(255,184,77,.12)">
-<div class="t-ph"><h2><span class="t-pn">20)</span>The 60-Second Version</h2><span class="dim">Built from the numbers below, no editorializing</span></div>
+<div class="t-ph"><h2>The 60-Second Version</h2><span class="dim">Built from the numbers below, no editorializing</span></div>
 <div class="t-pb">
 <ol style="margin: 0; padding-left: 24px; display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 1.55">
 <sc-for list="{{top5}}" as="b" hint-placeholder-count="5"><li><span style="color: #ffd89d; font-weight: 600">{{b.lead}}</span> {{b.rest}}</li></sc-for>
@@ -181,7 +180,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-if>
 
 <section class="t-panel" aria-label="Futures and overnight markets">
-<div class="t-ph"><h2><span class="t-pn">21)</span>Futures &amp; Overnight</h2><span class="dim">vs prior close · delayed</span></div>
+<div class="t-ph"><h2>Futures &amp; Overnight</h2><span class="dim">vs prior close · delayed</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{futures}}" as="f" hint-placeholder-count="12">
 <div style="background: #000; border: 1px solid #382811; padding: 10px 12px">
@@ -212,7 +211,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb">
 <div style="padding: 10px 12px; background: #000; border: 1px solid #ffb84d; font-size: 14px; line-height: 1.55; margin-bottom: 8px"><span style="font-size: 12px; letter-spacing: .12em; color: #000; background: #ffb84d; text-shadow: none; padding: 0 5px; margin-right: 8px">BOTTOM LINE</span>{{edBottom}}</div>
 <sc-for list="{{edData}}" as="d" hint-placeholder-count="7">
-<div class="t-row" style="display: grid; grid-template-columns: 170px 96px minmax(0, 1fr); gap: 4px 16px; padding: 12px 0; align-items: start">
+<div class="t-row f-3col" style="display: grid; grid-template-columns: 170px 96px minmax(0, 1fr); gap: 4px 16px; padding: 12px 0; align-items: start">
 <div style="color: #ffd89d; font-weight: 600; font-size: 13.5px">{{d.n}}</div>
 <div><span style="display: inline-block; border: 1px solid {{d.color}}; color: {{d.color}}; padding: 0 8px; font-size: 12px; letter-spacing: .1em">{{d.label}}</span></div>
 <div>
@@ -282,7 +281,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px">
 
 <section class="t-panel" aria-label="Economic data">
-<div class="t-ph"><h2><span class="t-pn">22)</span>Economic Data</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Economic Data</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
 <div class="t-pb">
 <div style="font-size: 12px; letter-spacing: .12em; color: #c99442; margin-bottom: 4px">ON THE CALENDAR TODAY</div>
 <sc-for list="{{calToday}}" as="c" hint-placeholder-count="3"><div class="t-row" style="padding: 6px 0; font-size: 13px">{{c.name}}</div></sc-for>
@@ -308,7 +307,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Earnings today">
-<div class="t-ph"><h2><span class="t-pn">23)</span>Earnings</h2><a href="Earnings.dc.html" style="font-size: 12px; letter-spacing: .08em">FULL CALENDAR <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Earnings</h2><a href="Earnings.dc.html" style="font-size: 12px; letter-spacing: .08em">FULL CALENDAR <span class="t-k">GO</span></a></div>
 <div class="t-pb">
 <div style="font-size: 12px; letter-spacing: .12em; color: #c99442; margin-bottom: 2px">REPORTING TODAY (LARGEST FIRST)</div>
 <sc-for list="{{today}}" as="e" hint-placeholder-count="5">
@@ -335,7 +334,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 
 <section class="t-panel" aria-label="Headlines since yesterday">
-<div class="t-ph"><h2><span class="t-pn">24)</span>Notable Headlines, Last 24 Hours</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Notable Headlines, Last 24 Hours</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{news}}" as="n" hint-placeholder-count="6">
 <div class="t-row" style="padding: 10px 0">
@@ -350,7 +349,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <sc-if value="{{noEd}}" hint-placeholder-val="{{ false }}">
 <section id="watch-live" class="t-panel" aria-label="Things to watch today">
-<div class="t-ph"><h2><span class="t-pn">25)</span>Things to Watch Today</h2><span class="dim">From the calendar and earnings schedule</span></div>
+<div class="t-ph"><h2>Things to Watch Today</h2><span class="dim">From the calendar and earnings schedule</span></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="6">
 <div class="t-row" style="display: flex; gap: 14px; padding: 9px 0">
@@ -363,7 +362,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-if>
 
 <section class="t-panel" aria-label="Market breadth and levels">
-<div class="t-ph"><h2><span class="t-pn">26)</span>Breadth &amp; Key Levels</h2><span class="dim">Prior close vs. 50- and 200-day averages</span></div>
+<div class="t-ph"><h2>Breadth &amp; Key Levels</h2><span class="dim">Prior close vs. 50- and 200-day averages</span></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-if value="{{breadth}}" hint-placeholder-val="{{ true }}">
 <div style="padding: 6px 0 10px">
@@ -400,7 +399,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 18px">
 
 <section class="t-panel" aria-label="Prediction market odds">
-<div class="t-ph"><h2><span class="t-pn">27)</span>Prediction Market Odds</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Prediction Market Odds</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">MACRO <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
 <div class="t-row" style="padding: 9px 0">
@@ -416,7 +415,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Rest of the week">
-<div class="t-ph"><h2><span class="t-pn">28)</span>Rest of the Week</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">RELEASES <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Rest of the Week</h2><a href="Macro.dc.html" style="font-size: 12px; letter-spacing: .08em">RELEASES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{week}}" as="wk" hint-placeholder-count="6">
 <div class="t-row" style="padding: 9px 0">

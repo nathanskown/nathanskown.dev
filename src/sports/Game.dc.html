@@ -15,7 +15,6 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">Sports Menu</span>
 <span class="t-chip t-hide-sm">GAME &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
@@ -36,7 +35,10 @@
 <a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
 <a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="LuckWatch.dc.html">6) Luck</a>
+<a class="t-fkey" href="Schedule.dc.html">7) Schedule</a>
+<a class="t-fkey" href="TrackRecord.dc.html">8) Track record</a>
+<a class="t-fkey" href="Methodology.dc.html">9) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <nav class="t-sub2" aria-label="Today's games by league">
@@ -54,7 +56,7 @@
 <sc-if value="{{picker}}" hint-placeholder-val="{{false}}">
 <main class="s-wrap">
 <section class="t-panel" aria-label="Pick a game">
-<div class="t-ph"><h2><span class="t-pn">1)</span>{{pick.title}}</h2><span class="dim">{{pick.note}}</span></div>
+<div class="t-ph"><h2>{{pick.title}}</h2><span class="dim">{{pick.note}}</span></div>
 <div class="t-pb">
 <sc-if value="{{pick.empty}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{pick.emptyText}}</div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px">
@@ -78,6 +80,7 @@
 <div class="s-band" style="{{bandStyle}}">
 <div style="max-width: 1280px; margin: 0 auto; padding: 20px 16px">
 <nav aria-label="Breadcrumb" class="dim" style="font-size: 12.5px"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
+<h1 class="sr">{{g.away.name}} at {{g.home.name}}</h1>
 <sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="t-th" style="margin-top: 6px">{{g.note}}</div></sc-if>
 <div class="s-match" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 12px">
 <a class="s-side" href="{{g.away.href}}" style="display: flex; align-items: center; gap: 12px; min-width: 0">
@@ -101,11 +104,11 @@
 
 <div class="s-cols">
 <section class="t-panel" aria-label="Line score">
-<div class="t-ph"><h2><span class="t-pn">1)</span>Line score</h2><span class="dim">{{g.detail}}</span></div>
+<div class="t-ph"><h2>Line score</h2><span class="dim">{{g.detail}}</span></div>
 <div class="t-pb">
 <sc-if value="{{noLines}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{noLinesText}}</div></sc-if>
 <sc-if value="{{hasLines}}" hint-placeholder-val="{{true}}">
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col">Team</th><sc-for list="{{heads}}" as="h" hint-placeholder-count="4"><th scope="col">{{h}}</th></sc-for><th scope="col">T</th></tr></thead>
 <tbody>
 <sc-for list="{{lineRows}}" as="r" hint-placeholder-count="2"><tr><th scope="row" class="l">{{r.abbr}}</th><sc-for list="{{r.lines}}" as="c" hint-placeholder-count="4"><td>{{c}}</td></sc-for><td class="hi">{{r.total}}</td></tr></sc-for>
@@ -116,7 +119,7 @@
 </section>
 
 <section class="t-panel" aria-label="House projection">
-<div class="t-ph"><h2><span class="t-pn">2)</span>House projection</h2><a class="dim" href="Methodology.dc.html">Method →</a></div>
+<div class="t-ph"><h2>House projection</h2><a class="dim" href="Methodology.dc.html">Method →</a></div>
 <div class="t-pb">
 <sc-if value="{{proj.has}}" hint-placeholder-val="{{true}}">
 <div class="s-grid">
@@ -134,11 +137,11 @@
 
 <div class="s-cols">
 <section class="t-panel" aria-label="Team stats">
-<div class="t-ph"><h2><span class="t-pn">3)</span>Team stats</h2><span class="dim">{{statsNote}}</span></div>
+<div class="t-ph"><h2>Team stats</h2><span class="dim">{{statsNote}}</span></div>
 <div class="t-pb">
 <sc-if value="{{noStats}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{noStatsText}}</div></sc-if>
 <sc-if value="{{hasStats}}" hint-placeholder-val="{{true}}">
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col">Stat</th><th scope="col">{{g.away.abbr}}</th><th scope="col">{{g.home.abbr}}</th></tr></thead>
 <tbody><sc-for list="{{stats}}" as="s" hint-placeholder-count="8"><tr><td class="l dim">{{s.k}}</td><td style="{{s.aStyle}}">{{s.a}}</td><td style="{{s.hStyle}}">{{s.h}}</td></tr></sc-for></tbody>
 </table></div>
@@ -147,7 +150,7 @@
 </section>
 
 <section class="t-panel" aria-label="Leaders">
-<div class="t-ph"><h2><span class="t-pn">4)</span>{{ldTitle}}</h2></div>
+<div class="t-ph"><h2>{{ldTitle}}</h2></div>
 <div class="t-pb">
 <sc-if value="{{noLeaders}}" hint-placeholder-val="{{false}}"><div class="s-empty">No player leaders in the feed for this game yet.</div></sc-if>
 <sc-for list="{{leaders}}" as="L" hint-placeholder-count="2">
@@ -160,7 +163,7 @@
 
 <sc-if value="{{hasScoring}}" hint-placeholder-val="{{true}}">
 <section class="t-panel" aria-label="Scoring">
-<div class="t-ph"><h2><span class="t-pn">5)</span>Scoring summary</h2><span class="dim">{{scoringNote}}</span></div>
+<div class="t-ph"><h2>Scoring summary</h2><span class="dim">{{scoringNote}}</span></div>
 <div class="t-pb">
 <sc-for list="{{scoring}}" as="p" hint-placeholder-count="6">
 <div class="s-game"><span class="d">{{p.when}}</span><span class="hi" style="width: 48px; flex: none">{{p.abbr}}</span><span class="o" style="white-space: normal">{{p.text}}</span><span class="r">{{p.score}}</span></div>
@@ -171,7 +174,7 @@
 
 <div class="s-cols">
 <section class="t-panel" aria-label="Recent form">
-<div class="t-ph"><h2><span class="t-pn">6)</span>Recent form</h2><span class="dim">{{seriesNote}}</span></div>
+<div class="t-ph"><h2>Recent form</h2><span class="dim">{{seriesNote}}</span></div>
 <div class="t-pb">
 <sc-if value="{{noForm}}" hint-placeholder-val="{{false}}"><div class="s-empty">Recent games are not in the feed for this matchup.</div></sc-if>
 <sc-for list="{{form}}" as="f" hint-placeholder-count="2">
@@ -182,7 +185,7 @@
 </section>
 
 <section class="t-panel" aria-label="Injuries">
-<div class="t-ph"><h2><span class="t-pn">7)</span>Injuries</h2><span class="dim">ESPN game feed</span></div>
+<div class="t-ph"><h2>Injuries</h2><span class="dim">ESPN game feed</span></div>
 <div class="t-pb">
 <sc-if value="{{noInj}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{noInjText}}</div></sc-if>
 <sc-for list="{{inj}}" as="T" hint-placeholder-count="2">
@@ -195,7 +198,7 @@
 
 <sc-if value="{{hasOfficials}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Officials">
-<div class="t-ph"><h2><span class="t-pn">8)</span>Officials</h2></div>
+<div class="t-ph"><h2>Officials</h2></div>
 <div class="t-pb s-note">{{officials}}</div>
 </section>
 </sc-if>

@@ -83,8 +83,7 @@
     const live = (window.MUSIC_CONFIG || {}).MODE === "live";
     el.className = "mx-status";
     el.innerHTML =
-      '<span><span class="hi">&#9679;</span> LINK nathanskown.dev</span>' +
-      "<span>MUSIC &middot; " + (live ? "LIVE" : "MOCK") + "</span>" +
+      (live ? "" : "<span>MUSIC &middot; MOCK DATA</span>") +
       '<span><a href="/">&larr; Home</a> &middot; <a href="/music/">Music</a> &middot; <a href="/#contact">Contact</a></span>' +
       "<span>&copy; 2026 NATHAN SKOWN</span>" +
       (dev ? '<label><input type="checkbox" id="devToggle"> show dev tools</label>' : "");

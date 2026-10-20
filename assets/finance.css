@@ -218,3 +218,6 @@ body.has-tape{padding-bottom:34px}
 .t .covpct{text-align:right;color:var(--dim)}
 .t .tick{font-weight:600}
 .t .fsel .sel{min-height:34px}
+/* panel headings carry no running numbers */
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:none !important}
+@media (max-width:760px){.t .f-3col{grid-template-columns:minmax(0,1fr) auto !important}.t .f-3col > :nth-child(3){grid-column:1 / -1}}

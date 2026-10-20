@@ -15,7 +15,6 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">Sports Menu</span>
 <span class="t-chip t-hide-sm">{{code}} &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
@@ -36,7 +35,10 @@
 <a class="{{fk.Simulator}}" href="Simulator.dc.html">3) Simulator</a>
 <a class="{{fk.Odds}}" href="Odds.dc.html">4) Playoff odds</a>
 <a class="{{fk.Injuries}}" href="Injuries.dc.html">5) Injuries</a>
-<a class="{{fk.Methodology}}" href="Methodology.dc.html">6) Method</a>
+<a class="{{fk.LuckWatch}}" href="LuckWatch.dc.html">6) Luck</a>
+<a class="{{fk.Schedule}}" href="Schedule.dc.html">7) Schedule</a>
+<a class="{{fk.TrackRecord}}" href="TrackRecord.dc.html">8) Track record</a>
+<a class="{{fk.Methodology}}" href="Methodology.dc.html">9) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <div class="t-sub">
@@ -60,31 +62,32 @@
 </div>
 </sc-if>
 
-<sc-if value="{{soon}}" hint-placeholder-val="{{false}}">
-<section class="t-panel" aria-label="Status">
-<div class="t-ph"><h2>Status</h2><span class="dim">Build queue</span></div>
-<div class="t-pb"><span class="t-tag">UNDER CONSTRUCTION</span><p class="dim" style="margin: 8px 0 0">This page is planned but not built yet. Below is what it will cover; the related pages linked below are live now.</p></div>
-</section>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 16px; margin-top: 16px">
-<section class="t-panel" aria-label="Planned panels">
-<div class="t-ph"><h2>What this page will show</h2><span class="dim">Planned</span></div>
+<sc-if value="{{isLuck}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Luck watch">
+<div class="t-ph"><h2>{{luck.title}}</h2><span class="dim">{{luck.sub}}</span></div>
 <div class="t-pb">
-<sc-for list="{{plan.items}}" as="pi" hint-placeholder-count="4">
-<div style="padding: 10px 0; border-bottom: 1px solid var(--line2, #123)"><div class="hi" style="font-weight: 500">{{pi.h}}</div><div class="dim" style="font-size: 13px; margin-top: 2px">{{pi.d}}</div></div>
-</sc-for>
+<sc-if value="{{luck.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{luck.noneText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col">Team</th><th scope="col">Record</th><th scope="col">Margin / game</th><th scope="col">Wins the margin predicts</th><th scope="col">Luck (wins)</th><th scope="col">Record rank</th><th scope="col">House rank</th></tr></thead>
+<tbody><sc-for list="{{luck.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a></th><td>{{r.rec}}</td><td>{{r.mov}}</td><td>{{r.xw}}</td><td style="{{r.luckSt}}">{{r.luck}}</td><td>{{r.recRank}}</td><td>{{r.rank}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">{{luck.note}}</p>
 </div>
 </section>
-<section class="t-panel" aria-label="Data and related pages">
-<div class="t-ph"><h2>How it will work</h2><span class="dim">Data</span></div>
+</sc-if>
+
+<sc-if value="{{isSos}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Schedule strength">
+<div class="t-ph"><h2>{{sos.title}}</h2><span class="dim">{{sos.sub}}</span></div>
 <div class="t-pb">
-<p class="dim" style="margin: 0 0 14px; font-size: 13px; line-height: 1.6">{{plan.data}}</p>
-<div class="dim" style="font-size: 12px; letter-spacing: .1em; margin-bottom: 8px">LIVE NOW</div>
-<div style="display: flex; flex-wrap: wrap; gap: 8px">
-<sc-for list="{{plan.links}}" as="pl" hint-placeholder-count="3"><a href="{{pl.href}}" class="t-chip" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px">{{pl.t}} →</a></sc-for>
-</div>
+<sc-if value="{{sos.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{sos.noneText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col">Team</th><th scope="col">Rating</th><th scope="col">Played: avg opponent</th><th scope="col">Rank</th><sc-if value="{{sos.hasRem}}" hint-placeholder-val="{{true}}"><th scope="col">Remaining: avg opponent</th><th scope="col">Rank</th><th scope="col">Games left (home)</th></sc-if></tr></thead>
+<tbody><sc-for list="{{sos.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a></th><td style="{{r.ratingSt}}">{{r.rating}}</td><td style="{{r.sosSt}}">{{r.sos}}</td><td>{{r.sosRank}}</td><sc-if value="{{sos.hasRem}}" hint-placeholder-val="{{true}}"><td style="{{r.remSt}}">{{r.rem}}</td><td>{{r.remRank}}</td><td>{{r.left}}</td></sc-if></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">{{sos.note}}</p>
 </div>
 </section>
-</div>
 </sc-if>
 
 <sc-if value="{{isSim}}" hint-placeholder-val="{{false}}">
@@ -116,7 +119,7 @@
 <div class="t-ph"><h2>{{odds.title}}</h2><span class="dim">{{odds.sub}}</span></div>
 <div class="t-pb">
 <sc-if value="{{odds.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{odds.noneText}}</div></sc-if>
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col">Team</th><sc-for list="{{odds.cols}}" as="c" hint-placeholder-count="5"><th scope="col">{{c}}</th></sc-for></tr></thead>
 <tbody><sc-for list="{{odds.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}"><img class="s-logo" src="{{r.logo}}" alt="" loading="lazy">{{r.name}}</a> <span class="dim">{{r.grp}}</span></th><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td style="{{c.st}}">{{c.v}}</td></sc-for></tr></sc-for></tbody>
 </table></div>
@@ -153,7 +156,7 @@
 <sc-for list="{{trk.cards}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
 </div>
 <h3 style="margin: 16px 0 6px; font-size: 14px">Calibration</h3>
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Model’s favorite had</th><th scope="col">Games</th><th scope="col">Expected to win</th><th scope="col">Actually won</th></tr></thead>
 <tbody><sc-for list="{{trk.cal}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td></tr></sc-for></tbody>
 </table></div>
@@ -165,7 +168,7 @@
 <div class="t-ph"><h2>Latest graded picks</h2><span class="dim">{{trk.recentSub}}</span></div>
 <div class="t-pb">
 <sc-if value="{{trk.noRecent}}" hint-placeholder-val="{{false}}"><div class="s-empty">Nothing graded yet. Picks are graded after the final.</div></sc-if>
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Game</th><th scope="col">Date</th><th scope="col">Pick</th><th scope="col">Win prob.</th><th scope="col">Final</th><th scope="col">Result</th></tr></thead>
 <tbody><sc-for list="{{trk.recent}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a> <span class="dim">{{r.lg}}</span></th><td>{{r.date}}</td><td>{{r.pick}}</td><td>{{r.prob}}</td><td>{{r.final}}</td><td style="{{r.style}}">{{r.res}}</td></tr></sc-for></tbody>
 </table></div>
@@ -175,7 +178,7 @@
 <div class="t-ph"><h2>Logged, not yet played</h2><span class="dim">{{trk.pendSub}}</span></div>
 <div class="t-pb">
 <sc-if value="{{trk.noPend}}" hint-placeholder-val="{{false}}"><div class="s-empty">No upcoming games logged right now.</div></sc-if>
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Game</th><th scope="col">Kickoff</th><th scope="col">Pick</th><th scope="col">Win prob.</th></tr></thead>
 <tbody><sc-for list="{{trk.pend}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a> <span class="dim">{{r.lg}}</span></th><td>{{r.date}}</td><td>{{r.pick}}</td><td>{{r.prob}}</td></tr></sc-for></tbody>
 </table></div>
@@ -187,7 +190,7 @@
 <div class="t-pb">
 <p class="s-note hi" style="margin: 0 0 10px">A backtest replays games that were already over and rates each one using only games played before it. It is a fair test of the method but it was run by us after the fact, so it counts for less than the live record above. Rows with fewer than 20 games are hidden because they say nothing.</p>
 <sc-if value="{{trk.btNone}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{trk.btNoneText}}</div></sc-if>
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">League</th><th scope="col">Games</th><th scope="col">Picked right</th><th scope="col">Brier</th><th scope="col">Always-home Brier</th><th scope="col">Avg. miss</th><th scope="col">Bias</th><th scope="col">Span</th></tr></thead>
 <tbody><sc-for list="{{trk.bt}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.lg}}</th><td>{{r.n}}</td><td>{{r.acc}}</td><td>{{r.brier}}</td><td>{{r.home}}</td><td>{{r.mae}}</td><td>{{r.bias}}</td><td>{{r.span}}</td></tr></sc-for></tbody>
 </table></div>
@@ -213,7 +216,7 @@
 <section class="t-panel" aria-label="League settings">
 <div class="t-ph"><h2>League settings and live status</h2><span class="dim">Read from the current model files</span></div>
 <div class="t-pb">
-<div class="s-scroll"><table class="s-tbl">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col">League</th><th scope="col">Home edge</th><th scope="col">σ</th><th scope="col">k (games)</th><th scope="col">Games used</th><th scope="col" class="l">Starts from</th><th scope="col" class="l">Settings</th><th scope="col" class="l">Results source</th></tr></thead>
 <tbody><sc-for list="{{meth.rows}}" as="r" hint-placeholder-count="7"><tr><th scope="row" class="l">{{r.lg}}</th><td>{{r.hfa}}</td><td>{{r.sigma}}</td><td>{{r.k}}</td><td>{{r.games}}</td><td class="l dim">{{r.start}}</td><td class="l dim">{{r.fit}}</td><td class="l dim">{{r.src}}</td></tr></sc-for></tbody>
 </table></div>
@@ -240,7 +243,7 @@
 <div class="t-crt" aria-hidden="true"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"tool":{"editor":"enum","options":["Simulator","Odds","Spots","Injuries","LuckWatch","Schedule","TrackRecord","Methodology"],"default":"Simulator"},"$preview":{"width":1440,"height":1600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"tool":{"editor":"enum","options":["Simulator","Odds","Injuries","LuckWatch","Schedule","TrackRecord","Methodology"],"default":"Simulator"},"$preview":{"width":1440,"height":1600}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { models: {}, injuries: {}, iq: '' }; }
   componentDidMount() {
@@ -257,6 +260,11 @@ class Component extends DCLogic {
     } else if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
     else this.loadLeague(lg);
   }
+  loadStandings(lg) {
+    var self = this, o = this.state.stand || {};
+    if (o[lg]) return;
+    SD.data('standings/' + lg + '.json').then(function (d) { var n = Object.assign({}, self.state.stand); n[lg] = d; self.setState({ stand: n }); }, function () { var n = Object.assign({}, self.state.stand); n[lg] = { err: true }; self.setState({ stand: n }); });
+  }
   loadModel(lg) {
     var self = this;
     if (this.state.models[lg]) return;
@@ -267,52 +275,27 @@ class Component extends DCLogic {
     if (key === 'TrackRecord') return;
     if (key === 'Injuries') {
       if (!this.state.injuries[lg]) SD.data('injuries/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.injuries); o[lg] = m; self.setState({ injuries: o }); }, function () {});
-    } else this.loadModel(lg);
+    } else { this.loadModel(lg); if (key === 'LuckWatch') this.loadStandings(lg); }
   }
   renderVals() {
     var TOOLS = {
       Simulator: ['SIM', 'Matchup simulator', 'Pick any two teams in a league to see the house model’s projected margin and win probability.'],
       Odds: ['ODDS', 'Playoff odds', 'Every team’s chances to make the playoffs, win its division and win it all, from 10,000 simulations of the rest of the season. Rebuilt every hour.'],
-      Spots: ['SPOT', 'Situational spots', 'Rest, travel, short weeks and look-ahead games: the schedule spots that historically move results.'],
       Injuries: ['INJ', 'Injuries', 'League-wide injury reports for the four pro leagues, refreshed hourly.'],
-      LuckWatch: ['LUCK', 'Luck watch', 'Teams whose record has outrun, or lagged, their underlying numbers.'],
-      Schedule: ['SOS', 'Schedule strength', 'Strength of schedule played and remaining for every team.'],
+      LuckWatch: ['LUCK', 'Luck watch', 'Teams whose record has outrun, or lagged, what their scoring margin says they should have won.'],
+      Schedule: ['SOS', 'Schedule strength', 'How good the opponents each team has faced were, and, where the full schedule is published, how good the ones still to come are.'],
       TrackRecord: ['TRAK', 'Track record', 'Every house-model pick, saved before the game starts and graded after the final. The record begins empty at launch and fills one game at a time; nothing is back-filled.'],
       Methodology: ['METH', 'Methodology', 'How every rating, projection and probability in the Sports section is built, and where the data comes from.']
     };
     var S = this.state, self = this, key = TOOLS[this.props.tool] ? this.props.tool : 'Simulator', lg = S.lg || 'nfl';
     var fk = {}; Object.keys(TOOLS).forEach(function (k) { fk[k] = 't-fkey' + (k === key ? ' is-on' : ''); });
     var idx = {}; (((S.index || {}).leagues || {})[lg] || []).forEach(function (t) { idx[t.id] = t; });
-    var live = { Simulator: 1, Odds: 1, Injuries: 1, TrackRecord: 1, Methodology: 1 };
-    var PLANS = {
-      Spots: { items: [
-        { h: 'Rest and back-to-backs', d: 'Days of rest for both teams before every game, with NBA and NHL back-to-backs flagged.' },
-        { h: 'Short weeks and long layoffs', d: 'Thursday games after a Sunday, Monday-to-Sunday turnarounds and games after a bye.' },
-        { h: 'Road trips and travel', d: 'Games deep into a road trip or after cross-country travel and time-zone changes.' },
-        { h: 'Look-ahead and letdown spots', d: 'Games sandwiched before a rivalry or marquee opponent, and right after one.' },
-        { h: 'How each spot has played out', d: 'Results for each spot against the house model\'s expected margin, so you can see which ones actually matter.' }],
-        data: 'Built from the ESPN schedules this section already reads, scored against the house model\'s expected margin for each game. Every spot is tagged before kickoff, so nothing is fitted after the fact.',
-        links: [{ t: 'Scores', href: 'Main.dc.html' }, { t: 'Game center', href: 'Game.dc.html' }, { t: 'Matchup simulator', href: 'Simulator.dc.html' }] },
-      LuckWatch: { items: [
-        { h: 'Record vs. point differential', d: 'Each team\'s win total compared with what its scoring margin predicts (a Pythagorean expectation).' },
-        { h: 'Close-game record', d: 'Wins and losses in one-score games, where results tend to even out over time.' },
-        { h: 'Record vs. house rating', d: 'Teams whose standings position is well above or below where their rating puts them.' },
-        { h: 'Due for a correction', d: 'A short list of the teams most likely to regress, up or down, over the rest of the season.' }],
-        data: 'Uses the final scores behind the house model and its team ratings. A team flagged here is not called good or bad; its record just doesn\'t match how it has played so far.',
-        links: [{ t: 'Playoff odds', href: 'Odds.dc.html' }, { t: 'All teams', href: 'Teams.dc.html' }, { t: 'Method', href: 'Methodology.dc.html' }] },
-      Schedule: { items: [
-        { h: 'Strength of schedule played', d: 'Average house rating of every opponent a team has faced, ranked league-wide.' },
-        { h: 'Strength of schedule remaining', d: 'The same measure for games still to play, so you can see who has it easier from here.' },
-        { h: 'Hardest and easiest stretches', d: 'The toughest run of upcoming games for each team, by date.' },
-        { h: 'Home and road split', d: 'How many tough games each team still has to play away from home.' }],
-        data: 'Opponent ratings come from the house model, which is refreshed throughout the day; remaining games come from ESPN schedules. Team pages already show strength of schedule played in their profile panel.',
-        links: [{ t: 'Playoff odds', href: 'Odds.dc.html' }, { t: 'All teams', href: 'Teams.dc.html' }, { t: 'Method', href: 'Methodology.dc.html' }] }
-    };
+    var live = { Simulator: 1, Odds: 1, Injuries: 1, TrackRecord: 1, Methodology: 1, LuckWatch: 1, Schedule: 1 };
     var tabsFor = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
     var lgTabs = tabsFor.map(function (k) { return { label: k === 'all' ? 'All' : SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
       pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, simA: null, simH: null }); self.loadLeague(k); } }; });
-    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, soon: !live[key], plan: PLANS[key] || { items: [], data: '', links: [] }, tag: live[key] ? 'LIVE DATA' : 'COMING SOON',
-      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord' };
+    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, tag: 'LIVE DATA',
+      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord', isLuck: key === 'LuckWatch', isSos: key === 'Schedule' };
     var m = S.models[lg];
     // odds cells: the number plus a cyan heat shade that deepens with the probability; near-locks turn gold
     var heat = function (p) {
@@ -370,6 +353,49 @@ class Component extends DCLogic {
         o.note = m.oddsBasis + ' Ratings: ' + m.basis;
       }
       out.odds = o;
+    }
+    var ord = function (n) { var s2 = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s2[(v - 20) % 10] || s2[v] || s2[0]); };
+    var sgn = function (v, dp) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(dp); };
+    if (key === 'LuckWatch') {
+      var st = (S.stand || {})[lg], lk = { title: SD.LEAGUES[lg].label + ' luck watch', sub: m && m.season ? 'Season ' + m.season : '', rows: [], none: false, noneText: '', note: '' };
+      if (!m || !st) { lk.none = true; lk.noneText = 'Loading…'; }
+      else if (m.err || st.err) { lk.none = true; lk.noneText = 'The ratings or standings file did not load.'; }
+      else {
+        var rec = {}; (st.groups || []).forEach(function (g) { (g.teams || []).forEach(function (t) { rec[t.id] = t; }); });
+        var sig = m.sigmaMargin || m.sigma, phi = function (x) { var t = 1 / (1 + 0.2316419 * Math.abs(x)), d2 = 0.3989423 * Math.exp(-x * x / 2), p2 = d2 * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p2 : p2; };
+        var rows = Object.keys(m.teams).filter(function (id) { var t = m.teams[id], r = rec[id]; return r && t.gp >= 3 && t.mov !== undefined && r.gp; }).map(function (id) {
+          var t = m.teams[id], r = rec[id], ties = (r.t || 0) + (r.otl || 0), wins = r.w + ties / 2, xw = r.gp * phi(t.mov / sig);
+          return { id: id, t: t, r: r, wins: wins, pct: wins / r.gp, xw: xw, luck: wins - xw };
+        });
+        var byPct = rows.slice().sort(function (x, y) { return y.pct - x.pct; }); byPct.forEach(function (x, i) { x.recRank = i + 1; });
+        var byRat = rows.slice().sort(function (x, y) { return y.t.rating - x.t.rating; }); byRat.forEach(function (x, i) { x.ratRank = i + 1; });
+        rows.sort(function (x, y) { return Math.abs(y.luck) - Math.abs(x.luck); });
+        lk.rows = rows.slice(0, 40).map(function (x) { var info = idx[x.id] || {};
+          return { name: info.name || x.r.name || x.id, logo: info.logo || x.r.logo || '', href: SD.teamHref(lg, x.id), rec: x.r.overall || (x.r.w + '-' + x.r.l), mov: sgn(x.t.mov, 1),
+            xw: x.xw.toFixed(1), luck: sgn(x.luck, 1), luckSt: x.luck >= 0.5 ? 'color: var(--up); font-weight: 600' : x.luck <= -0.5 ? 'color: var(--dn); font-weight: 600' : '', recRank: ord(x.recRank), rank: ord(x.ratRank) }; });
+        lk.none = !lk.rows.length; lk.noneText = 'Not enough games played yet (teams need 3).';
+        lk.note = 'Sorted by the biggest gap, lucky or unlucky. "Wins the margin predicts" treats each game as a draw from the league\'s spread of results (σ ' + Number(sig).toFixed(1) + ' ' + m.unit + '): a team that wins by its average margin every night would win that many. Positive luck means the record is ahead of how the team has played, which usually fades; negative means it should improve. Record and house rank compare where a team sits in the standings with where its rating puts it. A gap is not proof of anything: close games, overtime and garbage time all move it.' + (rows.length > 40 ? ' Showing the 40 biggest gaps.' : '');
+      }
+      out.luck = lk;
+    }
+    if (key === 'Schedule') {
+      var so = { title: SD.LEAGUES[lg].label + ' schedule strength', sub: m && m.season ? 'Season ' + m.season : '', rows: [], none: false, noneText: '', note: '', hasRem: false };
+      if (!m) { so.none = true; so.noneText = 'Loading…'; }
+      else if (m.err) { so.none = true; so.noneText = 'The ratings file did not load.'; }
+      else {
+        var ids2 = Object.keys(m.teams).filter(function (id) { return m.teams[id].sos !== undefined; });
+        so.hasRem = ids2.some(function (id) { return m.teams[id].sosRem !== undefined; });
+        var rk = function (f) { var o2 = {}; ids2.filter(function (id) { return f(m.teams[id]) !== undefined; }).sort(function (x, y) { return f(m.teams[y]) - f(m.teams[x]); }).forEach(function (id, i) { o2[id] = i + 1; }); return o2; };
+        var rP = rk(function (t) { return t.sos; }), rR = rk(function (t) { return t.sosRem; });
+        ids2.sort(function (x, y) { var a2 = m.teams[x], b2 = m.teams[y]; return so.hasRem ? ((b2.sosRem === undefined ? -99 : b2.sosRem) - (a2.sosRem === undefined ? -99 : a2.sosRem)) : b2.sos - a2.sos; });
+        var col = function (v) { return v >= 1 ? 'color: var(--dn)' : v <= -1 ? 'color: var(--up)' : ''; };   // red = harder, green = easier
+        so.rows = ids2.slice(0, 140).map(function (id) { var t = m.teams[id], info = idx[id] || {};
+          return { name: info.name || id, logo: info.logo || '', href: SD.teamHref(lg, id), rating: sgn(t.rating, 1), ratingSt: '', sos: sgn(t.sos, 2), sosSt: col(t.sos), sosRank: rP[id] ? ord(rP[id]) : '—',
+            rem: t.sosRem === undefined ? '—' : sgn(t.sosRem, 2), remSt: col(t.sosRem || 0), remRank: rR[id] ? ord(rR[id]) : '—', left: t.left === undefined ? '—' : t.left + ' (' + (t.homeLeft || 0) + ')' }; });
+        so.none = !so.rows.length; so.noneText = 'No games played yet this season.';
+        so.note = 'Average house rating of the opponents, in ' + m.unit + ' better (+) or worse (−) than an average team; 1st is the hardest. Red is a tougher schedule, green an easier one. ' + (so.hasRem ? 'Remaining games come from the published schedule and are rated with today\'s ratings, so they shift as the season goes on.' : 'Remaining strength of schedule is shown for the NFL and college football, where the whole regular season is published up front.');
+      }
+      out.sos = so;
     }
     if (key === 'Injuries') {
       var d = S.injuries[lg], q = (S.iq || '').trim().toLowerCase();

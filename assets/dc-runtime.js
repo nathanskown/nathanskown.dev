@@ -214,7 +214,7 @@
     TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
     NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',
     NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
-    SIM: '/sports/simulator/', ODDS: '/sports/odds/', SPOT: '/sports/spots/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
+    SIM: '/sports/simulator/', ODDS: '/sports/odds/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
     SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/'
   };
   /* full US ticker list (SEC), loaded once on demand: { list: [[sym, name, cik, exch]], bySym: {SYM: {...}} } */

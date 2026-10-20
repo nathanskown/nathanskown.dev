@@ -479,6 +479,23 @@ def build(lg):
                 row["prior"] = round(prior[t], 2)
             res["teams"][t] = row
         res["games"] = len(results)
+        if lg in ("nfl", "ncaaf"):
+            # strength of schedule still to play: week-based leagues publish the whole regular season up front
+            rem = collections.defaultdict(list)
+            for g in events.values():
+                if g.get("done") or g.get("off") or g.get("t") not in (2, None):
+                    continue
+                h, a = norm_id(alias(lg, g["h"])), norm_id(alias(lg, g["a"]))
+                if h == a or h not in R or a not in R:
+                    continue
+                rem[h].append((R[a], not g.get("n")))
+                rem[a].append((R[h], False))
+            for t, row in res["teams"].items():
+                lst = rem.get(t, [])
+                row["left"] = len(lst)
+                if lst:
+                    row["sosRem"] = round(float(np.mean([x[0] for x in lst])), 2)
+                    row["homeLeft"] = sum(1 for x in lst if x[1])
         if P.get("rest"):
             # each team's game dates from two weeks back to REST_AHEAD days ahead, so pages can work out rest
             res["rest"], res["restCap"] = P["rest"], REST_CAP.get(lg, 7)

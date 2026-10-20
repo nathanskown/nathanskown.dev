@@ -30,9 +30,6 @@
 <header>
 <div class="nk-title">
 <span class="nk-brand">1-NSKN</span>
-<span class="nk-chip nk-hide-sm">Main Menu</span>
-<span class="nk-chip nk-hide-sm">MARKETS · SPORTS · MUSIC</span>
-<span class="nk-chip nk-hide-sm">HOME</span>
 <span class="nk-spacer"></span>
 <span class="nk-live"><span class="nk-dot"></span>LIVE</span>
 <span class="nk-dim"><span data-bind="zoneLabel">LOCAL</span> <span data-bind="chiTime">--:--:--</span></span>
@@ -40,7 +37,7 @@
 
 <div class="nk-help">
 <div><span class="nk-inv">&lt;HELP&gt;</span> for explanation.</div>
-<div class="nk-help2"><span class="nk-help-txt">&lt;MENU&gt; to return · type a function, then press &lt;GO&gt;</span><span class="nk-last">LAST › <span data-bind="last">NONE</span></span></div>
+<div class="nk-help2"><span class="nk-help-txt">Type a ticker, a team or a page, then press &lt;GO&gt;</span></div>
 </div>
 
 <div class="nk-cmdwrap">
@@ -56,17 +53,13 @@
 </div>
 
 <div class="nk-fbar">
-<span class="nk-fbar-title">Search NSKN</span>
-<button type="button" class="nk-fkey" data-cmd="HELP">91) Actions</button>
-<button type="button" class="nk-fkey" data-go="contact">92) Contact NSKN</button>
+<span class="nk-fbar-title">NSKN</span>
+<a class="nk-fkey" href="/finance/">Markets</a>
+<a class="nk-fkey" href="/sports/">Sports</a>
+<a class="nk-fkey" href="/music/">Music</a>
+<button type="button" class="nk-fkey" data-cmd="HELP">Help</button>
 <span class="nk-spacer"></span>
 <span class="nk-fbar-right">NSKN Terminal</span>
-</div>
-<div class="nk-sub">
-<span>Personal Terminal (NSKN)</span>
-<span class="nk-dim nk-hide-sm">95) Sections · MARKET ANALYSIS / SPORTS / MUSIC</span>
-<span class="nk-spacer"></span>
-<span class="nk-tag">nathanskown.dev</span>
 </div>
 </header>
 
@@ -81,34 +74,18 @@
 <button type="button" class="nk-nav" data-go="digest"><span class="nk-num">5)</span>Morning Digest</button>
 <button type="button" class="nk-nav" data-go="about"><span class="nk-num">6)</span>About</button>
 <button type="button" class="nk-nav" data-go="contact"><span class="nk-num">7)</span>Contact</button>
-<div class="nk-sh nk-hide-sm">System</div>
-<div class="nk-sys nk-hide-sm">
-<button type="button" class="nk-nav" data-cmd="HELP"><span class="nk-num">90)</span>Help</button>
-<button type="button" class="nk-nav" data-cmd="WHOAMI"><span class="nk-num">93)</span>Who am I</button>
-<button type="button" class="nk-nav" data-cmd="REBOOT"><span class="nk-num">98)</span>Reboot</button>
-<button type="button" class="nk-nav" data-cmd="CLEAR"><span class="nk-num">99)</span>Clear</button>
-</div>
-<p class="nk-tip nk-hide-sm">Type <span class="nk-hi">HELP</span> in the command line and press <span class="nk-k">GO</span> for every function.</p>
-<div class="nk-side-stats nk-hide-sm">
-<div class="nk-sh"><span>Site Stats</span><span class="nk-dim">v26.10</span></div>
-<dl class="nk-kvs">
-<dt>MARKETS</dt><dd>8 PAGES · LIVE</dd>
-<dt>SPORTS</dt><dd>LIVE · 12 PAGES</dd>
-<dt>MUSIC</dt><dd>2 GAMES</dd>
-<dt>DIGEST</dt><dd>DAILY 5:15 AM</dd>
-<dt>STATUS</dt><dd><a href="/status/">FEEDS · CHECK</a></dd>
-</dl>
-</div>
+<a class="nk-nav nk-hide-sm" href="/status/"><span class="nk-num">8)</span>Data status</a>
+<p class="nk-tip nk-hide-sm">Type <span class="nk-hi">HELP</span> in the command line and press <span class="nk-k">GO</span> for every shortcut.</p>
 </nav>
 
 <section class="nk-center" aria-label="Home">
-<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim nk-keys">KEYS <span class="nk-k">/</span> COMMAND · <span class="nk-k">1</span><span class="nk-k">2</span><span class="nk-k">3</span> MODE</span></div>
+<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim nk-keys">Press <span class="nk-k">/</span> to type a command</span></div>
 <div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
 
 <div class="nk-hero" id="hero">
 <canvas class="nk-canvas" id="surface" aria-hidden="true"></canvas>
 <div class="nk-hero-in">
-<div class="nk-kicker"><span class="nk-dot"></span>NSKN TERMINAL<span class="nk-kick-mode"><span class="nk-sep">//</span>MODE <span id="modeIdx">01</span>/03</span><span class="nk-sep">//</span><span id="modeName">MARKETS</span></div>
+<div class="nk-kicker"><span class="nk-dot"></span>NSKN TERMINAL<span class="nk-sep">//</span><span id="modeName">MARKETS</span></div>
 <h1 class="nk-word" id="word" aria-label="NSKN Terminal: markets, sports and music"><span aria-hidden="true" id="wordA"></span><span class="nk-word-cur" aria-hidden="true">_</span></h1>
 <p class="nk-typed"><span class="nk-gt">&gt;</span> <span id="typed"></span><span class="nk-caret" aria-hidden="true"></span></p>
 <div class="nk-modes" role="tablist" aria-label="Modes">
@@ -123,7 +100,6 @@
 <span class="nk-sec-t">MARKET<br>ANALYSIS</span>
 <span class="nk-sec-d">Dashboard · headlines · quotes · ownership · earnings · macro · IPOs</span>
 <span class="nk-sec-live" id="cardMkt">Loading markets…</span>
-<span class="nk-sec-viz"><span class="nk-sec-chips"><span>WEI</span><span>TOP</span><span>DES</span><span>HDS</span><span>ERN</span><span>ECO</span><span>IPO</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <a class="nk-sec" id="secSprt" href="/sports/" style="--g:#66e6f2;--glow:rgba(102,230,242,.18);--line:#12363b">
@@ -131,7 +107,6 @@
 <span class="nk-sec-t">SPORTS</span>
 <span class="nk-sec-d">Live scores · game center · team pages · playoff odds · matchup simulator · injuries · pick track record</span>
 <span class="nk-sec-live" id="cardSprt">Loading scores…</span>
-<span class="nk-sec-viz"><span class="nk-sec-chips"><span>SCOR</span><span>GAME</span><span>TEAM</span><span>ODDS</span><span>SIM</span><span>INJ</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <a class="nk-sec" id="secMusic" href="/music/" style="--g:#d58bff;--glow:rgba(213,139,255,.18);--line:#2e1a3d">
@@ -139,7 +114,6 @@
 <span class="nk-sec-t">MUSIC</span>
 <span class="nk-sec-d">Two guessing games · name the song from a clip · name the artist from their deep cuts</span>
 <span class="nk-sec-live"><span class="nk-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>TODAY'S DAILY IS LIVE</span>
-<span class="nk-sec-viz"><span class="nk-sec-chips"><span>TRCK</span><span>ARTS</span></span></span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <button type="button" class="nk-dg" id="secDgst" data-go="digest">
@@ -149,7 +123,6 @@
 </button>
 </div>
 </div>
-<div class="nk-fig" id="fig">FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT</div>
 </div>
 
 <div class="nk-screen" id="panel" hidden>
@@ -215,14 +188,9 @@
 </main>
 
 <footer>
-<div class="nk-tape" aria-label="System log">
-<span class="nk-tape-l">SYS LOG</span>
-<div class="nk-tape-win"><div class="nk-tape-track" id="tape"></div></div>
-</div>
 <div class="nk-status">
-<span><span class="nk-hi">●</span> LINK nathanskown.dev</span>
-<span>3 SECTIONS · MORNING DIGEST</span>
-<span>SESSION <span data-bind="uptime">00:00:00</span></span>
+<span><a href="/finance/">Market Analysis</a> · <a href="/sports/">Sports</a> · <a href="/music/">Music</a> · <a href="/status/">Data status</a></span>
+<span>Prices delayed about 15 minutes. Not investment advice.</span>
 <span>© 2026 NATHAN SKOWN</span>
 </div>
 </footer>

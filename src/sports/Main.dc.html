@@ -15,7 +15,6 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">Sports Menu</span>
 <span class="t-chip t-hide-sm">SCOR &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
@@ -36,7 +35,10 @@
 <a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
 <a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
 <a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
-<a class="t-fkey" href="Methodology.dc.html">6) Method</a>
+<a class="t-fkey" href="LuckWatch.dc.html">6) Luck</a>
+<a class="t-fkey" href="Schedule.dc.html">7) Schedule</a>
+<a class="t-fkey" href="TrackRecord.dc.html">8) Track record</a>
+<a class="t-fkey" href="Methodology.dc.html">9) Method</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
 <nav class="t-sub2" aria-label="Favorite teams">
@@ -72,7 +74,7 @@
 </section>
 
 <section class="t-panel" id="follow" aria-label="My teams">
-<div class="t-ph"><h2><span class="t-pn">1)</span>My teams</h2><span class="dim">Saved in this browser</span></div>
+<div class="t-ph"><h2>My teams</h2><span class="dim">Saved in this browser</span></div>
 <div class="t-pb">
 <div style="max-width: 520px">
 <label for="teamAdd" class="sr">Add a team to follow</label>
@@ -84,7 +86,7 @@
 </div>
 </sc-if>
 <sc-if value="{{noMatch}}" hint-placeholder-val="{{false}}"><div class="dim" style="margin-top: 8px">No team matches “{{q}}”.</div></sc-if>
-<sc-if value="{{noFollows}}" hint-placeholder-val="{{true}}"><div class="s-empty" style="margin-top: 10px">You’re not following any teams yet. Search above to add one. Its last result and next game show up here, and its games are highlighted below.</div></sc-if>
+<sc-if value="{{noFollows}}" hint-placeholder-val="{{true}}"><div class="s-empty" style="margin-top: 10px">You’re not following any teams yet. Search above to add one. Each one gets a daily briefing here: last result, next game with the house's odds, record, form and rating rank. Its games are highlighted below.</div></sc-if>
 <sc-if value="{{hasFollows}}" hint-placeholder-val="{{false}}">
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; margin-top: 10px">
 <sc-for list="{{mine}}" as="m" hint-placeholder-count="3">
@@ -94,7 +96,8 @@
 <button type="button" onClick="{{m.remove}}" aria-label="{{m.removeLabel}}" style="flex: none; width: 40px; height: 40px; border: 0; background: transparent; color: var(--dim); cursor: pointer">✕</button>
 </div>
 <div style="font-size: 12.5px"><span class="dim">Last </span><a href="{{m.lastHref}}" style="{{m.lastStyle}}">{{m.last}}</a></div>
-<div style="font-size: 12.5px"><span class="dim">Next </span><a href="{{m.nextHref}}">{{m.next}}</a></div>
+<div style="font-size: 12.5px"><span class="dim">Next </span><a href="{{m.nextHref}}">{{m.next}}</a><sc-if value="{{m.hasP}}" hint-placeholder-val="{{false}}"> <span class="s-house">· house {{m.pNext}}</span></sc-if></div>
+<sc-if value="{{m.hasBrief}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 12px; margin-top: 4px; line-height: 1.45">{{m.brief}}</div></sc-if>
 </div>
 </sc-for>
 </div>
@@ -210,6 +213,7 @@ class Component extends DCLogic {
   loadFollow(f) {
     var self = this;
     SD.schedule(f.lg, f.id).then(function (s) { var o = Object.assign({}, self.state.fsched); o[f.lg + ':' + f.id] = s; self.setState({ fsched: o }); }, function () {});
+    if (SD.LEAGUES[f.lg] && SD.LEAGUES[f.lg].teams && !this.state.models[f.lg]) SD.data('model/' + f.lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[f.lg] = m; self.setState({ models: o }); }, function () {});
   }
   hint(idx) {
     // three random teams from different leagues as examples, picked once per visit
@@ -243,11 +247,22 @@ class Component extends DCLogic {
       var t = info[f.lg + ':' + f.id] || {}, s = S.fsched[f.lg + ':' + f.id], last = null, next = null;
       if (s) { s.games.forEach(function (g) { if (g.done) last = g; else if (!next && g.state !== 'post') next = g; }); }
       var opp = function (g) { return (g.home || g.neutral ? 'vs ' : 'at ') + (g.opp.abbr || g.opp.short || 'TBD'); };
+      // one-line briefing: record and standing, recent form, house rank, and the house's chance in the next game
+      var md = S.models[f.lg], mt = md && md.teams ? md.teams[String(f.id)] : null, brief = [];
+      if (s && s.team.record) brief.push(s.team.record + (s.team.standing ? ', ' + s.team.standing : ''));
+      if (s) { var form = s.games.filter(function (g) { return g.done && g.result; }).slice(-5).map(function (g) { return g.result; }).join(''); if (form.length >= 3) brief.push('last ' + form.length + ': ' + form); }
+      if (mt && mt.rank) brief.push('house rank ' + mt.rank + ' of ' + Object.keys(md.teams).length);
+      var pNext = '';
+      if (next && next.state === 'pre' && md && mt) {
+        var pr = next.home ? SD.project(md, next.opp.id, f.id, next.neutral, next.start) : SD.project(md, f.id, next.opp.id, next.neutral, next.start);
+        if (pr) pNext = Math.round((next.home ? pr.pHome : pr.pAway) * 100) + '% to win';
+      }
       return { name: t.name || f.name, logo: t.logo || '', href: SD.teamHref(f.lg, f.id), removeLabel: 'Stop following ' + (t.name || f.name),
         remove: function () { self.saveFollows(S.follows.filter(function (x) { return !(x.lg === f.lg && x.id === f.id); })); },
         last: last ? (last.result ? last.result + ' ' : '') + last.score + ' ' + opp(last) : (s ? '—' : 'Loading…'), lastHref: last ? last.href : '#',
         lastStyle: last && last.result === 'W' ? 'color: var(--up)' : last && last.result === 'L' ? 'color: var(--dn)' : '',
-        next: next ? (next.state === 'in' ? 'LIVE ' + next.score + ' ' : F.day(next.start) + ' ' + F.time(next.start) + ' ') + opp(next) : (s ? 'None scheduled' : ''), nextHref: next ? next.href : '#' };
+        next: next ? (next.state === 'in' ? 'LIVE ' + next.score + ' ' : F.day(next.start) + ' ' + F.time(next.start) + ' ') + opp(next) : (s ? 'None scheduled' : ''), nextHref: next ? next.href : '#',
+        brief: brief.join(' · '), hasBrief: brief.length > 0, pNext: pNext, hasP: !!pNext };
     });
 
     // league chips

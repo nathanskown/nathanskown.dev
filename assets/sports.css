@@ -283,3 +283,6 @@ body.has-crawl{padding-bottom:34px}
 .s-side .t-th{font-size:12px}
 .s-match .s-bigscore{font-size:52px}
 }
+
+/* panel headings carry no running numbers */
+.t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:none !important}

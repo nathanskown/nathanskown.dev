@@ -105,7 +105,6 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">Markets Menu</span>
 <span class="t-chip t-hide-sm">WEI &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
@@ -196,7 +195,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-if>
 
 <section class="t-panel" aria-label="Indices and assets" style="{{P.tiles}}">
-<div class="t-ph"><h2><span class="t-pn">10)</span>Indices &amp; Assets</h2><span class="dim">1D change</span></div>
+<div class="t-ph"><h2>Indices &amp; Assets</h2><span class="dim">1D change</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{tiles}}" as="t" hint-placeholder-count="10">
 <button type="button" class="{{t.cls}}" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}">
@@ -214,7 +213,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="dash-row">
 
 <section class="t-panel" aria-label="Selected index chart" style="{{P.chart}}">
-<div class="t-ph"><h2><span class="t-pn">11)</span>{{selName}} · Intraday</h2><span class="dim">Tap a tile to switch · dashed line = prior close</span></div>
+<div class="t-ph"><h2>{{selName}} · Intraday</h2><span class="dim">Tap a tile to switch · dashed line = prior close</span></div>
 <div class="t-pb">
 <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 8px">
 <span class="big" style="font-size: 52px; line-height: .95; color: #ffd89d; text-shadow: 0 0 14px rgba(255,184,77,.35)">{{selDisp}}</span>
@@ -243,7 +242,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Today's economic data" style="{{P.econ}}">
-<div class="t-ph"><h2><span class="t-pn">12)</span>Latest Economic Data</h2><span class="dim">Newest releases · FRED</span></div>
+<div class="t-ph"><h2>Latest Economic Data</h2><span class="dim">Newest releases · FRED</span></div>
 <div class="t-pb">
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 330px; font-size: 13px">
@@ -282,7 +281,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="dash-row">
 
 <section class="t-panel" aria-label="Top movers" style="{{P.movers}}">
-<div class="t-ph"><h2><span class="t-pn">13)</span>S&amp;P 500 Movers</h2>
+<div class="t-ph"><h2>S&amp;P 500 Movers</h2>
 <div class="t-tabs" role="group" aria-label="Mover list">
 <sc-for list="{{moverTabs}}" as="mt" hint-placeholder-count="3">
 <button type="button" class="{{mt.cls}}" onClick="{{mt.pick}}" aria-pressed="{{mt.pressed}}">{{mt.label}}</button>
@@ -307,7 +306,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Sector performance" style="{{P.sectors}}">
-<div class="t-ph"><h2><span class="t-pn">14)</span>S&amp;P 500 Sectors</h2><span class="dim">1D</span></div>
+<div class="t-ph"><h2>S&amp;P 500 Sectors</h2><span class="dim">1D</span></div>
 <div class="t-pb">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
 <sc-for list="{{sectors}}" as="sc" hint-placeholder-count="11">
@@ -322,7 +321,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Treasury yields" style="{{P.yields}}">
-<div class="t-ph"><h2><span class="t-pn">15)</span>Treasury Yields</h2><span class="dim">{{curveNote}}</span></div>
+<div class="t-ph"><h2>Treasury Yields</h2><span class="dim">{{curveNote}}</span></div>
 <div class="t-pb">
 <svg viewBox="0 0 300 110" role="img" aria-label="Treasury yield curve, today and one month ago" style="display: block; width: 100%; height: 120px; background: #000; border: 1px solid #241a0b">
 <line x1="0" y1="100" x2="300" y2="100" stroke="#382811" stroke-width="1"></line>
@@ -346,7 +345,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 
 <section class="t-panel" aria-label="Earnings calendar" style="{{P.earnings}}">
-<div class="t-ph"><h2><span class="t-pn">16)</span>Upcoming Earnings · S&amp;P 500</h2><span class="dim">Largest reporters · BMO before open · AMC after close · EPS estimate</span></div>
+<div class="t-ph"><h2>Upcoming Earnings · S&amp;P 500</h2><span class="dim">Largest reporters · BMO before open · AMC after close · EPS estimate</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{earnDays}}" as="ed" hint-placeholder-count="5">
 <div class="{{ed.colCls}}">
@@ -368,7 +367,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="dash-row">
 
 <section class="t-panel" aria-label="Headlines" style="{{P.headlines}}">
-<div class="t-ph"><h2><span class="t-pn">17)</span>Headlines</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Headlines</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{headlines}}" as="h" hint-placeholder-count="6">
 <a class="t-rowlink" href="{{h.link}}" target="_blank" rel="noopener">
@@ -383,7 +382,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <aside class="t-panel" aria-label="Watchlist" style="{{P.watch}}">
-<div class="t-ph"><h2><span class="t-pn">18)</span>My Watchlist</h2><button type="button" onClick="{{czEditWatch}}" style="background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size: 12px; letter-spacing: .08em">EDIT <span class="t-k">GO</span></button></div>
+<div class="t-ph"><h2>My Watchlist</h2><button type="button" onClick="{{czEditWatch}}" style="background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size: 12px; letter-spacing: .08em">EDIT <span class="t-k">GO</span></button></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="5">
 <a class="t-rowlink" href="{{w.href}}" style="justify-content: space-between; align-items: center">
@@ -396,7 +395,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 </div>
 <section class="t-panel" aria-label="Prediction market odds" style="{{P.odds}}">
-<div class="t-ph"><h2><span class="t-pn">19)</span>Prediction Market Odds</h2><span class="dim">Fed, CPI and recession · Kalshi</span></div>
+<div class="t-ph"><h2>Prediction Market Odds</h2><span class="dim">Fed, CPI and recession · Kalshi</span></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 4px 28px; padding-top: 4px">
 <sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
 <div class="t-row" style="padding: 9px 0">

@@ -78,6 +78,7 @@
   var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · LIVE · QUOTES FOR ANY US TICKER', 'SPORTS · LIVE SCORES, ODDS & TEAM PAGES', 'MUSIC · GUESS THE TRACK & GUESS THE ARTIST', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
   (function buildTape() {
     var track = $('tape');
+    if (!track) return;
     [0, 1].forEach(function (copy) {
       var wrap = copy ? el('span', 'nk-dup') : track;
       if (copy) wrap.setAttribute('aria-hidden', 'true');
@@ -296,9 +297,9 @@
     var m = MODES[i], hero = $('hero');
     hero.setAttribute('data-mode', m.k);
     hero.style.setProperty('--hg', 'rgb(' + m.rgb.join(',') + ')');
-    $('modeIdx').textContent = '0' + (i + 1);
+    if ($('modeIdx')) $('modeIdx').textContent = '0' + (i + 1);
     $('modeName').textContent = m.word;
-    $('fig').textContent = m.fig;
+    if ($('fig')) $('fig').textContent = m.fig;
     var tabs = document.querySelectorAll('.nk-mode');
     for (var t = 0; t < tabs.length; t++) { var on = +tabs[t].getAttribute('data-mode') === i; tabs[t].classList.toggle('is-on', on); tabs[t].setAttribute('aria-selected', on); }
     MODES.forEach(function (x, k) { var c = $(x.card); if (c) c.classList.toggle('is-mode', k === i); });
@@ -649,9 +650,9 @@
       games = head + (rows.length ? rows.map(function (g) {
         var left = '<b class="nk-lg">' + g.L[0] + '</b> ' + (g.state === 'pre' ? esc(g.away) + ' @ ' + esc(g.home) : esc(g.away) + ' ' + esc(g.as) + ' @ ' + esc(g.home) + ' ' + esc(g.hs));
         var right = g.state === 'in' ? '<span class="nk-live">' + esc(g.detail) + '</span>' : g.state === 'pre' ? esc(when(g.at)) : 'FINAL';
-        return '<a class="' + (g.mine ? 'nk-mine' : '') + '" href="/sports/game/?lg=' + g.L[2] + '&amp;id=' + encodeURIComponent(g.id) + '"><span>' + left + '</span><span>' + right + '</span></a>';
+        return '<dd class="nk-ln"><a class="' + (g.mine ? 'nk-mine' : '') + '" href="/sports/game/?lg=' + g.L[2] + '&amp;id=' + encodeURIComponent(g.id) + '"><span>' + left + '</span><span>' + right + '</span></a></dd>';
       }).join('') : '<dd class="nk-now-note">' + (failed ? 'Scores are unavailable right now.' : 'No games in the next day and a half.') + '</dd>')
-        + '<a class="nk-now-more" href="/sports/"><span>All scores &amp; schedules</span><span>SCOR ›</span></a>';
+        + '<dd class="nk-ln"><a class="nk-now-more" href="/sports/"><span>All scores &amp; schedules</span><span>›</span></a></dd>';
       render();
     });
   })();
