@@ -45,8 +45,9 @@ jobs:
             echo "::group::$job"
             python -m pipeline.sports.run "$job" || echo "job $job exited with an error"
             echo "::endgroup::"
+            python tools/site_stats.py || true
             python tools/validate_data.py || true   # holds back any file that fails its checks (keeps the last good version)
-            git add data/sports data/validation.json 2>/dev/null || git add data/sports
+            git add data/sports; for f in data/validation.json data/site.json; do [ -f "$f" ] && git add "$f"; done
             if git diff --cached --quiet; then echo "no changes after $job"; continue; fi
             if python tools/only_timestamps.py; then echo "only timestamps changed after $job: not committing"; git reset -q; git checkout -q -- data/sports; continue; fi
             git commit -q -m "data: refresh sports data ($job)"

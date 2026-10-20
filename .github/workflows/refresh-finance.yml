@@ -51,8 +51,9 @@ jobs:
           git config user.name "finance-data-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           commit() {
+            python tools/site_stats.py || true
             python tools/validate_data.py || true   # holds back any file that fails its checks (keeps the last good version)
-            git add data/finance data/validation.json 2>/dev/null || git add data/finance
+            git add data/finance; for f in data/validation.json data/site.json; do [ -f "$f" ] && git add "$f"; done
             if git diff --cached --quiet; then echo "no changes after $1"; return 0; fi
             if python tools/only_timestamps.py; then echo "only timestamps changed after $1: not committing"; git reset -q; git checkout -q -- data/finance; return 0; fi
             git commit -q -m "data: refresh finance data ($1)"

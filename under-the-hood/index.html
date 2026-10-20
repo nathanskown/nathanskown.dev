@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Under the hood · NSKN Terminal</title>
+<meta name="description" content="How nathanskown.dev works: where every number comes from, how often it refreshes, how it is checked before it goes live, and how well the sports model has actually done.">
+<link rel="canonical" href="https://nathanskown.dev/under-the-hood/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="Under the hood · NSKN Terminal">
+<meta property="og:description" content="Where every number comes from, how it is checked before it goes live, and the live track record of the sports model.">
+<meta property="og:url" content="https://nathanskown.dev/under-the-hood/">
+<meta property="og:image" content="https://nathanskown.dev/assets/og/hood.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#020402">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--g:#8dff9c;--hi:#d6ffdc;--wh:#f2fff4;--dim:#7fc78a;--line:#163f1e;--bg:#020402;--panel:#041006;--mkt:#ffbf3a;--spt:#3df2ff;--mus:#d58bff;--ok:#4ade80;--warn:#ffb84d;--bad:#ff5f56}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 460px at 50% -160px,rgba(141,255,156,.12),transparent 70%),var(--bg);color:var(--hi);font:14px/1.6 'IBM Plex Mono',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+a{color:var(--g)}
+a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(141,255,156,.3)}
+.skip{position:absolute;left:8px;top:-60px;background:var(--g);color:#000;padding:8px 14px;font-weight:600;z-index:9}
+.skip:focus{top:8px}
+.bar{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;background:linear-gradient(90deg,#8dff9c,#5ee08a);color:#000;padding:6px 14px;font-weight:600}
+.bar a{color:#000;text-decoration:none}
+.bar a:hover{text-decoration:underline}
+main{max-width:1120px;margin:0 auto;padding:26px 16px 70px}
+.kick{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.kick::before{content:"";width:18px;height:2px;background:var(--g)}
+h1{font-family:VT323,monospace;font-weight:400;font-size:clamp(52px,8vw,96px);line-height:.88;margin:8px 0 10px;letter-spacing:.02em;background:linear-gradient(92deg,#fff,#d6ffdc 35%,#8dff9c 70%,#3df2ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(141,255,156,.35))}
+.lead{max-width:74ch;font-size:15px;color:var(--hi);margin:0 0 26px}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--wh);margin:0;padding:6px 14px;background:linear-gradient(90deg,rgba(141,255,156,.18),rgba(141,255,156,.03));border-left:3px solid var(--g);border-bottom:1px solid var(--line)}
+section{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);margin:0 0 20px}
+.pb{padding:14px 16px 16px}
+.note{color:var(--dim);font-size:12.5px;margin:10px 0 0;max-width:90ch}
+/* numbers */
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px}
+.n{position:relative;padding:12px 14px 12px 16px;background:#000;border:1px solid var(--line);overflow:hidden}
+.n::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--g))}
+.n .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--c,var(--g))}
+.n .v{font-family:VT323,monospace;font-size:46px;line-height:1;color:#fff;text-shadow:0 0 14px color-mix(in srgb,var(--c,var(--g)) 55%,transparent);font-variant-numeric:tabular-nums}
+.n .d{font-size:12.5px;color:var(--dim);line-height:1.5}
+.mkt{--c:var(--mkt)}.spt{--c:var(--spt)}.mus{--c:var(--mus)}
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;align-items:stretch}
+.step{position:relative;padding:12px 14px;border:1px solid var(--line);background:#000;margin-right:22px}
+.step:last-child{margin-right:0}
+.step:not(:last-child)::after{content:"";position:absolute;right:-22px;top:50%;width:22px;height:2px;background:linear-gradient(90deg,var(--g),transparent);}
+.step:not(:last-child)::before{content:"";position:absolute;right:-22px;top:calc(50% - 4px);border:5px solid transparent;border-left:6px solid var(--g);transform:translateX(16px)}
+.step b{display:block;color:var(--wh);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.step span{display:block;font-size:12.5px;color:var(--dim);line-height:1.5}
+.step .live{color:var(--g)}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);margin-right:6px;animation:p 1.6s ease-in-out infinite}
+@keyframes p{50%{opacity:.3}}
+@media (max-width:860px){.flow{grid-template-columns:1fr}.step{margin:0 0 22px}.step:not(:last-child)::after{right:auto;left:24px;top:auto;bottom:-22px;width:2px;height:22px;background:linear-gradient(180deg,var(--g),transparent)}.step:not(:last-child)::before{right:auto;left:20px;top:auto;bottom:-22px;border:5px solid transparent;border-top:6px solid var(--g);transform:translateY(14px)}}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{color:var(--dim);font-weight:500;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+tbody th{color:var(--wh);font-weight:500}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.wrap{overflow-x:auto}
+.tag{display:inline-block;border:1px solid currentColor;padding:0 6px;font-size:11px;letter-spacing:.1em;margin-right:4px}
+/* scorecard */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px;margin-bottom:14px}
+.cal{display:block;width:100%;max-width:560px;height:auto}
+.two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+.log li{padding:6px 0;border-bottom:1px solid var(--line);list-style:none}
+.log{margin:0;padding:0}
+.log time{color:var(--dim);font-size:12px;display:inline-block;min-width:92px}
+footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="bar" aria-label="Site"><a href="/">1-NSKN</a><a href="/finance/">Markets</a><a href="/sports/">Sports</a><a href="/music/">Music</a><span style="flex:1"></span><a href="/status/">Live status ›</a></nav>
+<main id="main">
+<div class="kick">HOOD · how this site works</div>
+<h1>Under the hood</h1>
+<p class="lead">Every number on this site comes from a public source, refreshes on a schedule, and is checked before it goes live. Nothing on this page is typed by hand: each figure below is read from the same files the rest of the site serves, the moment you open it.</p>
+
+<section aria-labelledby="h-nums">
+<h2 id="h-nums">By the numbers</h2>
+<div class="pb"><div class="nums" id="nums"><div class="n"><div class="k">Loading</div><div class="v">…</div></div></div>
+<p class="note" id="numsNote"></p></div>
+</section>
+
+<section aria-labelledby="h-flow">
+<h2 id="h-flow">How a number gets to your screen</h2>
+<div class="pb">
+<div class="flow">
+<div class="step"><b>1 · Sources</b><span>Public feeds only: SEC EDGAR, FRED, Yahoo Finance, Nasdaq, Kalshi, ESPN, MLB Stats API, MoneyPuck, nflverse, Deezer, Last.fm.</span></div>
+<div class="step"><b>2 · Scheduled jobs</b><span>GitHub Actions fetch on a timetable: markets hourly in trading hours, sports hourly while games are on, filings daily, 13F quarterly.</span><span class="live" id="flowJobs"></span></div>
+<div class="step"><b>3 · Publishing gate</b><span>Every file is checked before it is saved: prices in sane ranges, odds that add to 100%, records that add up. A failing file is held back.</span><span class="live" id="flowGate"></span></div>
+<div class="step"><b>4 · Edge</b><span>Files are served from Cloudflare's network. A small server answers live requests: any US ticker, live scoreboards, the music leaderboard.</span></div>
+<div class="step"><b>5 · Your browser</b><span>Pages draw charts, odds and projections from those files. Times show in your own time zone.</span><span class="live" id="flowNow"></span></div>
+</div>
+<p class="note">No paid data, no scraping of pages whose terms forbid it, and no betting lines shown anywhere. Market prices are delayed about 15 minutes. Nothing here is investment advice.</p>
+</div>
+</section>
+
+<section aria-labelledby="h-model">
+<h2 id="h-model">Is the sports model any good?</h2>
+<div class="pb">
+<p class="note" style="margin:0 0 12px;color:var(--hi)">The house model rates every team from game results alone, then projects each game before it starts. Every pick is saved before kickoff and graded after the final; none is back-filled. This is the live record so far.</p>
+<div class="cards" id="trk"></div>
+<div class="two">
+<div><svg class="cal" id="cal" viewBox="0 0 560 250" role="img" aria-label="Calibration chart"></svg>
+<p class="note">Calibration: when the model gave a team a given chance, how often that team actually won. A well-calibrated model sits on the diagonal. Small buckets are noisy.</p></div>
+<div class="wrap"><table><caption class="note" style="caption-side:bottom;text-align:left">Settings are fit on past seasons and kept only if they beat the simple version on later seasons the fit never saw. "Better than simple" is how much lower the prediction error (log loss) was on those unseen seasons than a plain rating with no tuning.</caption>
+<thead><tr><th scope="col">League</th><th scope="col" class="r">Fit on</th><th scope="col" class="r">Games</th><th scope="col" class="r">Better than simple</th></tr></thead><tbody id="fit"></tbody></table></div>
+</div>
+<p class="note"><a href="/sports/track-record/">Full track record</a> · <a href="/sports/methodology/">How the model works</a></p>
+</div>
+</section>
+
+<section aria-labelledby="h-src">
+<h2 id="h-src">Sources and what they feed</h2>
+<div class="pb wrap"><table>
+<thead><tr><th scope="col">Source</th><th scope="col">Used for</th><th scope="col">Refresh</th></tr></thead>
+<tbody>
+<tr><th scope="row">SEC EDGAR</th><td>Quarterly financials (XBRL), insider Form 4s, 8-Ks, 13D/G, quarterly 13F holdings, company fundamentals for the screener</td><td>daily · quarterly</td></tr>
+<tr><th scope="row">Yahoo Finance</th><td>Delayed prices, charts and futures; headline feeds</td><td>hourly, trading hours</td></tr>
+<tr><th scope="row">FRED (St. Louis Fed)</th><td>Inflation, jobs, growth, rates and spreads on the macro page</td><td>daily</td></tr>
+<tr><th scope="row">U.S. Treasury</th><td>Yield curve</td><td>daily</td></tr>
+<tr><th scope="row">Nasdaq</th><td>Earnings and IPO calendars</td><td>daily</td></tr>
+<tr><th scope="row">Kalshi</th><td>Prediction-market odds on Fed and inflation outcomes</td><td>hourly</td></tr>
+<tr><th scope="row">iShares, Wikipedia</th><td>Index membership lists (S&amp;P 500/400/600, Russell)</td><td>daily</td></tr>
+<tr><th scope="row">ESPN public API</th><td>Scores, schedules, standings, injuries, box scores</td><td>live · hourly</td></tr>
+<tr><th scope="row">MLB Stats API</th><td>Probable starting pitchers and pitching lines</td><td>daily in season</td></tr>
+<tr><th scope="row">MoneyPuck</th><td>NHL expected goals</td><td>daily in season</td></tr>
+<tr><th scope="row">nflverse</th><td>NFL results back to 1999 and closing lines (used only to set the home edge and test the model)</td><td>seasonal</td></tr>
+<tr><th scope="row">Deezer · Last.fm · MusicBrainz</th><td>Song previews, artist catalog and tags, release dates and countries</td><td>on play · weekly</td></tr>
+</tbody></table></div>
+</section>
+
+<section aria-labelledby="h-new">
+<h2 id="h-new">What's new</h2>
+<div class="pb"><ul class="log" id="log"><li class="note">Loading recent changes…</li></ul>
+<p class="note">The latest changes to the site itself, read from its public code history. Automatic data refreshes are left out.</p></div>
+</section>
+</main>
+<footer>Designed by Nathan Skown and built with Claude. <a href="https://github.com/nathanskown/nathanskown.dev">Source on GitHub</a> · <a href="/status/">Live status</a> · <a href="/">Home</a></footer>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var get = function (u) { return fetch(u, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
+  var fmt = function (n) { return n == null ? '—' : Number(n).toLocaleString('en-US'); };
+  var ago = function (iso) {
+    if (!iso) return '';
+    var m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    return m < 60 ? m + ' min ago' : m < 2880 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago';
+  };
+  var LG = { nfl: 'NFL', ncaaf: 'College football', nba: 'NBA', nhl: 'NHL', mlb: 'MLB', ncaab: 'College basketball', ncaah: 'College hockey' };
+
+  get('/data/site.json').then(function (s) {
+    var M = s.markets || {}, S = s.sports || {}, U = s.music || {};
+    var lg = S.historyByLeague || {}, first = Math.min.apply(null, Object.keys(lg).map(function (k) { return lg[k].from; }).concat([9999]));
+    var tiles = [
+      ['mkt', 'US tickers you can look up', M.tickersSearchable, 'Any of them opens a quote page with prices, SEC financials, insider trades and filings.'],
+      ['mkt', '13F ownership histories', M.ownershipFiles, 'Stocks with institutional holders tracked quarter by quarter from SEC filings: who bought, who sold, index vs. active.'],
+      ['mkt', 'Index members mapped', M.indexMembers, 'S&P 500, 400 and 600 constituents with sectors, behind the movers, breadth and screener.'],
+      ['spt', 'Games of history behind the model', S.historyGames, 'Every regular-season game across seven leagues since ' + (first < 9999 ? first : '') + ', replayed week by week to fit and test the house model.'],
+      ['spt', 'Teams rated right now', S.teamsRated, 'Pro and college, refreshed hourly while games are on.'],
+      ['spt', 'Picks graded live', S.picksGraded, 'Saved before each game and graded after the final. The scorecard is below.'],
+      ['mus', 'Songs in Guess the Track', U.songs, 'Spread across genres and decades so a round is not five pop hits.'],
+      ['mus', 'Artists in Guess the Artist', U.artists, 'Each with its lesser-known top tracks, tags, era and home country.']
+    ];
+    $('nums').innerHTML = tiles.filter(function (t) { return t[2]; }).map(function (t) {
+      return '<div class="n ' + t[0] + '"><div class="k">' + esc(t[1]) + '</div><div class="v">' + fmt(t[2]) + '</div><div class="d">' + esc(t[3]) + '</div></div>';
+    }).join('');
+    $('numsNote').textContent = 'Counted from the published files ' + ago(s.updated) + '.';
+  }, function () { $('nums').innerHTML = '<p class="note">The counts file has not been written yet. It is created by the next data refresh.</p>'; });
+
+  Promise.all([get('/data/finance/status.json').catch(function () { return {}; }), get('/data/sports/status.json').catch(function () { return {}; })]).then(function (r) {
+    var t = [];
+    [r[0], r[1]].forEach(function (S) { Object.keys(S || {}).forEach(function (k) { if (S[k] && S[k].finished) t.push(S[k].finished); }); });
+    t.sort();
+    if (t.length) $('flowJobs').innerHTML = '<br><span class="pulse" aria-hidden="true"></span>Last run ' + ago(t[t.length - 1]);
+  });
+  get('/data/validation.json').then(function (v) {
+    var recent = (v.recent || []).filter(function (x) { return Date.now() - new Date(x.at).getTime() < 7 * 86400000; });
+    $('flowGate').innerHTML = '<br>' + fmt(v.checks) + ' checks on the last run · ' + (recent.length ? recent.length + ' hold-back' + (recent.length === 1 ? '' : 's') + ' this week' : 'nothing held back this week');
+  }, function () {});
+  $('flowNow').innerHTML = '<br>Your clock: ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  get('/data/sports/track/summary.json').then(function (T) {
+    var a = T.all || {};
+    if (!a.n) { $('trk').innerHTML = '<p class="note">No picks graded yet.</p>'; return; }
+    var pc = function (x) { return Math.round(x * 100) + '%'; };
+    var c = [
+      ['Picks graded', fmt(a.n), a.decided + ' decided'],
+      ['Picked the winner', pc(a.acc), 'home team won ' + pc(a.homeRate)],
+      ['Brier score', a.brier.toFixed(3).replace(/^0/, ''), 'coin flip .250 · always-home ' + (a.homeBrier || 0).toFixed(3).replace(/^0/, '') + ' · lower is better'],
+      ['Average miss', (a.mae || 0).toFixed(1), 'points/goals/runs off the final margin']
+    ];
+    $('trk').innerHTML = c.map(function (x) { return '<div class="n spt"><div class="k">' + esc(x[0]) + '</div><div class="v">' + esc(x[1]) + '</div><div class="d">' + esc(x[2]) + '</div></div>'; }).join('');
+    // calibration chart
+    var W = 560, H = 250, L = 46, B = 34, R = 12, Tp = 10, x = function (p) { return L + (p - 0.5) / 0.5 * (W - L - R); }, y = function (p) { return Tp + (1 - p) * (H - Tp - B); };
+    var g = '';
+    [0.5, 0.6, 0.7, 0.8, 0.9, 1].forEach(function (p) { g += '<line x1="' + x(p) + '" y1="' + Tp + '" x2="' + x(p) + '" y2="' + (H - B) + '" stroke="#163f1e"/><text x="' + x(p) + '" y="' + (H - B + 18) + '" fill="#7fc78a" font-size="11" text-anchor="middle">' + Math.round(p * 100) + '%</text>'; });
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (p) { g += '<line x1="' + L + '" y1="' + y(p) + '" x2="' + (W - R) + '" y2="' + y(p) + '" stroke="#163f1e"/><text x="' + (L - 8) + '" y="' + (y(p) + 4) + '" fill="#7fc78a" font-size="11" text-anchor="end">' + Math.round(p * 100) + '%</text>'; });
+    g += '<line x1="' + x(0.5) + '" y1="' + y(0.5) + '" x2="' + x(1) + '" y2="' + y(1) + '" stroke="#8dff9c" stroke-dasharray="4 4" opacity=".6"/>';
+    (a.cal || []).forEach(function (b) {
+      var r = Math.max(4, Math.min(14, Math.sqrt(b.n) * 1.6));
+      g += '<circle cx="' + x(b.exp) + '" cy="' + y(b.act) + '" r="' + r + '" fill="rgba(61,242,255,.35)" stroke="#3df2ff"><title>Model said ' + Math.round(b.exp * 100) + '%, won ' + Math.round(b.act * 100) + '% (' + b.n + ' games)</title></circle>';
+    });
+    g += '<text x="' + ((L + W - R) / 2) + '" y="' + (H - 2) + '" fill="#7fc78a" font-size="11" text-anchor="middle">Chance the model gave its pick</text>';
+    $('cal').innerHTML = g;
+    $('cal').setAttribute('aria-label', 'Calibration: ' + (a.cal || []).map(function (b) { return 'picks given ' + Math.round(b.exp * 100) + '% won ' + Math.round(b.act * 100) + '% of ' + b.n; }).join('; '));
+  }, function () { $('trk').innerHTML = '<p class="note">The track-record file did not load.</p>'; });
+
+  get('/data/sports/model/tuned.json').then(function (t) {
+    var rows = Object.keys(LG).filter(function (k) { return t[k] && t[k].seasons; }).map(function (k) {
+      var x = t[k];
+      var base = (x.folds || []).map(function (f) { return (f.preset || {}).logloss; }).filter(function (v) { return v > 0; });
+      var rel = base.length ? x.gain / (base.reduce(function (a, b) { return a + b; }, 0) / base.length) : null;
+      return '<tr><th scope="row">' + LG[k] + '</th><td class="r">' + x.seasons[0] + '–' + x.seasons[1] + '</td><td class="r">' + fmt(x.games) + '</td><td class="r">' + (x.adopt && rel !== null ? (rel * 100).toFixed(1) + '%' : 'kept simple') + '</td></tr>';
+    });
+    $('fit').innerHTML = rows.join('');
+  }, function () {});
+
+  // the site's own recent changes (bots' data refreshes left out)
+  fetch('https://api.github.com/repos/nathanskown/nathanskown.dev/commits?sha=main&per_page=100').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (list) {
+    var DATA = /^(data:|refresh |daily challenge|sports data|music: daily|merge )/i;
+    var keep = (list || []).filter(function (x) {
+      var msg = ((x.commit || {}).message || '').split('\n')[0], who = ((x.author || {}).login || '') + ' ' + (((x.commit || {}).author || {}).name || '');
+      return !DATA.test(msg) && !/\[bot\]|-bot\b/i.test(who);
+    }).slice(0, 12);
+    $('log').innerHTML = keep.length ? keep.map(function (x) {
+      var d = new Date(x.commit.committer.date);
+      return '<li><time datetime="' + esc(x.commit.committer.date) + '">' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '</time> ' + esc(x.commit.message.split('\n')[0]) + '</li>';
+    }).join('') : '<li class="note">No site changes in the last hundred updates.</li>';
+  }).catch(function () { $('log').innerHTML = '<li class="note">The change history could not be loaded right now (GitHub limits how often it can be read).</li>'; });
+})();
+</script>
+</body>
+</html>

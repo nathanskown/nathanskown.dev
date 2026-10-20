@@ -44,7 +44,7 @@ SECTIONS = {
         "desc": "Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.",
         "css": "assets/finance.css",
         "theme": "#070402",
-        "scripts": ["/assets/finance-ui.js"],
+        "scripts": ["/assets/finance-ui.js", "/assets/glossary.js"],
         "pages": [
             ("", "Dashboard.dc.html", {}, "Market dashboard"),
             ("digest", "Digest.dc.html", {}, "Market digest"),
@@ -66,7 +66,7 @@ SECTIONS = {
         "desc": "Live scores for every major league, game centers, team pages, playoff odds, a matchup simulator and injury reports.",
         "css": "assets/sports.css",
         "theme": "#020607",
-        "scripts": ["/assets/sports-data.js"],
+        "scripts": ["/assets/sports-data.js", "/assets/glossary.js"],
         "pages": [("", "Main.dc.html", {}, "Scores & schedule"),
                   ("teams", "Teams.dc.html", {}, "All teams"),
                   ("team", "Team.dc.html", {}, "Team"),
