@@ -269,7 +269,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-top: 6px"><span>FED FUNDS TARGET</span><span class="hi">{{targetLabel}}</span></div>
 </div>
 <h3 style="margin: 16px 0 6px; font-size: 12px; font-weight: 500; color: #c99442; letter-spacing: .12em">COMING UP</h3>
-<sc-if value="{{noUpcoming}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 12.5px">The release calendar appears once the FRED API key is connected.</div></sc-if>
+<sc-if value="{{noUpcoming}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 12.5px">No major releases are scheduled in the next few days.</div></sc-if>
 <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="4">
 <div style="display: flex; gap: 10px; font-size: 13px; padding: 4px 0"><span style="color: #ffd89d; width: 38px; flex: none">{{u.d}}</span><span>{{u.e}}</span></div>
 </sc-for>

@@ -225,7 +225,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-panel" aria-label="Earnings and why they matter">
 <div class="t-ph"><h2>Earnings, and Why They Matter</h2><a href="Earnings.dc.html" style="font-size: 12px; letter-spacing: .08em">FULL CALENDAR <span class="t-k">GO</span></a></div>
-<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 10px">
+<div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{edEarn}}" as="e" hint-placeholder-count="6">
 <div style="background: #000; border: 1px solid #382811; padding: 12px 14px">
 <div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline"><span><span style="font-weight: 600; color: #ffd89d; margin-right: 8px">{{e.sym}}</span>{{e.name}}</span><span style="font-size: 12px; color: #a87933; text-align: right">{{e.when}}</span></div>
@@ -455,7 +455,12 @@ class Component extends DCLogic {
     var UP = '#4ade80', DN = '#ff5f56', FLAT = '#ffd89d';
     var st = this.state || {};
     var D = st.digest || {};
-    var ED = st.ed || null;
+    var HAND = st.ed || null;
+    var AUTOSTORY = (D.auto || {}).story || null;
+    var handFresh = !!(HAND && D.date && HAND.date === D.date);
+    // today's hand-written edition wins; otherwise the page writes its own from the live numbers (rules, no AI)
+    var usingAuto = !handFresh && !!AUTOSTORY && !!D.date;
+    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : HAND);
     var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
     var edDateLabel = '';
     if (ED && ED.date) { try { edDateLabel = new Date(ED.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {} }
@@ -491,11 +496,11 @@ class Component extends DCLogic {
       });
     });
     var br = D.breadth;
-    var stale = ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the live data below is current.' : '';
+    var stale = !usingAuto && ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the live data below is current.' : '';
     return {
       hasEd: !!ED, noEd: !ED,
       edHeadline: ED ? ED.headline : '', edLede: ED ? ED.lede : '', edStale: stale,
-      edByline: ED ? 'Written by Claude for ' + edDateLabel + ' · ' + tm(ED.written) + ' CT' : '',
+      edByline: ED ? (usingAuto ? 'Auto-written from today\'s data (rules, no AI) · refreshed ' + tm(D.updated) + ' CT' + (HAND ? ' · a hand-written edition appears here on days one is published' : '') : 'Written by Claude for ' + edDateLabel + ' · ' + tm(ED.written) + ' CT') : '',
       edMarketTitle: ED && ED.market ? ED.market.title : '', edPoints: ED && ED.market ? ED.market.points : [],
       edBottom: ED && ED.data ? ED.data.bottom : '',
       edData: ED && ED.data ? ED.data.rows.map(function (r) { var g = SIG[r.signal] || SIG.mix; return { n: r.n, read: r.read, why: r.why, label: g[0], color: g[1] }; }) : [],

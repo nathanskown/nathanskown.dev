@@ -117,8 +117,9 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
   });
 
   // 3) sanity checks on the published data
-  Promise.all([get('/data/finance/macro.json'), get('/data/finance/earnings.json'), get('/data/finance/dashboard.json'), get('/data/finance/ownership/AAPL.json')]).then(function (rs) {
+  Promise.all([get('/data/finance/macro.json'), get('/data/finance/earnings.json'), get('/data/finance/dashboard.json'), get('/data/finance/ownership/AAPL.json'), get('/data/finance/members.json'), get('/data/finance/headlines.json'), get('/data/finance/digest.json'), get('/data/finance/editorial.json')]).then(function (rs) {
     var M = rs[0].j || {}, E = rs[1].j || {}, D = rs[2].j || {}, O = rs[3].j || {};
+    var MEM = rs[4].j || {}, HL = rs[5].j || {}, DG = rs[6].j || {}, ED = rs[7].j || {};
     var checks = [];
     var weekend = (M.calendar || []).filter(function (c) { var d = new Date(c.date + 'T12:00:00Z').getUTCDay(); return d === 0 || d === 6; });
     checks.push(['Release calendar has no weekend dates', !weekend.length, weekend.length + ' weekend entries']);
@@ -134,6 +135,14 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
     var today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var stale = (E.upcoming || []).filter(function (x) { return x.date < today; });
     checks.push(['Earnings calendar has no past dates under "upcoming"', !stale.length, stale.length + ' stale rows']);
+    var ru = ['r1000', 'r2000'].filter(function (k) { return !(MEM[k] || []).length; });
+    checks.push(['Russell 1000 and 2000 member lists are filled', !ru.length, ru.length ? ru.join(', ') + ' empty (iShares download failing)' : 'ok']);
+    var hl = (HL.items || [])[0], hAge = hl ? (Date.now() - new Date(hl.published).getTime()) / 3600000 : 999, wk = new Date().getDay() % 6 === 0;
+    checks.push(['Newest headline is under 6 hours old (weekdays)', wk || hAge < 6, hl ? hAge.toFixed(1) + ' hours old' : 'no headlines']);
+    checks.push(['Digest was built today (New York date)', !DG.date || DG.date === today || wk, 'digest date ' + (DG.date || 'missing')]);
+    checks.push(['Digest has an auto-written story', !!((DG.auto || {}).story), (DG.auto || {}).story ? 'ok' : 'missing']);
+    var edOld = ED.date && DG.date && ED.date !== DG.date;
+    checks.push(['Hand-written editorial is for today (optional)', !edOld, edOld ? 'last written for ' + ED.date + '; the page uses the auto-written story' : 'ok']);
     $('checks').innerHTML = checks.map(function (c) { var k = c[1] ? 'ok' : 'warn'; tally(k); return row([esc(c[0]), pill(k, c[1] ? 'PASS' : 'CHECK'), esc(c[2])]); }).join('');
     lead();
   });

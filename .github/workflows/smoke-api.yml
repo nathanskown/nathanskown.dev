@@ -63,6 +63,10 @@ jobs:
           site "/api/espn/site/v2/sports/football/nfl/scoreboard"
           site /data/finance/tickers.json
           site /data/finance/dashboard.json
+          site "/api/live?part=tiles"
+          site "/api/live?part=movers"
+          site "/api/live?part=news"
+          site /data/finance/digest.json
           site /no-such-page/
       - name: Check the ESPN trim changes nothing the pages show
         run: |

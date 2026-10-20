@@ -33,7 +33,7 @@ class Component extends DCLogic {
     var self = this;
     DC.load('/data/finance/quotes/index.json').then(function (j) { return j; }, function () { return { tickers: [] }; }).then(function (j) {
       var st = self.state || {};
-      var sym = String(st.sym || st.ticker || '').toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2') || (j.tickers[0] && j.tickers[0].sym);
+      var sym = String(st.sym || st.ticker || st.s || '').toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2') || (j.tickers[0] && j.tickers[0].sym);
       self.setState({ index: j, sym: sym });
       if (sym) self.fetchSym(sym, j);
       else self.setState({ err: true });

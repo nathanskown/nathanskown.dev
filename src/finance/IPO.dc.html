@@ -193,6 +193,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </tbody>
 </table>
+<sc-if value="{{noPipeline}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px; padding: 14px 0 4px">No IPOs are on the Nasdaq calendar to price right now. New filings appear here as they are scheduled.</div></sc-if>
 </div>
 </section>
 
@@ -424,7 +425,7 @@ class Component extends DCLogic {
       (S.avgD1 !== null && S.avgD1 !== undefined ? 'The average ' + (S.nSpac !== undefined ? 'operating company ' : 'deal ') + (S.avgD1 >= 0 ? 'rose ' : 'fell ') + F.n(Math.abs(S.avgD1), 1) + '% on its first day, and ' + F.n(S.above, 0) + '% now trade above their offer price.' : '') : 'Loading…');
     return {
       liveTag: F.updated(I.updated), headline: headline, pipeBadge: wk + ' deal' + (wk === 1 ? '' : 's') + ' expected in the next two weeks', year: I.year || '',
-      score: score, pipeline: pipeline, sortTabs: sortTabs, recent: recent, months: months,
+      score: score, pipeline: pipeline, noPipeline: !!I.updated && !pipeline.length, sortTabs: sortTabs, recent: recent, months: months,
       vsAbove: !vsReady ? 'flex: 1; background: #3D2C13;' : 'flex: ' + Math.max(share('Above'), 0.5) + '; background: #2F9E5A;', vsWithin: !vsReady ? 'display: none;' : 'flex: ' + Math.max(share('Within'), 0.5) + '; background: #664A1F;', vsBelow: !vsReady ? 'display: none;' : 'flex: ' + Math.max(share('Below'), 0.5) + '; background: #B8423A;',
       vsAboveText: vsReady ? 'Above range ' + share('Above') + '%' : 'Only ' + vt + ' priced deal' + (vt === 1 ? '' : 's') + ' with a recorded range so far. Ranges are captured while deals sit on the upcoming calendar; the split shows once ' + VS_MIN + ' have priced.', vsWithinText: vsReady ? 'Within ' + share('Within') + '%' : '', vsBelowText: vsReady ? 'Below ' + share('Below') + '%' + ' · ' + vt + ' deals with a known range' : '',
       sectors: sectors, filings: filings, lockups: lockups, pulled: pulled

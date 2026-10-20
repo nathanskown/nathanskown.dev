@@ -157,7 +157,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <div role="group" aria-label="Source type" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px; align-self: flex-start">
 <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
-<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.btnStyle}}">{{t.label}} <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #A87933">{{t.count}}</span></button>
+<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.btnStyle}}">{{t.label}} <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {{t.countColor}}">{{t.count}}</span></button>
 </sc-for>
 </div>
 
@@ -396,7 +396,7 @@ class Component extends DCLogic {
       }),
       watchPressed: watchOnly ? 'true' : 'false', notablePressed: notableOnly ? 'true' : 'false',
       watchStyle: toggle(watchOnly), notableStyle: toggle(notableOnly),
-      tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], pressed: t[0] === tab ? 'true' : 'false', pick: function () { saveNP({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
+      tabs: tabDefs.map(function (t) { return { label: t[1], count: counts[t[0]], countColor: t[0] === tab ? '#2A1D08' : '#C99442', pressed: t[0] === tab ? 'true' : 'false', pick: function () { saveNP({ tab: t[0] }); }, btnStyle: btn(t[0] === tab) }; }),
       hasUnseen: unseen > 0, unseenText: unseen + ' new since you opened this page', markSeen: function () { self.setState({ unseen: 0 }); },
       items: items, empty: !!st.items && items.length === 0, top: top, watch: watch, sched: sched, noSched: !sched.length,
       sourceList: sources.join(', ') || 'press wires, SEC EDGAR and financial publications'

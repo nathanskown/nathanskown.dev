@@ -87,6 +87,18 @@ def is_notable(title, kind, tickers):
     return bool(NOTABLE_RE.search(title or ""))
 
 
+# Digest relevance: a publication story must be about markets, companies or the economy; a press release must not be routine corporate boilerplate
+MARKET_RE = __import__("re").compile(r"\b(stocks?|shares|market|markets|wall street|dow|nasdaq|s&p|russell|fed|fomc|rates?|yields?|treasur\w+|inflation|cpi|jobs?|payrolls?|economy|economic|earnings|profit|revenue|guidance|oil|crude|gold|bitcoin|dollar|tariffs?|trade|bank|banks|ipo|merger|acquisition|deal|bonds?|credit|recession|investors?|traders?|etf|sector|ceo|layoffs?|futures|equit\w+|indexes|index)\b", __import__("re").I)
+BOILER_RE = __import__("re").compile(r"announces? (the )?(date|timing)|conference call|to (present|participate|host|attend)|webinar|appoints?|names? .{0,40} (as|to) |expands?|launch(es)?|partnership|partners? with|celebrates?|recognized|award|retirement|leadership transition|to ring", __import__("re").I)
+
+
+def digest_relevant(h):
+    t = h.get("title", "")
+    if h.get("type") == "Publication":
+        return bool(h.get("tickers")) or bool(MARKET_RE.search(t))
+    return bool(h.get("notable")) and not BOILER_RE.search(t)
+
+
 ITEM_NOTABLE = ("1.01", "1.03", "2.01", "2.02", "2.05", "2.06", "4.02", "5.02")
 
 
@@ -866,6 +878,221 @@ def _ct_now():
     return datetime.now(ZoneInfo("America/Chicago"))
 
 
+# ---- rule-based daily story: fills the editorial slots from the numbers when no hand-written editorial exists for today (no AI, no cost) ----
+_DEFENSIVE = {"Health Care", "Utilities", "Cons. Staples", "Real Estate"}
+_RELEASE_WHY = (
+    ("cpi", "Inflation is what the Fed watches most. A hotter reading raises rate-hike odds and pressures stock valuations; a cooler one does the opposite."),
+    ("pce", "The Fed's preferred inflation gauge. It decides how long rates stay high."),
+    ("nonfarm", "The jobs report. Strong hiring supports earnings but can keep the Fed hawkish; weak hiring raises recession fears."),
+    ("payroll", "The jobs report. Strong hiring supports earnings but can keep the Fed hawkish; weak hiring raises recession fears."),
+    ("jobless", "A weekly read on layoffs. A sustained rise is an early recession warning."),
+    ("unemployment", "Labor-market slack. A rising rate is the first sign the jobs market is cooling."),
+    ("retail", "Consumer spending is about two-thirds of the economy. A miss raises growth worries."),
+    ("housing", "A read on rate-sensitive construction demand; mortgage rates drive it."),
+    ("gdp", "The broadest measure of growth. The revision shifts recession and earnings expectations."),
+    ("sentiment", "Consumer mood often leads spending. Inflation expectations inside the survey get Fed attention."),
+    ("ism", "A survey of factory and service activity. Below 50 means contraction."),
+    ("pmi", "A survey of business activity. Below 50 means contraction."),
+    ("fomc", "The Fed's rate decision. Markets trade the statement and press conference as much as the rate itself."),
+    ("fed", "Fed communication moves rate expectations, which move every asset price."),
+    ("treasury", "Auction demand shows how hungry buyers are for government debt; weak auctions push yields up."),
+)
+_IND_WHY = {
+    "CPIAUCSL": "Inflation sets the Fed's path. Faster price growth means higher-for-longer rates, which is a headwind for stock valuations.",
+    "CPILFESL": "Core strips out food and energy and shows underlying price pressure, the part the Fed can actually influence.",
+    "UNRATE": "A rising jobless rate shows demand for workers cooling. Modest rises ease inflation; fast rises signal recession risk.",
+    "PAYEMS": "Hiring pace drives income and spending. Thin payroll growth raises recession odds even as it eases Fed pressure.",
+    "RSAFS": "Retail sales track consumer demand, the largest part of GDP and a driver of company revenue.",
+    "ICSA": "Weekly layoff filings are the fastest-moving labor indicator. Sustained increases warn of a turn.",
+    "UMCSENT": "Consumer mood tends to lead spending. Low readings usually mean cautious shoppers.",
+}
+
+
+def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn):
+    import re as _re
+    pct = lambda k: (tiles.get(k) or {}).get("pct")  # noqa: E731
+    f1 = lambda v: f"{v:+.1f}%"  # noqa: E731
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=36)).isoformat()
+    pool = [h for h in heads.get("items", []) if (h.get("published") or "") >= cutoff and h.get("type") != "SEC filing"
+            and not mi.is_junk(h["title"], h.get("source", ""))]
+    pool_rel = [h for h in pool if digest_relevant(h)]
+    secs = sorted(dash.get("sectors", []), key=lambda x: x.get("pct") or 0)
+    spx, ixic, dji, rut = pct("spx"), pct("ixic"), pct("dji"), pct("rut")
+    vx = tiles.get("vix") or {}
+    br = dash.get("breadth") or {}
+    # ---- headline + lede ----
+    d = spx if spx is not None else (es or {}).get("pct")
+    word = "little changed" if d is None or abs(d) < 0.15 else ("rise" if d > 0 else "fall") if abs(d) >= 0.6 else ("edge higher" if d > 0 else "edge lower")
+    lead_sec = f", led by {secs[-1]['name']}" if secs and secs[-1].get("pct", 0) >= 0.8 and d and d > 0 else (f", with {secs[0]['name']} the weak spot" if secs and secs[0].get("pct", 0) <= -0.8 else "")
+    headline = ("Stocks " + word if word != "little changed" else "Stocks little changed") + lead_sec
+    if rut is not None and spx is not None and rut - spx >= 0.9:
+        headline += "; small caps surge"
+    elif rut is not None and spx is not None and spx - rut >= 0.9:
+        headline += "; small caps lag"
+    bits = []
+    if spx is not None:
+        bits.append(f"The S&P 500 is {f1(spx)}, the Nasdaq {f1(ixic)}, the Dow {f1(dji)} and the Russell 2000 {f1(rut)}." if None not in (ixic, dji, rut) else f"The S&P 500 is {f1(spx)}.")
+    if br.get("n"):
+        bits.append(f"{br['adv']} of {br['n']} S&P 500 stocks are up.")
+    if es and es.get("pct") is not None:
+        bits.append(f"Futures point {'higher' if es['pct'] > 0.15 else 'lower' if es['pct'] < -0.15 else 'flat'} ({es['pct']:+.2f}%).")
+    lede = " ".join(bits)
+    # ---- what's moving ----
+    pts = []
+    if None not in (spx, ixic, dji, rut):
+        if rut - spx >= 0.7:
+            read = "Small caps are outrunning large caps. That usually means falling yields or improving growth expectations, because small companies borrow more and are more rate-sensitive."
+        elif spx - rut >= 0.7:
+            read = "Large caps are beating small caps, a defensive tilt that often shows up when growth or funding worries rise."
+        elif dji - ixic >= 0.7:
+            read = "The Dow is beating the Nasdaq: money is rotating out of tech and AI names into cyclical and value stocks."
+        elif ixic - dji >= 0.7:
+            read = "The Nasdaq is beating the Dow: growth and AI names are leading while value lags."
+        else:
+            read = "The major indexes are moving together, so there is no strong rotation signal."
+        pts.append({"lead": "Index read: " + f"S&P {f1(spx)}, Nasdaq {f1(ixic)}, Dow {f1(dji)}, Russell 2000 {f1(rut)}.", "body": read})
+    if secs:
+        dfn = [s["pct"] for s in secs if s["name"] in _DEFENSIVE]
+        cyc = [s["pct"] for s in secs if s["name"] not in _DEFENSIVE]
+        if dfn and cyc:
+            gap = sum(dfn) / len(dfn) - sum(cyc) / len(cyc)
+            tilt = (("Defensive and rate-sensitive sectors lead while small caps outperform, which fits easing yields more than a flight to safety." if (None not in (rut, spx) and rut - spx >= 0.7) else
+                     "Defensive sectors (health care, utilities, staples, real estate) are beating cyclicals, a risk-off tilt.") if gap >= 0.6 else
+                    "Cyclical sectors are beating defensives, a risk-on tilt." if gap <= -0.6 else "Defensives and cyclicals are moving together, so no clear risk-on or risk-off signal.")
+            pts.append({"lead": f"Sectors: {secs[-1]['name']} leads ({f1(secs[-1]['pct'])}), {secs[0]['name']} lags ({f1(secs[0]['pct'])}).", "body": tilt})
+    mv = (dash.get("movers") or {})
+    named = []
+    for side in ("gainers", "losers"):
+        for m in (mv.get(side) or [])[:3]:
+            if abs(m.get("pct") or 0) < 3:
+                continue
+            nm = _re.sub(r",?\s+(Inc|Corp|Corporation|Co|Company|Ltd|PLC|Holdings?|Group)\.?$", "", m.get("name") or "", flags=_re.I).strip()
+            hit = None
+            for h in pool:
+                if m["sym"] in (h.get("tickers") or []) or (len(nm) >= 4 and _re.search(r"\b" + _re.escape(nm) + r"\b", h["title"], _re.I)):
+                    hit = h
+                    break
+            named.append((m, hit))
+    if named:
+        counts = Counter(h["title"] for m, h in named[:4] if h)
+        shared = [t for t, n in counts.items() if n > 1]
+        parts = []
+        for m, h in named[:4]:
+            tag = f"{m['sym']} ({m.get('sector') or 'n/a'}, {f1(m['pct'])})"
+            if h and h["title"] in shared:
+                parts.append(tag + ": named in a movers roundup.")
+            elif h:
+                parts.append(tag + f": \"{h['title'][:110]}\" ({h['source']}).")
+            else:
+                parts.append(tag + ": no headline in our feed yet; check the company's filings for a catalyst.")
+        body = " ".join(parts)
+        for t in shared:
+            body += f" Roundup: \"{t[:120]}\"."
+        pts.append({"lead": "Biggest S&P 500 movers.", "body": body})
+    macro_bits, rate_read = [], ""
+    if tn and tn.get("chg") is not None:
+        bp = tn["chg"] * 100
+        if abs(bp) >= 3:
+            rate_read = ("Falling yields ease pressure on rate-sensitive stocks like real estate, utilities and small caps." if bp < 0
+                         else "Rising yields raise borrowing costs and pressure high-valuation growth stocks.")
+        macro_bits.append(f"the 10-year yield is {tn['price']:.2f}% ({bp:+.0f} bp)")
+    for k, nm, thr in (("dxy", "the dollar", 0.5), ("wti", "WTI crude", 1.5), ("gold", "gold", 1.0), ("btc", "Bitcoin", 3.0)):
+        v = pct(k)
+        if v is not None and abs(v) >= thr:
+            macro_bits.append(f"{nm} is {f1(v)}")
+    if vx.get("price") is not None:
+        macro_bits.append(f"the VIX is {vx['price']:.1f} ({f1(vx.get('pct') or 0)})")
+    if macro_bits:
+        pts.append({"lead": "Rates, commodities and volatility: " + "; ".join(macro_bits) + ".", "body": rate_read or "No large cross-asset move is driving stocks today."})
+    big = [e for e in rec if e.get("move") is not None and abs(e["move"]) >= 3]
+    if big:
+        pts.append({"lead": "Recent earnings reactions.", "body": " ".join(f"{e['sym']} {f1(e['move'])} ({'beat' if (e.get('surprisePct') or 0) >= 0 else 'missed'} by {abs(e.get('surprisePct') or 0):.1f}%)." for e in big[:5])})
+    # ---- indicators ----
+    rows, pos, neg = [], 0, 0
+    names = {x["id"]: x["n"] for x in macro_.get("latest", [])}
+    for rd in reads:
+        rows.append({"n": names.get(rd["id"], rd["id"]), "read": rd["read"], "signal": rd["sig"], "why": _IND_WHY.get(rd["id"], "")})
+        pos += rd["sig"] == "pos"
+        neg += rd["sig"] == "neg"
+    tilt = ("The economic readings lean negative." if neg > pos + 1 else "The economic readings lean positive." if pos > neg + 1 else "The economic readings are mixed.")
+    bottom = f"{tilt} {pos} improved and {neg} worsened in the latest releases." + (" Readings that move prices and growth in the wrong direction at once (higher inflation with weaker hiring) are the hardest mix for the Fed and for stock valuations." if any(r["id"] in ("CPIAUCSL", "CPILFESL") and r["sig"] == "neg" for r in reads) and any(r["id"] in ("PAYEMS", "UNRATE") and r["sig"] == "neg" for r in reads) else "")
+    # ---- earnings ----
+    earn = []
+    for e in ups[:4]:
+        when = {"BMO": "Reports before the open", "AMC": "Reports after the close"}.get(e.get("when"), "Reports today")
+        res = f"Consensus EPS {e['est']}" + (f", up from {e['lastYearEps']} a year ago" if e.get("lastYearEps") else "") + "." if e.get("est") is not None else "Consensus EPS not available."
+        mc = f"${e['mcap'] / 1e9:,.0f}B market cap" if e.get("mcap") else "Large reporter"
+        earn.append({"sym": e["sym"], "name": e.get("name", ""), "when": when, "result": res,
+                     "why": f"{mc}, so the result and especially the outlook can move {e.get('sector') or 'its sector'} peers. Watch guidance more than the headline beat."})
+    for e in rec[:6]:
+        if e["sym"] in auto_earn:
+            earn.append({"sym": e["sym"], "name": e.get("name", ""), "when": "Reported " + (date.fromisoformat(e["date"]).strftime("%a %b %-d") if e.get("date") else "recently"),
+                         "result": f"EPS {e.get('eps')} vs. {e.get('est')} expected ({(e.get('surprisePct') or 0):+.1f}%); stock {f1(e['move'])}.", "why": auto_earn[e["sym"]]})
+    # ---- what to watch ----
+    watch = []
+    for c in cal_today[:4]:
+        low = c["name"].lower()
+        why = next((w for k, w in _RELEASE_WHY if k in low), "Scheduled release; compare the number with the consensus forecast.")
+        watch.append({"t": c.get("et", "") + " ET" if c.get("et") else "Today", "e": c["name"], "why": why})
+    if ups:
+        tops = ", ".join(f"{e['sym']} ({e.get('when') or 'today'})" for e in ups[:5])
+        watch.append({"t": "Today", "e": f"{len(ups)} S&P 500 companies report", "why": f"Largest by market value: {tops}. Guidance and margins move stocks more than the headline EPS beat."})
+    fomc = macro_.get("fomc")
+    if fomc:
+        days = (date.fromisoformat(fomc) - date.fromisoformat(day)).days
+        if 0 <= days <= 21:
+            watch.append({"t": date.fromisoformat(fomc).strftime("%b %-d"), "e": "Next FOMC decision" + (" is today" if days == 0 else f" in {days} days"),
+                          "why": "Every inflation, jobs and yield move between now and then shifts what traders expect the Fed to do."})
+    best = None
+    for g in od.get("groups", []):
+        for m in g.get("markets", []):
+            if best is None or abs(m["pct"] - 50) < abs(best[1]["pct"] - 50):
+                best = (g, m)
+    if best and abs(best[1]["pct"] - 50) <= 35:
+        g, m = best
+        watch.append({"t": "Odds", "e": f"{g.get('event') or g['title']}: {m['label']} at {m['pct']:.0f}%", "why": "Prediction markets price this close to a coin flip, so a surprise in the data can swing it quickly (Kalshi)."})
+    lvl_notes = []
+    for l in levels:
+        near = []
+        if l.get("vs50") is not None and abs(l["vs50"]) <= 1:
+            near.append(f"its 50-day average ({l['ma50']:,.0f})")
+        if l.get("vs200") is not None and abs(l["vs200"]) <= 1.5:
+            near.append(f"its 200-day average ({l['ma200']:,.0f})")
+        if l.get("offHigh") is not None and abs(l["offHigh"]) <= 1:
+            near.append("its 52-week high")
+        if near:
+            lvl_notes.append(f"{l['n']} near " + " and ".join(near))
+    if lvl_notes:
+        watch.append({"t": "Levels", "e": "Index levels in play: " + "; ".join(lvl_notes) + ".", "why": "Traders watch these lines for a break or a bounce; a close through one often changes the short-term trend."})
+    # ---- anything wild ----
+    wild = []
+    if br.get("n") and br["adv"] / br["n"] >= 0.8:
+        wild.append({"tag": "BREADTH", "h": f"{br['adv']} of {br['n']} S&P 500 stocks are rising", "body": "That is unusually broad participation. Moves with this many stocks up tend to reflect macro news (rates, oil, policy) more than individual company stories."})
+    elif br.get("n") and br["adv"] / br["n"] <= 0.2:
+        wild.append({"tag": "BREADTH", "h": f"Only {br['adv']} of {br['n']} S&P 500 stocks are rising", "body": "That is a very one-sided tape. Selling this broad is usually driven by macro fear, not stock-specific news."})
+    top_mv = max([m for side in ("gainers", "losers") for m in (mv.get(side) or [])], key=lambda m: abs(m.get("pct") or 0), default=None)
+    if top_mv and abs(top_mv["pct"]) >= 8:
+        wild.append({"tag": "MOVER", "h": f"{top_mv['name']} ({top_mv['sym']}) is {f1(top_mv['pct'])}", "body": f"The largest one-day move in the S&P 500 today, in {top_mv.get('sector') or 'its sector'}. Moves this size for a large company usually come from earnings, guidance or a deal."})
+    if None not in (rut, ixic) and abs(rut - ixic) >= 1.5:
+        wild.append({"tag": "SPREAD", "h": f"A {abs(rut - ixic):.1f}-point gap between the Russell 2000 ({f1(rut)}) and the Nasdaq ({f1(ixic)})", "body": "Big gaps between index groups mark rotation days, when money moves between styles instead of in or out of stocks."})
+    if tn and tn.get("price") is not None:
+        hist = (macro_.get("history") or {}).get("DGS10") or []
+        since = next((h for h in reversed(hist[:-1]) if h[1] is not None and h[1] >= tn["price"]), None)
+        if tn["price"] >= 4.5:
+            ago = None if since is None else (int(day[:4]) - int(since[0][:4])) * 12 + int(day[5:7]) - int(since[0][5:7])
+            note = ("This is the highest monthly level in the roughly ten years of data on this site." if since is None else
+                    "Yields have sat at or above this level for months." if ago <= 3 else f"The monthly reading was last this high in {date.fromisoformat(since[0][:7] + '-01').strftime('%b %Y')}.")
+            wild.append({"tag": "RATES", "h": f"The 10-year Treasury yield is {tn['price']:.2f}%", "body": note + " High yields compete with stocks for money and raise borrowing costs across the economy."})
+    for l in levels[:1]:
+        if l.get("offHigh") is not None and l["offHigh"] <= -10:
+            wild.append({"tag": "DRAWDOWN", "h": f"{l['n']} is {abs(l['offHigh']):.1f}% below its 52-week high", "body": "A drop of 10% or more from the high is the textbook definition of a market correction."})
+    wild = wild[:4]
+    srcs = [{"t": f"{h['source']}: {h['title'][:100]}", "u": h["link"]} for h in sorted([h for h in pool_rel if h.get("type") == "Publication" and h.get("source") != "Yahoo Finance"],
+                                                                                            key=lambda h: h["published"], reverse=True)[:5]]
+    return {"headline": headline, "lede": lede, "market": {"title": "What is moving the market", "points": pts},
+            "data": {"bottom": bottom, "rows": rows}, "earnings": earn, "watch": watch, "wild": wild, "sources": srcs}
+
+
 def digest():
     """Morning briefing built only from data the site already has plus futures, global indexes and index levels."""
     ct = _ct_now()
@@ -919,7 +1146,7 @@ def digest():
     spam = ("lost money", "who lost", "class action", "securities fraud", "law firm", "attorney", "investigation on behalf", "investors who", "lawsuit",
             "reminds investors", "deadline", "recover", "losses")
     pool = [h for h in heads.get("items", []) if (h.get("published") or "") >= cutoff and h.get("type") != "SEC filing"
-            and not any(w in h["title"].lower() for w in spam) and mi.is_english(h["title"]) and not mi.is_junk(h["title"], h.get("source", ""))]
+            and not any(w in h["title"].lower() for w in spam) and mi.is_english(h["title"]) and not mi.is_junk(h["title"], h.get("source", "")) and digest_relevant(h)]
     # publications first (they decide what matters), then notable press releases; newest first within each
     pubs = sorted([h for h in pool if h.get("type") == "Publication"], key=lambda h: h["published"], reverse=True)
     rel = sorted([h for h in pool if h.get("type") != "Publication" and h.get("notable")], key=lambda h: h["published"], reverse=True)
@@ -1026,6 +1253,7 @@ def digest():
                  else "below the 50-day but above the 200-day: pullback inside an uptrend" if v200 > 0 else "above the 50-day but below the 200-day: bouncing in a downtrend")
         lvl_reads.append({"n": l["n"], "read": f"{trend}; {abs(l['offHigh']):.1f}% below its 52-week high."})
     auto = {"tone": ("; ".join(tone_bits)[0].upper() + "; ".join(tone_bits)[1:] + ".") if tone_bits else "", "reads": reads, "earnings": auto_earn, "levels": lvl_reads}
+    auto["story"] = attempt("auto story", _auto_story, day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn, default=None)
     write("digest.json", {"auto": auto, "updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
                           "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
                           "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
