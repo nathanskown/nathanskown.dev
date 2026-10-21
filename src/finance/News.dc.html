@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Live headlines</title>
+<title>Headlines</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -105,17 +105,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">TOP &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
-<span class="dim t-hide-sm">Feed updates live · filter by source, watchlist or notable</span>
+<span class="dim t-hide-sm">Refreshes every minute · filter by source, watchlist or notable</span>
 </div>
 <div class="t-cmd">
-<label for="newsSearch" class="t-prompt">NSKN ›</label>
-<input id="newsSearch" class="t-input" type="search" placeholder="SEARCH HEADLINES OR TICKER" autocomplete="off">
+<label for="newsSearch" class="t-prompt">TICKER ›</label>
+<input id="newsSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -128,12 +126,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
-<span>Live Headlines (TOP)</span>
+<span>Headlines</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{liveTag}}</span>
@@ -145,7 +140,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section aria-label="Feed controls" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px">
 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
 <div class="f-kicker" aria-hidden="true" style="flex: 1 1 100%; margin-bottom: -6px">NEWS · market headlines as they land</div>
-<h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 600; color: #FFD89D">Live headlines</h1>
+<h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 600; color: #FFD89D">Headlines</h1>
 <span style="{{statusStyle}}"><span aria-hidden="true" style="{{dotStyle}}"></span>{{statusText}}</span>
 <span style="font-size: 12.5px; color: #A87933">{{feedNote}}</span>
 </div>
@@ -309,10 +304,10 @@ class Component extends DCLogic {
     });
     this.timer = setInterval(pull, 60000);
   }
-  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.timerLive); try { document.title = 'Live headlines · NSKN Terminal'; } catch (e) {} }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.timerLive); try { document.title = 'Headlines · NSKN Terminal'; } catch (e) {} }
   componentDidUpdate() {
     var n = (this.state && this.state.unseen) || 0;
-    try { document.title = (n ? '(' + n + ') ' : '') + 'Live headlines · NSKN Terminal'; } catch (e) {}
+    try { document.title = (n ? '(' + n + ') ' : '') + 'Headlines · NSKN Terminal'; } catch (e) {}
   }
   renderVals() {
     var self = this;
@@ -383,7 +378,7 @@ class Component extends DCLogic {
     return {
       liveTag: F.updated(D.updated),
       feedNote: st.err ? 'Headline data is not available yet. The first refresh runs within the hour.' : (D.updated ? 'Feed refreshed ' + F.ago(D.updated) + ' · this page checks for new items every minute' : 'Loading headlines…'),
-      statusText: paused ? 'Paused' : 'Live',
+      statusText: paused ? 'Paused' : 'Auto-refresh',
       statusStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 0; font-size: 12.5px; font-weight: 600; ' + (paused ? 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;' : 'background: #0D2616; border: 1px solid #1F6B3A; color: #4ADE80;'),
       dotStyle: 'width: 8px; height: 8px; border-radius: 0; background: ' + (paused ? '#664A1F' : '#4ADE80') + ';' + (paused ? '' : ' animation: pulse 1.6s infinite;'),
       pauseLabel: paused ? 'Resume' : 'Pause',

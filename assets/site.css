@@ -338,3 +338,13 @@ a.nk-fkey{display:inline-flex;align-items:center}
 .nk-newhere:hover{background:var(--hover);color:var(--hi)}
 @media (prefers-reduced-motion:reduce){.nk-nav-about.is-new .nk-start{animation:none}}
 @media (max-width:760px){.nk-nav-about{flex-wrap:nowrap;margin:0;padding:0 15px;border:0;border-right:1px solid var(--hi);background:rgba(255,255,255,.08)}.nk-nav-sub{display:none}.nk-start{margin-left:6px}.nk-newhere{margin:12px 0 0}}
+
+/* Market Analysis leads the page: full width, bigger type, with what's inside shown as plain labels */
+.nk-sec-lead{flex:1 1 100%;min-height:236px;gap:11px;padding:18px 20px 16px;border-width:2px}
+.nk-sec-lead .nk-sec-t{font-size:68px;line-height:.82}
+.nk-sec-lead .nk-sec-d{font-size:14px;line-height:1.55;max-width:56ch}
+.nk-sec-lead .nk-sec-chips span{font-size:12.5px;padding:1px 8px}
+.nk-sec-lead .nk-sec-live{font-size:13px}
+.nk-sec-lead .nk-sec-go{font-size:13px;margin-top:auto}
+.nk-sec-go{font-weight:600}
+@media (max-width:760px){.nk-sec-lead{min-height:210px}.nk-sec-lead .nk-sec-t{font-size:54px}}

@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NSKN Terminal · Markets, Sports &amp; Music</title>
 <meta name="author" content="Nathan Skown">
-<meta name="description" content="A live terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
+<meta name="description" content="A terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
 <link rel="canonical" href="https://nathanskown.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NSKN Terminal">
 <meta property="og:title" content="NSKN Terminal · Markets, Sports &amp; Music">
-<meta property="og:description" content="A live terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
+<meta property="og:description" content="A terminal for markets, sports and music: quotes for any US ticker, scores and odds for every league, and daily music guessing games.">
 <meta property="og:url" content="https://nathanskown.dev/">
 <meta property="og:image" content="https://nathanskown.dev/assets/og/home.png">
 <meta property="og:image:width" content="1200">
@@ -31,35 +31,8 @@
 <div class="nk-title">
 <span class="nk-brand">1-NSKN</span>
 <span class="nk-spacer"></span>
-<span class="nk-live"><span class="nk-dot"></span>LIVE</span>
+<span class="nk-live"><span class="nk-dot"></span>DELAYED 15 MIN</span>
 <span class="nk-dim"><span data-bind="zoneLabel">LOCAL</span> <span data-bind="chiTime">--:--:--</span></span>
-</div>
-
-<div class="nk-help">
-<div><span class="nk-inv">&lt;HELP&gt;</span> for explanation.</div>
-<div class="nk-help2"><span class="nk-help-txt">Type a ticker, a team or a page, then press &lt;GO&gt;</span></div>
-</div>
-
-<div class="nk-cmdwrap">
-<form class="nk-cmd" id="cmdForm">
-<label for="nk-cmd-in" class="nk-prompt">NSKN ›</label>
-<input id="nk-cmd-in" class="nk-input" type="text" placeholder="TICKER OR TEAM" aria-label="Command line: type a ticker, team or function, then GO" autocomplete="off" spellcheck="false" enterkeyhint="go">
-<button type="submit" class="nk-go">GO</button>
-</form>
-<div class="nk-drawer" id="drawer" role="log" aria-live="polite" hidden>
-<div class="nk-drawer-h"><span>CONSOLE</span><button type="button" class="nk-x" data-action="closeDrawer" aria-label="Close console">ESC ✕</button></div>
-<div id="drawerLines"></div>
-</div>
-</div>
-
-<div class="nk-fbar">
-<span class="nk-fbar-title">NSKN</span>
-<a class="nk-fkey" href="/finance/">Markets</a>
-<a class="nk-fkey" href="/sports/">Sports</a>
-<a class="nk-fkey" href="/music/">Music</a>
-<button type="button" class="nk-fkey" data-cmd="HELP">Help</button>
-<span class="nk-spacer"></span>
-<span class="nk-fbar-right">NSKN Terminal</span>
 </div>
 </header>
 
@@ -68,20 +41,16 @@
 <nav class="nk-side" aria-label="Site">
 <div class="nk-sh">Navigate</div>
 <a class="nk-nav nk-nav-about" id="navAbout" href="/about/"><span class="nk-num">1)</span>About<span class="nk-start" aria-hidden="true">START HERE</span><span class="nk-nav-sub">What this is, and why I built it</span></a>
-<button type="button" class="nk-nav" data-go="overview"><span class="nk-num">2)</span>Overview</button>
-<a class="nk-nav" href="/finance/"><span class="nk-num">3)</span>Market Analysis</a>
-<a class="nk-nav" href="/sports/"><span class="nk-num">4)</span>Sports</a>
-<a class="nk-nav" href="/music/"><span class="nk-num">5)</span>Music</a>
-<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">6)</span>Morning Digest</button>
-<a class="nk-nav" href="/under-the-hood/"><span class="nk-num">7)</span>Under the hood</a>
-<a class="nk-nav" href="/editions/"><span class="nk-num">8)</span>Editions</a>
-<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">9)</span>Contact</button>
-<p class="nk-tip nk-hide-sm">Type <span class="nk-hi">HELP</span> in the command line and press <span class="nk-k">GO</span> for every shortcut.</p>
+<a class="nk-nav" href="/finance/"><span class="nk-num">2)</span>Market Analysis</a>
+<a class="nk-nav" href="/sports/"><span class="nk-num">3)</span>Sports</a>
+<a class="nk-nav" href="/music/"><span class="nk-num">4)</span>Music</a>
+<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">5)</span>Morning Digest</button>
+<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">6)</span>Contact</button>
 </nav>
 
 <section class="nk-center" aria-label="Home">
-<div class="nk-ph"><span>NSKN » Home</span><span class="nk-dim nk-keys">Press <span class="nk-k">/</span> to type a command</span></div>
-<div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
+<div class="nk-ph"><span>NSKN » Home</span></div>
+<div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS · DELAYED 15 MIN</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
 
 <div class="nk-hero" id="hero">
 <canvas class="nk-canvas" id="surface" aria-hidden="true"></canvas>
@@ -96,34 +65,31 @@
 </div>
 
 <div class="nk-secs">
-<a class="nk-sec" id="secMkt" href="/finance/" style="--g:#ffbf3a;--glow:rgba(255,191,58,.18);--line:#3d2e0d">
-<span class="nk-sec-top"><span class="nk-num">3)</span><span class="nk-k">MKT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
-<span class="nk-sec-t">MARKET<br>ANALYSIS</span>
-<span class="nk-sec-d">Dashboard · headlines · quotes · ownership · earnings · macro · IPOs</span>
+<a class="nk-sec nk-sec-lead" id="secMkt" href="/finance/" style="--g:#ffbf3a;--glow:rgba(255,191,58,.18);--line:#3d2e0d">
+<span class="nk-sec-t">MARKET ANALYSIS</span>
+<span class="nk-sec-d">Quotes and company pages for any US ticker, plus 13F ownership: who owns a stock, who is buying and selling, and how much sits in index funds. Earnings season, macro and IPOs tracked alongside.</span>
+<span class="nk-sec-chips"><span>QUOTES</span><span>13F OWNERSHIP</span><span>IR VIEW</span><span>EARNINGS</span><span>MACRO</span><span>IPOs</span><span>SCREENER</span></span>
 <span class="nk-sec-live" id="cardMkt">Loading markets…</span>
-<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+<span class="nk-sec-go"><span>OPEN MARKET ANALYSIS</span><span aria-hidden="true">→</span></span>
 </a>
 <a class="nk-sec" id="secSprt" href="/sports/" style="--g:#66e6f2;--glow:rgba(102,230,242,.18);--line:#12363b">
-<span class="nk-sec-top"><span class="nk-num">4)</span><span class="nk-k">SPRT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">SPORTS</span>
-<span class="nk-sec-d">Live scores · game center · team pages · playoff odds · matchup simulator · injuries · pick track record</span>
+<span class="nk-sec-d">Scores · game center · team pages · playoff odds · matchup simulator · injuries · pick track record</span>
 <span class="nk-sec-live" id="cardSprt">Loading scores…</span>
-<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+<span class="nk-sec-go"><span>OPEN SPORTS</span><span aria-hidden="true">→</span></span>
 </a>
 <a class="nk-sec" id="secMusic" href="/music/" style="--g:#d58bff;--glow:rgba(213,139,255,.18);--line:#2e1a3d">
-<span class="nk-sec-top"><span class="nk-num">5)</span><span class="nk-k">MUS</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">MUSIC</span>
 <span class="nk-sec-d">Two guessing games · name the song from a clip · name the artist from their deep cuts</span>
-<span class="nk-sec-live"><span class="nk-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>TODAY'S DAILY IS LIVE</span>
-<span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
+<span class="nk-sec-live"><span class="nk-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>NEW DAILY CHALLENGE TODAY</span>
+<span class="nk-sec-go"><span>OPEN MUSIC</span><span aria-hidden="true">→</span></span>
 </a>
 <button type="button" class="nk-dg" id="secDgst" data-go="digest">
-<span class="nk-dg-k"><span class="nk-num">6)</span><span class="nk-k">DGST</span></span>
 <span class="nk-dg-main"><span class="nk-dg-t">DETROIT + MSU MORNING DIGEST</span><span class="nk-dg-d">Free · in your inbox every morning at 5:15 AM CT</span></span>
-<span class="nk-dg-go">SUBSCRIBE <span class="nk-k">GO</span></span>
+<span class="nk-dg-go">SUBSCRIBE →</span>
 </button>
 </div>
-<a class="nk-newhere" id="stripAbout" href="/about/"><span class="nk-num">1)</span><span>New here? Read what this site is, why it exists and how far to trust it.</span><span class="nk-newhere-go">ABOUT →</span></a>
+<a class="nk-newhere" id="stripAbout" href="/about/"><span>New here? Read what this site is, why it exists and how far to trust it.</span><span class="nk-newhere-go">ABOUT →</span></a>
 </div>
 </div>
 
@@ -152,7 +118,7 @@
 <li>You're added automatically before the next morning's edition, with a welcome note.</li>
 </ol>
 <div class="nk-cta-row">
-<a class="nk-cta" href="mailto:skownclaude@agentmail.to?subject=SUBSCRIBE&amp;body=Sign%20me%20up%20for%20the%20Detroit%20%2B%20MSU%20Morning%20Digest.">SUBSCRIBE <span class="nk-k">GO</span></a>
+<a class="nk-cta" href="mailto:skownclaude@agentmail.to?subject=SUBSCRIBE&amp;body=Sign%20me%20up%20for%20the%20Detroit%20%2B%20MSU%20Morning%20Digest.">SUBSCRIBE →</a>
 <span class="nk-dim">Signs up the address you send from.</span>
 </div>
 <p class="nk-note">No email app on this device? Send any message with the subject <span class="nk-hi">SUBSCRIBE</span> to <span class="nk-hi">skownclaude@agentmail.to</span>.</p>
@@ -181,7 +147,7 @@
 
 <footer>
 <div class="nk-status">
-<span><a href="/finance/">Market Analysis</a> · <a href="/sports/">Sports</a> · <a href="/music/">Music</a> · <a href="/under-the-hood/">Under the hood</a> · <a href="/editions/">Editions</a> · <a href="/about/">About</a> · <a href="/status/">Live status</a></span>
+<span><a href="/about/">About</a> · <a href="/under-the-hood/">Under the hood</a> · <a href="/editions/">Editions</a> · <a href="/status/">Status</a></span>
 <span>Prices delayed about 15 minutes. Not investment advice.</span>
 <span>© 2026 NATHAN SKOWN</span>
 </div>

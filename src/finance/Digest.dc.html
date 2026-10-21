@@ -105,17 +105,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">BRIEF &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Everything an analyst needs before the open, top to bottom</span>
 </div>
 <div class="t-cmd">
-<label for="digestSearch" class="t-prompt">NSKN ›</label>
-<input id="digestSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+<label for="digestSearch" class="t-prompt">TICKER ›</label>
+<input id="digestSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -128,12 +126,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
-<span>Market Digest (BRIEF)</span>
+<span>Market Digest</span>
 <span class="dim">{{updatedLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{liveTag}}</span>
@@ -150,7 +145,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
 <a class="t-badge" href="#watch">TODAY'S SCHEDULE ↓</a>
-<a class="t-badge" href="News.dc.html" style="border-color: #ffb84d">LIVE HEADLINES <span class="t-k">GO</span></a>
+<a class="t-badge" href="News.dc.html" style="border-color: #ffb84d">HEADLINES <span class="t-k">GO</span></a>
 </div>
 </section>
 
@@ -160,7 +155,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb">
 <div class="big" style="font-size: 38px; line-height: 1.05; color: #ffd89d; text-shadow: 0 0 12px rgba(255,184,77,.35)">{{edHeadline}}</div>
 <p style="margin: 10px 0 0; font-size: 15px; line-height: 1.6; max-width: 980px">{{edLede}}</p>
-<sc-if value="{{autoTone}}" hint-placeholder-val="{{ true }}"><p style="margin: 12px 0 0; font-size: 13.5px; line-height: 1.55; color: #c99442"><span style="font-size: 12px; letter-spacing: .12em; color: #000; background: #ffd89d; text-shadow: none; padding: 0 5px; margin-right: 8px">LIVE TONE</span>{{autoTone}}</p></sc-if>
+<sc-if value="{{autoTone}}" hint-placeholder-val="{{ true }}"><p style="margin: 12px 0 0; font-size: 13.5px; line-height: 1.55; color: #c99442"><span style="font-size: 12px; letter-spacing: .12em; color: #000; background: #ffd89d; text-shadow: none; padding: 0 5px; margin-right: 8px">AUTO TONE</span>{{autoTone}}</p></sc-if>
 <sc-if value="{{edStale}}" hint-placeholder-val="{{ false }}"><p style="margin: 10px 0 0; font-size: 12.5px; color: #ff9a56">{{edStale}}</p></sc-if>
 </div>
 </section>
@@ -274,7 +269,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="font-size: 12px; letter-spacing: .12em; color: #c99442; padding-top: 6px">LIVE DATA BELOW · REFRESHED WITH EACH MARKET-HOURS UPDATE</div>
+<div style="font-size: 12px; letter-spacing: .12em; color: #c99442; padding-top: 6px">DATA BELOW · DELAYED 15 MIN, REFRESHED DURING MARKET HOURS</div>
 
 </sc-if>
 
@@ -435,7 +430,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
 <span>Futures and quotes: Yahoo Finance (delayed) · Odds: Kalshi · Economic data: FRED · Earnings: Nasdaq · Rebuilt with each market-hours refresh</span>
-<span>Not investment advice · © 2026 Nathan Skown</span>
+<span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
 
@@ -460,7 +455,7 @@ class Component extends DCLogic {
     var HAND = st.ed || null;
     var AUTOSTORY = (D.auto || {}).story || null;
     var handFresh = !!(HAND && D.date && HAND.date === D.date);
-    // today's hand-written edition wins; otherwise the page writes its own from the live numbers (rules, no AI)
+    // today's hand-written edition wins; otherwise the page writes its own from the latest numbers (rules, no AI)
     var usingAuto = !handFresh && !!AUTOSTORY && !!D.date;
     var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : HAND);
     var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
@@ -498,7 +493,7 @@ class Component extends DCLogic {
       });
     });
     var br = D.breadth;
-    var stale = !usingAuto && ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the live data below is current.' : '';
+    var stale = !usingAuto && ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the data below is current.' : '';
     return {
       hasEd: !!ED, noEd: !ED,
       edHeadline: ED ? ED.headline : '', edLede: ED ? ED.lede : '', edStale: stale,
@@ -510,7 +505,7 @@ class Component extends DCLogic {
       crt: this.props.crt ?? true,
       dateTitle: dateTitle,
       updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL : '',
-      liveTag: 'LIVE DATA · DELAYED',
+      liveTag: 'DELAYED 15 MIN',
       subtitle: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL + ' · rebuilt with each market-hours refresh' : 'Loading…',
       missing: !!st.err && !D.updated,
       top5: D.top || [],

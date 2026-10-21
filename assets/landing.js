@@ -74,29 +74,12 @@
   }
   try { setBind('tz', Intl.DateTimeFormat().resolvedOptions().timeZone || '—'); } catch (e) { setBind('tz', '—'); }
 
-  /* ---------- system log tape ---------- */
-  var SYSLOG = ['WELCOME TO NSKN', 'TYPE HELP <GO> FOR COMMANDS', 'DGST <GO> · GET THE DETROIT + MSU MORNING DIGEST', 'MARKET ANALYSIS · LIVE · QUOTES FOR ANY US TICKER', 'SPORTS · LIVE SCORES, ODDS & TEAM PAGES', 'MUSIC · GUESS THE TRACK & GUESS THE ARTIST', '@CHI', 'BUILD v26.10', 'LINK nathanskown.dev'];
-  (function buildTape() {
-    var track = $('tape');
-    if (!track) return;
-    [0, 1].forEach(function (copy) {
-      var wrap = copy ? el('span', 'nk-dup') : track;
-      if (copy) wrap.setAttribute('aria-hidden', 'true');
-      SYSLOG.forEach(function (t) {
-        var q = el('span', 'nk-q', t === '@CHI' ? ZONE + ' --:--:--' : t);
-        if (t === '@CHI') q.id = copy ? 'tapeChi2' : 'tapeChi';
-        wrap.appendChild(q);
-      });
-      if (copy) track.appendChild(wrap);
-    });
-  })();
-
   /* ---------- navigation + panels ---------- */
   var TITLES = { contact: 'CONTACT » NSKN', digest: 'DGST » DETROIT + MSU MORNING DIGEST' };
   function setLast(label) { state.last = label; setBind('last', label); }
   function setActive(k, label) {
     state.active = k;
-    if (label) setLast(label + ' <GO>');
+    if (label) setLast(label);
     var navs = document.querySelectorAll('.nk-side [data-go]');
     for (var i = 0; i < navs.length; i++) {
       var on = navs[i].getAttribute('data-go') === k;
@@ -116,143 +99,11 @@
     }
     try { history.replaceState(null, '', show ? '#' + k : location.pathname); } catch (e) { /* ignore */ }
   }
-  var hlTimer;
-  function flash(id) {
-    clearTimeout(hlTimer);
-    ['secMkt', 'secSprt', 'secMusic', 'secDgst'].forEach(function (x) { $(x).classList.toggle('is-hl', x === id || (x === 'secDgst' && state.active === 'digest')); });
-    hlTimer = setTimeout(function () {
-      ['secMkt', 'secSprt', 'secMusic'].forEach(function (x) { $(x).classList.remove('is-hl'); });
-      $('secDgst').classList.toggle('is-hl', state.active === 'digest');
-    }, 2600);
-  }
   var LABEL = { overview: 'HOME', contact: 'CONTACT', digest: 'DGST' };
   document.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-go],[data-cmd],[data-action]') : null;
+    var t = e.target.closest ? e.target.closest('[data-go]') : null;
     if (!t || !root.contains(t)) return;
-    if (t.hasAttribute('data-go')) { var k = t.getAttribute('data-go'); setActive(k, LABEL[k]); }
-    else if (t.hasAttribute('data-cmd')) run(t.getAttribute('data-cmd'));
-    else if (t.getAttribute('data-action') === 'closeDrawer') $('drawer').hidden = true;
-  });
-
-  /* ---------- command line ---------- */
-  var FIN = { WEI: 'Market dashboard', TOP: 'Live headlines', DES: 'Stock quote & company page', HDS: '13F ownership tracker', ERN: 'Earnings dashboard', ECO: 'Macro monitor (FRED)', IPO: 'IPO tracker' };
-  var FIN_URL = { WEI: '/finance/', TOP: '/finance/headlines/', DES: '/finance/quote/', HDS: '/finance/ownership/', ERN: '/finance/earnings/', ECO: '/finance/macro/', IPO: '/finance/ipo/', EQS: '/finance/screener/' };
-  var SPRT = { SCOR: 'Scores & schedules', GAME: 'Game previews & recaps', TEAM: 'Team pages', ODDS: 'Playoff odds', SIM: 'Matchup simulator', INJ: 'Injury report' };
-  var SPRT_URL = { SCOR: '/sports/', GAME: '/sports/game/', TEAM: '/sports/teams/', ODDS: '/sports/odds/', SIM: '/sports/simulator/', INJ: '/sports/injuries/' };
-  var MUS = { TRCK: 'Guess the Track', ARTS: 'Guess the Artist' };
-  var MUS_URL = { TRCK: '/music/track/', ARTS: '/music/artist/' };
-  function helpLines() {
-    var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
-    return ['PAGES', r('ABOUT', 'Why this site exists       1'), r('HOME', 'Overview                     2'), '',
-      'SECTIONS', r('MKT', 'Market analysis              3'), r('SPRT', 'Sports                       4'), r('MUS', 'Music games                 5'), r('DGST', 'Morning digest signup        6'), '',
-      'MORE', r('HOOD', 'Under the hood                7'), r('ED', 'Editions                     8'), r('CONTACT', 'Get in touch                 9'), '',
-      'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ODDS  SIM  INJ  ·  TRCK  ARTS', '',
-      'LOOK UP', r('MOD', 'Any US ticker → quote page'), r('MOD HDS', 'Ticker → 13F ownership'), r('LIONS', 'Any team → team page (add NFL, BB, FB…)'), '',
-      'SYSTEM', r('HOOD', 'How the site works, sources, model scorecard'), r('STATUS', 'Data feed health'), r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
-  }
-  function renderDrawer() {
-    var box = $('drawerLines');
-    box.textContent = '';
-    state.log.slice(-16).forEach(function (l) {
-      if (l.href) {
-        var d = el('div'); var a = el('a', 'l-link', l.t); a.href = l.href; d.appendChild(a); box.appendChild(d);
-      } else box.appendChild(el('div', 'l-' + (l.k || 'out'), l.t));
-    });
-    $('drawer').hidden = false;
-  }
-  function run(raw) {
-    var c = String(raw || '').trim().toUpperCase().replace(/(\s+|<)GO>?$/, '').trim();
-    var L = function (t, k) { return { t: t, k: k }; };
-    var LINK = function (t, href) { return { t: t, href: href }; };
-    if (!c) { state.log.push(L('TYPE A FUNCTION, E.G.  HELP  ·  MKT  ·  DGST', 'dim')); renderDrawer(); return; }
-    var out = [L('NSKN › ' + c + ' <GO>', 'echo')];
-    var active = null;
-    if (c === 'HELP' || c === 'H' || c === '?') helpLines().forEach(function (t) { out.push(L(t)); });
-    else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '3'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · 8 PAGES · LIVE DATA')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
-    else if (['SPRT', 'SPORT', 'SPORTS', '4'].indexOf(c) > -1) { flash('secSprt'); out.push(L('SPORTS · SCORES, GAME CENTER, TEAMS, ODDS, SIMULATOR')); out.push(LINK('▸ OPEN SPORTS', '/sports/')); }
-    else if (['MUS', 'MUSIC', '5'].indexOf(c) > -1) { flash('secMusic'); out.push(L('MUSIC · GUESS THE TRACK, GUESS THE ARTIST')); out.push(LINK('▸ OPEN MUSIC', '/music/')); }
-    else if (MUS[c]) { flash('secMusic'); out.push(L(c + ' · ' + MUS[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, MUS_URL[c])); }
-    else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, FIN_URL[c])); }
-    else if (SPRT[c]) { flash('secSprt'); out.push(L(c + ' · ' + SPRT[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, SPRT_URL[c])); }
-    else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '6'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
-    else if (['ABOUT', 'WHOAMI', 'BIO', '1'].indexOf(c) > -1) { out.push(L('WHY THIS SITE EXISTS, WHAT IS HERE, AND HOW FAR TO TRUST IT')); out.push(LINK('▸ OPEN ABOUT', '/about/')); }
-    else if (['CONTACT', 'MSG', '9'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
-    else if (['HOME', 'MENU', 'OVERVIEW', '2'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
-    else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
-    else if (c === 'HOOD' || c === 'HOW' || c === '7') { out.push(L('WHERE EVERY NUMBER COMES FROM, HOW IT IS CHECKED, AND THE MODEL SCORECARD')); out.push(LINK('▸ OPEN UNDER THE HOOD', '/under-the-hood/')); }
-    else if (c === 'ED' || c === 'EDITIONS' || c === '8') { out.push(L('EVERY PAST VERSION OF THIS SITE, WITH SCREENSHOTS AND SOURCE')); out.push(LINK('▸ OPEN EDITIONS', '/editions/')); }
-    else if (c === 'STATUS' || c === 'SYS') { out.push(L('DATA FEEDS, REFRESH JOBS AND SANITY CHECKS')); out.push(LINK('▸ OPEN SYSTEM STATUS', '/status/')); }
-    else if (c === 'REBOOT') { setLast('REBOOT <GO>'); $('drawer').hidden = true; reboot(); return; }
-    else if (c === 'SUDO' || c.indexOf('SUDO ') === 0) out.push(L('PERMISSION DENIED. THIS INCIDENT WILL BE REPORTED.', 'err'));
-    else { lookup(c, out); return; }
-    state.log = state.log.concat(out).slice(-40);
-    setLast(c + ' <GO>');
-    if (active) setActive(active);
-    renderDrawer();
-  }
-  /* Anything that isn't a function code: a ticker (MOD, MOD HDS, BRK.B), a team (LIONS, MICHIGAN STATE BB) or a
-     company name. Lists load once, on first use. */
-  var LISTS = null;
-  function lists() {
-    if (!LISTS) LISTS = Promise.all([
-      fetch('/data/finance/tickers.json').then(function (r) { return r.json(); }).catch(function () { return { t: [] }; }),
-      fetch('/data/sports/teams.json').then(function (r) { return r.json(); }).catch(function () { return { leagues: {} }; })
-    ]);
-    return LISTS;
-  }
-  var LG_WORD = { NFL: 'nfl', MLB: 'mlb', NBA: 'nba', NHL: 'nhl', FB: 'ncaaf', NCAAF: 'ncaaf', CFB: 'ncaaf', BB: 'ncaab', NCAAB: 'ncaab', CBB: 'ncaab', HKY: 'ncaah', HOCKEY: 'ncaah', NCAAH: 'ncaah' };
-  var LG_PRI = { nfl: 0, mlb: 1, nba: 2, nhl: 3, ncaaf: 4, ncaab: 5, ncaah: 6 };
-  function lookup(c, out) {
-    var L = function (t, k) { return { t: t, k: k }; };
-    var go = function (label, href) {
-      out.push(L('LOADING ' + label + ' …'));
-      state.log = state.log.concat(out).slice(-40); setLast(c + ' <GO>'); renderDrawer();
-      location.href = href;
-    };
-    var words = c.split(/\s+/), fn = words.length > 1 && (FIN[words[words.length - 1]] || words[words.length - 1] === 'EQUITY') ? words.pop() : null;
-    if (words[words.length - 1] === 'US' || words[words.length - 1] === 'EQUITY') words = words.filter(function (w) { return w !== 'US' && w !== 'EQUITY'; });
-    var q = words.join(' ');
-    lists().then(function (res) {
-      var T = res[0].t || [], leagues = res[1].leagues || {};
-      var sym = q.replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2');
-      var tk = T.filter(function (x) { return x[0] === sym; })[0];
-      var page = fn === 'HDS' ? '/finance/ownership/?ticker=' : '/finance/quote/?sym=';
-      if (tk) return go(tk[0] + ' · ' + String(tk[1]).toUpperCase(), page + encodeURIComponent(tk[0]));
-      // teams: "LIONS", "DETROIT LIONS", "MICHIGAN STATE BB"
-      var tw = q.split(' '), lgWant = LG_WORD[tw[tw.length - 1]] || null;
-      if (lgWant) tw.pop();
-      var tq = tw.join(' ').toLowerCase();
-      var hits = [];
-      Object.keys(leagues).forEach(function (lg) {
-        if (lgWant && lg !== lgWant) return;
-        leagues[lg].forEach(function (t) {
-          var names = [t.name, t.short, t.nick, t.loc + ' ' + t.nick].filter(Boolean).map(function (n) { return n.toLowerCase(); });
-          var score = names.indexOf(tq) >= 0 ? 0 : (names.some(function (n) { return (' ' + n + ' ').indexOf(' ' + tq + ' ') >= 0; }) ? 1 : 9);
-          if (score < 9) hits.push({ lg: lg, t: t, s: score * 10 + LG_PRI[lg] });
-        });
-      });
-      hits.sort(function (a, b) { return a.s - b.s; });
-      if (tq.length >= 3 && hits.length) {
-        var h = hits[0];
-        return go(h.t.name.toUpperCase() + ' (' + h.lg.toUpperCase() + ')', '/sports/team/?lg=' + h.lg + '&id=' + encodeURIComponent(h.t.id));
-      }
-      // company name
-      if (q.length >= 3) {
-        var co = T.filter(function (x) { return String(x[1]).toUpperCase().indexOf(q) === 0; })[0] || T.filter(function (x) { return String(x[1]).toUpperCase().indexOf(' ' + q) >= 0; })[0];
-        if (co) return go(co[0] + ' · ' + String(co[1]).toUpperCase(), page + encodeURIComponent(co[0]));
-      }
-      out.push(L('"' + c + '" IS NOT A FUNCTION, TICKER OR TEAM.  TRY  HELP <GO>', 'err'));
-      state.log = state.log.concat(out).slice(-40); setLast(c + ' <GO>'); renderDrawer();
-    });
-  }
-  $('cmdForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var input = $('nk-cmd-in');
-    var v = input.value; input.value = '';
-    run(v);
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') $('drawer').hidden = true;
+    var k = t.getAttribute('data-go'); setActive(k, LABEL[k]);
   });
 
   /* ---------- hero: one big word that cycles MARKETS → SPORTS → MUSIC ----------
@@ -262,7 +113,7 @@
     { k: 'mkt', word: 'MARKETS', rgb: [255, 191, 58], card: 'secMkt', fig: 'FIG.1 · IMPLIED VOL SURFACE · SIMULATED · MOVE TO TILT',
       line: function (L) { return L.spx ? 'S&P 500 ' + L.spx + '  ·  quotes, filings & 13F ownership for any US ticker' : 'quotes, filings & 13F ownership for any US ticker'; } },
     { k: 'sprt', word: 'SPORTS', rgb: [102, 230, 242], card: 'secSprt', fig: 'FIG.2 · WIN PROBABILITY FIELD · SIMULATED · MOVE TO TILT',
-      line: function (L) { return (L.live ? L.live + ' games live right now  ·  ' : L.next ? 'next up: ' + L.next + '  ·  ' : '') + 'scores, odds & simulations, every league'; } },
+      line: function (L) { return (L.live ? L.live + ' games in progress  ·  ' : L.next ? 'next up: ' + L.next + '  ·  ' : '') + 'scores, odds & simulations, every league'; } },
     { k: 'mus', word: 'MUSIC', rgb: [213, 139, 255], card: 'secMusic', fig: 'FIG.3 · SPECTRUM RIPPLE · SIMULATED · MOVE TO TILT',
       line: function () { return 'name the song from a one-second clip  ·  new daily challenge every day'; } }
   ];
@@ -333,12 +184,11 @@
     this.style.setProperty('--sx', (e.clientX - r.left) + 'px');
     this.style.setProperty('--sy', (e.clientY - r.top) + 'px');
   });
-  // keys: / focuses the command line; 1-3 pick a mode; ← → step through modes
+  // keys: 1-3 pick a mode; ← → step through modes
   document.addEventListener('keydown', function (e) {
     var tag = (e.target && e.target.tagName) || '';
     if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === '/') { e.preventDefault(); $('nk-cmd-in').focus(); }
-    else if (e.key >= '1' && e.key <= '3') setMode(+e.key - 1);
+    if (e.key >= '1' && e.key <= '3') setMode(+e.key - 1);
     else if (e.key === 'ArrowRight') setMode(mode + 1);
     else if (e.key === 'ArrowLeft') setMode(mode - 1);
   });
@@ -377,7 +227,7 @@
       bootN++;
       $('bootBar').style.width = Math.round(bootN / BOOT.length * 100) + '%';
       if (bootN < BOOT.length) bt = setTimeout(step, 140 + Math.random() * 120);
-      else { $('bootReady').textContent = 'READY. TYPE HELP <GO> FOR COMMANDS.'; bt = setTimeout(function () { endBoot(false); }, 700); }
+      else { $('bootReady').textContent = 'READY.'; bt = setTimeout(function () { endBoot(false); }, 700); }
     };
     clearTimeout(bt); bt = setTimeout(step, 260);
   }
@@ -387,11 +237,6 @@
     state.bootOut = true;
     $('boot').classList.add('is-out');
     bt = setTimeout(function () { $('boot').hidden = true; state.booting = false; modeAt = performance.now(); scramble(); }, skip ? 220 : 470);
-  }
-  function reboot() {
-    clearInterval(scr); scr = null; clearInterval(typ); typedOnce = false; $('typed').textContent = ''; $('wordA').textContent = '';
-    if (reduced) { scramble(); return; }
-    runBoot();
   }
   $('skipBoot').addEventListener('click', function () { endBoot(true); });
 
@@ -545,19 +390,11 @@
   try { seen = sessionStorage.getItem('nskn-booted') === '1'; sessionStorage.setItem('nskn-booted', '1'); } catch (e) { seen = false; }
   setMode(0);
   if (!reduced && !seen) runBoot(); else scramble();
-  // ?cmd= runs a command handed over from another page's command line (e.g. a ticker typed on a music page)
-  try {
-    var qc = new URLSearchParams(location.search).get('cmd');
-    if (qc) { history.replaceState(null, '', location.pathname + location.hash); setTimeout(function () { run(qc); }, 50); }
-  } catch (e) { /* ignore */ }
-  document.addEventListener('keydown', function (e) {
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); $('nk-cmd-in').focus(); }
-  });
   function fromHash() { var k = location.hash.slice(1); if (TITLES[k]) setActive(k, LABEL[k]); }
   fromHash();
   window.addEventListener('hashchange', fromHash);
 
-  /* ---------- Right Now: live markets + the next Detroit / MSU games ---------- */
+  /* ---------- Right Now: delayed markets + the next games ---------- */
   (function rightNow() {
     var box = document.getElementById('now');
     if (!box || !window.fetch) return;
@@ -598,7 +435,7 @@
       if (spx && spx.price != null) {
         L.spx = spx.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + ((spx.pct || 0) >= 0 ? '▲' : '▼') + Math.abs(spx.pct || 0).toFixed(2) + '%';
         var cm = document.getElementById('cardMkt');
-        if (cm) cm.innerHTML = '<span class="nk-live-dot"></span>S&amp;P 500 <b>' + esc(L.spx) + '</b>';
+        if (cm) cm.innerHTML = 'S&amp;P 500 <b>' + esc(L.spx) + '</b> · 15 MIN DELAY';
       }
       var NAMES = { spx: 'S&P 500', ixic: 'NASDAQ', dji: 'DOW', rut: 'RUSSELL', vix: 'VIX', tnx: 'US 10Y', dxy: 'DXY', wti: 'WTI', gold: 'GOLD', btc: 'BTC',
         ftse: 'FTSE', dax: 'DAX', sx5e: 'STOXX 50', n225: 'NIKKEI', hsi: 'HANG SENG', tsx: 'TSX', eurusd: 'EUR/USD', usdjpy: 'USD/JPY', gbpusd: 'GBP/USD' };
@@ -646,10 +483,10 @@
       L2.live = live.length;
       L2.next = next.length ? next[0].away + ' @ ' + next[0].home + ' ' + when(next[0].at) : '';
       var cs2 = document.getElementById('cardSprt');
-      if (cs2 && !failed) cs2.innerHTML = live.length ? '<span class="nk-live-dot"></span><b>' + live.length + ' LIVE NOW</b> · ' + esc(live[0].L[0] + ' ' + live[0].away + ' ' + live[0].as + '-' + live[0].hs + ' ' + live[0].home)
+      if (cs2 && !failed) cs2.innerHTML = live.length ? '<span class="nk-live-dot"></span><b>' + live.length + ' IN PROGRESS</b> · ' + esc(live[0].L[0] + ' ' + live[0].away + ' ' + live[0].as + '-' + live[0].hs + ' ' + live[0].home)
         : next.length ? 'NEXT · <b>' + esc(next[0].L[0] + ' ' + next[0].away + ' @ ' + next[0].home) + '</b> ' + esc(when(next[0].at)) : 'No games in the next day and a half';
       if (L2.onUpdate) L2.onUpdate();
-      var head = '<dt class="nk-now-h">SPORTS · ' + (live.length ? live.length + ' LIVE NOW' : 'TODAY') + '</dt>';
+      var head = '<dt class="nk-now-h">SPORTS · ' + (live.length ? live.length + ' IN PROGRESS' : 'TODAY') + '</dt>';
       games = head + (rows.length ? rows.map(function (g) {
         var left = '<b class="nk-lg">' + g.L[0] + '</b> ' + (g.state === 'pre' ? esc(g.away) + ' @ ' + esc(g.home) : esc(g.away) + ' ' + esc(g.as) + ' @ ' + esc(g.home) + ' ' + esc(g.hs));
         var right = g.state === 'in' ? '<span class="nk-live">' + esc(g.detail) + '</span>' : g.state === 'pre' ? esc(when(g.at)) : 'FINAL';

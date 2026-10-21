@@ -342,6 +342,8 @@ def quotes(mem, cal):
             p["own"] = {"period": own["period"], "inst": own["tiles"]["inst"], "instChg": own["tiles"]["instChg"],
                         "holders": own["tiles"]["holders"], "holdersChg": own["tiles"]["holdersChg"],
                         "trend": [x["inst"] for x in own["trend"]], "buyers": own["buyers"][:3], "sellers": own["sellers"][:3],
+                        "buyersActive": own.get("buyersActive", [])[:3] if "buyersActive" in own else None,
+                        "sellersActive": own.get("sellersActive", [])[:3] if "sellersActive" in own else None,
                         "read": own["read"], "passive": own["tiles"].get("passive")}
         write(f"quotes/{sym}.json", p)
     write("quotes/index.json", {"updated": now_iso(), "tickers": [

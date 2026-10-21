@@ -106,17 +106,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">EQS &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>PRIOR CLOSE</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Pick a preset or set any dial; every filter shows how many stocks it cannot judge</span>
 </div>
 <div class="t-cmd">
-<label for="screenSearch" class="t-prompt">NSKN ›</label>
-<input id="screenSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+<label for="screenSearch" class="t-prompt">TICKER ›</label>
+<input id="screenSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -129,12 +127,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey is-on" href="#" aria-current="page">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
-<span>Stock Screener (EQS)</span>
+<span>Stock Screener</span>
 <span class="dim">{{updatedLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{countTag}}</span>
@@ -176,7 +171,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <section class="t-panel" aria-label="Filters">
-<div class="t-ph"><h2>Dials</h2><span class="dim">Min and max for each metric; leave both on Any to ignore it</span></div>
+<div class="t-ph"><h2>Dials</h2><span class="dim">{{dialsSub}}</span>
+<span style="flex: 1 1 auto"></span>
+<button type="button" class="t-chipbtn" onClick="{{toggleDials}}" aria-expanded="{{dialsOpenStr}}">{{dialsBtn}}</button></div>
+<sc-if value="{{dialsOpen}}" hint-placeholder-val="{{ true }}">
+<div class="t-pb" style="padding-bottom: 0"><label class="sf"><span class="t-th">Find a metric</span>
+<input class="sel" type="search" value="{{metricQ}}" onChange="{{onMetricQ}}" placeholder="Type a metric, e.g. P/E, margin, yield, market cap" aria-label="Find a metric" autocomplete="off"></label></div>
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr)); gap: 22px">
 <sc-for list="{{groups}}" as="g" hint-placeholder-count="5">
 <div>
@@ -195,6 +195,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </sc-for>
 </div>
+</sc-if>
 </section>
 
 <section class="t-panel" aria-label="Results">
@@ -258,7 +259,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
 <span>Prices: Yahoo Finance, prior close · Financials: SEC EDGAR XBRL (last fiscal year) · Ownership: SEC 13F · Rebuilt every morning</span>
-<span>Not investment advice · © 2026 Nathan Skown</span>
+<span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
 
@@ -354,7 +355,7 @@ class Component extends DCLogic {
     });
     var UP = '#4ade80', DN = '#ff5f56';
     var rows = shown.map(function (i) {
-      return { href: 'Main.dc.html?sym=' + encodeURIComponent(d.sym[i]), sym: d.sym[i], name: d.name[i],
+      return { href: 'Main.dc.html?sym=' + encodeURIComponent(d.sym[i]), sym: d.sym[i], name: F.firm(d.name[i]),
         cells: colIds.map(function (id) {
           var m = byId[id], v = d[id][i];
           var color = (m.fmt === 'chg' && v !== null && v !== undefined) ? (v >= 0 ? UP : DN) : '#ffd89d';
@@ -362,8 +363,9 @@ class Component extends DCLogic {
         }) };
     });
     // dials
+    var mq = (st.metricQ || '').toLowerCase().trim();
     var groups = G.map(function (g) {
-      return { title: g.title, items: M.filter(function (m) { return m.group === g.id; }).map(function (m) {
+      return { title: g.title, items: M.filter(function (m) { return m.group === g.id && (!mq || m.label.toLowerCase().indexOf(mq) >= 0 || m.id.toLowerCase().indexOf(mq) >= 0); }).map(function (m) {
         var r = F[m.id] || [null, null];
         var fill = D && D.fill ? D.fill[m.id] : 0;
         var covN = 0; if (D) { for (var i2 = 0; i2 < n; i2++) { if (uniOk(i2) && d[m.id][i2] !== null && d[m.id][i2] !== undefined) covN++; } }
@@ -386,6 +388,8 @@ class Component extends DCLogic {
                  warn: bad ? 'Minimum is above the maximum, so nothing can match.' : '' };
       }) };
     });
+    groups = groups.filter(function (g) { return g.items.length; });
+    var nAct = Object.keys(F).length;
     // coverage panel
     var uniN = uniCount;
     var coverage = [];
@@ -422,7 +426,9 @@ class Component extends DCLogic {
       exchOpts: exchs.map(function (s) { return { v: s, t: s || 'Any exchange', sel: st.exch === s }; }),
       onExch: function (e) { setState({ exch: e.target.value, limit: 100 }); },
       textQ: st.q || '', onText: function (e) { setState({ q: e.target.value, limit: 100 }); },
-      groups: groups,
+      groups: groups, dialsOpen: !!st.dialsOpen, dialsOpenStr: st.dialsOpen ? 'true' : 'false', dialsBtn: st.dialsOpen ? 'HIDE DIALS ▴' : 'SHOW DIALS ▾',
+      dialsSub: (nAct ? nAct + ' metric' + (nAct === 1 ? '' : 's') + ' filtered · ' : '') + 'Min and max for each metric; open to adjust',
+      toggleDials: function () { self.setState({ dialsOpen: !st.dialsOpen }); }, metricQ: st.metricQ || '', onMetricQ: function (e) { self.setState({ metricQ: e.target.value }); },
       symSort: function () { if (st.sortId === 'sym') setState({ dir: -dir }); else setState({ sortId: 'sym', dir: 1 }); },
       sortOpts: sortOpts, onSort: function (e) { setState({ sortId: e.target.value }); },
       dirLabel: dir > 0 ? 'LOW → HIGH' : 'HIGH → LOW', flipDir: function () { setState({ dir: -dir }); },

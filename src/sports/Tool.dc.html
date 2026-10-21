@@ -15,18 +15,16 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">{{code}} &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
 <span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Type any team or page code to jump</span>
 </div>
 <form class="t-cmd" data-cmd>
-<label for="toolSearch" class="t-prompt">NSKN ›</label>
-<input id="toolSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+<label for="toolSearch" class="t-prompt">SEARCH ›</label>
+<input id="toolSearch" class="t-input" type="search" placeholder="SEARCH ANY TEAM" autocomplete="off" enterkeyhint="go">
 </form>
 <nav class="t-fbar" aria-label="Sports pages">
 <span class="t-fbar-title">Sports</span>
@@ -295,7 +293,7 @@ class Component extends DCLogic {
     var tabsFor = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
     var lgTabs = tabsFor.map(function (k) { return { label: k === 'all' ? 'All' : SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
       pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, simA: null, simH: null }); self.loadLeague(k); } }; });
-    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, tag: 'LIVE DATA',
+    var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, tag: 'DATA',
       showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord', isLuck: key === 'LuckWatch', isSos: key === 'Schedule' };
     var m = S.models[lg];
     // odds cells: the number plus a cyan heat shade that deepens with the probability; near-locks turn gold
@@ -370,12 +368,12 @@ class Component extends DCLogic {
         });
         var byPct = rows.slice().sort(function (x, y) { return y.pct - x.pct; }); byPct.forEach(function (x, i) { x.recRank = i + 1; });
         var byRat = rows.slice().sort(function (x, y) { return y.t.rating - x.t.rating; }); byRat.forEach(function (x, i) { x.ratRank = i + 1; });
-        rows.sort(function (x, y) { return Math.abs(y.luck) - Math.abs(x.luck); });
+        rows.sort(function (x, y) { return y.luck - x.luck; });
         lk.rows = rows.slice(0, 40).map(function (x) { var info = idx[x.id] || {};
           return { name: info.name || x.r.name || x.id, logo: info.logo || x.r.logo || '', href: SD.teamHref(lg, x.id), rec: x.r.overall || (x.r.w + '-' + x.r.l), mov: sgn(x.t.mov, 1),
             xw: x.xw.toFixed(1), luck: sgn(x.luck, 1), luckSt: x.luck >= 0.5 ? 'color: var(--up); font-weight: 600' : x.luck <= -0.5 ? 'color: var(--dn); font-weight: 600' : '', recRank: ord(x.recRank), rank: ord(x.ratRank) }; });
         lk.none = !lk.rows.length; lk.noneText = 'Not enough games played yet (teams need 3).';
-        lk.note = 'Sorted by the biggest gap, lucky or unlucky. "Wins the margin predicts" treats each game as a draw from the league\'s spread of results (σ ' + Number(sig).toFixed(1) + ' ' + m.unit + '): a team that wins by its average margin every night would win that many. Positive luck means the record is ahead of how the team has played, which usually fades; negative means it should improve. Record and house rank compare where a team sits in the standings with where its rating puts it. A gap is not proof of anything: close games, overtime and garbage time all move it.' + (rows.length > 40 ? ' Showing the 40 biggest gaps.' : '');
+        lk.note = 'Sorted from luckiest to unluckiest. "Wins the margin predicts" treats each game as a draw from the league\'s spread of results (σ ' + Number(sig).toFixed(1) + ' ' + m.unit + '): a team that wins by its average margin every night would win that many. Positive luck means the record is ahead of how the team has played, which usually fades; negative means it should improve. Record and house rank compare where a team sits in the standings with where its rating puts it. A gap is not proof of anything: close games, overtime and garbage time all move it.' + (rows.length > 40 ? ' Showing the 40 biggest gaps.' : '');
       }
       out.luck = lk;
     }

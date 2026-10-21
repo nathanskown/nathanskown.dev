@@ -109,6 +109,20 @@ section{margin:0 0 76px}
 .tl img{display:block;margin-top:12px;width:min(560px,100%);height:auto;aspect-ratio:16/10;border:1px solid var(--line);background:#000}
 .tl .more{margin-top:6px;font-size:13px}
 
+/* who did what */
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.col{padding:18px 20px 12px;background:linear-gradient(180deg,#061409,#020602);border:1px solid var(--line);border-top:3px solid var(--cc,var(--g))}
+.col h3{margin:0 0 4px;font-family:VT323,monospace;font-weight:400;font-size:34px;line-height:1;color:var(--cc,var(--g));text-shadow:0 0 14px color-mix(in srgb,var(--cc,var(--g)) 40%,transparent)}
+.col .sub{margin:0 0 12px;font-size:12.5px;color:var(--dim)}
+.col ul{margin:0;padding:0;list-style:none}
+.col li{position:relative;padding:0 0 14px 18px;font-size:14.5px;line-height:1.55;color:var(--hi)}
+.col li::before{content:"›";position:absolute;left:0;top:0;color:var(--cc,var(--g));font-weight:600}
+.col li b{color:var(--wh);font-weight:600}
+.col-me{--cc:#8dff9c}.col-ai{--cc:#e8f6ff}
+.split-foot{margin:16px 0 0;padding:14px 18px;border:1px dashed var(--line);font-size:15px;color:var(--wh)}
+.split-foot span{color:var(--dim);font-size:13.5px;display:block;margin-top:4px}
+@media (max-width:820px){.split{grid-template-columns:1fr}}
+
 /* me */
 .me{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);padding:20px 22px;display:flex;flex-wrap:wrap;gap:12px 40px;align-items:center;justify-content:space-between}
 .me p{margin:0;font-size:16px;max-width:52ch}
@@ -140,7 +154,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
 <div class="n spt"><div class="k">Games of sports history</div><div class="v" data-k="games">142,261</div><div class="d">Seven leagues, replayed to build and test the model</div></div>
 <div class="n spt"><div class="k">Teams rated</div><div class="v" data-k="teams">743</div><div class="d">Every team the model covers</div></div>
 <div class="n mus"><div class="k">Songs</div><div class="v" data-k="songs">1,802</div><div class="d">Across 600 artists, for the music games</div></div>
-<div class="n spt"><div class="k">Live picks graded</div><div class="v" data-k="picks">168</div><div class="d">Just started. Too few to judge the model yet</div></div>
+<div class="n spt"><div class="k">Picks graded</div><div class="v" data-k="picks">168</div><div class="d">Just started. Too few to judge the model yet</div></div>
 <div class="n"><div class="k">Days since the first commit</div><div class="v" data-k="days">8</div><div class="d">October 13, 2026 to today</div></div>
 <div class="n"><div class="k">Code commits</div><div class="v" data-k="commits">112</div><div class="d">Plus about 380 automatic data refreshes (as of Oct 21)</div></div>
 </div>
@@ -153,7 +167,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
 <div class="lab" aria-hidden="true">A project, and a test.</div>
 <div>
 <p>This started as a personal project to put the things I care about in one place: markets, sports and music. I work in investor relations, so I read ownership data, earnings and market moves all day, and I follow sports closely outside of work.</p>
-<p>It was also a test. I wanted to see how far AI could go when I handed it a real build instead of a demo: a working site with live data, automatic checks and a track record I can’t quietly rewrite. My job was deciding what to build, setting the rules, and cutting what didn’t hold up.</p>
+<p>It was also a test. I wanted to see how far AI could go when I handed it a real build instead of a demo: a working site with regularly refreshed data, automatic checks and a track record I can’t quietly rewrite. My job was deciding what to build, setting the rules, and cutting what didn’t hold up.</p>
 <p>The bigger question for me is how AI changes the way I work, live and play. So far: it’s faster than I expected, it makes confident mistakes, and the value is in knowing what to ask and how to check the answer. This site is where I’m working that out in public.</p>
 </div>
 </div>
@@ -162,7 +176,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
 <section id="map" aria-labelledby="h-map">
 <h2 id="h-map"><span class="sn">3</span>What’s here</h2>
 <div class="map" id="mapbox">
-<div class="hub"><b>NSKN</b><span>One terminal: a command line, a status page and shared data under everything</span></div>
+<div class="hub"><b>NSKN</b><span>One terminal: a status page and shared data under everything</span></div>
 <svg class="wires" viewBox="0 0 900 92" preserveAspectRatio="none" aria-hidden="true" focusable="false">
 <path class="wire" d="M450,0 C450,46 150,46 150,92" stroke="#ffbf3a"></path>
 <path class="wire" d="M450,0 L450,92" stroke="#66e6f2"></path>
@@ -170,7 +184,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
 </svg>
 <div class="cards">
 <a class="card c-mkt" href="/finance/"><span class="go" aria-hidden="true">→</span><div class="t">MARKETS</div><div class="w">Who owns a stock, what’s moving, and what’s reporting.</div><div class="l"><span data-k="own">6,443</span> ownership pages</div></a>
-<a class="card c-spt" href="/sports/"><span class="go" aria-hidden="true">→</span><div class="t">SPORTS</div><div class="w">A model that grades itself in public.</div><div class="l"><span data-k="picks">168</span> live picks graded so far</div></a>
+<a class="card c-spt" href="/sports/"><span class="go" aria-hidden="true">→</span><div class="t">SPORTS</div><div class="w">A model that grades itself in public.</div><div class="l"><span data-k="picks">168</span> picks graded so far</div></a>
 <a class="card c-mus" href="/music/"><span class="go" aria-hidden="true">→</span><div class="t">MUSIC</div><div class="w">Two guessing games and a daily leaderboard.</div><div class="l"><span data-k="songs">1,802</span> songs to guess from</div></a>
 </div>
 </div>
@@ -189,16 +203,47 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
 <section id="story" aria-labelledby="h-story">
 <h2 id="h-story"><span class="sn">5</span>How it came together</h2>
 <ol class="tl" id="tl">
-<li><div class="d">Oct 13</div><h3>Markets goes live</h3><p>Seven finance pages: dashboard, headlines, quotes, ownership, earnings, macro and IPOs.</p></li>
+<li><div class="d">Oct 13</div><h3>Markets launches</h3><p>Seven finance pages: dashboard, headlines, quotes, ownership, earnings, macro and IPOs.</p></li>
 <li><div class="d">Oct 14</div><h3>Sports, Music and the data pipeline</h3><p>Scores, team pages and a first house model; two music guessing games; hourly data jobs that run on their own.</p><img src="/assets/editions/v1-home.jpg" alt="The site’s home page on launch day" width="1200" height="750" loading="lazy"></li>
-<li><div class="d">Oct 15</div><h3>The terminal</h3><p>Each section gets its own color. Sports follows whichever teams you pick, and Markets takes a watchlist. A live Right Now panel and a command line that looks anything up.</p><img src="/assets/editions/v2-home.jpg" alt="The site’s home page after the terminal redesign" width="1200" height="750" loading="lazy"></li>
+<li><div class="d">Oct 15</div><h3>The terminal</h3><p>Each section gets its own color. Sports follows whichever teams you pick, and Markets takes a watchlist. A Right Now panel with delayed market numbers and the next games.</p><img src="/assets/editions/v2-home.jpg" alt="The site’s home page after the terminal redesign" width="1200" height="750" loading="lazy"></li>
 <li><div class="d">Oct 20</div><h3>Checks, and a closer look at the data</h3><p>A stock screener over SEC filings, a gate that holds back bad data, and the Under the Hood page.</p></li>
 <li><div class="d">Oct 21</div><h3>Data you can check</h3><p>An ownership view for any stock, an index event calendar, monthly notes written from the site’s own data, and a history of how the sports model improved.</p><img src="/assets/editions/v3-home.jpg" alt="The site’s home page today" width="1200" height="750" loading="lazy"><div class="more"><a href="/editions/">Every version, side by side →</a></div></li>
 </ol>
 </section>
 
+<section id="split" aria-labelledby="h-split">
+<h2 id="h-split"><span class="sn">6</span>Who did what</h2>
+<div class="split">
+<div class="col col-me">
+<h3>What I did</h3>
+<p class="sub">My input and my actions</p>
+<ul>
+<li><b>Picked the idea and the scope.</b> One site for markets, sports and music, then which pages each section needed and which to cut.</li>
+<li><b>Set the look.</b> A terminal feel on black, and a separate accent color for each section.</li>
+<li><b>Set the rules.</b> Nothing hardcoded to me or my teams, no betting lines for now, and a number that can’t be verified is shown as N/A instead of guessed.</li>
+<li><b>Opened the accounts it runs on.</b> The GitHub repo, Cloudflare hosting, the nathanskown.dev domain and the data-source keys.</li>
+<li><b>Reviewed everything and pushed back.</b> I read each page, flagged what looked off or confusing, and approved the wording before it went public.</li>
+<li><b>Decided what ships and when.</b> Music stayed unpublished until every piece was connected, and market commentary is rule-based so the site doesn’t depend on ongoing AI usage.</li>
+</ul>
+</div>
+<div class="col col-ai">
+<h3>What AI drove</h3>
+<p class="sub">The building</p>
+<ul>
+<li><b>Wrote all of the code.</b> The pages, styling and animation, plus the scripts that pull from SEC filings, FRED, ESPN and Nasdaq.</li>
+<li><b>Built the sports model.</b> Team ratings from past games, 10,000-run season simulations and a public log of every pick, graded after the final.</li>
+<li><b>Runs the data pipeline.</b> Scheduled refresh jobs, and automatic checks that hold back a file that fails them.</li>
+<li><b>Proposed ideas for me to accept or cut.</b> Some features, like the song-guessing games, started as its suggestions.</li>
+<li><b>Drafted the copy.</b> Page descriptions and notes, which I then edited.</li>
+<li><b>Did the repetitive work.</b> Applying one fix across every page, then committing and deploying it.</li>
+</ul>
+</div>
+</div>
+<p class="split-foot">AI does the building. I do the deciding and the checking.<span>It also made confident mistakes along the way: figures it couldn’t back up and features that looked good but meant nothing. Catching and cutting those was my job.</span></p>
+</section>
+
 <section id="me" aria-labelledby="h-me" style="margin-bottom:0">
-<h2 id="h-me"><span class="sn">6</span>About me</h2>
+<h2 id="h-me"><span class="sn">7</span>About me</h2>
 <div class="me">
 <p>I’m Nathan, based in Chicago, and I work in investor relations. If you have a question, a correction or an idea for the site, I’d like to hear it.</p>
 <a class="mail" href="mailto:nskown@icloud.com">nskown@icloud.com</a>

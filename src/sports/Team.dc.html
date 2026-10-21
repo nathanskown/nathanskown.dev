@@ -15,18 +15,16 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">TEAM &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
 <span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Type any team name above · every team and game links through</span>
 </div>
 <form class="t-cmd" data-cmd>
-<label for="teamSearch" class="t-prompt">NSKN ›</label>
-<input id="teamSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+<label for="teamSearch" class="t-prompt">SEARCH ›</label>
+<input id="teamSearch" class="t-input" type="search" placeholder="SEARCH ANY TEAM" autocomplete="off" enterkeyhint="go">
 </form>
 <nav class="t-fbar" aria-label="Sports pages">
 <span class="t-fbar-title">Sports</span>
@@ -49,7 +47,7 @@
 <sc-for list="{{lgLinks}}" as="f" hint-placeholder-count="7"><a class="{{f.cls}}" href="{{f.href}}">{{f.label}}</a></sc-for>
 </nav>
 <div class="t-sub">
-<span>Team Page (TEAM)</span>
+<span>Team Page</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{statusTag}}</span>
@@ -430,7 +428,7 @@ class Component extends DCLogic {
     if (!leaders.length) noLeadersText = S.loading ? 'Loading…' : (pro ? 'Leaders load from the daily data refresh.' : 'No completed games with box scores yet.');
 
     return Object.assign(base, {
-      ok: true, missing: false, statusTag: S.loading ? 'LOADING…' : (live.length ? 'LIVE GAME' : 'LIVE DATA'), t: t, next: next,
+      ok: true, missing: false, statusTag: S.loading ? 'LOADING…' : (live.length ? 'LIVE GAME' : 'DATA'), t: t, next: next,
       profile: profile, profileNote: mt && model ? 'House rating from ' + (model.games || 'all') + ' games this season' : '',
       margins: margins, hasMargins: margins.length > 1, marginAria: 'Bar chart of game margins: ' + diffs.join(', '),
       results: results, noResults: !S.loading && !resultsAll.length, noResultsText: S.schedErr ? 'The live schedule feed did not respond.' : 'No completed games yet this season.',

@@ -15,18 +15,16 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">SCOR &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
 <span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Follow any team · pick a league · every game and team opens its own page</span>
 </div>
 <form class="t-cmd" data-cmd>
-<label for="sportSearch" class="t-prompt">NSKN ›</label>
-<input id="sportSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+<label for="sportSearch" class="t-prompt">SEARCH ›</label>
+<input id="sportSearch" class="t-input" type="search" placeholder="SEARCH ANY TEAM" autocomplete="off" enterkeyhint="go">
 </form>
 <nav class="t-fbar" aria-label="Sports pages">
 <span class="t-fbar-title">Sports</span>
@@ -49,7 +47,7 @@
 <a class="t-chipl" href="Teams.dc.html">BROWSE ›</a>
 </nav>
 <div class="t-sub">
-<span>Scores &amp; Schedule (SCOR)</span>
+<span>Scores &amp; Schedule</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{statusTag}}</span>
@@ -60,7 +58,7 @@
 
 <section aria-label="Summary" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px">
 <div>
-<div class="s-kicker">SCOR · every league · live</div>
+<div class="s-kicker">Scores · every league</div>
 <h1 style="margin: 0">Scores &amp; schedule</h1>
 <div class="dim" style="margin-top: 6px">{{dayLine}}</div>
 </div>
@@ -268,7 +266,10 @@ class Component extends DCLogic {
 
     // league chips
     var liveIn = function (b) { return b && (b.events || []).some(function (e) { return e.state === 'in' || (e.matches || []).some(function (m) { return m.state === 'in'; }); }); };
-    var chips = ['all'].concat(SD.ORDER).map(function (k) {
+    var hasGames = function (k) { var b = S.boards[k + ':' + day]; return !!b && !b.err && (b.events || []).length > 0; };
+    var order = SD.ORDER.map(function (k, i) { return { k: k, i: i, live: liveIn(S.boards[k + ':' + day]) ? 1 : 0, has: hasGames(k) ? 1 : 0 }; })
+      .sort(function (x, y) { return (y.live - x.live) || (y.has - x.has) || (x.i - y.i); }).map(function (x) { return x.k; });
+    var chips = ['all'].concat(order).map(function (k) {
       return { label: k === 'all' ? 'ALL' : SD.LEAGUES[k].short, on: S.lg === k ? 'true' : 'false', cls: 's-tab' + (S.lg === k ? ' is-on' : ''), live: k !== 'all' && liveIn(S.boards[k + ':' + day]),
         pick: function () { history.replaceState(null, '', k === 'all' ? location.pathname : '?lg=' + k); self.setState({ lg: k }); setTimeout(function () { self.refresh(); }, 0); } };
     });
@@ -350,6 +351,9 @@ class Component extends DCLogic {
       if (all && !cards.length) return;  // keep the all-sports view short
       boards.push(B);
     });
+    // leagues with games first (live ones ahead of the rest); empty leagues, which keep their next-game note, move below
+    boards.forEach(function (B, i) { B._i = i; B._has = B.games && B.games.length ? 1 : 0; B._live = B.games && B.games.some(function (g) { return g.live; }) ? 1 : 0; });
+    boards.sort(function (x, y) { return (y._has - x._has) || (y._live - x._live) || (x._i - y._i); });
     function sameDay(iso) { return F.day(iso) === F.day(new Date().toISOString()); }
     if (all && S.loaded && !boards.length) boards.push({ name: 'Nothing on', sub: '', games: [], msg: 'No games in any league ' + (day === 0 ? 'right now.' : 'on that day.') });
 

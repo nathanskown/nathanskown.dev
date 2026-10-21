@@ -65,6 +65,57 @@
     },
     updated: function (iso) { return iso ? 'UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; }
   };
+
+  /* ---- firm names: SEC data is ALL CAPS and a plain title-case pass gets "Llp", "Hrt" and "Of" wrong ---- */
+  var FIRM_FIX = {
+    llp: 'LLP', llc: 'LLC', lllp: 'LLLP', lp: 'LP', pllc: 'PLLC', plc: 'PLC', ltd: 'Ltd.', 'ltd.': 'Ltd.', inc: 'Inc.', 'inc.': 'Inc.', corp: 'Corp.', 'corp.': 'Corp.',
+    co: 'Co.', 'co.': 'Co.', na: 'N.A.', 'n.a.': 'N.A.', ag: 'AG', gmbh: 'GmbH', sa: 'SA', nv: 'NV', ab: 'AB', asa: 'ASA', se: 'SE', sarl: 'SARL', bv: 'BV', spa: 'SpA', sas: 'SAS',
+    gp: 'GP', ii: 'II', iii: 'III', iv: 'IV', usa: 'USA', us: 'US', uk: 'UK', etf: 'ETF', reit: 'REIT',
+    blackrock: 'BlackRock', jpmorgan: 'JPMorgan', alliancebernstein: 'AllianceBernstein', 'j.p.': 'J.P.', 'd.e.': 'D.E.', cloudalpha: 'CloudAlpha',
+    ubs: 'UBS', aqr: 'AQR', fmr: 'FMR', bny: 'BNY', kkr: 'KKR', tpg: 'TPG', tcw: 'TCW', mfs: 'MFS', sei: 'SEI', pnc: 'PNC', hsbc: 'HSBC', cibc: 'CIBC', rbc: 'RBC', bmo: 'BMO', td: 'TD',
+    bnp: 'BNP', abn: 'ABN', amro: 'AMRO', dnb: 'DNB', ing: 'ING', axa: 'AXA', aig: 'AIG', cna: 'CNA', dws: 'DWS', pimco: 'PIMCO', ssga: 'SSGA', lpl: 'LPL', mml: 'MML', hrt: 'HRT',
+    ark: 'ARK', ibm: 'IBM', amc: 'AMC', cvs: 'CVS', ai: 'AI', ev: 'EV', io: 'IO', it: 'IT', hr: 'HR', tv: 'TV', ip: 'IP', adr: 'ADR', ceo: 'CEO', nyse: 'NYSE', ssc: 'SSC', atm: 'ATM',
+    nasdaq: 'Nasdaq', mgmt: 'Mgmt.', 'm&a': 'M&A', 'at&t': 'AT&T', 'at&amp;t': 'AT&T', 'r&d': 'R&D'
+  };
+  var FIRM_SMALL = { of: 1, and: 1, the: 1, for: 1, in: 1, de: 1, du: 1, la: 1, van: 1, von: 1, der: 1, den: 1, y: 1, e: 1, et: 1, el: 1, del: 1, da: 1, di: 1, 'à': 1 };
+  /* short words that really are words, so they are not mistaken for an acronym when the source is ALL CAPS */
+  var FIRM_WORD = ('all and the for out off not you ace age aim air arm art bar bat bay bed big bio box buy cap car cut day dot egg end eye far few fin fit fly fox fun gap gas gem get hat her his hit hot hub ice ink jet job key lab law lay let lit lot low man map max may med men met mix net new now nut oak odd oil old one our own pad pan par pat pay pen pet pie pin pod pop pot pro pub ram ran raw ray red rio run sad sat saw say sea see set sit six ski sky son sum sun tab tag tap tax tea ten tin tip top toy tri try two use van war way web wet who why win won yes yet zen zip ' +
+    'ad at be by do go he if in is me my no of on or so to up we an as am bi ' +
+    'bow cat dog cow bee fig jam mad mar nor pea pig rat rib rod rye sew sir tan tub vet wax wig zoo ben bud cab cub dam den dew dye ear elf elm era eve fan fat fee gum gun guy hay hen hip hop hug kit lid lip mat mop mud net nod oat orb pit rim rug sap sip sow spy sub tad tar toe tow urn vow wag war wax yak yam ant ash axe bag ban bay bog bun cab cop cry cup dig dim dip dry dub dud ebb elk fad fig fir fit fur gag gel gig gin gnu gut hem hid hog hut ivy jab jar jaw jay jog joy keg kid lab lap lax led lee leg lie log mob mod mow mug nap net nil nip nun oar oat ore owl pal paw pea pew pup rag rap rid rob rot rub rum sag sew shy sin sip sob sod sue tab tan ten tic tug van vat vow wad wan wed wit woe yap yew zag zap').split(' ').reduce(function (o, w) { o[w] = 1; return o; }, {});
+  F.firm = function (name) {
+    if (name === null || name === undefined) return name;
+    var raw = String(name).replace(/\s*\/[A-Za-z]{2,4}\/?\s*$/, '');   // SEC state suffix: "HEXCEL CORP /DE/"
+    if (!/[A-Za-z]/.test(raw)) return raw;
+    var allCaps = raw === raw.toUpperCase();
+    var out = raw.split(/(\s+)/).map(function (tok, i, all) {
+      if (!tok || /^\s+$/.test(tok)) return tok;
+      var m = /^([^A-Za-z0-9&]*)([A-Za-z0-9&.'’\/-]+?)([^A-Za-z0-9&.]*)$/.exec(tok);
+      if (!m) return tok;
+      var lead = m[1], core = m[2], tail = m[3], low = core.toLowerCase(), first = !all.slice(0, i).some(function (t) { return /[A-Za-z]/.test(t); });
+      // mixed case that someone already chose on purpose (JPMorgan, iShares, AllianceBernstein): leave it alone
+      if (/[a-z]/.test(core) && /[A-Z]/.test(core.slice(1)) && !FIRM_FIX[low]) return tok;
+      if (FIRM_FIX[low] !== undefined) return lead + FIRM_FIX[low] + tail;
+      if (!first && FIRM_SMALL[low]) return lead + low + tail;
+      if (/^(?:[a-z]\.){2,}$/i.test(core)) return lead + core.toUpperCase() + tail;           // L.L.C., D.E.
+      if (/^[a-z]$/i.test(core) && /\.$/.test(tail)) return lead + core.toUpperCase() + tail;   // initials
+      if (/^[a-z]{1,4}$/i.test(core) && !/[aeiouy]/i.test(core)) return lead + core.toUpperCase() + tail; // HRT, TCW, WT, XN, PTT
+      if (allCaps && /^[a-z]{2,3}$/i.test(core) && !FIRM_WORD[low]) return lead + core.toUpperCase() + tail; // AMC, IBM, CVS, ADT
+      if (/-/.test(core)) return lead + core.split('-').map(function (w) { return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w; }).join('-') + tail;
+      if (/^mc[a-z]{3,}/i.test(core)) return lead + 'Mc' + core.charAt(2).toUpperCase() + core.slice(3).toLowerCase() + tail;
+      return lead + core.charAt(0).toUpperCase() + core.slice(1).toLowerCase() + tail;
+    }).join('');
+    return out.replace(/\bInc\.\.?/g, 'Inc.').replace(/\bCorp\.\.?/g, 'Corp.').replace(/\bCo\.\.?/g, 'Co.').replace(/\bLtd\.\.?/g, 'Ltd.');
+  };
+  /* the big index families: treated as passive when sorting buyers and sellers (13F filings do not label funds) */
+  var PASSIVE_RX = /\b(vanguard|blackrock|state street|geode)\b/i;
+  F.isPassive = function (name) { return PASSIVE_RX.test(String(name || '')); };
+  /* top active buyers or sellers: the build's own active-only list when the data has it, otherwise the old list minus the index families */
+  F.activeMovers = function (O, kind) {
+    if (!O) return [];
+    var key = kind + 'Active';
+    if (Array.isArray(O[key])) return O[key];
+    return (O[kind] || []).filter(function (x) { return !F.isPassive(x.n); });
+  };
   var ROUTES = window.DC_ROUTES || {};
   function route(href) {
     var q = href.indexOf('?'), base = q < 0 ? href : href.slice(0, q);
@@ -204,20 +255,15 @@
     c._v = out;
   }
 
-  /* command line on every inner page: type a page code, team or ticker and press Enter */
-  var CMDS = {
-    HOME: '/', MENU: '/', DGST: '/#digest', DIGEST: '/#digest', STATUS: '/status/', CONTACT: '/#contact',
-    BRIEF: '/finance/digest/', MKT: '/finance/', FIN: '/finance/', WEI: '/finance/', TOP: '/finance/headlines/', NEWS: '/finance/headlines/',
-    DES: '/finance/quote/', QUOTE: '/finance/quote/', HDS: '/finance/ownership/', OWN: '/finance/ownership/',
-    ERN: '/finance/earnings/', ECO: '/finance/macro/', MACRO: '/finance/macro/', IPO: '/finance/ipo/', EQS: '/finance/screener/', SCREEN: '/finance/screener/', SCREENER: '/finance/screener/',
-    SPRT: '/sports/', SPORTS: '/sports/', SCOR: '/sports/', SCORES: '/sports/',
-    TEAM: '/sports/teams/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
+  /* search bar on every inner page: type a ticker or company (Markets) or a team (Sports) and press Enter.
+     Sports pages also keep a few league and tool shortcuts. */
+  var CMDS = /^\/sports/.test(location.pathname) ? {
+    HOME: '/', SPORTS: '/sports/', SCORES: '/sports/', TEAMS: '/sports/teams/', GAME: '/sports/game/',
     NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',
     NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
-    SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/', HIST: '/sports/model-history/',
-    IR: '/finance/ir/', IDX: '/finance/index-calendar/', CAL: '/finance/index-calendar/', NOTES: '/finance/notes/', NOTE: '/finance/notes/', HOOD: '/under-the-hood/', ABOUT: '/about/', ED: '/editions/', EDITIONS: '/editions/'
-  };
+    SOS: '/sports/schedule-strength/', METH: '/sports/methodology/', HIST: '/sports/model-history/'
+  } : {};
   /* full US ticker list (SEC), loaded once on demand: { list: [[sym, name, cik, exch]], bySym: {SYM: {...}} } */
   var tickersP = null;
   function tickers() {
@@ -241,19 +287,16 @@
     pre.sort(function (a, b) { return a[0].length - b[0].length; });
     return exact.concat(pre, name).slice(0, n || 12);
   }
-  var FN = { DES: '/finance/quote/?sym=', EQUITY: '/finance/quote/?sym=', US: '/finance/quote/?sym=', HDS: '/finance/ownership/?ticker=', OWN: '/finance/ownership/?ticker=', IR: '/finance/ir/?sym=', TEAR: '/finance/ir/?print=1&sym=' };
+  var QUOTE_URL = '/finance/quote/?sym=';
   function runCmd(input) {
-    var raw = input.value.trim().toUpperCase().replace(/\s*<?GO>?$/, '').trim();
-    if (!raw) return;
-    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL IR · AAPL TEAR · WEI · TOP · ERN · IDX · NOTES · SCOR · TEAM · HOME'; return; }
-    var compact = raw.replace(/[\s-]+/g, '');
-    var parts = raw.split(/\s+/), fn = parts.length > 1 && FN[parts[parts.length - 1]] ? parts.pop() : null;
-    if (!fn && CMDS[compact]) { location.href = CMDS[compact]; return; }
-    var q = parts.join(' ');
-    var go = function (sym) { location.href = (FN[fn] || FN[window.DC_DEFAULT_FN] || FN.DES) + encodeURIComponent(sym); };
+    var q = input.value.trim().toUpperCase();
+    if (!q) return;
+    var compact = q.replace(/[\s-]+/g, '');
+    if (CMDS[compact]) { location.href = CMDS[compact]; return; }
+    var go = function (sym) { location.href = (window.DC_DEFAULT_URL || QUOTE_URL) + encodeURIComponent(sym); };
     var symLike = /^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(q), sym = q.replace(/\./g, '-');
     /* pages can register their own lookup (the Sports pages resolve team names first) */
-    var page = !fn && window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
+    var page = window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
     page.then(function (href) {
       if (href) { location.href = href; return; }
       tickerLookup();
@@ -264,7 +307,7 @@
       if (m && (m[0] === sym || m[1].toUpperCase().indexOf(q) >= 0)) { go(m[0]); return; }
       if (symLike) { go(sym); return; }                      // index, ETF or other symbol Yahoo may know
       input.value = '';
-      input.placeholder = '"' + q + '" NOT FOUND · TRY A TICKER OR HELP';
+      input.placeholder = '"' + q + '" NOT FOUND · TRY A TICKER OR COMPANY NAME';
     }); }
   }
   /* type-ahead: suggestions from the SEC list in a native datalist */
@@ -287,7 +330,6 @@
       document.body.appendChild(dl);
       el.setAttribute('list', dl.id);
     }
-    if (/\s/.test(v.trim()) && FN[v.trim().split(/\s+/).pop().toUpperCase()]) return;
     if (window.DC_SUGGEST) {
       window.DC_SUGGEST(v).then(function (opts) {
         if (el.value !== v) return;
@@ -304,7 +346,7 @@
       matches(T, v, 12).forEach(function (x) {
         var o = document.createElement('option');
         o.value = x[0];
-        o.label = x[1] + (x[3] ? ' · ' + x[3] : '');
+        o.label = F.firm(x[1]) + (x[3] ? ' · ' + x[3] : '');
         dl.appendChild(o);
       });
     });

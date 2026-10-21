@@ -15,18 +15,16 @@
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">GAME &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>LIVE</span>
 <span class="dim">ALL TIMES {{tzLabel}}</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Live games refresh every 30 seconds · team names open team pages</span>
 </div>
 <form class="t-cmd" data-cmd>
-<label for="gameSearch" class="t-prompt">NSKN ›</label>
-<input id="gameSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+<label for="gameSearch" class="t-prompt">SEARCH ›</label>
+<input id="gameSearch" class="t-input" type="search" placeholder="SEARCH ANY TEAM" autocomplete="off" enterkeyhint="go">
 </form>
 <nav class="t-fbar" aria-label="Sports pages">
 <span class="t-fbar-title">Sports</span>
@@ -47,7 +45,7 @@
 <sc-for list="{{lgLinks}}" as="f" hint-placeholder-count="7"><a class="{{f.cls}}" href="{{f.href}}">{{f.label}}</a></sc-for>
 </nav>
 <div class="t-sub">
-<span>Game Center (GAME)</span>
+<span>Game Center</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{statusTag}}</span>

@@ -220,32 +220,16 @@
     };
   };
 
-  /* ---------- terminal chrome: title bar, command line, function keys ---------- */
-  const ROUTES = {
-    HOME: "/", MENU: "/", "1": "/", NSKN: "/",
-    MUS: "/music/", MUSIC: "/music/",
-    TRCK: "/music/track/", TRACK: "/music/track/", "2": "/music/track/",
-    ARTS: "/music/artist/", ARTIST: "/music/artist/", "3": "/music/artist/",
-    LB: "/music/leaderboard/", BOARD: "/music/leaderboard/", LEADERBOARD: "/music/leaderboard/", "5": "/music/leaderboard/",
-    MKT: "/finance/", MARKET: "/finance/", FIN: "/finance/", FINANCE: "/finance/",
-    SPRT: "/sports/", SPORTS: "/sports/", SPORT: "/sports/",
-    CONTACT: "/#contact", ABOUT: "/"
-  };
+  /* ---------- terminal chrome: title bar and section keys ---------- */
   MX.chrome = function (id, page) {
     const el = MX.$(id);
     if (!el) return;
-    const keys = [["/", "1) HOME", ""], ["/music/track/", "2) TRCK", "track"], ["/music/artist/", "3) ARTS", "artist"], ["/music/", "4) MUSIC", "hub"], ["/music/leaderboard/", "5) BOARD", "board"]];
+    const keys = [["/", "1) Home", ""], ["/music/track/", "2) Track", "track"], ["/music/artist/", "3) Artist", "artist"], ["/music/", "4) Music", "hub"], ["/music/leaderboard/", "5) Leaderboard", "board"]];
     el.innerHTML =
       '<div class="mx-title"><span class="mx-brand">1-NSKN</span>' +
       '<a class="mx-chip" href="/">Main Menu</a><span class="mx-chip on">MUSIC</span>' +
       (page.label ? '<span class="mx-chip">' + MX.esc(page.label) + "</span>" : "") +
-      '<span class="mx-sp"></span><span class="mx-live"><span class="mx-dot"></span>LIVE <span id="mxClock" class="dim"></span></span></div>' +
-      '<div class="mx-help"><span><span class="mx-inv">&lt;HELP&gt;</span> for explanation. &lt;MENU&gt; to return &middot; type a function, then press &lt;GO&gt;</span>' +
-      '<span class="dim">TRCK &middot; ARTS &middot; LB &middot; MUS &middot; MKT &middot; SPRT</span></div>' +
-      '<form class="mx-cmd" id="mxCmd" autocomplete="off"><span class="pfx">NSKN &rsaquo;</span>' +
-      '<input id="mxCmdIn" type="text" placeholder="TICKER OR TEAM" spellcheck="false" aria-label="Command line">' +
-      '<button type="submit">GO</button></form>' +
-      '<div class="mx-msg" id="mxMsg" role="status" aria-live="polite"></div>' +
+      '<span class="mx-sp"></span><span class="mx-live"><span id="mxClock" class="dim"></span></span></div>' +
       '<nav class="mx-fbar" aria-label="Music"><span class="t">Music</span>' +
       keys.map(k => '<a href="' + k[0] + '"' + (k[2] === page.key ? ' class="on" aria-current="page"' : "") + ">" + k[1] + "</a>").join("") +
       '<span class="r">NSKN Terminal</span></nav>';
@@ -260,27 +244,6 @@
       });
       document.body.insertBefore(sk, document.body.firstChild);
     }
-    const msg = MX.$("mxMsg");
-    MX.$("mxCmd").onsubmit = e => {
-      e.preventDefault();
-      const input = MX.$("mxCmdIn"), c = input.value.trim().toUpperCase().replace(/(\s+|<)GO>?$/, "").trim();
-      input.value = "";
-      if (!c) { msg.textContent = "Type a function, e.g. TRCK or ARTS, then press GO."; return; }
-      if (c === "HELP" || c === "H" || c === "?") {
-        msg.innerHTML = "TRCK guess the track &middot; ARTS guess the artist &middot; LB leaderboard &middot; MUS music home &middot; HOME site menu &middot; MKT market analysis &middot; SPRT sports &middot; CONTACT";
-        return;
-      }
-      if (ROUTES[c]) { msg.textContent = "Opening " + c + "…"; location.href = ROUTES[c]; return; }
-      // tickers, teams and other site functions are resolved by the home page's command line
-      msg.textContent = "Looking up " + c + "…";
-      location.href = "/?cmd=" + encodeURIComponent(c);
-    };
-    document.addEventListener("keydown", e => {
-      const tag = (e.target && e.target.tagName) || "";
-      const k = (e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K");
-      if (!k && (e.key !== "/" || /INPUT|TEXTAREA|SELECT/.test(tag))) return;
-      e.preventDefault(); MX.$("mxCmdIn").focus();
-    });
     const clock = MX.$("mxClock");
     const tick = () => {
       try { clock.textContent = MX.zoneLabel() + " " + new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()); }

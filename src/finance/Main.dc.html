@@ -105,17 +105,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">DES &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Pick a range to redraw the price chart</span>
 </div>
 <div class="t-cmd">
-<label for="tickerSearch" class="t-prompt">NSKN ›</label>
-<input id="tickerSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+<label for="tickerSearch" class="t-prompt">TICKER ›</label>
+<input id="tickerSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -128,9 +126,6 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
 <span>{{secHead}}</span>
@@ -415,9 +410,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{ownBars}}" as="ob" hint-placeholder-count="8"><div style="{{ob}}"></div></sc-for>
 </div>
 </div>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP ACTIVE BUYERS</div>
 <sc-for list="{{ownBuy}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">{{ob.v}}</span></div></sc-for>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP ACTIVE SELLERS</div>
 <sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
 <p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">{{ownRead}}</p>
 </sc-if>
@@ -443,7 +438,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <footer class="t-foot">
 <div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
 <span>Prices: Yahoo Finance (delayed) · Financials, insiders, 13D/G, 13F: SEC EDGAR · Earnings dates: Nasdaq · Refreshed daily</span>
-<span>Not investment advice · © 2026 Nathan Skown</span>
+<span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
 
@@ -498,7 +493,7 @@ class Component extends DCLogic {
         var pe = Fn && Fn.epsTTM > 0 && price ? price / Fn.epsTTM : (Fn && Fn.niTTM > 0 && mcap ? mcap / Fn.niTTM : null);
         var up = ((E || {}).upcoming || []).filter(function (x) { return x.sym === sym; })[0] || null;
         var own = O && O.tiles ? { period: O.period, inst: O.tiles.inst, instChg: O.tiles.instChg, holders: O.tiles.holders, holdersChg: O.tiles.holdersChg,
-          trend: (O.trend || []).map(function (t) { return t.inst; }), buyers: (O.buyers || []).slice(0, 3), sellers: (O.sellers || []).slice(0, 3),
+          trend: (O.trend || []).map(function (t) { return t.inst; }), buyers: (O.buyers || []).slice(0, 3), sellers: (O.sellers || []).slice(0, 3), buyersActive: O.buyersActive, sellersActive: O.sellersActive,
           read: O.read, passive: O.tiles.passive } : null;
         var inIdx = function (k) { return (M[k] || []).indexOf(sym) >= 0; };
         self.setState({ loading: null, notTracked: null, q: {
@@ -572,7 +567,7 @@ class Component extends DCLogic {
     if (Q && Q.sym && rec[0] !== Q.sym) rec = PREFS.set('fin.recent', [Q.sym].concat(rec.filter(function (x) { return x !== Q.sym; })).slice(0, 10));
     var recent = rec.map(function (t) { return { t: t, href: 'Main.dc.html?sym=' + encodeURIComponent(t), cls: t === st.sym ? 'hi' : '' }; });
     var A = st.about && st.aboutFor === (Q && Q.sym) ? st.about : null;
-    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' US Equity' : 'Quote') + ' · Description (DES)', picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q, hasAbout: !!A, aboutText: A ? A.text : '', aboutKind: A ? A.kind : '', aboutUrl: A ? A.url : '',
+    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' · Stock quote' : 'Quote'), picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q, hasAbout: !!A, aboutText: A ? A.text : '', aboutKind: A ? A.kind : '', aboutUrl: A ? A.url : '',
       missingText: st.loading ? 'Loading ' + st.loading + '…' : (st.err ? 'Quote data is not available yet.' : (st.notTracked ? st.notTracked + (why[st.notFoundWhy] || ' was not found.') : '')),
       missingNote: st.loading ? 'Pulling prices from Yahoo Finance and filings from SEC EDGAR. The first look at a ticker takes a few seconds; repeat visits are cached.' :
         'Type any US-listed ticker or company name in the bar above. The quick picks across the top are the core watch list.' };
@@ -626,7 +621,7 @@ class Component extends DCLogic {
     ] : [];
     var peers = (Q.peerRows || []).map(function (p) {
       var cs = function (v, last) { return 'padding: 10px ' + (last ? '0' : '10px') + ' 10px 10px; border-bottom: 1px solid #221909; color: ' + (v === null || v === undefined ? '#C99442' : (v >= 0 ? UP : DN)) + ';'; };
-      return { t: p.sym, n: p.name, href: p.me ? '#' : 'Main.dc.html?sym=' + p.sym, cap: F.money(p.mcap, 1), pe: p.pe ? F.n(p.pe, 1) + 'x' : '—',
+      return { t: p.sym, n: F.firm(p.name), href: p.me ? '#' : 'Main.dc.html?sym=' + p.sym, cap: F.money(p.mcap, 1), pe: p.pe ? F.n(p.pe, 1) + 'x' : '—',
         ytd: F.pct(p.ytd, 1), y1: F.pct(p.y1, 1), ytdStyle: cs(p.ytd), y1Style: cs(p.y1, true),
         rowStyle: 'text-align: right; font-family: IBM Plex Mono, monospace;' + (p.me ? ' background: #261C0C;' : '') };
     });
@@ -636,7 +631,7 @@ class Component extends DCLogic {
       var isEx = x.code === 'M' || x.code === 'X';
       var unit = isEx ? (Q.quote || {}).price : x.price;
       var val = x.shares && unit ? x.shares * unit : null;
-      return { d: F.day(x.date || x.filed), n: x.name, role: x.role || '', type: x.type + (x.code === 'S' && x.plan ? ' · 10b5-1' : ''),
+      return { d: F.day(x.date || x.filed), n: F.firm(x.n)ame, role: x.role || '', type: x.type + (x.code === 'S' && x.plan ? ' · 10b5-1' : ''),
         sh: F.n(x.shares, 0), px: x.price ? F.usd(x.price, 2) + (isEx ? ' strike' : '') : '—', val: val ? F.money(val) + (isEx ? ' now' : '') : '—',
         color: x.code === 'P' ? UP : (x.code === 'S' ? DN : '#FFB84D') };
     });
@@ -648,7 +643,7 @@ class Component extends DCLogic {
     ];
     var bigs = (Q.holders5 || []).map(function (h) {
       var act = h.activist;
-      return { n: h.filer || 'Filer', note: act ? 'activist-eligible 13D' : 'passive 13G', form: h.form, d: F.day(h.date), url: h.url,
+      return { n: h.filer ? F.firm(h.filer) : 'Filer', note: act ? 'activist-eligible 13D' : 'passive 13G', form: h.form, d: F.day(h.date), url: h.url,
         formStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; ' + (act ? 'background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' : 'background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;') };
     });
     var cutoff = Date.now() - 180 * 86400000;
@@ -662,7 +657,7 @@ class Component extends DCLogic {
     var trend = O ? O.trend || [] : [];
     var tmin = trend.length ? Math.min.apply(null, trend.filter(function (v) { return v !== null; })) - 3 : 0, tmax = trend.length ? Math.max.apply(null, trend.filter(function (v) { return v !== null; })) : 1;
     var ownBars = trend.map(function (v, k) { return 'flex: 1; height: ' + (v === null ? 2 : Math.max(4, Math.round((v - tmin) / ((tmax - tmin) || 1) * 38))) + 'px; background: ' + (k === trend.length - 1 ? '#FFE9C7' : '#6B4E22') + ';'; });
-    var mv = function (x) { return { n: x.n, note: x.note, v: (x.sh >= 0 ? '+' : '−') + F.big(Math.abs(x.sh)) }; };
+    var mv = function (x) { return { n: F.firm(x.n), note: x.note, v: (x.sh >= 0 ? '+' : '−') + F.big(Math.abs(x.sh)) }; };
     var q = Q.quote || {};
     var quarter = function (p) { var d = new Date(p + 'T12:00:00Z'); return 'Q' + (Math.floor(d.getUTCMonth() / 3) + 1) + ' ' + d.getUTCFullYear(); };
     var labels = { '1D': 'today', '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', 'YTD': 'year to date', '1Y': 'past year', '5Y': 'past 5 years' };
@@ -694,7 +689,7 @@ class Component extends DCLogic {
       hasOwn: !!O, noOwn: !O, noOwnText: Q.onDemand ? 'No 13F page for this security: it has fewer than 30 institutional holders or its CUSIP could not be matched to a ticker.' : '13F data builds once a month from the SEC\'s quarterly data sets.', ownPeriod: O ? quarter(O.period) : '', ownInst: O ? F.n(O.inst, 1) + '%' : '',
       ownChg: O && O.instChg !== null ? F.arrow(O.instChg) + ' ' + (O.instChg >= 0 ? '+' : '−') + F.n(Math.abs(O.instChg), 1) + ' pts QoQ' : '',
       ownChgColor: O && O.instChg >= 0 ? UP : DN, ownHolders: O ? F.n(O.holders, 0) + ' holders · ' + (O.holdersChg >= 0 ? '+' : '−') + Math.abs(O.holdersChg) : '',
-      ownBars: ownBars, ownBuy: O ? O.buyers.map(mv) : [], ownSell: O ? O.sellers.map(mv) : [], ownRead: O ? O.read : '',
+      ownBars: ownBars, ownBuy: O ? F.activeMovers(O, 'buyers').slice(0, 3).map(mv) : [], ownSell: O ? F.activeMovers(O, 'sellers').slice(0, 3).map(mv) : [], ownRead: O ? O.read : '',
       ownHref: 'Ownership.dc.html?ticker=' + Q.sym,
       news: (Q.news || []).map(function (n) { return { h: n.title, link: n.link, meta: 'Yahoo Finance · ' + F.day(n.published) }; })
     });

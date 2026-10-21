@@ -29,7 +29,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 12          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 13          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -82,8 +82,10 @@ def _submissions(paths):
     return win, mgr
 
 
-def _holdings(paths, win, detail_periods):
-    """-> (agg: period,cusip -> holders, shares), detail rows for detail_periods, issuer names, dropped count."""
+def _holdings(paths, win, detail_periods, keep_ciks=()):
+    """-> (agg: period,cusip -> holders, shares), detail rows for detail_periods (and for every quarter for keep_ciks,
+    the index-family filers, so their trend can be drawn), issuer names, dropped count."""
+    keep_ciks = list(keep_ciks)
     acc_info = win.set_index("ACCESSION_NUMBER")[["cik", "period"]]
     aggs, details, issuers, dropped = [], [], {}, 0
     for path in paths:
@@ -110,7 +112,7 @@ def _holdings(paths, win, detail_periods):
         it = it[ok]
         pos = it.groupby(["period", "cusip", "cik"], as_index=False)["sh"].sum()
         aggs.append(pos.groupby(["period", "cusip"]).agg(holders=("cik", "size"), shares=("sh", "sum")).reset_index())
-        details.append(pos[pos["period"].isin(detail_periods)])
+        details.append(pos[pos["period"].isin(detail_periods) | pos["cik"].isin(keep_ciks)])
         del it, pos
     agg = pd.concat(aggs).groupby(["period", "cusip"], as_index=False).agg(holders=("holders", "sum"), shares=("shares", "sum"))
     det = pd.concat(details).groupby(["period", "cusip", "cik"], as_index=False)["sh"].sum()
@@ -198,19 +200,35 @@ MANAGER_GROUPS = [
     ("GOLDMAN SACHS", "Goldman Sachs"), ("WELLS FARGO", "Wells Fargo"), ("UBS ", "UBS"), ("INVESCO", "Invesco"),
     ("NORTHERN TRUST", "Northern Trust"), ("DIMENSIONAL", "Dimensional"), ("WELLINGTON", "Wellington"),
 ]
-_SMALL = {"Llc": "LLC", "Lp": "LP", "L.P.": "LP", "Inc": "Inc.", "Inc.": "Inc.", "Ltd": "Ltd.", "Co": "Co.", "N.A.": "N.A.",
-          "Plc": "plc", "Ag": "AG", "Sa": "SA", "Nv": "NV", "Ab": "AB", "Asa": "ASA", "Se": "SE", "Fmr": "FMR", "Ubs": "UBS",
-          "Bny": "BNY", "Jpmorgan": "JPMorgan", "Blackrock": "BlackRock", "Aqr": "AQR", "Ii": "II", "Iii": "III"}
+_SMALL = {"Llc": "LLC", "Llp": "LLP", "Lllp": "LLLP", "Pllc": "PLLC", "Lp": "LP", "L.P.": "LP", "Inc": "Inc.", "Inc.": "Inc.", "Ltd": "Ltd.",
+          "Co": "Co.", "Corp": "Corp.", "N.A.": "N.A.", "Na": "N.A.", "Plc": "PLC", "Ag": "AG", "Gmbh": "GmbH", "Sa": "SA", "Nv": "NV", "Ab": "AB",
+          "Asa": "ASA", "Se": "SE", "Sarl": "SARL", "Gp": "GP", "Fmr": "FMR", "Ubs": "UBS", "Bny": "BNY", "Jpmorgan": "JPMorgan",
+          "Blackrock": "BlackRock", "Aqr": "AQR", "Ii": "II", "Iii": "III", "Iv": "IV", "Alliancebernstein": "AllianceBernstein",
+          "Cloudalpha": "CloudAlpha", "Kkr": "KKR", "Tpg": "TPG", "Tcw": "TCW", "Mfs": "MFS", "Pnc": "PNC", "Hsbc": "HSBC", "Cibc": "CIBC",
+          "Rbc": "RBC", "Bmo": "BMO", "Td": "TD", "Bnp": "BNP", "Abn": "ABN", "Amro": "AMRO", "Dnb": "DNB", "Ing": "ING", "Axa": "AXA",
+          "Aig": "AIG", "Dws": "DWS", "Pimco": "PIMCO", "Lpl": "LPL", "Mml": "MML", "Hrt": "HRT", "Ark": "ARK", "Ssga": "SSGA", "Sei": "SEI"}
+_LOWER_WORDS = {"Of", "And", "The", "For", "In", "De", "Du", "La", "Van", "Von", "Der", "Den", "Y", "E", "Et", "El", "Del", "Da", "Di"}
 
 
 def pretty_manager(raw):
-    """Readable manager name: drop SEC state suffixes (/Md/, /Adv), fix the casing title() gets wrong."""
+    """Readable manager name: drop SEC state suffixes (/Md/, /Adv), fix the casing title() gets wrong
+    (LLP, HRT, UBS, "Bank of America"). Anything with no vowels and four letters or fewer is an acronym."""
     n = re.sub(r"\s*/[A-Za-z]{2,4}/?\s*$", "", str(raw or "").strip())
     n = re.sub(r"\s+", " ", n).strip(" ,")
     words = []
-    for w in n.title().split(" "):
+    for i, w in enumerate(n.title().split(" ")):
+        comma = w.endswith(",")
         core = w.rstrip(",")
-        words.append(_SMALL.get(core, core) + ("," if w.endswith(",") else ""))
+        bare = core.strip("()")
+        if core in _SMALL:
+            core = _SMALL[core]
+        elif bare in _SMALL:
+            core = core.replace(bare, _SMALL[bare])
+        elif i and core in _LOWER_WORDS:
+            core = core.lower()
+        elif re.fullmatch(r"[A-Za-z]{1,4}", bare) and not re.search(r"[AEIOUYaeiouy]", bare):
+            core = core.replace(bare, bare.upper())
+        words.append(core + ("," if comma else ""))
     return " ".join(words).replace(", Inc.", " Inc.").replace(" Inc.,", " Inc.")
 
 
@@ -221,6 +239,35 @@ def manager_group(raw):
         if " " + key in up:
             return label
     return pretty_manager(raw)
+
+
+def active_movers(delta, passive_grp, dprv, dcur, n=5):
+    """Top buyers and sellers among actively managed holders: the big index families are left out, because an index
+    fund moves with its benchmark and fund flows, not with a view on the company, so it cannot be persuaded.
+    (13F filings do not label funds, so "active" here means every manager outside those index families.)"""
+    act = {g: d for g, d in delta.items() if g not in passive_grp}
+
+    def mover(g, d):
+        note = "New position" if not dprv.get(g) else ("Sold out" if not dcur.get(g) else f"{'Added' if d > 0 else 'Cut'} {abs(d / dprv[g] * 100):.0f}%")
+        return {"n": g, "sh": d, "note": note}
+    buy = sorted(((g, d) for g, d in act.items() if d > 0), key=lambda x: -x[1])[:n]
+    sell = sorted(((g, d) for g, d in act.items() if d < 0), key=lambda x: x[1])[:n]
+    return [mover(g, d) for g, d in buy], [mover(g, d) for g, d in sell]
+
+
+def passive_trend(by_period, periods, so_at, cap=0.3):
+    """Index-fund holdings of one stock in each quarter: [{p, sh, pct}]. by_period: {period: {cik: shares}} for the
+    index-family filers only. A single filer above `cap` of shares outstanding is a data error and is dropped, as in the
+    main table. Quarters with no share count get a share total but no percentage."""
+    out = []
+    for p in periods:
+        so = so_at(p)
+        pos = by_period.get(p, {})
+        if so:
+            pos = {c: v for c, v in pos.items() if v <= cap * so}
+        tot = float(sum(pos.values()))
+        out.append({"p": p, "sh": tot, "pct": r(tot / so * 100, 1) if so and tot else (0.0 if so else None)})
+    return out
 
 
 def ir_extras(delta, dcur, dprv, passive_grp):
@@ -284,7 +331,9 @@ def build(max_sets=9, force=False):
         periods = sorted(p for p, s in filers.items() if len(s) >= 0.6 * big)[-8:]
         L, P = periods[-1], periods[-2]
         record("13F periods", True, n=len(periods), note=", ".join(periods))
-        agg, det, issuers, dropped = _holdings(paths, win[win["period"].isin(periods)], [L, P])
+        pcik = sorted(int(c) for c, nm in mgr.items() if any(k in (nm or "").upper() for k in idx_kw))
+        agg, det, issuers, dropped = _holdings(paths, win[win["period"].isin(periods)], [L, P], pcik)
+        record("13F index-family filers", True, n=len(pcik))
     record("13F rows dropped (bad units)", True, n=dropped)
     latest = agg[agg["period"] == L]
     wanted = set(latest.loc[latest["holders"] >= MIN_HOLDERS, "cusip"]) | set(core)
@@ -341,6 +390,8 @@ def build(max_sets=9, force=False):
     agg_ix = agg.set_index(["cusip", "period"])
     comp = comparable_filers(det, L, P)
     record("13F comparable managers", True, n=len(comp), note=f"of {len(filers.get(L, set()))} filing in {L}")
+    pas_det = det[det["cik"].isin(pcik)]
+    pas_all = {k: grp[["period", "cik", "sh"]] for k, grp in pas_det.groupby("cusip")}
     cur_all = det[det["period"] == L].groupby("cusip")
     prv_all = det[det["period"] == P].groupby("cusip")
     empty = pd.DataFrame(columns=["cik", "sh"])
@@ -441,6 +492,7 @@ def build(max_sets=9, force=False):
                     del delta[g]
             buyers = sorted(((g, d) for g, d in delta.items() if d > 0), key=lambda x: -x[1])[:5]
             sellers = sorted(((g, d) for g, d in delta.items() if d < 0), key=lambda x: x[1])[:5]
+            buyers_a, sellers_a = active_movers(delta, passive_grp, dprv, dcur)
 
             def mover(g, d):
                 note = "New position" if not dprv.get(g) else ("Sold out" if not dcur.get(g) else f"{'Added' if d > 0 else 'Cut'} {abs(d / dprv[g] * 100):.0f}%")
@@ -461,6 +513,7 @@ def build(max_sets=9, force=False):
                              "top10": r(sum(sh for _, sh in top) / so * 100, 1) if so else None,
                              "passive": r(passive / so * 100, 1) if so else None},
                    "trend": trend, "top": top_rows, "buyers": [mover(g, d) for g, d in buyers], "sellers": [mover(g, d) for g, d in sellers],
+                   "buyersActive": buyers_a, "sellersActive": sellers_a,
                    "mix": {"Index": r(passive / so * 100, 1) if so else None,
                            "Active / other": r((sum(cur.values()) - passive) / so * 100, 1) if so else None},
                    "read": read_txt}
@@ -474,6 +527,19 @@ def build(max_sets=9, force=False):
                                  "dsh": (sh - grp_prv.get(g, 0)) if g in dcur else None} for g, sh in top25]
                 out["tiles"]["top25"] = r(sum(sh for _, sh in top25) / so * 100, 1) if so else None
                 out["flows"] = ir_extras(delta, dcur, dprv, passive_grp)
+                # index-fund trend: the families' share of the company, quarter by quarter, and who moved this quarter
+                by_p = {}
+                rows_p = pas_all.get(cu)
+                if rows_p is not None:
+                    for pp, cc, sh in zip(rows_p["period"], rows_p["cik"], rows_p["sh"]):
+                        by_p.setdefault(pp, {})[int(cc)] = float(sh)
+                ptr = passive_trend(by_p, periods, so_at)
+                fams = [{"n": g, "sh": sh, "pct": r(sh / so * 100, 2) if so else None,
+                         "dsh": (sh - grp_prv.get(g, 0)) if g in dcur else None,
+                         "chg": (r((sh / grp_prv[g] - 1) * 100, 1) if grp_prv.get(g) and g in dcur else None)}
+                        for g, sh in sorted(grp_cur.items(), key=lambda kv: -kv[1]) if g in passive_grp][:5]
+                out["passive"] = {"trend": ptr, "families": fams, "net": out["flows"]["index"],
+                                  "netPct": r(out["flows"]["index"] / so * 100, 2) if so else None}
                 sec_name = sectors.get(sym)
                 if sec_name:
                     peers = [s2 for _, s2 in by_sector.get(sec_name, []) if s2 != sym][:25]

@@ -105,17 +105,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">ERN &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Toggle EPS or revenue beats · filter recent reports</span>
 </div>
 <div class="t-cmd">
-<label for="earnSearch" class="t-prompt">NSKN ›</label>
-<input id="earnSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+<label for="earnSearch" class="t-prompt">TICKER ›</label>
+<input id="earnSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -128,12 +126,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
-<span>Q3 2026 Earnings Season (ERN)</span>
+<span>Q3 2026 Earnings Season</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{liveTag}}</span>
@@ -292,7 +287,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
 <span>Earnings dates, estimates and results: Nasdaq · Sectors: S&amp;P 500 list (Wikipedia) · Price moves: Yahoo Finance · Themes: market headline feeds · Refreshed daily</span>
-<span>Not investment advice · © 2026 Nathan Skown</span>
+<span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
 

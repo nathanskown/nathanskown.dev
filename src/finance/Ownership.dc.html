@@ -105,17 +105,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <header>
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
-<span class="t-chip t-hide-sm">HDS &lt;GO&gt;</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
 </div>
 <div class="t-help">
-<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
 <span class="dim t-hide-sm">Enter a ticker below or tap a quick pick</span>
 </div>
 <div class="t-cmd">
-<label for="ownSearch" class="t-prompt">NSKN ›</label>
-<input id="ownSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY" autocomplete="off">
+<label for="ownSearch" class="t-prompt">TICKER ›</label>
+<input id="ownSearch" class="t-input" type="search" placeholder="TICKER OR COMPANY NAME" autocomplete="off">
 </div>
 <nav class="t-fbar" aria-label="Main">
 <span class="t-fbar-title">Markets</span>
@@ -128,13 +126,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="Macro.dc.html">7) Macro</a>
 <a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">9) Screener</a>
-<span class="t-fsep" aria-hidden="true"></span>
 <a class="t-fkey t-fref is-on" href="#" aria-current="page">13F tracker</a>
-<a class="t-fkey t-fref" href="Calendar.dc.html">Index dates</a>
-<a class="t-fkey t-fref" href="Notes.dc.html">Data notes</a>
 </nav>
 <div class="t-sub">
-<span>13F Ownership Tracker (HDS)</span>
+<span>13F Ownership Tracker</span>
 <span class="dim">{{todayLabel}}</span>
 <span style="flex: 1 1 auto"></span>
 <span class="t-tag">{{liveTag}}</span>
@@ -279,8 +274,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
 
-<section class="t-card" aria-label="Top buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top buyers</h2>
+<section class="t-card" aria-label="Top active buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top active buyers</h2>
 <sc-for list="{{d.buyers}}" as="b" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{b.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{b.note}}</span></span>
@@ -289,8 +284,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </section>
 
-<section class="t-card" aria-label="Top sellers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top sellers</h2>
+<section class="t-card" aria-label="Top active sellers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top active sellers</h2>
 <sc-for list="{{d.sellers}}" as="s" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{s.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{s.note}}</span></span>
@@ -313,7 +308,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <footer class="t-foot">
 <div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
 <span>Source: SEC EDGAR Form 13F data sets (quarterly) · shares outstanding from SEC XBRL · price: Yahoo Finance</span>
-<span>Not investment advice · © 2026 Nathan Skown</span>
+<span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
 </footer>
 
@@ -405,13 +400,13 @@ class Component extends DCLogic {
       return { rank: k + 1, n: h.n, style: h.style, sh: F.big(h.sh), pct: h.pct === null ? '—' : F.n(h.pct, 2) + '%', val: F.money(h.val),
         chg: isNew ? 'New position' : (h.chg === null ? '—' : F.pct(h.chg, 1)), color: isNew || (h.chg || 0) >= 0 ? UP : DN };
     });
-    var mv = function (x) { return { n: x.n, note: x.note, chg: (x.sh >= 0 ? '+' : '−') + F.big(Math.abs(x.sh)) + ' sh' }; };
+    var mv = function (x) { return { n: F.firm(x.n), note: x.note, chg: (x.sh >= 0 ? '+' : '−') + F.big(Math.abs(x.sh)) + ' sh' }; };
     var period = new Date(D.period + 'T12:00:00Z');
     var due = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 0) + 45 * 86400000);
     var nxt = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 4, 0) + 45 * 86400000);
     base.d = { name: D.name, so: F.big(D.so), px: D.price ? F.usd(D.price, 2) : '—',
       pxLabel: D.price ? (D.livePrice ? 'Value at the latest price of ' : 'Value at the latest close of ') + F.usd(D.price, 2) : 'Value: price unavailable', read: D.read, tiles: tiles, trend: trend, mix: mix, top: top,
-      buyers: D.buyers.map(mv), sellers: D.sellers.map(mv) };
+      buyers: F.activeMovers(D, 'buyers').map(mv), sellers: F.activeMovers(D, 'sellers').map(mv) };
     base.periodLabel = 'Holdings as of ' + period.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) + ' (' + quarter(D.period) + ')';
     base.nextLabel = quarter(new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 28)).toISOString().slice(0, 10)) + ' filings due ' + nxt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     void due;
