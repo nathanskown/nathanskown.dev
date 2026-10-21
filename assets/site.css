@@ -323,3 +323,16 @@ text-shadow:0 0 2px var(--hg),0 0 18px color-mix(in srgb,var(--hg) 45%,transpare
 .nk-status a{color:var(--hi)}
 .nk-status a:hover{text-decoration:underline}
 a.nk-fkey{display:inline-flex;align-items:center}
+
+/* about banner */
+.nk-about{position:relative;margin:0 0 14px;display:flex;align-items:stretch;border:1px solid var(--g);background:linear-gradient(90deg,rgba(141,255,156,.16),rgba(0,0,0,.92) 70%);box-shadow:0 0 24px rgba(141,255,156,.14);animation:nkAbout 3.2s ease-in-out infinite}
+.nk-about[hidden]{display:none}
+@keyframes nkAbout{50%{box-shadow:0 0 34px rgba(141,255,156,.32)}}
+.nk-about-a{flex:1 1 auto;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:11px 14px;min-height:48px;color:var(--hi);text-decoration:none}
+.nk-about-a:hover{background:rgba(141,255,156,.1)}
+.nk-about-k{font-weight:600;letter-spacing:.14em;color:#000;background:var(--g);padding:1px 7px}
+.nk-about-t{flex:1 1 260px;color:var(--hi)}
+.nk-about-go{color:var(--g);font-weight:600;letter-spacing:.08em;white-space:nowrap}
+.nk-about-x{flex:0 0 48px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--dim);font:inherit;cursor:pointer;min-height:48px}
+.nk-about-x:hover{color:#fff;background:var(--hover)}
+@media (prefers-reduced-motion:reduce){.nk-about{animation:none}}

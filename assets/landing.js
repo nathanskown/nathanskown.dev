@@ -92,7 +92,7 @@
   })();
 
   /* ---------- navigation + panels ---------- */
-  var TITLES = { about: 'DES » NATHAN SKOWN', contact: 'CONTACT » NSKN', digest: 'DGST » DETROIT + MSU MORNING DIGEST' };
+  var TITLES = { contact: 'CONTACT » NSKN', digest: 'DGST » DETROIT + MSU MORNING DIGEST' };
   function setLast(label) { state.last = label; setBind('last', label); }
   function setActive(k, label) {
     state.active = k;
@@ -125,7 +125,7 @@
       $('secDgst').classList.toggle('is-hl', state.active === 'digest');
     }, 2600);
   }
-  var LABEL = { overview: 'HOME', about: 'ABOUT', contact: 'CONTACT', digest: 'DGST' };
+  var LABEL = { overview: 'HOME', contact: 'CONTACT', digest: 'DGST' };
   document.addEventListener('click', function (e) {
     var t = e.target.closest ? e.target.closest('[data-go],[data-cmd],[data-action]') : null;
     if (!t || !root.contains(t)) return;
@@ -144,7 +144,7 @@
   function helpLines() {
     var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
     return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('MUS', 'Music games                 4'), r('DGST', 'Morning digest signup        5'), '',
-      'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Profile  (WHOAMI)            6'), r('CONTACT', 'Get in touch                 7'), '',
+      'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Why this site exists       6'), r('CONTACT', 'Get in touch                 7'), '',
       'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ODDS  SIM  INJ  ·  TRCK  ARTS', '',
       'LOOK UP', r('MOD', 'Any US ticker → quote page'), r('MOD HDS', 'Ticker → 13F ownership'), r('LIONS', 'Any team → team page (add NFL, BB, FB…)'), '',
       'SYSTEM', r('HOOD', 'How the site works, sources, model scorecard'), r('STATUS', 'Data feed health'), r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
@@ -174,7 +174,7 @@
     else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, FIN_URL[c])); }
     else if (SPRT[c]) { flash('secSprt'); out.push(L(c + ' · ' + SPRT[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, SPRT_URL[c])); }
     else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '5'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
-    else if (['ABOUT', 'WHOAMI', 'BIO', '6'].indexOf(c) > -1) { active = 'about'; out.push(L('NATHAN SKOWN · CHICAGO, IL · MARKETS + SPORTS')); }
+    else if (['ABOUT', 'WHOAMI', 'BIO', '6'].indexOf(c) > -1) { out.push(L('WHY THIS SITE EXISTS, WHAT IS HERE, AND HOW FAR TO TRUST IT')); out.push(LINK('▸ OPEN ABOUT', '/about/')); }
     else if (['CONTACT', 'MSG', '7'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
     else if (['HOME', 'MENU', 'OVERVIEW', '1'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
     else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
@@ -685,4 +685,11 @@
       try { sessionStorage.setItem('nskn.lastUpd', iso); } catch (e) {}
     })
     .catch(function () {});
+})();
+
+(function () {
+  var b = document.getElementById('aboutBanner'), x = document.getElementById('aboutX');
+  if (!b || !x) return;
+  try { if (localStorage.getItem('nskn-about-x') === '1') b.hidden = true; } catch (e) {}
+  x.addEventListener('click', function () { b.hidden = true; try { localStorage.setItem('nskn-about-x', '1'); } catch (e) {} });
 })();
