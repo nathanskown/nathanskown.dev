@@ -354,3 +354,9 @@ body.has-tape{padding-bottom:34px}
 .t .s-tabs .t-tab{min-height:36px;padding:0 12px}
 /* wide tables scroll inside their panel instead of the page (IR view, calendar) */
 .t .s-scroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+/* nav: numbered tabs, divider, dimmer reference group */
+.t-fbar .t-fsep{flex:0 0 3px;align-self:stretch;margin-left:12px;background:rgba(0,0,0,.55)}
+.t .t-fkey.t-fref{font-weight:400;font-size:.92em;color:rgba(0,0,0,.72);border-left:1px dashed rgba(0,0,0,.35)}
+.t .t-fkey.t-fref:hover{background:#000;color:var(--a)}
+.t .t-fkey.t-fref.is-on{background:#000;color:var(--gold)}
+.t-fbar .t-fsep+.t-fkey{border-left:0}
