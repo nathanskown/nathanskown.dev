@@ -342,7 +342,7 @@ body.has-tape{padding-bottom:34px}
   .t.ir .ir-trend{min-height:80px}
   .t.ir .ir-tb{max-width:30px}
   .t.ir .ir-tbl tbody tr:nth-child(n+11){display:none}
-  .t.ir .ir-main{zoom:.66}
+  .t.ir .ir-main{zoom:.6}
   .t.ir .ir-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
   .t.ir .ir-kv{grid-template-columns:repeat(3,minmax(0,1fr))}
   .t.ir .ir-kv > div{padding:2px 5px}
