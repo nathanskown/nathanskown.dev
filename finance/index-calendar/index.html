@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Index event calendar · NSKN Terminal</title>
+<meta name="description" content="Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.">
+<link rel="canonical" href="https://nathanskown.dev/finance/index-calendar/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="Index event calendar · NSKN Terminal">
+<meta property="og:description" content="Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.">
+<meta property="og:url" content="https://nathanskown.dev/finance/index-calendar/">
+<meta property="og:image" content="https://nathanskown.dev/assets/og/markets.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#070402">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/finance.css">
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
+<script>window.DC_ROUTES={"Dashboard.dc.html":"/finance/","Digest.dc.html":"/finance/digest/","News.dc.html":"/finance/headlines/","Main.dc.html":"/finance/quote/","Ownership.dc.html":"/finance/ownership/","IR.dc.html":"/finance/ir/","Calendar.dc.html":"/finance/index-calendar/","Notes.dc.html":"/finance/notes/","Earnings.dc.html":"/finance/earnings/","Macro.dc.html":"/finance/macro/","IPO.dc.html":"/finance/ipo/","Screener.dc.html":"/finance/screener/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"class":"t-chip t-hide-sm"},"c":["IDX <GO>"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"US INDEX EVENTS"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"class":"t-inv"},"c":["<HELP>"]}," for explanation."]},{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Filter by provider \u00b7 add any date to your calendar"]}]},{"t":"div","a":{"class":"t-cmd"},"c":[{"t":"label","a":{"for":"calSearch","class":"t-prompt"},"c":["NSKN \u203a"]},{"t":"input","a":{"id":"calSearch","class":"t-input","type":"search","placeholder":"TICKER OR COMPANY","autocomplete":"off"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Main"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Markets"]},{"t":"a","a":{"class":"t-fkey","href":"Dashboard.dc.html"},"c":["1) Markets"]},{"t":"a","a":{"class":"t-fkey","href":"Digest.dc.html"},"c":["2) Digest"]},{"t":"a","a":{"class":"t-fkey","href":"News.dc.html"},"c":["3) Headlines"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["4) Quotes"]},{"t":"a","a":{"class":"t-fkey","href":"IR.dc.html"},"c":["5) IR view"]},{"t":"a","a":{"class":"t-fkey","href":"Earnings.dc.html"},"c":["6) Earnings"]},{"t":"a","a":{"class":"t-fkey","href":"Macro.dc.html"},"c":["7) Macro"]},{"t":"a","a":{"class":"t-fkey","href":"IPO.dc.html"},"c":["8) IPOs"]},{"t":"a","a":{"class":"t-fkey","href":"Screener.dc.html"},"c":["9) Screener"]},{"t":"a","a":{"class":"t-fkey is-on","href":"#","aria-current":"page"},"c":["Index dates"]},{"t":"a","a":{"class":"t-fkey","href":"Notes.dc.html"},"c":["Data notes"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["0) Home"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Index Event Calendar (IDX)"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["{{tag}}"]}]}]},{"t":"main","a":{"style":"max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px"},"c":[{"t":"section","a":{"aria-label":"Overview","style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px"},"c":[{"t":"div","a":{"style":"flex: 1 1 520px; min-width: 0"},"c":[{"t":"div","a":{"class":"f-kicker"},"c":["IDX \u00b7 when the big index funds have to trade"]},{"t":"h1","a":{"style":"margin: 0"},"c":["Index event calendar"]},{"t":"p","a":{"style":"color: #c99442; font-size: 14px; margin: 8px 0 0; max-width: 78ch"},"c":["Index funds must buy every stock added to the index they track and sell every stock removed, on the same day. These are the dates that force that trading, plus the 13F deadlines that reveal who owns what. Times are US Eastern."]}]},{"t":"div","a":{"class":"cal-next"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 11.5px; letter-spacing: .14em"},"c":["NEXT EVENT"]},{"t":"div","a":{"class":"cal-next-t"},"c":["{{next.title}}"]},{"t":"div","a":{"class":"hi"},"c":["{{next.when}}"]}]}]},{"t":"div","a":{"class":"s-tabs cal-tabs","role":"group","aria-label":"Filter by provider"},"c":[{"t":"sc-for","a":{"list":"{{filters}}","as":"f","hint-placeholder-count":"6"},"c":[{"t":"button","a":{"type":"button","class":"{{f.cls}}","aria-pressed":"{{f.on}}","onclick":"{{f.pick}}"},"c":["{{f.label}}"]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Upcoming events"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Upcoming, next 12 months"]},{"t":"span","a":{"class":"dim"},"c":["{{count}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-for","a":{"list":"{{months}}","as":"mo","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"class":"cal-month"},"c":["{{mo.label}}"]},{"t":"sc-for","a":{"list":"{{mo.items}}","as":"e","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"class":"cal-row"},"c":[{"t":"div","a":{"class":"cal-date"},"c":[{"t":"b","a":{},"c":["{{e.d}}"]},{"t":"span","a":{},"c":["{{e.dow}}"]}]},{"t":"div","a":{"class":"cal-body"},"c":[{"t":"div","a":{},"c":[{"t":"span","a":{"class":"cal-chip","style":"{{e.chip}}"},"c":["{{e.src}}"]},{"t":"span","a":{"class":"cal-title"},"c":["{{e.title}}"]},{"t":"sc-if","a":{"value":"{{e.est}}","hint-placeholder-val":"{{ false }}"},"c":[{"t":"span","a":{"class":"cal-est"},"c":["expected"]}]}]},{"t":"div","a":{"class":"cal-what"},"c":["{{e.what}}"]}]},{"t":"div","a":{"class":"cal-side"},"c":[{"t":"span","a":{"class":"dim"},"c":["{{e.in}}"]},{"t":"button","a":{"type":"button","class":"cal-ics","onclick":"{{e.ics}}","aria-label":"{{e.icsLabel}}"},"c":["+ Calendar"]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Recent index changes"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Recent index adds and drops"]},{"t":"span","a":{"class":"dim"},"c":["{{chgSub}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{noChanges}}","hint-placeholder-val":"{{ false }}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["No changes logged yet."]}]},{"t":"div","a":{"class":"s-scroll","tabindex":"0"},"c":[{"t":"table","a":{"class":"ir-tbl"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"col"},"c":["Effective"]},{"t":"th","a":{"scope":"col"},"c":["Index"]},{"t":"th","a":{"scope":"col"},"c":["Company"]},{"t":"th","a":{"scope":"col"},"c":["Change"]},{"t":"th","a":{"scope":"col","class":"r"},"c":["IR view"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{changes}}","as":"c","hint-placeholder-count":"6"},"c":[{"t":"tr","a":{},"c":[{"t":"td","a":{},"c":["{{c.d}}"]},{"t":"td","a":{"class":"dim"},"c":["{{c.idx}}"]},{"t":"th","a":{"scope":"row"},"c":["{{c.name}} ",{"t":"span","a":{"class":"dim"},"c":["{{c.sym}}"]}]},{"t":"td","a":{"style":"color: {{c.col}}"},"c":["{{c.chg}}"]},{"t":"td","a":{"class":"r"},"c":[{"t":"a","a":{"href":"{{c.href}}"},"c":["IR \u203a"]}]}]}]}]}]}]},{"t":"p","a":{"class":"s-note","style":"margin: 10px 0 0"},"c":["Changes are found by comparing the member lists each day (S&P lists from Wikipedia's tables of S&P DJI announcements, Russell from iShares fund holdings), so a change shows up the day after it takes effect. Each add or drop links to the stock's shareholder base."]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"How the rules work"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["How each schedule works"]},{"t":"span","a":{"class":"dim"},"c":["Sources"]}]},{"t":"div","a":{"class":"t-pb cal-rules"},"c":[{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["S&P 500, 400 and 600, quarterly rebalance."]}," Changes take effect before the open on the Monday after the third Friday of March, June, September and December, and are usually announced about two weeks earlier, after the close on the first Friday of the month (September 2026: announced Sept. 4, effective Sept. 21). Additions also happen off-cycle when a member is acquired. ",{"t":"a","a":{"href":"https://press.spglobal.com/2026-09-04-Bloom-Energy,-Illumina,-and-Everpure-Set-to-Join-S-P-500-Others-to-Join-S-P-100,-S-P-MidCap-400,-and-S-P-SmallCap-600"},"c":["S&P DJI"]}]},{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["Russell US indexes, now twice a year."]}," From 2026 FTSE Russell reconstitutes in June and December. December 2026: rank day Oct. 30, preliminary lists Nov. 13, lockdown from Nov. 30, effective after the close Dec. 11. The June reshuffle has historically been one of the heaviest trading days of the year. ",{"t":"a","a":{"href":"https://mondovisione.com/media-and-resources/news/ftse-russell-announces-december-2026-russell-us-indexes-reconstitution-schedule-202691"},"c":["FTSE Russell"]}]},{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["Nasdaq-100, annual."]}," Reconstituted each December, effective before the open on the Monday after the third Friday; announced about a week earlier (2025: announced Dec. 12, effective Dec. 22). ",{"t":"a","a":{"href":"https://www.nasdaq.com/press-release/annual-changes-nasdaq-100-indexr-2025-12-13"},"c":["Nasdaq"]}]},{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["MSCI index reviews."]}," Quarterly, with dates set in advance by MSCI. ",{"t":"a","a":{"href":"https://www.msci.com/eqb/pressreleases/archive/ir_dates.pdf"},"c":["MSCI"]}]},{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["13F deadline."]}," Managers with over $100 million in US stocks must file holdings within 45 days of each quarter end (moved to the next business day when it falls on a weekend). This site rebuilds its ownership data after each deadline."]},{"t":"p","a":{},"c":[{"t":"b","a":{},"c":["Quarterly options expiration."]}," The third Friday of March, June, September and December, when stock options, index options and futures expire together; S&P and Nasdaq-100 changes are timed to it."]}]}]}]},{"t":"footer","a":{"class":"t-foot"},"c":[{"t":"div","a":{"style":"max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px"},"c":[{"t":"span","a":{},"c":["Schedules: S&P DJI, FTSE Russell, Nasdaq, MSCI, SEC \u00b7 rule-based dates are labeled \"expected\""]},{"t":"span","a":{},"c":["Not investment advice \u00b7 \u00a9 2026 Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
+<script src="/assets/dc-runtime.js"></script>
+<script src="/assets/finance-ui.js"></script>
+<script src="/assets/glossary.js"></script>
+<script>
+class Component extends DCLogic {
+  componentDidMount() {
+    var self = this;
+    DC.load('/data/finance/index_changes.json').then(function (j) { self.setState({ log: j }); }, function () { self.setState({ log: { changes: [] } }); });
+  }
+  renderVals() {
+    var S = this.state || {}, self = this, flt = S.flt || 'all';
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    var iso = function (d) { return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); };
+    var D = function (y, m, d) { return new Date(Date.UTC(y, m - 1, d)); };
+    var nthFri = function (y, m, n) { var d = D(y, m, 1), off = (5 - d.getUTCDay() + 7) % 7; return D(y, m, 1 + off + 7 * (n - 1)); };
+    var plus = function (d, k) { return new Date(d.getTime() + k * 86400000); };
+    var bizNext = function (d) { while (d.getUTCDay() === 0 || d.getUTCDay() === 6) d = plus(d, 1); return d; };
+    var today = new Date(); today = D(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    var end = plus(today, 366), ev = [];
+    var add = function (date, src, title, what, est) { if (date >= today && date <= end) ev.push({ date: date, src: src, title: title, what: what, est: !!est }); };
+    for (var y = today.getUTCFullYear(); y <= today.getUTCFullYear() + 1; y++) {
+      [3, 6, 9, 12].forEach(function (m) {
+        var f3 = nthFri(y, m, 3), mon = plus(f3, 3), f1 = nthFri(y, m, 1);
+        add(f1, 'S&P', 'S&P quarterly rebalance: changes usually announced', 'After the close. Lists the stocks joining and leaving the S&P 500, 400 and 600 two weeks later.', true);
+        add(f3, 'Options', 'Quarterly options and futures expiration', 'Stock options, index options and futures expire together; index changes are timed to this close.', false);
+        add(mon, 'S&P', 'S&P quarterly rebalance takes effect', 'Before the open. Index funds trade the changes at Friday\'s close.', false);
+        if (m === 12) {
+          add(nthFri(y, 12, 2), 'Nasdaq', 'Nasdaq-100 annual changes announced', 'Usually the second Friday of December, after the close.', true);
+          add(mon, 'Nasdaq', 'Nasdaq-100 annual reconstitution takes effect', 'Before the open. The least valuable members can be replaced by the largest non-members.', false);
+        }
+      });
+      [[3, 31], [6, 30], [9, 30], [12, 31]].forEach(function (q) {
+        var dl = bizNext(plus(D(y, q[0], q[1]), 45));
+        add(dl, '13F', '13F filing deadline for Q' + ([3, 6, 9, 12].indexOf(q[0]) + 1) + ' ' + y, 'Institutional managers report their holdings. The IR view and ownership pages rebuild after the SEC posts the data set.', false);
+      });
+    }
+    // fixed, published schedules
+    [[D(2026, 10, 30), 'Russell', 'Russell December reconstitution: rank day', 'Market caps measured at the close decide which stocks move between the Russell 1000, 2000 and microcap.', false],
+     [D(2026, 11, 13), 'Russell', 'Russell preliminary add and delete lists', 'Published after the close. Updated weekly until the lockdown.', false],
+     [D(2026, 11, 30), 'Russell', 'Russell lockdown begins', 'Lists are final except for corporate actions.', false],
+     [D(2026, 12, 11), 'Russell', 'Russell December reconstitution takes effect', 'After the close: index funds trade the whole reshuffle at this close.', false],
+     [D(2027, 4, 30), 'Russell', 'Russell June reconstitution: rank day', 'Expected from the usual pattern (April 30); FTSE Russell confirms the schedule each spring.', true],
+     [D(2027, 5, 28), 'Russell', 'Russell preliminary lists', 'Expected: the fourth Friday of May, as in 2026.', true],
+     [D(2027, 6, 25), 'Russell', 'Russell June reconstitution takes effect', 'Expected: the last Friday of June, after the close. Historically one of the year\'s heaviest trading days.', true],
+     [D(2026, 11, 11), 'MSCI', 'MSCI November index review announced', 'Effective Dec. 1, 2026.', false], [D(2026, 12, 1), 'MSCI', 'MSCI November review takes effect', '', false],
+     [D(2027, 2, 9), 'MSCI', 'MSCI February index review announced', 'Effective March 1, 2027.', false], [D(2027, 3, 1), 'MSCI', 'MSCI February review takes effect', '', false],
+     [D(2027, 5, 10), 'MSCI', 'MSCI May index review announced', 'Effective May 28, 2027.', false], [D(2027, 5, 28), 'MSCI', 'MSCI May review takes effect', '', false],
+     [D(2027, 8, 12), 'MSCI', 'MSCI August index review announced', 'Effective Sept. 1, 2027.', false], [D(2027, 9, 1), 'MSCI', 'MSCI August review takes effect', '', false]
+    ].forEach(function (x) { add(x[0], x[1], x[2], x[3], x[4]); });
+    ev.sort(function (a, b) { return a.date - b.date || (a.src < b.src ? -1 : 1); });
+    var COLORS = { 'S&P': '#ffd166', Russell: '#ff8f3d', Nasdaq: '#7fd4ff', MSCI: '#c49bff', '13F': '#4ade80', Options: '#c99442' };
+    var srcs = ['all', 'S&P', 'Russell', 'Nasdaq', 'MSCI', '13F', 'Options'];
+    var filters = srcs.map(function (k) { var on = k === flt; return { label: k === 'all' ? 'All' : k, on: on ? 'true' : 'false', cls: 't-tab' + (on ? ' is-on' : ''), pick: function () { self.setState({ flt: k }); } }; });
+    var shown = ev.filter(function (e) { return flt === 'all' || e.src === flt; });
+    var ics = function (e) {
+      return function () {
+        var d = iso(e.date).replace(/-/g, ''), nd = iso(plus(e.date, 1)).replace(/-/g, '');
+        var esc = function (t) { return String(t).replace(/[,;\\]/g, function (c) { return '\\' + c; }); };
+        var body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//nathanskown.dev//Index calendar//EN', 'BEGIN:VEVENT', 'UID:' + d + '-' + e.src.replace(/\W/g, '') + '@nathanskown.dev',
+          'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z', 'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + nd,
+          'SUMMARY:' + esc(e.title + (e.est ? ' (expected)' : '')), 'DESCRIPTION:' + esc(e.what + ' From nathanskown.dev/finance/index-calendar/'), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+        var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = 'index-event-' + d + '.ics';
+        document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      };
+    };
+    var days = function (d) { var n = Math.round((d - today) / 86400000); return n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + ' days'; };
+    var months = [], cur = null;
+    shown.forEach(function (e) {
+      var label = e.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+      if (!cur || cur.label !== label) { cur = { label: label, items: [] }; months.push(cur); }
+      cur.items.push({ d: e.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }), dow: e.date.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
+        src: e.src, title: e.title, what: e.what, est: e.est, in: days(e.date), chip: 'border-color: ' + COLORS[e.src] + '; color: ' + COLORS[e.src],
+        ics: ics(e), icsLabel: 'Add ' + e.title + ' to your calendar' });
+    });
+    var nx = ev[0];
+    var log = (S.log || {}).changes || [];
+    var changes = log.slice(0, 40).map(function (c) { return { d: F.day(c.date), idx: c.index, name: c.name, sym: c.sym, chg: c.change === 'added' ? '▲ Added' : '▼ Removed', col: c.change === 'added' ? '#4ade80' : '#ff5f56', href: 'IR.dc.html?sym=' + encodeURIComponent(c.sym) }; });
+    return { tag: 'NEXT 12 MONTHS', filters: filters, months: months, count: shown.length + ' events',
+      next: nx ? { title: nx.title, when: nx.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) + ' · ' + days(nx.date) } : { title: '—', when: '' },
+      changes: changes, noChanges: !changes.length, chgSub: log.length ? log.length + ' logged' : '' };
+  }
+}
+DC.mount(Component, {"$preview": {"width": 1440, "height": 2200}});
+</script>
+</body>
+</html>

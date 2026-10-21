@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>IR view</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+</helmet>
+<div class="t ir">
+
+<header class="ir-noprint">
+<div class="t-title">
+<a class="t-brand" href="/">1-NSKN</a>
+<span class="t-chip t-hide-sm">IR &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>13F · SEC EDGAR</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Type any ticker for its shareholder base · print for a one-page tear sheet</span>
+</div>
+<div class="t-cmd">
+<label for="irSearch" class="t-prompt">NSKN ›</label>
+<input id="irSearch" class="t-input" type="search" placeholder="TICKER, THEN IR (E.G. MOD IR)" autocomplete="off">
+</div>
+<nav class="t-fbar" aria-label="Main">
+<span class="t-fbar-title">Markets</span>
+<a class="t-fkey" href="Dashboard.dc.html">1) Markets</a>
+<a class="t-fkey" href="Digest.dc.html">2) Digest</a>
+<a class="t-fkey" href="News.dc.html">3) Headlines</a>
+<a class="t-fkey" href="Main.dc.html">4) Quotes</a>
+<a class="t-fkey is-on" href="#" aria-current="page">5) IR view</a>
+<a class="t-fkey" href="Earnings.dc.html">6) Earnings</a>
+<a class="t-fkey" href="Macro.dc.html">7) Macro</a>
+<a class="t-fkey" href="IPO.dc.html">8) IPOs</a>
+<a class="t-fkey" href="Screener.dc.html">9) Screener</a>
+<a class="t-fkey" href="Calendar.dc.html">Index dates</a>
+<a class="t-fkey" href="Notes.dc.html">Data notes</a>
+<a class="t-fkey" href="/">0) Home</a>
+</nav>
+<div class="t-sub">
+<span>{{secHead}}</span>
+<span class="dim">{{todayLabel}}</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">{{liveTag}}</span>
+</div>
+</header>
+
+<main class="ir-main">
+
+<sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
+<section class="t-panel" aria-label="Status"><div class="t-pb" style="padding: 22px">
+<div class="hi" style="font-size: 16px">{{missingText}}</div>
+<div class="dim" style="font-size: 13px; margin-top: 6px">{{missingNote}}</div>
+</div></section>
+</sc-if>
+
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+<section class="ir-head" aria-label="Company">
+<div style="min-width: 0">
+<div class="f-kicker">IR VIEW · shareholder base, as of the {{period}} 13F filings</div>
+<h1 style="margin: 0">{{name}}</h1>
+<div class="ir-sub"><span class="ir-sym">{{sym}}</span> {{subline}}</div>
+</div>
+<div class="ir-actions ir-noprint">
+<button type="button" class="ir-btn" onClick="{{print}}">⎙ Print tear sheet</button>
+<a class="ir-btn ir-btn2" href="{{quoteHref}}">Full quote page →</a>
+</div>
+</section>
+
+<section class="ir-tiles" aria-label="Key figures">
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="8">
+<div class="f-stat ir-tile"><div>{{t.k}}</div><div style="color: {{t.c}}">{{t.v}}</div><div>{{t.s}}</div></div>
+</sc-for>
+</section>
+
+<sc-if value="{{hasRead}}" hint-placeholder-val="{{ true }}">
+<section class="t-panel ir-read" aria-label="The read"><div class="t-pb"><span class="ir-label">THE READ</span>{{readText}}</div></section>
+</sc-if>
+
+<div class="ir-grid">
+
+<section class="t-panel" aria-label="Who drove the quarter">
+<div class="t-ph"><h2>Who drove the quarter</h2><span class="dim">{{flowSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{hasFlow}}" hint-placeholder-val="{{ true }}">
+<div class="ir-flow">
+<sc-for list="{{flowRows}}" as="f" hint-placeholder-count="3">
+<div class="ir-flow-r"><span>{{f.k}}</span><span class="ir-bar"><i style="{{f.st}}"></i></span><span style="color: {{f.c}}">{{f.v}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<p class="s-note ir-note">{{flowNote}}</p>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Ownership trend">
+<div class="t-ph"><h2>Institutional ownership, 8 quarters</h2><span class="dim">% of shares outstanding · holders</span></div>
+<div class="t-pb">
+<div class="ir-trend" role="img" aria-label="{{trendAria}}">
+<sc-for list="{{trend}}" as="b" hint-placeholder-count="8">
+<div class="ir-tc"><span class="ir-tv">{{b.v}}</span><span class="ir-tb" style="{{b.st}}"></span><span class="ir-tl">{{b.p}}</span><span class="ir-th">{{b.h}}</span></div>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section class="t-panel ir-wide" aria-label="Top holders">
+<div class="t-ph"><h2>Top holders</h2><span class="dim">{{topSub}}</span></div>
+<div class="t-pb"><div class="s-scroll" tabindex="0"><table class="ir-tbl">
+<thead><tr><th scope="col">#</th><th scope="col">Holder</th><th scope="col">Style</th><th scope="col" class="r">Shares</th><th scope="col" class="r">% out</th><th scope="col" class="r">Value</th><th scope="col" class="r">QoQ</th></tr></thead>
+<tbody><sc-for list="{{top}}" as="h" hint-placeholder-count="10"><tr><td class="dim">{{h.i}}</td><th scope="row">{{h.n}}</th><td class="dim">{{h.style}}</td><td class="r">{{h.sh}}</td><td class="r">{{h.pct}}</td><td class="r">{{h.val}}</td><td class="r" style="color: {{h.c}}">{{h.chg}}</td></tr></sc-for></tbody>
+</table></div></div>
+</section>
+
+<section class="t-panel" aria-label="Biggest buyers and sellers">
+<div class="t-ph"><h2>Biggest buyers and sellers</h2><span class="dim">Managers that filed both quarters</span></div>
+<div class="t-pb ir-two">
+<div><div class="ir-label up">BUYERS</div><sc-for list="{{buyers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="up">{{m.sh}}</span></div></sc-for></div>
+<div><div class="ir-label dn">SELLERS</div><sc-for list="{{sellers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="dn">{{m.sh}}</span></div></sc-for></div>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Targets">
+<div class="t-ph"><h2>Who to call: peers' holders not in the stock</h2><span class="dim">{{tgtSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{hasTargets}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{targets}}" as="g" hint-placeholder-count="8"><div class="ir-mv"><span>{{g.n}}</span><span class="hi">{{g.k}}</span></div></sc-for>
+</sc-if>
+<p class="s-note ir-note">{{tgtNote}}</p>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Insiders and 5% holders">
+<div class="t-ph"><h2>Insiders and 5% holders</h2><span class="dim">SEC Form 4 · 13D/G</span></div>
+<div class="t-pb">
+<div class="ir-label">INSIDER TRADES, LAST 12 MONTHS</div>
+<p class="ir-line">{{insLine}}</p>
+<sc-for list="{{insRows}}" as="x" hint-placeholder-count="4"><div class="ir-mv"><span>{{x.n}}<span class="dim ir-small">{{x.role}}</span></span><span style="color: {{x.c}}">{{x.v}}</span></div></sc-for>
+<div class="ir-label" style="margin-top: 12px">5%+ HOLDERS (13D = may seek change · 13G = passive)</div>
+<sc-for list="{{fives}}" as="x" hint-placeholder-count="3"><div class="ir-mv"><span>{{x.n}}<span class="dim ir-small">{{x.d}}</span></span><span style="color: {{x.c}}">{{x.f}}</span></div></sc-for>
+<sc-if value="{{noFives}}" hint-placeholder-val="{{ false }}"><p class="s-note ir-note">No 13D or 13G filings found.</p></sc-if>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Valuation and peers">
+<div class="t-ph"><h2>Valuation and next event</h2><span class="dim">{{valSub}}</span></div>
+<div class="t-pb">
+<div class="ir-kv"><sc-for list="{{kv}}" as="k" hint-placeholder-count="6"><div><span class="dim">{{k.k}}</span><b>{{k.v}}</b></div></sc-for></div>
+<sc-if value="{{hasPeers}}" hint-placeholder-val="{{ true }}">
+<div class="s-scroll" tabindex="0" style="margin-top: 10px"><table class="ir-tbl">
+<thead><tr><th scope="col">Peer</th><th scope="col" class="r">Mkt cap</th><th scope="col" class="r">P/E</th><th scope="col" class="r">YTD</th><th scope="col" class="r">1Y</th></tr></thead>
+<tbody><sc-for list="{{peers}}" as="p" hint-placeholder-count="5"><tr style="{{p.st}}"><th scope="row">{{p.sym}}</th><td class="r">{{p.cap}}</td><td class="r">{{p.pe}}</td><td class="r" style="color: {{p.yc}}">{{p.ytd}}</td><td class="r" style="color: {{p.oc}}">{{p.y1}}</td></tr></sc-for></tbody>
+</table></div>
+</sc-if>
+</div>
+</section>
+
+</div>
+
+<p class="ir-foot">Sources: SEC EDGAR 13F data sets (holdings as of {{period}}, filed within 45 days of quarter end), Form 4, Schedule 13D/G; prices Yahoo Finance (delayed); earnings dates Nasdaq. Index-fund share counts managers whose names match the big index families. Built {{built}} at nathanskown.dev/finance/ir/?sym={{sym}}. Not investment advice.</p>
+</sc-if>
+</main>
+
+<footer class="t-foot ir-noprint">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<span>13F, Form 4, 13D/G: SEC EDGAR · Prices: Yahoo Finance (delayed)</span>
+<span>Not investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+<div class="t-crt ir-noprint" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    var self = this, st = this.state || {};
+    window.DC_DEFAULT_FN = 'IR';   // a plain ticker typed here opens its IR view, not the quote page
+    var sym = String(st.sym || st.ticker || st.s || 'AAPL').toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2');
+    this.setState({ sym: sym, loading: sym });
+    var soft = function (p) { return p.then(function (x) { return x; }, function () { return null; }); };
+    var api = function (qs) { return fetch('/api/quote?' + qs).then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); }); };
+    DC.load('/data/finance/quotes/index.json').then(function (j) { return j; }, function () { return { tickers: [] }; }).then(function (idx) {
+      var core = (idx.tickers || []).some(function (t) { return t.sym === sym; });
+      return DC.tickers().then(function (list) {
+        var hit = list.bySym[sym], cik = hit ? hit.cik : null;
+        return Promise.all([
+          soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')),
+          core ? soft(DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json')) : soft(api('part=price&sym=' + encodeURIComponent(sym))),
+          !core && cik ? soft(api('part=filings&cik=' + cik)) : null,
+          !core && cik ? soft(api('part=fin&cik=' + cik)) : null,
+          soft(DC.load('/data/finance/earnings.json')),
+          soft(DC.load('/data/finance/members.json'))
+        ]).then(function (r) {
+          self.setState({ loading: null, O: r[0], Q: r[1], Fl: r[2], Fn: r[3], E: r[4], M: r[5] || {}, core: core, hitName: hit ? hit.name : null });
+          if (/[?&]print=1/.test(location.search)) setTimeout(function () { window.print(); }, 900);
+        });
+      });
+    }).catch(function () { self.setState({ loading: null, err: true }); });
+  }
+  renderVals() {
+    var S = this.state || {}, sym = S.sym || '', O = S.O, Q = S.Q, self = this;
+    var UP = '#4ade80', DN = '#ff5f56', HI = '#ffd89d';
+    var base = { secHead: sym + ' US Equity · IR view (IR)', liveTag: F.updated(O ? O.updated : null), missing: !!S.loading || !O, ready: !S.loading && !!O,
+      missingText: S.loading ? 'Loading ' + S.loading + '…' : sym + ' has no 13F ownership data.',
+      missingNote: S.loading ? 'Reading the latest 13F filings, insider trades and prices.' : 'The IR view covers US stocks held by at least 30 institutions that file 13Fs (about 6,400 names). Try another ticker in the bar above.' };
+    if (!O) return base;
+    var T = O.tiles || {}, so = O.so, px = (Q && Q.quote && Q.quote.price) || O.price;
+    var M = S.M || {}, inIdx = function (k) { return (M[k] || []).indexOf(sym) >= 0; };
+    var idxNames = [['sp500', 'S&P 500'], ['sp400', 'S&P 400'], ['sp600', 'S&P 600'], ['r1000', 'Russell 1000'], ['r2000', 'Russell 2000']].filter(function (x) { return inIdx(x[0]); }).map(function (x) { return x[1]; });
+    var sector = O.sector || (M.sectors || {})[sym] || (Q && Q.sector) || '';
+    var mcap = Q && Q.stats && Q.stats.mcap ? Q.stats.mcap : (px && so ? px * so : null);
+    var qtr = function (p) { var d = new Date(p + 'T12:00:00Z'); return 'Q' + (Math.floor(d.getUTCMonth() / 3) + 1) + ' ' + d.getUTCFullYear(); };
+    var sgnBig = function (v) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '−') + F.big(Math.abs(v)); };
+    var col = function (v) { return v > 0 ? UP : v < 0 ? DN : HI; };
+    var tiles = [
+      { k: 'Institutional ownership', v: T.inst !== null && T.inst !== undefined ? F.n(T.inst, 1) + '%' : '—', s: T.instChg !== null && T.instChg !== undefined ? (T.instChg >= 0 ? '+' : '−') + F.n(Math.abs(T.instChg), 1) + ' pts vs. ' + qtr(O.prior) : '', c: HI },
+      { k: '13F holders', v: F.n(T.holders), s: (T.holdersChg >= 0 ? '+' : '−') + F.n(Math.abs(T.holdersChg)) + ' · ' + T.new + ' new, ' + T.closed + ' sold out', c: HI },
+      { k: 'Net institutional flow', v: sgnBig(T.net) + ' sh', s: px && T.net ? 'about ' + F.money(Math.abs(T.net * px), 1) + (T.net >= 0 ? ' bought' : ' sold') : 'shares, filers of both quarters', c: col(T.net) },
+      { k: 'Index-fund share', v: T.passive !== null && T.passive !== undefined ? F.n(T.passive, 1) + '%' : '—', s: 'of shares outstanding, held by index funds', c: HI },
+      { k: 'Top-10 concentration', v: T.top10 !== null && T.top10 !== undefined ? F.n(T.top10, 1) + '%' : '—', s: T.top25 ? 'top 25 hold ' + F.n(T.top25, 1) + '%' : 'of shares outstanding', c: HI },
+      { k: 'Turnover', v: O.flows && O.flows.turnover !== null && O.flows.turnover !== undefined ? F.n(O.flows.turnover, 1) + '%' : '—', s: 'of institutional shares changed hands last quarter', c: HI }
+    ];
+    var flows = O.flows, hasFlow = !!flows, flowRows = [], flowNote = '';
+    if (flows) {
+      var mx = Math.max(Math.abs(flows.index), Math.abs(flows.active), Math.abs(flows.index + flows.active), 1);
+      flowRows = [['Index funds', flows.index], ['Active and other managers', flows.active], ['Net', flows.index + flows.active]].map(function (x) {
+        return { k: x[0], v: sgnBig(x[1]) + ' sh', c: col(x[1]), st: 'width: ' + (Math.abs(x[1]) / mx * 100).toFixed(1) + '%; background: ' + col(x[1]) };
+      });
+      var m = new Date(O.period + 'T12:00:00Z').getUTCMonth() + 1, share = flows.index / ((Math.abs(flows.index) + Math.abs(flows.active)) || 1);
+      var parts = [];
+      parts.push(Math.abs(share) >= 0.5 ? 'Index funds did most of the net moving this quarter, which usually reflects index weights and fund flows rather than a view on the company.' : 'Active managers drove most of the change this quarter: the part of the shareholder base that is making a decision.');
+      if (m === 6) parts.push('This quarter includes the annual Russell reconstitution (late June), when index funds buy and sell stocks moving between the Russell 1000 and 2000; a big index-fund swing in a June quarter is often that reshuffle.');
+      else parts.push('S&P and Russell index changes in the quarter can explain large index-fund moves; check the index calendar.');
+      flowNote = parts.join(' ');
+    } else flowNote = 'The flow split arrives with the next 13F rebuild. Net flow above is for all managers that filed both quarters.';
+    var trend = (O.trend || []).map(function (t) { return t; });
+    var tmax = Math.max.apply(null, trend.map(function (t) { return t.inst || 0; }).concat([1]));
+    var trendC = trend.map(function (t, i) {
+      return { v: t.inst === null || t.inst === undefined ? '—' : F.n(t.inst, 1) + '%', p: qtr(t.p).replace(' 20', " '"), h: F.big(t.holders),
+        st: 'height: ' + Math.max(3, (t.inst || 0) / tmax * 120).toFixed(0) + 'px; background: ' + (i === trend.length - 1 ? '#ffd166' : '#6b4e22') };
+    });
+    var rows = (O.top25 && O.top25.length ? O.top25 : O.top || []).map(function (h, i) {
+      var chg = h.chg === 'New' ? 'New' : (h.chg === null || h.chg === undefined ? '—' : F.pct(h.chg, 1));
+      return { i: i + 1, n: h.n, style: h.style, sh: F.big(h.sh), pct: h.pct === null || h.pct === undefined ? '—' : F.n(h.pct, 2) + '%', val: h.val ? F.money(h.val, 1) : '—', chg: chg, c: h.chg === 'New' ? UP : col(h.chg || 0) };
+    });
+    var mv = function (x) { return { n: x.n, note: ' · ' + x.note, sh: sgnBig(x.sh) }; };
+    var tg = O.targets || [];
+    var Fl = S.Fl || (Q && Q.insider ? { insider: Q.insider, holders5: Q.holders5 } : null);
+    var I = (Fl && Fl.insider) || null, insLine = '', insRows = [];
+    if (I) {
+      insLine = I.net === null || I.net === undefined ? 'No open-market trades reported.' :
+        'Open-market net ' + (I.net >= 0 ? 'buying ' : 'selling ') + F.money(Math.abs(I.net), 1) + ' · ' + I.buyers + ' buyer' + (I.buyers === 1 ? '' : 's') + ', ' + I.sellers + ' seller' + (I.sellers === 1 ? '' : 's') + (I.sales ? ' · ' + I.planSales + ' of ' + I.sales + ' sales under 10b5-1 plans' : '') + '.';
+      insRows = (I.rows || []).filter(function (x) { return x.code === 'P' || x.code === 'S'; }).slice(0, 5).map(function (x) {
+        return { n: x.name, role: ' · ' + (x.role || '') + ' · ' + F.day(x.date), v: (x.code === 'P' ? 'Bought ' : 'Sold ') + F.big(x.shares) + (x.price ? ' @ ' + F.usd(x.price) : ''), c: x.code === 'P' ? UP : DN };
+      });
+    } else insLine = 'Insider filings could not be loaded right now.';
+    var fives = ((Fl && Fl.holders5) || []).slice(0, 5).map(function (x) { return { n: x.filer || 'Filer', d: ' · ' + F.day(x.date), f: x.form.replace('SCHEDULE ', ''), c: x.activist ? '#ff9a56' : HI }; });
+    var nx = (Q && Q.next) || ((S.E || {}).upcoming || []).filter(function (x) { return x.sym === sym; })[0];
+    var st = (Q && Q.stats) || {};
+    var kv = [
+      { k: 'Price', v: px ? F.usd(px) : '—' }, { k: 'Market cap', v: mcap ? F.money(mcap, 1) : '—' },
+      { k: 'P/E (TTM)', v: st.pe ? F.n(st.pe, 1) + 'x' : '—' }, { k: '52-week range', v: st.hi52 ? F.n(st.lo52, 2) + '–' + F.n(st.hi52, 2) : (Q && Q.quote && Q.quote.hi52 ? F.n(Q.quote.lo52, 2) + '–' + F.n(Q.quote.hi52, 2) : '—') },
+      { k: 'Next earnings', v: nx && nx.date ? F.day(nx.date) + (nx.when ? ' ' + nx.when : '') + (nx.est !== null && nx.est !== undefined ? ' · EPS est. ' + F.usd(nx.est) : '') : 'not scheduled' },
+      { k: 'Indexes', v: idxNames.length ? idxNames.join(', ') : 'none tracked' }
+    ];
+    var peerRows = ((Q && Q.peerRows) || []).slice(0, 6).map(function (p) {
+      return { sym: p.sym, cap: F.money(p.mcap, 1), pe: p.pe ? F.n(p.pe, 1) + 'x' : '—', ytd: F.pct(p.ytd, 1), y1: F.pct(p.y1, 1), yc: col(p.ytd || 0), oc: col(p.y1 || 0), st: p.me ? 'background: rgba(255,184,77,.10)' : '' };
+    });
+    if (!peerRows.length && O.peers && O.peers.length) peerRows = O.peers.slice(0, 6).map(function (p) { return { sym: p, cap: '', pe: '', ytd: '', y1: '', yc: '', oc: '', st: '' }; });
+    return Object.assign(base, {
+      sym: sym, name: O.name || S.hitName || sym, period: qtr(O.period), quoteHref: 'Main.dc.html?sym=' + encodeURIComponent(sym),
+      subline: [sector, idxNames.length ? idxNames[0] : '', mcap ? F.money(mcap, 1) + ' market cap' : ''].filter(Boolean).join(' · '),
+      print: function () { window.print(); },
+      tiles: tiles, hasRead: !!O.read, readText: O.read || '',
+      hasFlow: hasFlow, flowRows: flowRows, flowNote: flowNote, flowSub: qtr(O.prior) + ' → ' + qtr(O.period),
+      trend: trendC, trendAria: 'Institutional ownership by quarter: ' + trend.map(function (t) { return qtr(t.p) + ' ' + (t.inst === null ? 'n/a' : t.inst + '%'); }).join(', '),
+      top: rows, topSub: 'Grouped by firm · ' + rows.length + ' largest',
+      buyers: (O.buyers || []).map(mv), sellers: (O.sellers || []).map(mv),
+      hasTargets: tg.length > 0, targets: tg.map(function (g) { return { n: g.n, k: 'owns ' + g.peers + ' of ' + g.of + ' peers' }; }),
+      tgtSub: sector ? sector + ' peers' : 'Sector peers',
+      tgtNote: tg.length ? 'Managers that hold many of the most widely held ' + (sector || 'sector') + ' stocks but none of ' + sym + ', index funds left out. They already like the sector, so they are the natural first calls for an investor-relations program.' :
+        (O.peers ? 'No manager holds enough of the sector peers without owning ' + sym + '.' : 'Peer-based targets are built for S&P 1500 members with a sector; they arrive with the next 13F rebuild.'),
+      insLine: insLine, insRows: insRows, fives: fives, noFives: !fives.length,
+      kv: kv, peers: peerRows, hasPeers: peerRows.length > 0, valSub: Q && Q.updated ? 'Prices ' + F.day(Q.updated) : '',
+      built: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    });
+  }
+}
+</script>
+</body>
+</html>

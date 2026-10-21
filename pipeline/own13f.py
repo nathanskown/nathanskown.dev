@@ -29,7 +29,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 11          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 12          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -223,6 +223,31 @@ def manager_group(raw):
     return pretty_manager(raw)
 
 
+def ir_extras(delta, dcur, dprv, passive_grp):
+    """Who drove the quarter: net buying split into index funds and everyone else, and how much of the
+    comparable holders' position changed hands (gross change over average holdings)."""
+    idx = sum(d for g, d in delta.items() if g in passive_grp)
+    net = sum(delta.values())
+    gross = sum(abs(d) for d in delta.values())
+    base = (sum(dcur.values()) + sum(dprv.values())) / 2
+    return {"index": idx, "active": net - idx, "gross": gross, "turnover": r(gross / base * 100, 1) if base else None}
+
+
+def peer_targets(holders, peer_sets, passive, n=10):
+    """Managers who own many of a stock's sector peers but none of the stock: the classic IR target list.
+    holders: groups owning the stock; peer_sets: one set of groups per peer; passive: index-fund groups (excluded,
+    they own everything by rule). A manager needs at least 3 peers, and 40% of them, to count."""
+    if len(peer_sets) < 5:
+        return []
+    cnt = Counter()
+    for gs in peer_sets:
+        cnt.update(gs)
+    need = max(3, int(0.4 * len(peer_sets) + 0.999))
+    hits = [(g, k) for g, k in cnt.items() if k >= need and g not in holders and g not in passive]
+    hits.sort(key=lambda x: (-x[1], x[0]))
+    return [{"n": g, "peers": k, "of": len(peer_sets)} for g, k in hits[:n]]
+
+
 def comparable_filers(det, L, P):
     """Managers whose two filings can be compared position by position.
 
@@ -322,6 +347,22 @@ def build(max_sets=9, force=False):
     diag = {"over150": [], "noShares": [], "bigNew": []}
     stale_before = (date.fromisoformat(L) - timedelta(days=548)).isoformat()
     done_core, all_syms, n_ok = [], [], 0
+    # sector peers for the IR target list: index members only (they carry a sector), most widely held first
+    sectors = (read("members.json", {}) or {}).get("sectors") or {}
+    by_sector = {}
+    for s2, cu2 in best.items():
+        if sectors.get(s2):
+            by_sector.setdefault(sectors[s2], []).append((held.get(cu2, 0), s2))
+    for v in by_sector.values():
+        v.sort(reverse=True)
+    passive_all = {manager_group(mgr.get(c) or f"CIK {c}") for c in mgr if any(k in (mgr.get(c) or "").upper() for k in idx_kw)}
+    _gsets = {}
+
+    def group_set(cu2):
+        if cu2 not in _gsets:
+            df = cur_all.get_group(cu2) if cu2 in cur_all.groups else empty
+            _gsets[cu2] = {manager_group(mgr.get(int(c)) or f"CIK {int(c)}") for c in df["cik"]}
+        return _gsets[cu2]
     for sym, cu in sorted(best.items()):
         if not held.get(cu):
             continue
@@ -423,6 +464,24 @@ def build(max_sets=9, force=False):
                    "mix": {"Index": r(passive / so * 100, 1) if so else None,
                            "Active / other": r((sum(cur.values()) - passive) / so * 100, 1) if so else None},
                    "read": read_txt}
+            try:  # IR view extras never block the base page
+                # IR view extras: top 25, who drove the quarter, and managers to approach
+                top25 = sorted(grp_cur.items(), key=lambda kv: -kv[1])[:25]
+                out["top25"] = [{"n": g, "style": "Index" if g in passive_grp else "Active / other", "sh": sh,
+                                 "pct": r(sh / so * 100, 2) if so else None, "val": r(sh * px, 0) if px else None,
+                                 "chg": (r((sh / grp_prv[g] - 1) * 100, 1) if grp_prv.get(g)
+                                         else "New" if any(c in comp for c in grp_names[g]) else None),
+                                 "dsh": (sh - grp_prv.get(g, 0)) if g in dcur else None} for g, sh in top25]
+                out["tiles"]["top25"] = r(sum(sh for _, sh in top25) / so * 100, 1) if so else None
+                out["flows"] = ir_extras(delta, dcur, dprv, passive_grp)
+                sec_name = sectors.get(sym)
+                if sec_name:
+                    peers = [s2 for _, s2 in by_sector.get(sec_name, []) if s2 != sym][:25]
+                    out["sector"] = sec_name
+                    out["peers"] = peers
+                    out["targets"] = peer_targets(set(grp_cur), [group_set(best[s2]) for s2 in peers], passive_all)
+            except Exception as e:  # noqa: BLE001
+                diag.setdefault("irErr", []).append(f"{sym}:{type(e).__name__}:{str(e)[:60]}")
             write(f"ownership/{sym}.json", out)
             all_syms.append(sym)
             n_ok += 1
@@ -432,6 +491,7 @@ def build(max_sets=9, force=False):
         except Exception as e:  # noqa: BLE001
             record(f"13F {sym}", False, error=f"{type(e).__name__}: {str(e)[:200]}")
     record("13F pages written", True, n=n_ok)
+    record("13F IR extras failed", not diag.get("irErr"), n=len(diag.get("irErr", [])), note=str(diag.get("irErr", [])[:10]))
     with_cik = [x for x in diag["noShares"] if "(no CIK)" not in x]
     record("13F no share count", True, n=len(diag["noShares"]),
            note=f"{len(with_cik)} with an SEC CIK, e.g. {with_cik[:15]}")

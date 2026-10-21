@@ -215,7 +215,8 @@
     NFL: '/sports/?lg=nfl', MLB: '/sports/?lg=mlb', NBA: '/sports/?lg=nba', NHL: '/sports/?lg=nhl',
     NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
-    SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/'
+    SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/',
+    IR: '/finance/ir/', IDX: '/finance/index-calendar/', CAL: '/finance/index-calendar/', NOTES: '/finance/notes/', NOTE: '/finance/notes/', HOOD: '/under-the-hood/'
   };
   /* full US ticker list (SEC), loaded once on demand: { list: [[sym, name, cik, exch]], bySym: {SYM: {...}} } */
   var tickersP = null;
@@ -240,16 +241,16 @@
     pre.sort(function (a, b) { return a[0].length - b[0].length; });
     return exact.concat(pre, name).slice(0, n || 12);
   }
-  var FN = { DES: '/finance/quote/?sym=', EQUITY: '/finance/quote/?sym=', US: '/finance/quote/?sym=', HDS: '/finance/ownership/?ticker=', OWN: '/finance/ownership/?ticker=' };
+  var FN = { DES: '/finance/quote/?sym=', EQUITY: '/finance/quote/?sym=', US: '/finance/quote/?sym=', HDS: '/finance/ownership/?ticker=', OWN: '/finance/ownership/?ticker=', IR: '/finance/ir/?sym=', TEAR: '/finance/ir/?print=1&sym=' };
   function runCmd(input) {
     var raw = input.value.trim().toUpperCase().replace(/\s*<?GO>?$/, '').trim();
     if (!raw) return;
-    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL HDS · WEI · TOP · ERN · SCOR · ANY TEAM NAME · HOME'; return; }
+    if (raw === 'HELP') { input.value = ''; input.placeholder = 'TICKER (AAPL) · AAPL IR · AAPL TEAR · WEI · TOP · ERN · IDX · NOTES · SCOR · TEAM · HOME'; return; }
     var compact = raw.replace(/[\s-]+/g, '');
     var parts = raw.split(/\s+/), fn = parts.length > 1 && FN[parts[parts.length - 1]] ? parts.pop() : null;
     if (!fn && CMDS[compact]) { location.href = CMDS[compact]; return; }
     var q = parts.join(' ');
-    var go = function (sym) { location.href = (FN[fn] || FN.DES) + encodeURIComponent(sym); };
+    var go = function (sym) { location.href = (FN[fn] || FN[window.DC_DEFAULT_FN] || FN.DES) + encodeURIComponent(sym); };
     var symLike = /^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(q), sym = q.replace(/\./g, '-');
     /* pages can register their own lookup (the Sports pages resolve team names first) */
     var page = !fn && window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);

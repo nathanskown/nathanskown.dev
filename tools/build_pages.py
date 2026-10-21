@@ -51,6 +51,9 @@ SECTIONS = {
             ("headlines", "News.dc.html", {}, "Live headlines"),
             ("quote", "Main.dc.html", {}, "Stock quote"),
             ("ownership", "Ownership.dc.html", {}, "13F ownership tracker"),
+            ("ir", "IR.dc.html", {}, "IR view"),
+            ("index-calendar", "Calendar.dc.html", {}, "Index event calendar"),
+            ("notes", "Notes.dc.html", {}, "Data notes"),
             ("earnings", "Earnings.dc.html", {}, "Earnings dashboard"),
             ("macro", "Macro.dc.html", {}, "Macro monitor"),
             ("ipo", "IPO.dc.html", {}, "IPO tracker"),
@@ -58,7 +61,7 @@ SECTIONS = {
         ],
         "routes": {
             "Dashboard.dc.html": "/finance/", "Digest.dc.html": "/finance/digest/", "News.dc.html": "/finance/headlines/", "Main.dc.html": "/finance/quote/",
-            "Ownership.dc.html": "/finance/ownership/", "Earnings.dc.html": "/finance/earnings/",
+            "Ownership.dc.html": "/finance/ownership/", "IR.dc.html": "/finance/ir/", "Calendar.dc.html": "/finance/index-calendar/", "Notes.dc.html": "/finance/notes/", "Earnings.dc.html": "/finance/earnings/",
             "Macro.dc.html": "/finance/macro/", "IPO.dc.html": "/finance/ipo/", "Screener.dc.html": "/finance/screener/",
         },
     },

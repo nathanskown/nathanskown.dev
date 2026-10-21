@@ -18,7 +18,7 @@ def pick():
         return os.environ["JOBS"].split()
     if event == "schedule":
         if cron.startswith("17 11"):
-            return ["daily", "screener"]
+            return ["daily", "screener", "notes"]
         if cron.startswith("23 9"):
             return ["quarterly"]
         return ["market"]

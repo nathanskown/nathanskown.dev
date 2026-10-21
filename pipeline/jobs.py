@@ -69,8 +69,33 @@ def build_members():
     old = read("members.json", {}) or {}
     for key in ("r1000", "r2000"):  # Russell lists from iShares; keep yesterday's list if today's download fails
         out[key] = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None) or old.get(key, [])
+    log_index_changes(old, out)
     write("members.json", out)
     return out
+
+
+def log_index_changes(old, new):
+    """Keep a running log of index adds and drops (data/finance/index_changes.json), found by comparing
+    today's member lists with yesterday's. Lists that came back empty or shrank by more than a tenth are
+    treated as a failed download, not as mass deletions."""
+    from datetime import date as _d
+    names = {**(old.get("names") or {}), **(new.get("names") or {})}
+    log = read("index_changes.json", {"changes": []}) or {"changes": []}
+    today = _d.today().isoformat()
+    label = {"sp500": "S&P 500", "sp400": "S&P MidCap 400", "sp600": "S&P SmallCap 600", "r1000": "Russell 1000", "r2000": "Russell 2000"}
+    added = []
+    for key, nm in label.items():
+        a, b = set(old.get(key) or []), set(new.get(key) or [])
+        if not a or not b or len(b) < 0.9 * len(a):
+            continue
+        for s in sorted(b - a):
+            added.append({"date": today, "index": nm, "sym": s, "name": names.get(s, s), "change": "added"})
+        for s in sorted(a - b):
+            added.append({"date": today, "index": nm, "sym": s, "name": names.get(s, s), "change": "removed"})
+    if added:
+        log["changes"] = (added + log.get("changes", []))[:400]
+        log["updated"] = now_iso()
+        write("index_changes.json", log)
 
 
 # "Notable": a whole-word match on market-moving terms, never on spam (class-action ads, market-size reports),
@@ -1348,3 +1373,10 @@ def screener():
                             "fy": today.year - 1, "ql": (fund.get("rev") or {}).get("ql"), "sparkBatchFails": spark_fail,
                             "failures": failures[:40], "universe": {"owned": len(owned), "sp1500": len(sp["sp500"] | sp["sp400"] | sp["sp600"]), "priced": len(hist)}})
     return rows
+
+
+def notes():
+    """Monthly data notes (first week of each month): findings computed from the site's own data files."""
+    from . import notes as _notes
+    n = _notes.main()
+    record("data notes", True, note=(n or {}).get("month") or "no note due")
