@@ -322,6 +322,128 @@
     return { pHome: p, pAway: 1 - p, margin: mu, left: r };
   }
 
+  /* Win-probability path through a game, rebuilt from the scoring plays with the same formula as liveProb:
+     at each moment, P(home) = Φ((lead + edge·r) ÷ (σ·√r)), r = share of the game left. The lead only changes at a
+     score, but the probability drifts toward the leader as time runs out, so the line is sampled on a time grid.
+     Returns { pts: [{f, p, lead}], marks: [{f, p, swing, text, abbr}], end } or null when the league has no clock model. */
+  function wpSeries(model, lg, g, pre) {
+    if (!model || !pre || !g || !g.home || !g.away || g.state === 'pre') return null;
+    var P = GAME_SECS[lg], base = lg === 'mlb';
+    if (!P && !base) return null;
+    var sg = model.sigma || 13.5, homeId = String(g.home.id);
+    var prob = function (lead, f) { var r = Math.max(0.004, 1 - f); return Phi((lead + pre.margin * r) / (sg * Math.sqrt(r))); };
+    var fOf = function (sp) {
+      var per = parseInt(String(sp.period).replace(/[^0-9]/g, ''), 10) || 1;
+      if (base) { var top = String(sp.team) !== homeId; return Math.min(0.985, ((per - 1) * 2 + (top ? 0.5 : 1.5)) / 18); }
+      var m = /(\d+):(\d+)/.exec(sp.clock || ''), left = m ? +m[1] * 60 + +m[2] : P[1] / 2;
+      if (per > P[0]) return Math.min(0.995, 0.97 + 0.01 * (per - P[0]));
+      return Math.min(0.99, ((per - 1) * P[1] + (P[1] - left)) / (P[0] * P[1]));
+    };
+    var plays = (g.scoring || []).filter(function (sp) { return sp.home !== undefined && sp.away !== undefined && sp.home !== null; })
+      .map(function (sp) { return { f: fOf(sp), lead: (+sp.home) - (+sp.away), text: sp.text || '', abbr: sp.abbr || '' }; })
+      .sort(function (a, b) { return a.f - b.f; });
+    // where the game is now
+    var fNow = 1;
+    if (g.state === 'in') {
+      var lp = liveProb(model, lg, g, pre);
+      fNow = lp ? 1 - lp.left : (plays.length ? plays[plays.length - 1].f : 0);
+    }
+    var leadAt = function (f) { var l = 0; for (var i = 0; i < plays.length && plays[i].f <= f; i++) l = plays[i].lead; return l; };
+    var pts = [{ f: 0, p: pre.pHome, lead: 0 }], N = 90;
+    for (var i = 1; i <= N; i++) {
+      var f = fNow * i / N;
+      plays.forEach(function (pl) { if (pl.f > pts[pts.length - 1].f && pl.f <= f) { pts.push({ f: pl.f - 0.0005, p: prob(leadAt(pl.f - 0.001), pl.f - 0.0005), lead: leadAt(pl.f - 0.001) }); pts.push({ f: pl.f, p: prob(pl.lead, pl.f), lead: pl.lead }); } });
+      if (f > pts[pts.length - 1].f) pts.push({ f: f, p: prob(leadAt(f), f), lead: leadAt(f) });
+    }
+    var final = null;
+    if (g.done) {
+      var hs = num(g.home.score), as = num(g.away.score);
+      final = hs > as ? 1 : hs < as ? 0 : 0.5;
+      pts[pts.length - 1] = { f: 1, p: final, lead: (hs || 0) - (as || 0) };
+    }
+    var marks = plays.map(function (pl) {
+      var before = prob(leadAt(pl.f - 0.001), Math.max(0, pl.f - 0.0005)), after = prob(pl.lead, pl.f);
+      return { f: pl.f, p: after, swing: after - before, text: pl.text, abbr: pl.abbr };
+    });
+    return { pts: pts, marks: marks, end: fNow, final: final, periods: base ? 9 : P[0] };
+  }
+
+  /* Share card: a 1200x630 image of a game (score or matchup, house odds, win-probability line) drawn on a canvas,
+     then handed to the phone's share sheet, or downloaded where sharing files isn't supported. */
+  function shareCard(c) {
+    var W = 1200, H = 630, cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var x = cv.getContext('2d');
+    var fonts = document.fonts && document.fonts.load ? Promise.all(['400 120px VT323', '600 28px "IBM Plex Mono"', '400 24px "IBM Plex Mono"'].map(function (f) { return document.fonts.load(f).catch(function () {}); })) : Promise.resolve();
+    return fonts.then(function () {
+      var mono = '"IBM Plex Mono", ui-monospace, monospace', big = 'VT323, ui-monospace, monospace';
+      // background: away colour fading in from the left, home from the right
+      x.fillStyle = '#03070c'; x.fillRect(0, 0, W, H);
+      var g1 = x.createLinearGradient(0, 0, W, 0);
+      g1.addColorStop(0, c.aColor + 'cc'); g1.addColorStop(0.42, c.aColor + '22'); g1.addColorStop(0.58, c.hColor + '22'); g1.addColorStop(1, c.hColor + 'cc');
+      x.fillStyle = g1; x.fillRect(0, 0, W, H);
+      x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, 0, W, H);
+      for (var i = 0; i < H; i += 4) { x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, i, W, 1); }   // scanlines
+      // top bar
+      x.fillStyle = '#3df2ff'; x.fillRect(0, 0, W, 54);
+      x.fillStyle = '#000'; x.font = '600 24px ' + mono; x.textBaseline = 'middle';
+      x.fillText(c.league + ' · ' + c.status, 28, 28);
+      x.textAlign = 'right'; x.fillText('NSKN · SPORTS', W - 28, 28); x.textAlign = 'left';
+      // teams and score
+      // shrink the abbreviations and the score together until they fit side by side with room to spare
+      var fa = 130, fc = 160;
+      for (var tries = 0; tries < 12; tries++) {
+        x.font = '400 ' + fa + 'px ' + big; var wa = Math.max(x.measureText(c.aAbbr).width, x.measureText(c.hAbbr).width);
+        x.font = '400 ' + fc + 'px ' + big; var wc = x.measureText(c.center).width;
+        if (wc / 2 + wa + 60 + 50 <= W / 2) break;
+        fa = Math.round(fa * 0.92); fc = Math.round(fc * 0.92);
+      }
+      x.fillStyle = '#fff'; x.font = '400 ' + fa + 'px ' + big; x.textBaseline = 'alphabetic';
+      x.fillText(c.aAbbr, 60, 250); x.textAlign = 'right'; x.fillText(c.hAbbr, W - 60, 250);
+      x.textAlign = 'center'; x.font = '400 ' + fc + 'px ' + big;
+      x.shadowColor = 'rgba(255,255,255,.35)'; x.shadowBlur = 24;
+      x.fillText(c.center, W / 2, 255); x.shadowBlur = 0;
+      x.font = '400 26px ' + mono; x.fillStyle = 'rgba(255,255,255,.85)';
+      x.textAlign = 'left'; x.fillText(c.aName, 64, 296); x.textAlign = 'right'; x.fillText(c.hName, W - 64, 296);
+      // house odds bar
+      if (c.pHome !== null && c.pHome !== undefined) {
+        var bx = 60, by = 340, bw = W - 120, bh = 22, pa = 1 - c.pHome;
+        x.fillStyle = c.hColor; x.fillRect(bx, by, bw, bh);
+        x.fillStyle = c.aColor; x.fillRect(bx, by, bw * pa, bh);
+        x.strokeStyle = 'rgba(255,255,255,.6)'; x.strokeRect(bx, by, bw, bh);
+        x.font = '600 26px ' + mono; x.fillStyle = '#fff';
+        x.textAlign = 'left'; x.fillText(Math.round(pa * 100) + '%', bx, by + 58);
+        x.textAlign = 'right'; x.fillText(Math.round(c.pHome * 100) + '%', bx + bw, by + 58);
+        x.textAlign = 'center'; x.font = '400 22px ' + mono; x.fillStyle = 'rgba(255,255,255,.8)'; x.fillText(c.oddsLabel, W / 2, by + 56);
+      }
+      // win-probability line
+      if (c.wp && c.wp.length > 2) {
+        var gx = 60, gy = 440, gw = W - 120, gh = 120;
+        x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(gx, gy, gw, gh);
+        x.strokeStyle = 'rgba(255,255,255,.3)'; x.setLineDash([6, 6]); x.beginPath(); x.moveTo(gx, gy + gh / 2); x.lineTo(gx + gw, gy + gh / 2); x.stroke(); x.setLineDash([]);
+        x.strokeStyle = '#ffc53d'; x.lineWidth = 3; x.beginPath();
+        c.wp.forEach(function (q, k) { var px = gx + q.f * gw, py = gy + (1 - q.p) * gh; if (k) x.lineTo(px, py); else x.moveTo(px, py); });
+        x.stroke(); x.lineWidth = 1;
+        x.font = '400 18px ' + mono; x.fillStyle = 'rgba(255,255,255,.75)'; x.textAlign = 'left';
+        x.fillText(c.hAbbr + ' ↑  win probability  ↓ ' + c.aAbbr, gx + 10, gy + 24);
+      }
+      // footer
+      x.font = '400 22px ' + mono; x.fillStyle = 'rgba(255,255,255,.8)'; x.textAlign = 'left';
+      x.fillText(c.foot || '', 60, H - 26);
+      x.textAlign = 'right'; x.fillStyle = '#3df2ff'; x.font = '600 22px ' + mono; x.fillText('nathanskown.dev', W - 60, H - 26);
+      return new Promise(function (res) { cv.toBlob(function (b) { res(b); }, 'image/png'); });
+    }).then(function (blob) {
+      var file = null, name = (c.file || 'game') + '.png';
+      try { file = new File([blob], name, { type: 'image/png' }); } catch (e) {}
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], title: c.title || 'NSKN Sports', text: c.text || '' }).then(function () { return 'shared'; }, function () { return 'cancelled'; });
+      }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      return 'downloaded';
+    });
+  }
+
   /* team search for the command line on every Sports page: "lions", "gonzaga", "Michigan State Spartans (NCAAB)" */
   var teamsP = null, LG_PRI = { nfl: 0, mlb: 1, nba: 2, nhl: 3, ncaaf: 4, ncaab: 5, ncaah: 6 };
   function teamList() {
@@ -459,5 +581,5 @@
   }
 
   window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
-    standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, liveProb: liveProb, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
+    standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, liveProb: liveProb, wpSeries: wpSeries, shareCard: shareCard, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
 })();

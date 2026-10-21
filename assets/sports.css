@@ -286,3 +286,13 @@ body.has-crawl{padding-bottom:34px}
 
 /* panel headings carry no running numbers */
 .t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:none !important}
+
+/* win-probability chart (game page) */
+.s-wp{position:relative;background:#000;border:1px solid var(--line)}
+.s-wp-svg{display:block;width:100%;height:240px}
+.s-wp-l{position:absolute;left:10px;font-size:11.5px;letter-spacing:.1em;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+.s-wp-top{top:6px}.s-wp-bot{bottom:6px}
+.s-wp-x{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);margin-top:4px}
+@media (max-width:760px){.s-wp-svg{height:180px}}
+.t .s-share{min-height:32px;padding:0 10px;border:1px solid var(--a);background:transparent;color:var(--wh);font:inherit;font-size:12px;letter-spacing:.06em;cursor:pointer;margin-right:8px}
+.t .s-share:hover{background:var(--a);color:#000;text-shadow:none}

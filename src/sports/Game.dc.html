@@ -119,7 +119,8 @@
 </section>
 
 <section class="t-panel" aria-label="House projection">
-<div class="t-ph"><h2>House projection</h2><a class="dim" href="Methodology.dc.html">Method →</a></div>
+<div class="t-ph"><h2>House projection</h2><span><button type="button" class="s-share" onClick="{{shareGo}}">⇪ Share card</button> <a class="dim" href="Methodology.dc.html">Method →</a></span></div>
+<sc-if value="{{shareMsg}}" hint-placeholder-val="{{false}}"><p class="s-note" role="status" style="margin: 8px 14px 0">{{shareMsg}}</p></sc-if>
 <div class="t-pb">
 <sc-if value="{{proj.has}}" hint-placeholder-val="{{true}}">
 <div class="s-grid">
@@ -133,6 +134,29 @@
 <p class="s-note" style="margin: 10px 0 0">{{proj.note}}</p>
 </div>
 </section>
+
+<sc-if value="{{wp.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Win probability">
+<div class="t-ph"><h2>Win probability</h2><span class="dim">{{wp.sub}}</span></div>
+<div class="t-pb">
+<div class="s-wp">
+<svg viewBox="0 0 800 240" preserveAspectRatio="none" role="img" aria-label="{{wp.aria}}" class="s-wp-svg">
+<defs><clipPath id="wpTop"><rect x="0" y="0" width="800" height="120"></rect></clipPath><clipPath id="wpBot"><rect x="0" y="120" width="800" height="120"></rect></clipPath></defs>
+<sc-for list="{{wp.grid}}" as="x" hint-placeholder-count="3"><line x1="{{x}}" y1="0" x2="{{x}}" y2="240" stroke="rgba(255,255,255,.08)" stroke-width="1"></line></sc-for>
+<path d="{{wp.area}}" fill="{{wp.hFill}}" clip-path="url(#wpTop)"></path>
+<path d="{{wp.area}}" fill="{{wp.aFill}}" clip-path="url(#wpBot)"></path>
+<line x1="0" y1="120" x2="800" y2="120" stroke="rgba(255,255,255,.35)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"></line>
+<path d="{{wp.line}}" fill="none" stroke="#ffffff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
+<sc-for list="{{wp.marks}}" as="k" hint-placeholder-count="3"><circle cx="{{k.x}}" cy="{{k.y}}" r="5" fill="#ffc53d" stroke="#000" stroke-width="1.5"><title>{{k.t}}</title></circle></sc-for>
+</svg>
+<div class="s-wp-l s-wp-top">{{wp.hLabel}}</div><div class="s-wp-l s-wp-bot">{{wp.aLabel}}</div>
+</div>
+<div class="s-wp-x" aria-hidden="true"><sc-for list="{{wp.xl}}" as="x" hint-placeholder-count="4"><span>{{x}}</span></sc-for></div>
+<sc-if value="{{wp.hasSwing}}" hint-placeholder-val="{{true}}"><p class="s-note" style="margin: 10px 0 0"><span class="s-house">●</span> Biggest swings: {{wp.swings}}</p></sc-if>
+<p class="s-note" style="margin: 6px 0 0">{{wp.note}}</p>
+</div>
+</section>
+</sc-if>
 </div>
 
 <div class="s-cols">
@@ -251,6 +275,7 @@ class Component extends DCLogic {
 
   renderVals() {
     var S = this.state, lg = this.lg || 'nfl', L = SD.LEAGUES[lg];
+    var cmp = this;
     var lgLinks = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, href: 'Game.dc.html?lg=' + k, cls: 't-chipl' + (k === lg ? ' is-on' : '') }; });
     var idx = {}; (((S.index || {}).leagues || {})[lg] || []).forEach(function (t) { idx[t.id] = t; });
     var logo = function (t) { return (idx[t.id] || {}).logo || ''; };
@@ -301,6 +326,26 @@ class Component extends DCLogic {
     var MA = m && m.teams ? m.teams[A.id] : null, MH = m && m.teams ? m.teams[H.id] : null;
     var enough = function (t) { return t && (t.gp >= (m.minGp || 0) || t.prior !== undefined); };
     var lp = p && g.state === 'in' ? SD.liveProb(m, lg, g, p) : null;
+    var wpRaw = p && MA && MH && enough(MA) && enough(MH) ? SD.wpSeries(m, lg, g, p) : null, wp = { has: false };
+    if (wpRaw && wpRaw.pts.length > 2) {
+      var X = function (f) { return (f * 800).toFixed(1); }, Y = function (pp) { return (240 - pp * 240).toFixed(1); };
+      var line = 'M' + wpRaw.pts.map(function (q) { return X(q.f) + ',' + Y(q.p); }).join(' L');
+      var last = wpRaw.pts[wpRaw.pts.length - 1];
+      var top3 = wpRaw.marks.slice().sort(function (a, b) { return Math.abs(b.swing) - Math.abs(a.swing); }).slice(0, 3).filter(function (k) { return Math.abs(k.swing) >= 0.04; });
+      var pc = function (v) { return Math.round(v * 100) + '%'; };
+      var nm = function (k) { return (k.abbr ? k.abbr + ': ' : '') + String(k.text || 'score').replace(/\s+/g, ' ').slice(0, 90); };
+      var hi = Math.max.apply(null, wpRaw.pts.map(function (q) { return q.p; })), lo = Math.min.apply(null, wpRaw.pts.map(function (q) { return q.p; }));
+      var perLbl = lg === 'mlb' ? ['1st', '3rd', '5th', '7th', '9th'] : lg === 'ncaab' ? ['Start', '2nd half', 'End'] : (wpRaw.periods === 3 ? ['Start', 'P2', 'P3', 'End'] : ['Start', 'Q2', 'Q3', 'Q4', 'End']);
+      var grid = []; for (var gi = 1; gi < wpRaw.periods; gi++) grid.push((gi / wpRaw.periods * 800).toFixed(1));
+      var hcol = '#' + String((idx[H.id] || {}).color || H.color || '3df2ff').replace('#', ''), acol = '#' + String((idx[A.id] || {}).color || A.color || 'ff5470').replace('#', '');
+      wp = { has: true, line: line, area: line + ' L' + X(last.f) + ',120 L0,120 Z', grid: grid, xl: perLbl,
+        hFill: hcol + 'aa', aFill: acol + 'aa', hLabel: (H.abbr || 'HOME') + ' ↑', aLabel: (A.abbr || 'AWAY') + ' ↓',
+        marks: top3.map(function (k) { return { x: X(k.f), y: Y(k.p), t: nm(k) + ' · ' + (k.swing > 0 ? H.abbr : A.abbr) + ' +' + pc(Math.abs(k.swing)) }; }),
+        hasSwing: top3.length > 0, swings: top3.map(function (k) { return nm(k) + ' (' + (k.swing > 0 ? H.abbr : A.abbr) + ' +' + pc(Math.abs(k.swing)) + ')'; }).join(' · '),
+        sub: g.done ? 'How the game unfolded' : 'Live · updates with each score',
+        aria: 'Win probability chart. ' + (H.abbr || 'Home') + ' started at ' + pc(wpRaw.pts[0].p) + ', peaked at ' + pc(hi) + ' and bottomed at ' + pc(lo) + (g.done ? '; final ' + (last.p === 1 ? (H.abbr || 'home') + ' won' : last.p === 0 ? (A.abbr || 'away') + ' won' : 'tie') : '; now ' + pc(last.p)) + '.',
+        note: 'Rebuilt from the scoring plays with the house model: the score at each moment plus the pre-game edge over the time left. Above the line favors ' + (H.abbr || 'home') + ', below favors ' + (A.abbr || 'away') + '.' + (g.done ? ' For a finished game the starting point uses today\'s ratings, which already include this result.' : '') + (lg === 'mlb' ? ' Baseball is placed by half-inning.' : '') };
+    }
     if (p && enough(MA) && enough(MH)) {
       var pre0 = p;
       if (lp) p = Object.assign({}, p, lp);
@@ -338,7 +383,19 @@ class Component extends DCLogic {
       picker: false, ok: true, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
       bandStyle: 'background: linear-gradient(100deg, ' + acolor + 'aa 0%, ' + acolor + '33 32%, rgba(3,7,12,.4) 50%, ' + color + '33 68%, ' + color + 'aa 100%), linear-gradient(180deg, transparent 40%, #03070c 100%), #03070c;',
       heads: heads, lineRows: lineRows, hasLines: heads.length > 0, noLines: !heads.length, noLinesText: pre ? 'Line score fills in once the game starts.' : 'No period scores in the feed.',
-      proj: proj, stats: stats, hasStats: stats.length > 0, noStats: !stats.length, noStatsText: pre ? 'Box score fills in once the game starts.' : 'No team stats in the feed for this game.', statsNote: g.done ? 'Final' : (pre ? '' : 'Live'),
+      proj: proj, wp: wp, shareMsg: S.shareMsg || '',
+      shareGo: function () {
+        var hc = '#' + String((idx[H.id] || {}).color || H.color || '3df2ff').replace('#', ''), ac = '#' + String((idx[A.id] || {}).color || A.color || 'ff5470').replace('#', '');
+        var pH = proj.has ? p.pHome : null, when = pre ? new Date(g.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + F.time(g.start) + ' ' + window.TZL : (g.detail || '');
+        cmp.setState({ shareMsg: 'Drawing the card…' });
+        SD.shareCard({ league: (L.short || lg.toUpperCase()), status: String(when).toUpperCase(), aAbbr: A.abbr || 'AWAY', hAbbr: H.abbr || 'HOME', aName: A.name || '', hName: H.name || '',
+          center: pre ? 'vs' : (A.score || '0') + '–' + (H.score || '0'), aColor: ac, hColor: hc, pHome: pH,
+          oddsLabel: pre ? 'house model, pre-game' : (g.done ? 'house model, rated today' : 'house model, live'),
+          wp: wpRaw ? wpRaw.pts : null, foot: (g.venue || '') + (g.venue && g.city ? ' · ' : '') + (g.city || ''),
+          file: (A.abbr || 'away') + '-at-' + (H.abbr || 'home'), title: (A.name || '') + ' at ' + (H.name || ''), text: location.href })
+          .then(function (r) { cmp.setState({ shareMsg: r === 'downloaded' ? 'Card saved as an image.' : r === 'shared' ? 'Shared.' : '' }); }, function () { cmp.setState({ shareMsg: 'The card could not be drawn in this browser.' }); });
+      },
+      stats: stats, hasStats: stats.length > 0, noStats: !stats.length, noStatsText: pre ? 'Box score fills in once the game starts.' : 'No team stats in the feed for this game.', statsNote: g.done ? 'Final' : (pre ? '' : 'Live'),
       leaders: leaders, noLeaders: !leaders.length, ldTitle: pre ? 'Season leaders' : 'Game leaders',
       scoring: scoring, hasScoring: scoring.length > 0, scoringNote: scoring.length + ' scoring plays',
       form: form, noForm: !form.length, seriesNote: (g.series || [])[0] || '',
