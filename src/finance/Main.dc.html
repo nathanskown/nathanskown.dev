@@ -410,9 +410,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{ownBars}}" as="ob" hint-placeholder-count="8"><div style="{{ob}}"></div></sc-for>
 </div>
 </div>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP ACTIVE BUYERS</div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
 <sc-for list="{{ownBuy}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">{{ob.v}}</span></div></sc-for>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP ACTIVE SELLERS</div>
+<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
 <sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
 <p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">{{ownRead}}</p>
 </sc-if>
@@ -689,7 +689,7 @@ class Component extends DCLogic {
       hasOwn: !!O, noOwn: !O, noOwnText: Q.onDemand ? 'No 13F page for this security: it has fewer than 30 institutional holders or its CUSIP could not be matched to a ticker.' : '13F data builds once a month from the SEC\'s quarterly data sets.', ownPeriod: O ? quarter(O.period) : '', ownInst: O ? F.n(O.inst, 1) + '%' : '',
       ownChg: O && O.instChg !== null ? F.arrow(O.instChg) + ' ' + (O.instChg >= 0 ? '+' : '−') + F.n(Math.abs(O.instChg), 1) + ' pts QoQ' : '',
       ownChgColor: O && O.instChg >= 0 ? UP : DN, ownHolders: O ? F.n(O.holders, 0) + ' holders · ' + (O.holdersChg >= 0 ? '+' : '−') + Math.abs(O.holdersChg) : '',
-      ownBars: ownBars, ownBuy: O ? F.activeMovers(O, 'buyers').slice(0, 3).map(mv) : [], ownSell: O ? F.activeMovers(O, 'sellers').slice(0, 3).map(mv) : [], ownRead: O ? O.read : '',
+      ownBars: ownBars, ownBuy: O ? O.buyers.slice(0, 3).map(mv) : [], ownSell: O ? O.sellers.slice(0, 3).map(mv) : [], ownRead: O ? O.read : '',
       ownHref: 'Ownership.dc.html?ticker=' + Q.sym,
       news: (Q.news || []).map(function (n) { return { h: n.title, link: n.link, meta: 'Yahoo Finance · ' + F.day(n.published) }; })
     });

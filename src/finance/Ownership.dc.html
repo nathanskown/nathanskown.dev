@@ -274,8 +274,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 24px">
 
-<section class="t-card" aria-label="Top active buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top active buyers</h2>
+<section class="t-card" aria-label="Top buyers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top buyers</h2>
 <sc-for list="{{d.buyers}}" as="b" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{b.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{b.note}}</span></span>
@@ -284,8 +284,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </section>
 
-<section class="t-card" aria-label="Top active sellers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top active sellers</h2>
+<section class="t-card" aria-label="Top sellers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top sellers</h2>
 <sc-for list="{{d.sellers}}" as="s" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{s.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{s.note}}</span></span>
@@ -406,7 +406,7 @@ class Component extends DCLogic {
     var nxt = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 4, 0) + 45 * 86400000);
     base.d = { name: D.name, so: F.big(D.so), px: D.price ? F.usd(D.price, 2) : '—',
       pxLabel: D.price ? (D.livePrice ? 'Value at the latest price of ' : 'Value at the latest close of ') + F.usd(D.price, 2) : 'Value: price unavailable', read: D.read, tiles: tiles, trend: trend, mix: mix, top: top,
-      buyers: F.activeMovers(D, 'buyers').map(mv), sellers: F.activeMovers(D, 'sellers').map(mv) };
+      buyers: D.buyers.map(mv), sellers: D.sellers.map(mv) };
     base.periodLabel = 'Holdings as of ' + period.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) + ' (' + quarter(D.period) + ')';
     base.nextLabel = quarter(new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 28)).toISOString().slice(0, 10)) + ' filings due ' + nxt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
     void due;

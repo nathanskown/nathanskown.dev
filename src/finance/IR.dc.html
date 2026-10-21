@@ -112,17 +112,17 @@
 </table></div></div>
 </section>
 
-<section class="t-panel" aria-label="Top active buyers and sellers">
-<div class="t-ph"><h2>Top active buyers and sellers</h2><span class="dim">Active managers that filed both quarters</span></div>
+<section class="t-panel" aria-label="Biggest buyers and sellers">
+<div class="t-ph"><h2>Biggest buyers and sellers</h2><span class="dim">Managers that filed both quarters</span></div>
 <div class="t-pb ir-two">
-<div><div class="ir-label up">TOP ACTIVE BUYERS</div><sc-for list="{{buyers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="up">{{m.sh}}</span></div></sc-for></div>
-<div><div class="ir-label dn">TOP ACTIVE SELLERS</div><sc-for list="{{sellers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="dn">{{m.sh}}</span></div></sc-for></div>
+<div><div class="ir-label up">BUYERS</div><sc-for list="{{buyers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="up">{{m.sh}}</span></div></sc-for></div>
+<div><div class="ir-label dn">SELLERS</div><sc-for list="{{sellers}}" as="m" hint-placeholder-count="5"><div class="ir-mv"><span>{{m.n}}<span class="dim ir-small">{{m.note}}</span></span><span class="dn">{{m.sh}}</span></div></sc-for></div>
 </div>
-<p class="s-note ir-note" style="padding: 0 14px 12px">Active means outside the four big index families (Vanguard, BlackRock, State Street, Geode). These are the managers making a choice about the stock, so they are the ones an IR effort can reach. 13F filings do not label funds, so this is an approximation.</p>
+<p class="s-note ir-note" style="padding: 0 14px 12px">Includes every manager, index funds too. 13F filings do not say whether a fund is active or passive, so buyers and sellers are not split by investor type.</p>
 </section>
 
-<section class="t-panel" aria-label="Passive fund flows">
-<div class="t-ph"><h2>Passive fund flows</h2><span class="dim">{{pasSub}}</span></div>
+<section class="t-panel" aria-label="Index fund holdings">
+<div class="t-ph"><h2>Index fund holdings</h2><span class="dim">{{pasSub}}</span></div>
 <div class="t-pb">
 <sc-if value="{{hasPassive}}" hint-placeholder-val="{{ true }}">
 <div class="ir-label">INDEX-FAMILY OWNERSHIP BY QUARTER</div>
@@ -279,7 +279,7 @@ class Component extends DCLogic {
       pasTrend = P.trend.map(function (t, i) { return { v: t.pct === null || t.pct === undefined ? '—' : F.n(t.pct, 1) + '%', p: qtr(t.p).replace(' 20', " '"), st: 'height: ' + Math.max(3, (t.pct || 0) / pm * 110).toFixed(0) + 'px; background: ' + (i === P.trend.length - 1 ? '#ffd166' : '#6b4e22') }; });
       families = (P.families || []).map(function (g) { return { n: F.firm(g.n), note: ' · ' + F.n(g.pct, 2) + '% of shares', chg: g.chg === null || g.chg === undefined ? '—' : F.pct(g.chg, 1), c: g.chg === null || g.chg === undefined ? '#9a8a6a' : col(g.chg) }; });
       var net = P.net;
-      pasNote = (net === null || net === undefined ? '' : 'Net index-fund flow last quarter: ' + sgnBig(net) + ' shares. ') + 'Passive holdings move with index weights and fund inflows, not a view on the company, so they are shown here and kept out of the active buyers and sellers.';
+      pasNote = (net === null || net === undefined ? '' : 'Net index-fund flow last quarter: ' + sgnBig(net) + ' shares. ') + 'Passive holdings move with index weights and fund inflows, not a view on the company.';
     } else {
       var fp = (O.top25 || []).filter(function (h) { return F.isPassive(h.n); });
       families = fp.map(function (h) { return { n: F.firm(h.n), note: ' · ' + (h.pct === null || h.pct === undefined ? '—' : F.n(h.pct, 2) + '% of shares'), chg: h.chg === null || h.chg === undefined || h.chg === 'New' ? '—' : F.pct(h.chg, 1), c: h.chg ? col(h.chg) : '#9a8a6a' }; });
@@ -316,7 +316,7 @@ class Component extends DCLogic {
       hasFlow: hasFlow, flowRows: flowRows, flowNote: flowNote, flowSub: qtr(O.prior) + ' → ' + qtr(O.period),
       trend: trendC, trendAria: 'Institutional ownership by quarter: ' + trend.map(function (t) { return qtr(t.p) + ' ' + (t.inst === null ? 'n/a' : t.inst + '%'); }).join(', '),
       top: rows, topSub: 'Grouped by firm · ' + rows.length + ' largest',
-      buyers: F.activeMovers(O, 'buyers').map(mv), sellers: F.activeMovers(O, 'sellers').map(mv),
+      buyers: (O.buyers || []).map(mv), sellers: (O.sellers || []).map(mv),
       hasPassive: pasTrend.length > 0 || families.length > 0, pasTrend: pasTrend, hasFamilies: families.length > 0, families: families, pasNote: pasNote, pasSub: pasSub,
       hasTargets: tg.length > 0, targets: tg.map(function (g) { return { n: F.firm(g.n), k: 'owns ' + g.peers + ' of ' + g.of + ' peers' }; }),
       tgtSub: sector ? sector + ' peers' : 'Sector peers',
