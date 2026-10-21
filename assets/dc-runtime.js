@@ -216,7 +216,7 @@
     NCAAF: '/sports/?lg=ncaaf', CFB: '/sports/?lg=ncaaf', NCAAB: '/sports/?lg=ncaab', CBB: '/sports/?lg=ncaab', NCAAH: '/sports/?lg=ncaah',
     SIM: '/sports/simulator/', ODDS: '/sports/odds/', INJ: '/sports/injuries/', LUCK: '/sports/luck-watch/',
     SOS: '/sports/schedule-strength/', TRAK: '/sports/track-record/', METH: '/sports/methodology/',
-    IR: '/finance/ir/', IDX: '/finance/index-calendar/', CAL: '/finance/index-calendar/', NOTES: '/finance/notes/', NOTE: '/finance/notes/', HOOD: '/under-the-hood/'
+    IR: '/finance/ir/', IDX: '/finance/index-calendar/', CAL: '/finance/index-calendar/', NOTES: '/finance/notes/', NOTE: '/finance/notes/', HOOD: '/under-the-hood/', ED: '/editions/', EDITIONS: '/editions/'
   };
   /* full US ticker list (SEC), loaded once on demand: { list: [[sym, name, cik, exch]], bySym: {SYM: {...}} } */
   var tickersP = null;

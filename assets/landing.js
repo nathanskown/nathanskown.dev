@@ -179,6 +179,7 @@
     else if (['HOME', 'MENU', 'OVERVIEW', '1'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
     else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
     else if (c === 'HOOD' || c === 'HOW') { out.push(L('WHERE EVERY NUMBER COMES FROM, HOW IT IS CHECKED, AND THE MODEL SCORECARD')); out.push(LINK('▸ OPEN UNDER THE HOOD', '/under-the-hood/')); }
+    else if (c === 'ED' || c === 'EDITIONS') { out.push(L('EVERY PAST VERSION OF THIS SITE, WITH SCREENSHOTS AND SOURCE')); out.push(LINK('▸ OPEN EDITIONS', '/editions/')); }
     else if (c === 'STATUS' || c === 'SYS') { out.push(L('DATA FEEDS, REFRESH JOBS AND SANITY CHECKS')); out.push(LINK('▸ OPEN SYSTEM STATUS', '/status/')); }
     else if (c === 'REBOOT') { setLast('REBOOT <GO>'); $('drawer').hidden = true; reboot(); return; }
     else if (c === 'SUDO' || c.indexOf('SUDO ') === 0) out.push(L('PERMISSION DENIED. THIS INCIDENT WILL BE REPORTED.', 'err'));

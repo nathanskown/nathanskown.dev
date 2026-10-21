@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editions · NSKN Terminal</title>
+<meta name="description" content="Every major version of nathanskown.dev, frozen: screenshots, what changed, and the full source at each edition.">
+<link rel="canonical" href="https://nathanskown.dev/editions/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NSKN Terminal">
+<meta property="og:title" content="Editions · NSKN Terminal">
+<meta property="og:description" content="Every major version of this site, frozen: screenshots, what changed and the source at each edition.">
+<meta property="og:url" content="https://nathanskown.dev/editions/">
+<meta property="og:image" content="https://nathanskown.dev/assets/editions/v3-home.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#020402">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--g:#8dff9c;--hi:#d6ffdc;--wh:#f2fff4;--dim:#7fc78a;--line:#163f1e;--bg:#020402;--panel:#041006;--mkt:#ffbf3a;--spt:#3df2ff;--mus:#d58bff;--ok:#4ade80;--warn:#ffb84d;--bad:#ff5f56}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 460px at 50% -160px,rgba(141,255,156,.12),transparent 70%),var(--bg);color:var(--hi);font:14px/1.6 'IBM Plex Mono',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+a{color:var(--g)}
+a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(141,255,156,.3)}
+.skip{position:absolute;left:8px;top:-60px;background:var(--g);color:#000;padding:8px 14px;font-weight:600;z-index:9}
+.skip:focus{top:8px}
+.bar{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;background:linear-gradient(90deg,#8dff9c,#5ee08a);color:#000;padding:6px 14px;font-weight:600}
+.bar a{color:#000;text-decoration:none}
+.bar a:hover{text-decoration:underline}
+main{max-width:1120px;margin:0 auto;padding:26px 16px 70px}
+.kick{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.kick::before{content:"";width:18px;height:2px;background:var(--g)}
+h1{font-family:VT323,monospace;font-weight:400;font-size:clamp(52px,8vw,96px);line-height:.88;margin:8px 0 10px;letter-spacing:.02em;background:linear-gradient(92deg,#fff,#d6ffdc 35%,#8dff9c 70%,#3df2ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(141,255,156,.35))}
+.lead{max-width:74ch;font-size:15px;color:var(--hi);margin:0 0 26px}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--wh);margin:0;padding:6px 14px;background:linear-gradient(90deg,rgba(141,255,156,.18),rgba(141,255,156,.03));border-left:3px solid var(--g);border-bottom:1px solid var(--line)}
+section{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);margin:0 0 20px}
+.pb{padding:14px 16px 16px}
+.note{color:var(--dim);font-size:12.5px;margin:10px 0 0;max-width:90ch}
+.ed{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);margin:0 0 26px}
+.ed-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(141,255,156,.14),transparent)}
+.ed-h .no{font-family:VT323,monospace;font-size:44px;line-height:.9;color:#fff;text-shadow:0 0 14px rgba(141,255,156,.5)}
+.ed-h h2{all:unset;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--wh);font-weight:600}
+.ed-h .dt{color:var(--dim);font-size:12.5px}
+.ed-h .cur{background:var(--g);color:#000;font-size:11px;font-weight:600;letter-spacing:.12em;padding:2px 7px}
+.ed-b{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;padding:16px}
+.ed ul{margin:0;padding-left:18px}.ed li{margin:0 0 6px}
+.ed .meta{color:var(--dim);font-size:12.5px;margin:12px 0 0}
+.shot{margin:0}
+.shot img{display:block;width:100%;height:auto;aspect-ratio:16/10;border:1px solid var(--line);background:#000}
+.shot figcaption{font-size:12px;color:var(--dim);margin-top:4px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.tabs button{font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#000;color:var(--dim);border:1px solid var(--line);padding:4px 9px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--g);color:#000;border-color:var(--g)}
+.tabs button:hover{color:var(--hi);border-color:var(--g)}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:860px){.ed-b{grid-template-columns:1fr}.cmp{grid-template-columns:1fr}}
+footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-size:12.5px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="bar" aria-label="Site"><a href="/">1-NSKN</a><a href="/finance/">Markets</a><a href="/sports/">Sports</a><a href="/music/">Music</a><span style="flex:1"></span><a href="/under-the-hood/">Under the hood ›</a></nav>
+<main id="main">
+<div class="kick">EDITIONS · every version, kept</div>
+<h1>Editions</h1>
+<p class="lead">This site changes most weeks. Each major version is frozen here: what it looked like, what was new, and the complete source code exactly as it shipped, so nothing is lost when the next one goes up.</p>
+<section aria-labelledby="h-cmp"><h2 id="h-cmp">Side by side</h2><div class="pb"><div class="tabs" role="group" aria-label="Page to compare"><button type="button" data-p="home" aria-pressed="true">Home</button><button type="button" data-p="markets" aria-pressed="false">Markets</button><button type="button" data-p="quote" aria-pressed="false">Quote page</button><button type="button" data-p="sports" aria-pressed="false">Sports</button><button type="button" data-p="music" aria-pressed="false">Music</button></div><div class="cmp"><figure class="shot"><img data-v="v1" src="/assets/editions/v1-home.jpg" alt="Edition 1, home page" width="1200" height="750" loading="lazy"><figcaption>Edition 1 · Oct 14, 2026</figcaption></figure><figure class="shot"><img data-v="v2" src="/assets/editions/v2-home.jpg" alt="Edition 2, home page" width="1200" height="750" loading="lazy"><figcaption>Edition 2 · Oct 15, 2026</figcaption></figure><figure class="shot"><img data-v="v3" src="/assets/editions/v3-home.jpg" alt="Edition 3, home page" width="1200" height="750" loading="lazy"><figcaption>Edition 3 · Oct 21, 2026</figcaption></figure></div></div></section>
+<article class="ed" aria-labelledby="e3"><div class="ed-h"><span class="no">3</span><h2 id="e3">Data you can check</h2><span class="dt">Oct 21, 2026</span><span class="cur">LIVE NOW</span></div><div class="ed-b"><div><ul><li>Stock screener over SEC bulk fundamentals and a year of prices, with presets and CSV export</li><li>Investor-relations view for any stock (who owns it, who bought and sold, who to call) that prints as a one-page tear sheet</li><li>Index event calendar (S&amp;P, Russell, MSCI, Nasdaq-100) and monthly data notes written from the site's own files</li><li>Win-probability charts and share cards on every game page; Luck Watch and Schedule Strength built out</li><li>A publishing gate that holds back bad data, plus the Under the Hood page and a plain-English glossary</li></ul><p class="meta"><a href="https://github.com/nathanskown/nathanskown.dev/tree/edition-3">Source at this edition</a> · <a href="https://github.com/nathanskown/nathanskown.dev/commits/edition-3">Commit history</a></p></div><div><div class="tabs" role="group" aria-label="Edition 3 pages"><button type="button" data-e="3" data-p="home" aria-pressed="true">Home</button><button type="button" data-e="3" data-p="markets" aria-pressed="false">Markets</button><button type="button" data-e="3" data-p="quote" aria-pressed="false">Quote page</button><button type="button" data-e="3" data-p="sports" aria-pressed="false">Sports</button><button type="button" data-e="3" data-p="music" aria-pressed="false">Music</button></div><figure class="shot"><img id="img3" src="/assets/editions/v3-home.jpg" alt="Edition 3, home page" width="1200" height="750" loading="lazy"><figcaption>Desktop, 1440 px wide. Sports scores in screenshots are sample games.</figcaption></figure></div></div></article>
+<article class="ed" aria-labelledby="e2"><div class="ed-h"><span class="no">2</span><h2 id="e2">The terminal</h2><span class="dt">Oct 15, 2026</span></div><div class="ed-b"><div><ul><li>Each section gets its own color: amber markets, cyan sports, violet music</li><li>Visitor-first: local time zones everywhere, follow your own teams, a customizable markets page</li><li>Cycling MARKETS / SPORTS / MUSIC hero, a live Right Now panel and a command line that looks anything up</li><li>Sports model refit on 10 to 27 seasons per league, with live win probability</li><li>Music daily challenge with a shared leaderboard; status page and share cards</li></ul><p class="meta"><a href="https://github.com/nathanskown/nathanskown.dev/tree/edition-2">Source at this edition</a> · <a href="https://github.com/nathanskown/nathanskown.dev/commits/edition-2">Commit history</a></p></div><div><div class="tabs" role="group" aria-label="Edition 2 pages"><button type="button" data-e="2" data-p="home" aria-pressed="true">Home</button><button type="button" data-e="2" data-p="markets" aria-pressed="false">Markets</button><button type="button" data-e="2" data-p="quote" aria-pressed="false">Quote page</button><button type="button" data-e="2" data-p="sports" aria-pressed="false">Sports</button><button type="button" data-e="2" data-p="music" aria-pressed="false">Music</button></div><figure class="shot"><img id="img2" src="/assets/editions/v2-home.jpg" alt="Edition 2, home page" width="1200" height="750" loading="lazy"><figcaption>Desktop, 1440 px wide. Sports scores in screenshots are sample games.</figcaption></figure></div></div></article>
+<article class="ed" aria-labelledby="e1"><div class="ed-h"><span class="no">1</span><h2 id="e1">Launch</h2><span class="dt">Oct 14, 2026</span></div><div class="ed-b"><div><ul><li>Three sections live: seven finance pages, sports scores and team pages, two music guessing games</li><li>Data pipeline on GitHub Actions: quotes, headlines, earnings, IPOs, macro and 13F ownership</li><li>On-demand quotes for any US ticker through a Cloudflare Worker</li><li>One green terminal look across the whole site</li></ul><p class="meta"><a href="https://github.com/nathanskown/nathanskown.dev/tree/edition-1">Source at this edition</a> · <a href="https://github.com/nathanskown/nathanskown.dev/commits/edition-1">Commit history</a></p></div><div><div class="tabs" role="group" aria-label="Edition 1 pages"><button type="button" data-e="1" data-p="home" aria-pressed="true">Home</button><button type="button" data-e="1" data-p="markets" aria-pressed="false">Markets</button><button type="button" data-e="1" data-p="quote" aria-pressed="false">Quote page</button><button type="button" data-e="1" data-p="sports" aria-pressed="false">Sports</button><button type="button" data-e="1" data-p="music" aria-pressed="false">Music</button></div><figure class="shot"><img id="img1" src="/assets/editions/v1-home.jpg" alt="Edition 1, home page" width="1200" height="750" loading="lazy"><figcaption>Desktop, 1440 px wide. Sports scores in screenshots are sample games.</figcaption></figure></div></div></article>
+</main>
+<footer>Designed by Nathan Skown and built with Claude. <a href="https://github.com/nathanskown/nathanskown.dev">Source on GitHub</a> · <a href="/under-the-hood/">Under the hood</a> · <a href="/">Home</a></footer>
+<script>
+(function () {
+  var names = {home:'home page',markets:'markets page',quote:'quote page',sports:'sports page',music:'music page'};
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var p = b.getAttribute('data-p'), e = b.getAttribute('data-e');
+      b.parentNode.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      var imgs = e ? [document.getElementById('img' + e)] : document.querySelectorAll('.cmp img');
+      imgs.forEach(function (im) { var v = e ? 'v' + e : im.getAttribute('data-v'); im.src = '/assets/editions/' + v + '-' + p + '.jpg'; im.alt = 'Edition ' + v.slice(1) + ', ' + names[p]; });
+    });
+  });
+})();
+</script>
+</body>
+</html>
