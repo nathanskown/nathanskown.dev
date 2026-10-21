@@ -352,3 +352,5 @@ body.has-tape{padding-bottom:34px}
 }
 .t .s-tabs{display:flex;flex-wrap:wrap;gap:4px}
 .t .s-tabs .t-tab{min-height:36px;padding:0 12px}
+/* wide tables scroll inside their panel instead of the page (IR view, calendar) */
+.t .s-scroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
