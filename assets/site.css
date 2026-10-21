@@ -324,15 +324,17 @@ text-shadow:0 0 2px var(--hg),0 0 18px color-mix(in srgb,var(--hg) 45%,transpare
 .nk-status a:hover{text-decoration:underline}
 a.nk-fkey{display:inline-flex;align-items:center}
 
-/* about banner */
-.nk-about{position:relative;margin:0 0 14px;display:flex;align-items:stretch;border:1px solid var(--g);background:linear-gradient(90deg,rgba(141,255,156,.16),rgba(0,0,0,.92) 70%);box-shadow:0 0 24px rgba(141,255,156,.14);animation:nkAbout 3.2s ease-in-out infinite}
-.nk-about[hidden]{display:none}
-@keyframes nkAbout{50%{box-shadow:0 0 34px rgba(141,255,156,.32)}}
-.nk-about-a{flex:1 1 auto;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:11px 14px;min-height:48px;color:var(--hi);text-decoration:none}
-.nk-about-a:hover{background:rgba(141,255,156,.1)}
-.nk-about-k{font-weight:600;letter-spacing:.14em;color:#000;background:var(--g);padding:1px 7px}
-.nk-about-t{flex:1 1 260px;color:var(--hi)}
-.nk-about-go{color:var(--g);font-weight:600;letter-spacing:.08em;white-space:nowrap}
-.nk-about-x{flex:0 0 48px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--dim);font:inherit;cursor:pointer;min-height:48px}
-.nk-about-x:hover{color:#fff;background:var(--hover)}
-@media (prefers-reduced-motion:reduce){.nk-about{animation:none}}
+/* about: featured nav row + quiet "new here" strip */
+.nk-nav-about{flex-wrap:wrap;row-gap:0;margin:6px 8px 8px;width:auto;padding:6px 8px;border:1px solid var(--hi);color:var(--hi);background:rgba(255,255,255,.05)}
+.nk-nav-about:hover{background:rgba(255,255,255,.12)}
+.nk-nav-about .nk-num{color:var(--hi)}
+.nk-start{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.12em;color:#000;background:var(--hi);padding:0 5px}
+.nk-nav-sub{flex:1 1 100%;padding-left:24px;font-size:12px;color:var(--dim)}
+.nk-nav-about.is-new .nk-start{animation:nkStart 1.6s ease-in-out 3}
+@keyframes nkStart{50%{box-shadow:0 0 0 3px rgba(255,255,255,.35)}}
+.nk-newhere{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:8px 12px;border:1px solid var(--line);color:var(--dim);font-size:13px}
+.nk-newhere span:nth-child(2){flex:1 1 auto;min-width:0}
+.nk-newhere-go{color:var(--hi);letter-spacing:.08em;white-space:nowrap}
+.nk-newhere:hover{background:var(--hover);color:var(--hi)}
+@media (prefers-reduced-motion:reduce){.nk-nav-about.is-new .nk-start{animation:none}}
+@media (max-width:760px){.nk-nav-about{flex-wrap:nowrap;margin:0;padding:0 15px;border:0;border-right:1px solid var(--hi);background:rgba(255,255,255,.08)}.nk-nav-sub{display:none}.nk-start{margin-left:6px}.nk-newhere{margin:12px 0 0}}

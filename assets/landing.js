@@ -143,8 +143,9 @@
   var MUS_URL = { TRCK: '/music/track/', ARTS: '/music/artist/' };
   function helpLines() {
     var r = function (a, b) { return '  ' + a.padEnd(12) + b; };
-    return ['SECTIONS', r('MKT', 'Market analysis              2'), r('SPRT', 'Sports                       3'), r('MUS', 'Music games                 4'), r('DGST', 'Morning digest signup        5'), '',
-      'PAGES', r('HOME', 'Overview                     1'), r('ABOUT', 'Why this site exists       6'), r('CONTACT', 'Get in touch                 7'), '',
+    return ['PAGES', r('ABOUT', 'Why this site exists       1'), r('HOME', 'Overview                     2'), '',
+      'SECTIONS', r('MKT', 'Market analysis              3'), r('SPRT', 'Sports                       4'), r('MUS', 'Music games                 5'), r('DGST', 'Morning digest signup        6'), '',
+      'MORE', r('HOOD', 'Under the hood                7'), r('ED', 'Editions                     8'), r('CONTACT', 'Get in touch                 9'), '',
       'SHORTCUTS', '  WEI  TOP  DES  HDS  ERN  ECO  IPO  ·  SCOR  GAME  TEAM  ODDS  SIM  INJ  ·  TRCK  ARTS', '',
       'LOOK UP', r('MOD', 'Any US ticker → quote page'), r('MOD HDS', 'Ticker → 13F ownership'), r('LIONS', 'Any team → team page (add NFL, BB, FB…)'), '',
       'SYSTEM', r('HOOD', 'How the site works, sources, model scorecard'), r('STATUS', 'Data feed health'), r('REBOOT', 'Replay the boot sequence'), r('CLEAR', 'Clear this console')];
@@ -167,19 +168,19 @@
     var out = [L('NSKN › ' + c + ' <GO>', 'echo')];
     var active = null;
     if (c === 'HELP' || c === 'H' || c === '?') helpLines().forEach(function (t) { out.push(L(t)); });
-    else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '2'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · 8 PAGES · LIVE DATA')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
-    else if (['SPRT', 'SPORT', 'SPORTS', '3'].indexOf(c) > -1) { flash('secSprt'); out.push(L('SPORTS · SCORES, GAME CENTER, TEAMS, ODDS, SIMULATOR')); out.push(LINK('▸ OPEN SPORTS', '/sports/')); }
-    else if (['MUS', 'MUSIC', '4'].indexOf(c) > -1) { flash('secMusic'); out.push(L('MUSIC · GUESS THE TRACK, GUESS THE ARTIST')); out.push(LINK('▸ OPEN MUSIC', '/music/')); }
+    else if (['MKT', 'MARKET', 'MARKETS', 'FIN', 'FINANCE', '3'].indexOf(c) > -1) { flash('secMkt'); out.push(L('MARKET ANALYSIS · 8 PAGES · LIVE DATA')); out.push(LINK('▸ OPEN MARKET ANALYSIS', '/finance/')); }
+    else if (['SPRT', 'SPORT', 'SPORTS', '4'].indexOf(c) > -1) { flash('secSprt'); out.push(L('SPORTS · SCORES, GAME CENTER, TEAMS, ODDS, SIMULATOR')); out.push(LINK('▸ OPEN SPORTS', '/sports/')); }
+    else if (['MUS', 'MUSIC', '5'].indexOf(c) > -1) { flash('secMusic'); out.push(L('MUSIC · GUESS THE TRACK, GUESS THE ARTIST')); out.push(LINK('▸ OPEN MUSIC', '/music/')); }
     else if (MUS[c]) { flash('secMusic'); out.push(L(c + ' · ' + MUS[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, MUS_URL[c])); }
     else if (FIN[c]) { flash('secMkt'); out.push(L(c + ' · ' + FIN[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, FIN_URL[c])); }
     else if (SPRT[c]) { flash('secSprt'); out.push(L(c + ' · ' + SPRT[c].toUpperCase())); out.push(LINK('▸ OPEN ' + c, SPRT_URL[c])); }
-    else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '5'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
-    else if (['ABOUT', 'WHOAMI', 'BIO', '6'].indexOf(c) > -1) { out.push(L('WHY THIS SITE EXISTS, WHAT IS HERE, AND HOW FAR TO TRUST IT')); out.push(LINK('▸ OPEN ABOUT', '/about/')); }
-    else if (['CONTACT', 'MSG', '7'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
-    else if (['HOME', 'MENU', 'OVERVIEW', '1'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
+    else if (['DGST', 'DIGEST', 'SUB', 'SUBSCRIBE', 'SIGNUP', '6'].indexOf(c) > -1) { active = 'digest'; out.push(L('DETROIT + MSU MORNING DIGEST · EVERY MORNING 5:15 AM CT')); out.push(LINK('▸ SUBSCRIBE BY EMAIL', DGST_URL)); }
+    else if (['ABOUT', 'WHOAMI', 'BIO', '1'].indexOf(c) > -1) { out.push(L('WHY THIS SITE EXISTS, WHAT IS HERE, AND HOW FAR TO TRUST IT')); out.push(LINK('▸ OPEN ABOUT', '/about/')); }
+    else if (['CONTACT', 'MSG', '9'].indexOf(c) > -1) { active = 'contact'; out.push(L('CONTACT CHANNELS LISTED BELOW THE HERO')); }
+    else if (['HOME', 'MENU', 'OVERVIEW', '2'].indexOf(c) > -1) { active = 'overview'; out.push(L('RETURNED TO HOME')); }
     else if (c === 'CLEAR' || c === 'CLS') { state.log = []; $('drawer').hidden = true; setLast(c + ' <GO>'); return; }
-    else if (c === 'HOOD' || c === 'HOW') { out.push(L('WHERE EVERY NUMBER COMES FROM, HOW IT IS CHECKED, AND THE MODEL SCORECARD')); out.push(LINK('▸ OPEN UNDER THE HOOD', '/under-the-hood/')); }
-    else if (c === 'ED' || c === 'EDITIONS') { out.push(L('EVERY PAST VERSION OF THIS SITE, WITH SCREENSHOTS AND SOURCE')); out.push(LINK('▸ OPEN EDITIONS', '/editions/')); }
+    else if (c === 'HOOD' || c === 'HOW' || c === '7') { out.push(L('WHERE EVERY NUMBER COMES FROM, HOW IT IS CHECKED, AND THE MODEL SCORECARD')); out.push(LINK('▸ OPEN UNDER THE HOOD', '/under-the-hood/')); }
+    else if (c === 'ED' || c === 'EDITIONS' || c === '8') { out.push(L('EVERY PAST VERSION OF THIS SITE, WITH SCREENSHOTS AND SOURCE')); out.push(LINK('▸ OPEN EDITIONS', '/editions/')); }
     else if (c === 'STATUS' || c === 'SYS') { out.push(L('DATA FEEDS, REFRESH JOBS AND SANITY CHECKS')); out.push(LINK('▸ OPEN SYSTEM STATUS', '/status/')); }
     else if (c === 'REBOOT') { setLast('REBOOT <GO>'); $('drawer').hidden = true; reboot(); return; }
     else if (c === 'SUDO' || c.indexOf('SUDO ') === 0) out.push(L('PERMISSION DENIED. THIS INCIDENT WILL BE REPORTED.', 'err'));
@@ -688,8 +689,12 @@
 })();
 
 (function () {
-  var b = document.getElementById('aboutBanner'), x = document.getElementById('aboutX');
-  if (!b || !x) return;
-  try { if (localStorage.getItem('nskn-about-x') === '1') b.hidden = true; } catch (e) {}
-  x.addEventListener('click', function () { b.hidden = true; try { localStorage.setItem('nskn-about-x', '1'); } catch (e) {} });
+  var n = document.getElementById('navAbout'), t = document.getElementById('stripAbout');
+  if (!n) return;
+  var seen = false;
+  try { seen = localStorage.getItem('nskn-about-seen') === '1'; } catch (e) {}
+  if (!seen) n.classList.add('is-new');
+  function mark() { try { localStorage.setItem('nskn-about-seen', '1'); } catch (e) {} }
+  n.addEventListener('click', mark);
+  if (t) t.addEventListener('click', mark);
 })();

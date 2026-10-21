@@ -67,15 +67,15 @@
 
 <nav class="nk-side" aria-label="Site">
 <div class="nk-sh">Navigate</div>
-<button type="button" class="nk-nav" data-go="overview"><span class="nk-num">1)</span>Overview</button>
-<a class="nk-nav" href="/finance/"><span class="nk-num">2)</span>Market Analysis</a>
-<a class="nk-nav" href="/sports/"><span class="nk-num">3)</span>Sports</a>
-<a class="nk-nav" href="/music/"><span class="nk-num">4)</span>Music</a>
-<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">5)</span>Morning Digest</button>
-<a class="nk-nav" href="/about/"><span class="nk-num">6)</span>About</a>
-<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">7)</span>Contact</button>
-<a class="nk-nav" href="/under-the-hood/"><span class="nk-num">8)</span>Under the hood</a>
-<a class="nk-nav" href="/editions/"><span class="nk-num">9)</span>Editions</a>
+<a class="nk-nav nk-nav-about" id="navAbout" href="/about/"><span class="nk-num">1)</span>About<span class="nk-start" aria-hidden="true">START HERE</span><span class="nk-nav-sub">What this is, and why I built it</span></a>
+<button type="button" class="nk-nav" data-go="overview"><span class="nk-num">2)</span>Overview</button>
+<a class="nk-nav" href="/finance/"><span class="nk-num">3)</span>Market Analysis</a>
+<a class="nk-nav" href="/sports/"><span class="nk-num">4)</span>Sports</a>
+<a class="nk-nav" href="/music/"><span class="nk-num">5)</span>Music</a>
+<button type="button" class="nk-nav" data-go="digest"><span class="nk-num">6)</span>Morning Digest</button>
+<a class="nk-nav" href="/under-the-hood/"><span class="nk-num">7)</span>Under the hood</a>
+<a class="nk-nav" href="/editions/"><span class="nk-num">8)</span>Editions</a>
+<button type="button" class="nk-nav" data-go="contact"><span class="nk-num">9)</span>Contact</button>
 <p class="nk-tip nk-hide-sm">Type <span class="nk-hi">HELP</span> in the command line and press <span class="nk-k">GO</span> for every shortcut.</p>
 </nav>
 
@@ -95,39 +95,35 @@
 <button type="button" class="nk-mode" role="tab" data-mode="2" style="--mc:#d58bff"><span>03 MUSIC</span><i class="nk-mode-bar"></i></button>
 </div>
 
-<div class="nk-about" id="aboutBanner">
-<a class="nk-about-a" href="/about/"><span class="nk-num">6)</span><span class="nk-about-k">ABOUT</span><span class="nk-about-t">New here? The two-minute story of this site: why it exists and how far to trust it.</span><span class="nk-about-go">READ <span class="nk-k">GO</span> →</span></a>
-<button type="button" class="nk-about-x" id="aboutX" aria-label="Dismiss this notice">✕</button>
-</div>
-
 <div class="nk-secs">
 <a class="nk-sec" id="secMkt" href="/finance/" style="--g:#ffbf3a;--glow:rgba(255,191,58,.18);--line:#3d2e0d">
-<span class="nk-sec-top"><span class="nk-num">2)</span><span class="nk-k">MKT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-top"><span class="nk-num">3)</span><span class="nk-k">MKT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">MARKET<br>ANALYSIS</span>
 <span class="nk-sec-d">Dashboard · headlines · quotes · ownership · earnings · macro · IPOs</span>
 <span class="nk-sec-live" id="cardMkt">Loading markets…</span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <a class="nk-sec" id="secSprt" href="/sports/" style="--g:#66e6f2;--glow:rgba(102,230,242,.18);--line:#12363b">
-<span class="nk-sec-top"><span class="nk-num">3)</span><span class="nk-k">SPRT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-top"><span class="nk-num">4)</span><span class="nk-k">SPRT</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">SPORTS</span>
 <span class="nk-sec-d">Live scores · game center · team pages · playoff odds · matchup simulator · injuries · pick track record</span>
 <span class="nk-sec-live" id="cardSprt">Loading scores…</span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <a class="nk-sec" id="secMusic" href="/music/" style="--g:#d58bff;--glow:rgba(213,139,255,.18);--line:#2e1a3d">
-<span class="nk-sec-top"><span class="nk-num">4)</span><span class="nk-k">MUS</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
+<span class="nk-sec-top"><span class="nk-num">5)</span><span class="nk-k">MUS</span><span class="nk-spacer"></span><span aria-hidden="true">→</span></span>
 <span class="nk-sec-t">MUSIC</span>
 <span class="nk-sec-d">Two guessing games · name the song from a clip · name the artist from their deep cuts</span>
 <span class="nk-sec-live"><span class="nk-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>TODAY'S DAILY IS LIVE</span>
 <span class="nk-sec-go"><span>ENTER</span><span class="nk-k">GO</span></span>
 </a>
 <button type="button" class="nk-dg" id="secDgst" data-go="digest">
-<span class="nk-dg-k"><span class="nk-num">5)</span><span class="nk-k">DGST</span></span>
+<span class="nk-dg-k"><span class="nk-num">6)</span><span class="nk-k">DGST</span></span>
 <span class="nk-dg-main"><span class="nk-dg-t">DETROIT + MSU MORNING DIGEST</span><span class="nk-dg-d">Free · in your inbox every morning at 5:15 AM CT</span></span>
 <span class="nk-dg-go">SUBSCRIBE <span class="nk-k">GO</span></span>
 </button>
 </div>
+<a class="nk-newhere" id="stripAbout" href="/about/"><span class="nk-num">1)</span><span>New here? Read what this site is, why it exists and how far to trust it.</span><span class="nk-newhere-go">ABOUT →</span></a>
 </div>
 </div>
 
