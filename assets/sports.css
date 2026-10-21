@@ -296,3 +296,31 @@ body.has-crawl{padding-bottom:34px}
 @media (max-width:760px){.s-wp-svg{height:180px}}
 .t .s-share{min-height:32px;padding:0 10px;border:1px solid var(--a);background:transparent;color:var(--wh);font:inherit;font-size:12px;letter-spacing:.06em;cursor:pointer;margin-right:8px}
 .t .s-share:hover{background:var(--a);color:#000;text-shadow:none}
+
+/* model history */
+.hs-lad{display:grid;gap:2px}
+.hs-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.2fr) 74px 84px 112px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.hs-row:first-child{border-top:0}
+.hs-lbl b{display:block;color:#fff;font-weight:600}
+.hs-lbl span{display:block;font-size:12.5px;line-height:1.45}
+.hs-bar{position:relative;height:26px;background:#000;border:1px solid var(--line)}
+.hs-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(61,242,255,.28),rgba(61,242,255,.75))}
+.hs-bar span{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12.5px;color:#fff;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+.hs-num{text-align:right;font-variant-numeric:tabular-nums}
+.hs-num b{display:block;color:#fff;font-weight:600}
+.hs-num span{display:block;font-size:11.5px}
+.hs-svg{display:block;width:100%;height:auto}
+.hs-leg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--dim)}
+.hs-leg i{display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle}
+.hs-leg i.o{height:9px;width:9px;border:2px solid #3df2ff;border-radius:50%;background:transparent}
+.hs-det{margin-top:10px}
+.hs-det summary{cursor:pointer;color:var(--hi);min-height:44px;display:flex;align-items:center}
+.hs-tl{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}
+.hs-tl li{position:relative;padding:0 0 18px 6px}
+.hs-tl li::before{content:"";position:absolute;left:-26px;top:5px;width:10px;height:10px;border-radius:50%;background:#020607;border:2px solid #3df2ff}
+.hs-tl h3{margin:2px 0 4px;font-size:15px;color:#fff}
+.hs-tl p{margin:0 0 4px;max-width:82ch}
+.hs-dt{font-size:12px;letter-spacing:.08em;color:#3df2ff}
+.hs-meta{font-size:12.5px;color:var(--dim)}
+.hs-lim{margin:0;padding-left:18px;max-width:88ch}.hs-lim li{margin:0 0 8px}
+@media (max-width:860px){.hs-row{grid-template-columns:1fr 1fr;gap:6px 12px}.hs-lbl{grid-column:1/-1}.hs-bar{grid-column:1/-1}.hs-num{text-align:left}}

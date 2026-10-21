@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model history</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0;background:#020607}</style>
+</helmet>
+<div class="t">
+
+<header>
+<div class="t-title">
+<a class="t-brand" href="/">1-NSKN</a>
+<span class="t-chip t-hide-sm">HIST &lt;GO&gt;</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-live"><span class="t-dot"></span>MEASURED</span>
+<span class="dim">ALL TIMES {{tzLabel}}</span>
+</div>
+<div class="t-help">
+<span><span class="t-inv">&lt;HELP&gt;</span> for explanation.</span>
+<span class="dim t-hide-sm">Every number here is replayed from stored games</span>
+</div>
+<form class="t-cmd" data-cmd>
+<label for="histSearch" class="t-prompt">NSKN ›</label>
+<input id="histSearch" class="t-input" type="search" placeholder="ANY TEAM, PAGE CODE OR HOME" autocomplete="off" enterkeyhint="go">
+</form>
+<nav class="t-fbar" aria-label="Sports pages">
+<span class="t-fbar-title">Sports</span>
+<a class="t-fkey" href="Main.dc.html">1) Scores</a>
+<a class="t-fkey" href="Teams.dc.html">2) Teams</a>
+<a class="t-fkey" href="Simulator.dc.html">3) Simulator</a>
+<a class="t-fkey" href="Odds.dc.html">4) Playoff odds</a>
+<a class="t-fkey" href="Injuries.dc.html">5) Injuries</a>
+<a class="t-fkey" href="LuckWatch.dc.html">6) Luck</a>
+<a class="t-fkey" href="Schedule.dc.html">7) Schedule</a>
+<a class="t-fkey" href="TrackRecord.dc.html">8) Track record</a>
+<a class="t-fkey" href="Methodology.dc.html">9) Method</a>
+<a class="t-fkey is-on" href="#" aria-current="page">Model history</a>
+<a class="t-fkey" href="/">Home</a>
+</nav>
+<div class="t-sub">
+<span>Model history (HIST)</span>
+<span class="dim">{{todayLabel}}</span>
+<span style="flex: 1 1 auto"></span>
+<span class="t-tag">{{tag}}</span>
+</div>
+</header>
+
+<main class="s-wrap">
+<div>
+<div class="dim" style="letter-spacing: .14em; font-size: 12px">NSKN » SPORTS » HIST</div>
+<h1 style="margin: 6px 0 0">Model history</h1>
+<p style="margin: 8px 0 0; max-width: 78ch" class="hi">The house model went live on October 14 with one season of results and guessed settings. Since then it has been given more history, last season’s ratings, fitted settings, rest days, expected goals and starting pitchers. This page replays the past seasons with each ingredient added in turn, and scores every step on games the settings were never fitted on, so you can see what each one was worth, including the ones that were worth nothing.</p>
+</div>
+
+<section class="t-panel" aria-label="Summary">
+<div class="t-ph"><h2>Then and now, every league</h2><span class="dim">{{ov.sub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{ov.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{ov.noneText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">League</th><th scope="col">Games tested</th><th scope="col">Launch Brier</th><th scope="col">Now</th><th scope="col">Error removed vs. no-model baseline</th><th scope="col">Picked right</th><th scope="col">Better in</th></tr></thead>
+<tbody><sc-for list="{{ov.rows}}" as="r" hint-placeholder-count="7"><tr><th scope="row" class="l"><a href="{{r.href}}" style="color: inherit">{{r.lg}}</a></th><td>{{r.n}}</td><td>{{r.b0}}</td><td style="{{r.st}}">{{r.b1}}</td><td>{{r.skill}}</td><td>{{r.acc}}</td><td>{{r.folds}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">Brier score is the average squared error of the win probability: lower is better, .250 is a coin flip on every game and 0 would be a perfect forecast. “Launch” is the model as it went live; “Now” is the model running today. Both are scored on the four newest full seasons of each league (pandemic seasons excluded), with settings fitted only on the seasons before each one. “Better in” counts those held-out seasons where today’s model beat the launch one. Click a league for the step-by-step build.</p>
+</div>
+</section>
+
+<div class="s-tabs" role="group" aria-label="League">
+<sc-for list="{{lgTabs}}" as="t" hint-placeholder-count="7"><button type="button" class="{{t.cls}}" aria-pressed="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{has}}" hint-placeholder-val="{{true}}">
+<section class="t-panel" aria-label="Build-up">
+<div class="t-ph"><h2>{{lgName}}: what each ingredient added</h2><span class="dim">{{ld.sub}}</span></div>
+<div class="t-pb">
+<p class="hi" style="margin: 0 0 12px; max-width: 80ch">{{ld.head}}</p>
+<div class="hs-lad" role="table" aria-label="Forecast quality after each ingredient was added">
+<sc-for list="{{ld.rows}}" as="r" hint-placeholder-count="6">
+<div class="hs-row" role="row">
+<div class="hs-lbl" role="cell"><b>{{r.label}}</b><span class="dim">{{r.note}}</span></div>
+<div class="hs-bar" role="cell" aria-label="{{r.aria}}"><i style="{{r.bar}}"></i><span>{{r.skill}}</span></div>
+<div class="hs-num" role="cell"><b>{{r.brier}}</b><span class="dim">Brier</span></div>
+<div class="hs-num" role="cell"><b>{{r.acc}}</b><span class="dim">picked right</span></div>
+<div class="hs-num" role="cell"><b style="{{r.dst}}">{{r.delta}}</b><span class="dim">vs. step before</span></div>
+</div>
+</sc-for>
+</div>
+<p class="s-note" style="margin: 10px 0 0">Bars show how much of the no-model baseline’s Brier error each step removes (1 minus Brier ÷ baseline Brier). The staircase depends on the order the pieces were added, so the table below takes each piece out of the finished model instead. A step smaller than .0005 in Brier is inside the noise of a four-season test and is marked as no real change.</p>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Season by season">
+<div class="t-ph"><h2>{{lgName}}: season by season</h2><span class="dim">{{ld.seasonSub}}</span></div>
+<div class="t-pb">
+<div class="hs-leg" aria-hidden="true"><span><i style="background: #7a8b90"></i>No model (home win rate)</span><span><i style="background: #ffc53d"></i>Launch settings</span><span><i style="background: #3df2ff"></i>Today’s settings</span><span><i class="o"></i>hollow cyan = today’s settings were fitted on this season</span></div>
+<div class="s-wp" style="margin-top: 8px">
+<svg viewBox="0 0 800 270" role="img" aria-label="{{ch.aria}}" class="hs-svg">
+<sc-for list="{{ch.grid}}" as="g" hint-placeholder-count="4"><line x1="48" y1="{{g.y}}" x2="792" y2="{{g.y}}" stroke="rgba(255,255,255,.09)" stroke-width="1"></line><text x="42" y="{{g.ty}}" text-anchor="end" fill="#7fb4bc" font-size="11">{{g.t}}</text></sc-for>
+<sc-if value="{{ch.hasSplit}}" hint-placeholder-val="{{true}}"><rect x="{{ch.splitX}}" y="14" width="{{ch.splitW}}" height="224" fill="rgba(61,242,255,.05)"></rect><text x="{{ch.splitTx}}" y="28" fill="#7fb4bc" font-size="11">{{ch.splitLbl}}</text></sc-if>
+<path d="{{ch.base}}" fill="none" stroke="#7a8b90" stroke-width="2" stroke-dasharray="5 4"></path>
+<path d="{{ch.launch}}" fill="none" stroke="#ffc53d" stroke-width="2.5" stroke-linejoin="round"></path>
+<path d="{{ch.cur}}" fill="none" stroke="#3df2ff" stroke-width="2.5" stroke-linejoin="round"></path>
+<sc-for list="{{ch.dots}}" as="d" hint-placeholder-count="8"><circle cx="{{d.x}}" cy="{{d.y1}}" r="3.5" fill="#ffc53d"></circle><circle cx="{{d.x}}" cy="{{d.y2}}" r="4.5" fill="{{d.f2}}" stroke="#3df2ff" stroke-width="2"><title>{{d.t}}</title></circle><text x="{{d.x}}" y="260" text-anchor="middle" fill="#7fb4bc" font-size="11">{{d.l}}</text></sc-for>
+</svg>
+</div>
+<p class="s-note" style="margin: 10px 0 0">Each point is that season’s Brier score (lower is better). Where a point is solid, today’s settings were fitted on the seasons <i>before</i> it and never saw it. Where it is hollow, today’s settings were fitted on seasons that include it, so the cyan line there is flattering by construction and only the solid points prove anything. The launch settings are the same every year, so the launch line is fair everywhere.</p>
+<details class="hs-det"><summary>Show the numbers</summary>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Season</th><th scope="col">Games</th><th scope="col">No model</th><th scope="col">Launch</th><th scope="col">Today’s</th><th scope="col">Picked right</th><th scope="col" class="l">Basis</th></tr></thead>
+<tbody><sc-for list="{{ch.rows}}" as="r" hint-placeholder-count="8"><tr><th scope="row" class="l">{{r.y}}</th><td>{{r.n}}</td><td>{{r.base}}</td><td>{{r.launch}}</td><td>{{r.cur}}</td><td>{{r.acc}}</td><td class="l">{{r.basis}}</td></tr></sc-for></tbody>
+</table></div>
+</details>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Take one away">
+<div class="t-ph"><h2>{{lgName}}: take one piece away</h2><span class="dim">held-out seasons only</span></div>
+<div class="t-pb">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Remove from today’s model</th><th scope="col">Brier without it</th><th scope="col">Change</th><th scope="col" class="l">Verdict</th></tr></thead>
+<tbody><sc-for list="{{ld.abl}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.brier}}</td><td style="{{r.st}}">{{r.delta}}</td><td class="l">{{r.verdict}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">The finished model is scored with one ingredient put back to its launch value, on the same held-out games. A positive change means the model got worse without it, so the piece was earning its place. Fitted settings are removed as a group (prior weight, home edge and margin limits).</p>
+<sc-if value="{{ld.hasMarket}}" hint-placeholder-val="{{false}}"><p class="s-note hi" style="margin: 10px 0 0">{{ld.market}}</p></sc-if>
+</div>
+</section>
+</sc-if>
+
+<section class="t-panel" aria-label="Timeline">
+<div class="t-ph"><h2>Timeline: what data went in, and when</h2><span class="dim">{{tl.sub}}</span></div>
+<div class="t-pb">
+<ol class="hs-tl">
+<sc-for list="{{tl.items}}" as="m" hint-placeholder-count="8">
+<li>
+<div class="hs-dt">{{m.date}} <span class="dim">· {{m.commit}}</span></div>
+<h3>{{m.title}}</h3>
+<p>{{m.text}}</p>
+<sc-if value="{{m.hasDepth}}" hint-placeholder-val="{{true}}"><p class="hs-meta">{{m.depth}}</p></sc-if>
+<sc-if value="{{m.hasGain}}" hint-placeholder-val="{{false}}"><p class="hs-meta">{{m.gain}}</p></sc-if>
+</li>
+</sc-for>
+</ol>
+<p class="s-note" style="margin: 10px 0 0">{{tl.note}}</p>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Live record">
+<div class="t-ph"><h2>The live record so far</h2><span class="dim">{{lv.sub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{lv.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{lv.noneText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">League</th><th scope="col">Graded picks</th><th scope="col">Picked right</th><th scope="col">Brier</th><th scope="col">Always-home Brier</th><th scope="col" class="l">Read</th></tr></thead>
+<tbody><sc-for list="{{lv.rows}}" as="r" hint-placeholder-count="5"><tr><th scope="row" class="l">{{r.lg}}</th><td>{{r.n}}</td><td>{{r.acc}}</td><td>{{r.brier}}</td><td>{{r.home}}</td><td class="l">{{r.read}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">This is the only record on the page that nobody could have tuned against: each pick is saved before the game and graded after it. It began on October 14, so for now it says very little. Roughly a few hundred graded games per league are needed before a Brier score means more than luck. <a href="TrackRecord.dc.html">Full track record</a>.</p>
+</div>
+</section>
+
+<section class="t-panel" aria-label="Limits">
+<div class="t-ph"><h2>What this page does not prove</h2></div>
+<div class="t-pb">
+<ul class="hs-lim">
+<li><b>It is a replay, run after the fact.</b> The “launch” rows re-run the first model’s method (one season of results, a prior pulled toward average, no history) with the same engine as the later versions. That is close to what went live but not byte-identical; MLB in particular launched on season totals from the standings.</li>
+<li><b>Only four seasons per league are truly out of sample.</b> Older seasons in the chart were part of the data today’s settings were fitted on. They are shown hollow for that reason.</li>
+<li><b>Several steps did nothing.</b> Where a step moved Brier by less than .0005 it is labeled as no real change, and a few moved it slightly the wrong way. The tuner keeps a setting only if the whole bundle wins across the held-out seasons, not each piece alone.</li>
+<li><b>The big wins are in college sports; the pros are close to a ceiling.</b> The gains for the NFL, NHL, NBA and MLB are small because single games in those leagues are noisy and public ratings are already close to what scores alone can say. Do not read a .002 gain as a different model.</li>
+<li><b>It has barely been tested live.</b> The live record above is still short; it began on October 14.</li>
+</ul>
+</div>
+</section>
+
+<footer class="t-foot">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #7fb4bc; font-size: 12.5px">
+<span>Sources: ESPN, nflverse, MoneyPuck, MLB Stats API · built by pipeline/sports/evolution.py</span>
+<span>Not betting or investment advice · © 2026 Nathan Skown</span>
+</div>
+</footer>
+<div class="t-crt" aria-hidden="true"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2600}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = {}; }
+  componentDidMount() {
+    var self = this;
+    var lg = String(this.state.lg || 'nfl').toLowerCase();
+    if (['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].indexOf(lg) < 0) lg = 'nfl';
+    this.setState({ lg: lg });
+    SD.data('model/evolution.json').then(function (x) { self.setState({ ev: x }); }, function () { self.setState({ ev: { err: true } }); });
+    SD.data('model/milestones.json').then(function (x) { self.setState({ ms: x }); }, function () { self.setState({ ms: { err: true } }); });
+    SD.data('model/tuned.json').then(function (x) { self.setState({ tuned: x }); }, function () {});
+    SD.data('track/summary.json').then(function (x) { self.setState({ track: x }); }, function () { self.setState({ track: { err: true } }); });
+  }
+  renderVals() {
+    var S = this.state, self = this, ORDER = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'], lg = S.lg || 'nfl';
+    var f4 = function (v) { return v === null || v === undefined ? '—' : (+v).toFixed(4).replace(/^0/, ''); };
+    var f3 = function (v) { return v === null || v === undefined ? '—' : (+v).toFixed(3).replace(/^0/, ''); };
+    var pc = function (v) { return v === null || v === undefined ? '—' : (v * 100).toFixed(1) + '%'; };
+    var sgn = function (v, d) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(d).replace(/^0/, ''); };
+    var GOOD = 'color: var(--up)', BAD = 'color: var(--dn)', FLAT = '';
+    var name = function (k) { return SD.LEAGUES[k] ? SD.LEAGUES[k].label : k.toUpperCase(); };
+    var short = function (k) { return SD.LEAGUES[k] ? SD.LEAGUES[k].short : k.toUpperCase(); };
+    var EV = S.ev && !S.ev.err ? S.ev.leagues : null;
+    var out = { tzLabel: window.TZL, tag: EV ? 'REPLAYED' : 'LOADING…' };
+
+    var tabs = ORDER.filter(function (k) { return !EV || EV[k]; });
+    out.lgTabs = tabs.map(function (k) { return { label: short(k), on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''), pick: function () { try { history.replaceState(null, '', '?lg=' + k); } catch (e) {} self.setState({ lg: k }); } }; });
+
+    // ---- overview
+    var ov = { none: false, noneText: '', rows: [], sub: '' };
+    if (!S.ev) { ov.none = true; ov.noneText = 'Loading…'; }
+    else if (S.ev.err) { ov.none = true; ov.noneText = 'The model-history file did not load. It is written when the model is refit.'; }
+    else {
+      ov.sub = 'rebuilt ' + F.day(S.ev.updated) + ' · four newest full seasons per league';
+      ORDER.forEach(function (k) {
+        var d = EV[k]; if (!d || !d.ladder.length) return;
+        var L0 = d.ladder.filter(function (s) { return s.id === 'launch'; })[0], B = d.ladder[0], LN = d.ladder[d.ladder.length - 1];
+        var better = 0; L0.folds.forEach(function (f, i) { if (LN.folds[i].brier < f.brier) better++; });
+        var skill = 1 - LN.pooled.brier / B.pooled.brier, skill0 = 1 - L0.pooled.brier / B.pooled.brier;
+        ov.rows.push({ lg: name(k), href: '?lg=' + k, n: L0.pooled.n.toLocaleString(), b0: f4(L0.pooled.brier), b1: f4(LN.pooled.brier), st: LN.pooled.brier < L0.pooled.brier ? GOOD : BAD,
+          skill: (skill0 * 100).toFixed(1) + '% → ' + (skill * 100).toFixed(1) + '%', acc: pc(L0.pooled.acc) + ' → ' + pc(LN.pooled.acc), folds: better + ' of ' + L0.folds.length + ' seasons' });
+      });
+    }
+    out.ov = ov;
+
+    // ---- selected league
+    var D = EV && EV[lg];
+    out.has = !!(D && D.ladder.length);
+    out.lgName = name(lg);
+    var ld = { rows: [], abl: [], sub: '', head: '', seasonSub: '', hasMarket: false, market: '' };
+    var ch = { aria: '', grid: [], base: '', launch: '', cur: '', dots: [], rows: [], hasSplit: false, splitX: 0, splitW: 0, splitTx: 0, splitLbl: '' };
+    if (D && D.ladder.length) {
+      var lad = D.ladder, B = lad[0], L0 = lad[1], LN = lad[lad.length - 1];
+      var maxSkill = 0; lad.forEach(function (s) { maxSkill = Math.max(maxSkill, 1 - s.pooled.brier / B.pooled.brier); });
+      lad.forEach(function (s, i) {
+        var skill = 1 - s.pooled.brier / B.pooled.brier, prev = i > 0 ? lad[i - 1] : null, d = prev ? prev.pooled.brier - s.pooled.brier : null;
+        var dtxt = '', dst = FLAT;
+        if (i === 0) dtxt = 'baseline';
+        else if (i === 1) { dtxt = (d >= 0 ? 'better by ' : 'worse by ') + Math.abs(d).toFixed(4).replace(/^0/, ''); dst = d >= 0.0005 ? GOOD : BAD; }
+        else if (d >= 0.0005) { dtxt = 'better by ' + d.toFixed(4).replace(/^0/, ''); dst = GOOD; }
+        else if (d <= -0.0005) { dtxt = 'worse by ' + Math.abs(d).toFixed(4).replace(/^0/, ''); dst = BAD; }
+        else dtxt = 'no real change';
+        ld.rows.push({ label: s.label, note: s.note, brier: f4(s.pooled.brier), acc: pc(s.pooled.acc), delta: dtxt, dst: dst,
+          skill: (skill * 100).toFixed(1) + '%', bar: 'width: ' + Math.max(1, skill / Math.max(maxSkill, 1e-6) * 100).toFixed(1) + '%' + (i === 0 ? '; opacity: .45' : ''),
+          aria: s.label + ': Brier ' + f4(s.pooled.brier) + ', ' + pc(s.pooled.acc) + ' picked right' });
+      });
+      var held = D.heldOut;
+      ld.sub = D.label + ' · ' + L0.pooled.n.toLocaleString() + ' games in held-out seasons ' + held[0] + '–' + held[held.length - 1];
+      ld.head = 'From the launch settings to today’s model, Brier went from ' + f4(L0.pooled.brier) + ' to ' + f4(LN.pooled.brier) + ' and the share of games picked right from ' + pc(L0.pooled.acc) + ' to ' + pc(LN.pooled.acc) + ', measured on ' + L0.pooled.n.toLocaleString() + ' games the fitted settings never saw. The no-model row scores a forecast that gives every game the home team’s usual win rate.';
+      var VERD = function (a) { return a.delta >= 0.0005 ? 'Earning its place' : a.delta <= -0.0005 ? 'Slightly hurts on these seasons' : 'No measurable effect'; };
+      D.ablation.forEach(function (a) { ld.abl.push({ label: a.label, brier: f4(a.brier), delta: sgn(a.delta, 4), st: a.delta >= 0.0005 ? GOOD : a.delta <= -0.0005 ? BAD : FLAT, verdict: VERD(a) }); });
+      if (lg === 'nfl' && S.tuned && S.tuned.nfl && S.tuned.nfl.market) {
+        var mk = S.tuned.nfl.market;
+        ld.hasMarket = true;
+        ld.market = 'Benchmark, honestly: over ' + mk.games.toLocaleString() + ' NFL games (' + mk.seasons[0] + '–' + mk.seasons[1] + ') the model’s Brier was ' + f4(mk.model.brier) + ' and the betting market’s closing price scored ' + f4(mk.market.brier) + ', picking ' + pc(mk.model.acc) + ' vs ' + pc(mk.market.acc) + ' right. The market is better, as expected from a model that only sees scores and rest. This site never shows betting lines; they are used only to measure the home edge and to run this check.';
+      }
+      // chart
+      var rows = D.seasons, n = rows.length, x0 = 64, x1 = 776;
+      var vals = []; rows.forEach(function (r) { vals.push(r.base, r.launch, r.current); });
+      var lo = Math.floor((Math.min.apply(null, vals) - 0.004) * 100) / 100, hi = Math.ceil((Math.max.apply(null, vals) + 0.004) * 100) / 100;
+      var X = function (i) { return n === 1 ? (x0 + x1) / 2 : x0 + (x1 - x0) * i / (n - 1); };
+      var Y = function (v) { return 238 - (v - lo) / (hi - lo) * 212; };
+      var step = (hi - lo) > 0.12 ? 0.04 : (hi - lo) > 0.06 ? 0.02 : 0.01;
+      for (var t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) ch.grid.push({ y: Y(t).toFixed(1), ty: (Y(t) + 4).toFixed(1), t: f3(t) });
+      var path = function (k) { return 'M' + rows.map(function (r, i) { return X(i).toFixed(1) + ',' + Y(r[k]).toFixed(1); }).join(' L'); };
+      ch.base = path('base'); ch.launch = path('launch'); ch.cur = path('current');
+      var firstHeld = rows.map(function (r) { return r.heldOut; }).indexOf(true);
+      if (firstHeld > 0) {
+        var sx = (X(firstHeld - 1) + X(firstHeld)) / 2;
+        ch.hasSplit = true; ch.splitX = sx.toFixed(1); ch.splitW = (792 - sx).toFixed(1); ch.splitTx = (sx + 8).toFixed(1); ch.splitLbl = 'settings never saw these seasons';
+      }
+      rows.forEach(function (r, i) {
+        ch.dots.push({ x: X(i).toFixed(1), y1: Y(r.launch).toFixed(1), y2: Y(r.current).toFixed(1), f1: '#020607', f2: r.heldOut ? '#3df2ff' : '#020607', l: String(r.y),
+          t: r.y + ': launch ' + f4(r.launch) + ', today’s ' + f4(r.current) + (r.heldOut ? ' (settings never saw this season)' : ' (settings were fitted on this season)') });
+        ch.rows.push({ y: r.y, n: r.n.toLocaleString(), base: f4(r.base), launch: f4(r.launch), cur: f4(r.current), acc: pc(r.acc), basis: r.heldOut ? 'Out of sample' : 'In sample' });
+      });
+      var nb = rows.filter(function (r) { return r.heldOut && r.current < r.launch; }).length, nh = rows.filter(function (r) { return r.heldOut; }).length;
+      ch.aria = D.label + ' Brier score by season for no model, the launch settings and today’s settings, ' + rows[0].y + ' to ' + rows[n - 1].y + '. Today’s settings beat the launch settings in ' + nb + ' of the ' + nh + ' seasons they never saw.';
+      ld.seasonSub = D.label + ' · ' + rows[0].y + '–' + rows[n - 1].y + (D.covidExcluded.length ? ' · ' + D.covidExcluded.join(', ') + ' excluded' : '');
+    }
+    out.ld = ld; out.ch = ch;
+
+    // ---- timeline
+    var tl = { items: [], sub: out.has ? 'data on hand shown for ' + name(lg) : '', note: '' };
+    if (S.ms && !S.ms.err) {
+      tl.note = S.ms.note;
+      S.ms.items.forEach(function (m) {
+        var d = (m.depth || {})[lg], g = (m.gain || null) && m.gain[lg];
+        tl.items.push({ date: F.day(m.date) + ' · ' + F.time(m.date) + ' ' + window.TZL, commit: m.commit, title: m.title, text: m.text,
+          hasDepth: true, depth: d ? name(lg) + ' data on hand: ' + d.seasons + ' past seasons (' + d.from + '–' + d.to + '), ' + d.games.toLocaleString() + ' games.' : name(lg) + ' data on hand: no past seasons stored yet.',
+          hasGain: g !== null && g !== undefined, gain: g !== null && g !== undefined ? 'The tuner’s own scoreboard at this step: +' + g.toFixed(4).replace(/^0/, '') + ' log loss over the launch settings on its held-out games.' : '' });
+      });
+    }
+    out.tl = tl;
+
+    // ---- live record
+    var lv = { none: false, noneText: '', rows: [], sub: '' };
+    var T = S.track;
+    if (!T) { lv.none = true; lv.noneText = 'Loading…'; }
+    else if (T.err) { lv.none = true; lv.noneText = 'The live record did not load.'; }
+    else {
+      lv.sub = 'updated ' + F.day(T.updated) + ' · ' + F.time(T.updated) + ' ' + window.TZL;
+      ORDER.forEach(function (k) {
+        var st = (T.leagues[k] || {}).stats; if (!st || !st.n) return;
+        var big = st.n >= 300;
+        lv.rows.push({ lg: name(k), n: st.n, acc: pc(st.acc), brier: f4(st.brier), home: f4(st.homeBrier), read: st.n < 100 ? 'Too few games to judge' : big ? (st.brier < st.homeBrier ? 'Ahead of always-home' : 'Behind always-home') : (st.brier < st.homeBrier ? 'Ahead of always-home, early' : 'Behind always-home, early') });
+      });
+      if (!lv.rows.length) { lv.none = true; lv.noneText = 'No picks have been graded yet.'; }
+    }
+    out.lv = lv;
+    return out;
+  }
+}
+</script>
+</body>
+</html>

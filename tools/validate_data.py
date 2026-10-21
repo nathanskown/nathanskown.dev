@@ -141,6 +141,16 @@ def track(d, c):
         c.ok(0 <= a.get("brier", 0) <= 1, f"Brier score {a.get('brier')}")
 
 
+def evolution(d, c):
+    for lg, v in (d.get("leagues") or {}).items():
+        lad = v.get("ladder") or []
+        c.ok(len(lad) >= 4, f"{lg} model history has {len(lad)} steps")
+        for s in lad:
+            b = (s.get("pooled") or {}).get("brier")
+            c.ok(finite(b) and 0.05 < b < 0.3, f"{lg} {s.get('id')} Brier {b}")
+        c.ok(all(finite(r.get("launch")) and finite(r.get("current")) for r in v.get("seasons") or []), f"{lg} season series has gaps")
+
+
 def injuries(d, c):
     c.ok(isinstance(d.get("teams"), dict), "injury file has no teams")
 
@@ -158,7 +168,9 @@ def rule_for(rel):
         return earnings
     if rel == "finance/digest.json":
         return digest
-    if rel.startswith("sports/model/") and not Path(rel).name.startswith("_") and rel.count("/") == 2 and rel != "sports/model/tuned.json":
+    if rel == "sports/model/evolution.json":
+        return evolution
+    if rel.startswith("sports/model/") and not Path(rel).name.startswith("_") and rel.count("/") == 2 and rel not in ("sports/model/tuned.json", "sports/model/milestones.json"):
         return model
     if rel.startswith("sports/standings/"):
         return standings

@@ -73,12 +73,13 @@ SECTIONS = {
         "pages": [("", "Main.dc.html", {}, "Scores & schedule"),
                   ("teams", "Teams.dc.html", {}, "All teams"),
                   ("team", "Team.dc.html", {}, "Team"),
-                  ("game", "Game.dc.html", {}, "Game center")]
+                  ("game", "Game.dc.html", {}, "Game center"),
+                  ("model-history", "History.dc.html", {}, "Model history")]
         + [(f"team/{slug}", "Team.dc.html", {"lg": lg, "id": tid}, name) for slug, (lg, tid, name) in TEAM_PRESETS.items()]
         + [(f"game/{sport}", "Game.dc.html", {"lg": lg}, f"Game center · {lg.upper()}") for sport, lg in GAME_PRESETS.items()]
         + [(slug, "Tool.dc.html", {"tool": key}, TOOL_TITLES[key]) for key, slug in TOOLS.items()],
         "routes": {"Main.dc.html": "/sports/", "Teams.dc.html": "/sports/teams/", "Team.dc.html": "/sports/team/",
-                   "Game.dc.html": "/sports/game/"}
+                   "Game.dc.html": "/sports/game/", "History.dc.html": "/sports/model-history/"}
         | {f"{k}.dc.html": f"/sports/{v}/" for k, v in TOOLS.items()},
     },
 }
@@ -100,6 +101,7 @@ PAGE_DESC = {
     ("sports", "odds"): "Playoff, division and title odds from 10,000 simulations of the rest of the season.",
     ("sports", "injuries"): "Injury reports across the major leagues.",
     ("sports", "track-record"): "Every house-model pick, logged before the game and graded after the final.",
+    ("sports", "model-history"): "How the house sports model improved: each ingredient added in turn and scored on seasons it never saw, with a timeline of the data that went in.",
     ("sports", "methodology"): "How the house sports ratings, projections and simulations work.",
 }
 SITE = "https://nathanskown.dev"
