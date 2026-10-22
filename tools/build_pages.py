@@ -3,8 +3,11 @@
 Usage:  python3 tools/build_pages.py
 Each page in SECTIONS below becomes <section>/<route>/index.html. The page
 markup ships as a JSON tree that assets/dc-runtime.js renders, so the design
-files stay the single source of truth. Generated files are committed as-is;
-the host needs no build step.
+files stay the single source of truth. Each design's tree and component code are
+written once to assets/pages/<section>-<Design>.js, so pages that share a design
+(the seven team pages, the six tool pages) share one cached file and each HTML
+file is only a small shell. Generated files are committed as-is; the host needs
+no build step.
 
 Links inside a design use the design file names (e.g. "Game.dc.html?mode=1").
 ROUTES maps those names to real URLs; a link with no page renders as text.
@@ -142,16 +145,23 @@ def between(src, start, end):
     return src[i:src.index(end, i)]
 
 
-def build_page(path, cfg, props, title, section="", route=""):
+def design_script(path, props_unused=None):
+    """The part of a page that depends only on its design file: markup tree + component code."""
     src = path.read_text()
     body = between(src, "</helmet>", "</x-dc>")
     m = re.search(r"<script type=\"text/x-dc\" data-dc-script data-props='([^']*)'>([\s\S]*?)</script>", src)
     defaults = json.loads(html.unescape(m.group(1)))
-    for k, v in props.items():
-        defaults[k] = {"default": v}
     tb = TreeBuilder()
     tb.feed(body)
-    tree = json.dumps(tb.root["c"], separators=(",", ":")).replace("</", "<\\/")
+    tree = json.dumps(tb.root["c"], separators=(",", ":"))
+    js = f"window.DC_TREE={tree};\n{m.group(2).strip()}\n"
+    return js, defaults
+
+
+def build_page(path, cfg, props, title, section="", route="", script_url=""):
+    _, defaults = design_script(path)
+    for k, v in props.items():
+        defaults[k] = {"default": v}
     routes = json.dumps(cfg["routes"], separators=(",", ":"))
     scripts = "".join(f'<script src="{src}"></script>\n' for src in cfg.get("scripts", []))
     desc = PAGE_DESC.get((section, route), cfg.get("desc", ""))
@@ -187,24 +197,33 @@ def build_page(path, cfg, props, title, section="", route=""):
 <body>
 <div id="app"></div>
 <noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
-<script>window.DC_ROUTES={routes};window.DC_TREE={tree};</script>
+<script>window.DC_ROUTES={routes};</script>
 <script src="/assets/dc-runtime.js"></script>
-{scripts}<script>
-{m.group(2).strip()}
-DC.mount(Component, {json.dumps(defaults)});
-</script>
+{scripts}<script src="{script_url}"></script>
+<script>DC.mount(Component, {json.dumps(defaults)});</script>
 </body>
 </html>
 """
 
 
 def main():
+    shared = ROOT / "assets" / "pages"
+    shared.mkdir(parents=True, exist_ok=True)
+    keep = set()
     for name, cfg in SECTIONS.items():
+        for src_name in dict.fromkeys(p[1] for p in cfg["pages"]):  # one script per design, however many pages use it
+            fn = f"{name}-{src_name.split('.')[0]}.js"
+            keep.add(fn)
+            (shared / fn).write_text(design_script(ROOT / "src" / name / src_name)[0])
         for route, src_name, props, title in cfg["pages"]:
             out = ROOT / name / route / "index.html"
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(build_page(ROOT / "src" / name / src_name, cfg, props, title, name, route))
+            fn = f"/assets/pages/{name}-{src_name.split('.')[0]}.js"
+            out.write_text(build_page(ROOT / "src" / name / src_name, cfg, props, title, name, route, fn))
             print("built", out.relative_to(ROOT))
+    for old in shared.glob("*.js"):  # a design that was renamed or removed leaves no stale script behind
+        if old.name not in keep:
+            old.unlink()
 
 
 if __name__ == "__main__":

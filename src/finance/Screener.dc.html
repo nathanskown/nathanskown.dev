@@ -355,7 +355,7 @@ class Component extends DCLogic {
     });
     var UP = '#4ade80', DN = '#ff5f56';
     var rows = shown.map(function (i) {
-      return { href: 'Main.dc.html?sym=' + encodeURIComponent(d.sym[i]), sym: d.sym[i], name: F.firm(d.name[i]),
+      return { href: 'Main.dc.html?sym=' + encodeURIComponent(d.sym[i]), sym: d.sym[i], name: window.F.firm(d.name[i]),
         cells: colIds.map(function (id) {
           var m = byId[id], v = d[id][i];
           var color = (m.fmt === 'chg' && v !== null && v !== undefined) ? (v >= 0 ? UP : DN) : '#ffd89d';

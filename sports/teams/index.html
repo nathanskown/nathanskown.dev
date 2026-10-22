@@ -25,75 +25,11 @@
 <body>
 <div id="app"></div>
 <noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
-<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Teams.dc.html":"/sports/teams/","Team.dc.html":"/sports/team/","Game.dc.html":"/sports/game/","History.dc.html":"/sports/model-history/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES {{tzLabel}}"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Every NFL, MLB, NHL and NBA team, all of FBS, D-I men's basketball and men's college hockey"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"teamsSearch","class":"t-prompt"},"c":["SEARCH \u203a"]},{"t":"input","a":{"id":"teamsSearch","class":"t-input","type":"search","placeholder":"SEARCH ANY TEAM","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey is-on","href":"#","aria-current":"page"},"c":["2) Teams"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["3) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["4) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"LuckWatch.dc.html"},"c":["6) Luck"]},{"t":"a","a":{"class":"t-fkey","href":"Schedule.dc.html"},"c":["7) Schedule"]},{"t":"a","a":{"class":"t-fkey","href":"TrackRecord.dc.html"},"c":["8) Track record"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["9) Method"]},{"t":"a","a":{"class":"t-fkey","href":"History.dc.html"},"c":["Model history"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["All Teams"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["{{statusTag}}"]}]}]},{"t":"main","a":{"class":"s-wrap"},"c":[{"t":"section","a":{"aria-label":"Filter","style":"display: flex; flex-direction: column; gap: 10px"},"c":[{"t":"h1","a":{"style":"margin: 0"},"c":["{{title}}"]},{"t":"div","a":{"class":"s-tabs","role":"group","aria-label":"League"},"c":[{"t":"sc-for","a":{"list":"{{tabs}}","as":"b","hint-placeholder-count":"7"},"c":[{"t":"button","a":{"type":"button","class":"{{b.cls}}","aria-pressed":"{{b.on}}","onclick":"{{b.pick}}"},"c":["{{b.label}} ",{"t":"span","a":{"class":"dim"},"c":["{{b.n}}"]}]}]}]},{"t":"div","a":{"style":"max-width: 520px"},"c":[{"t":"label","a":{"for":"teamFilter","class":"sr"},"c":["Filter teams"]},{"t":"input","a":{"id":"teamFilter","class":"s-input","type":"search","value":"{{q}}","onchange":"{{onQ}}","placeholder":"Filter by name, city or conference (searches every league)","autocomplete":"off"},"c":[]}]},{"t":"div","a":{"class":"s-note"},"c":["{{note}}"]}]},{"t":"sc-if","a":{"value":"{{empty}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{emptyText}}"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 14px; align-items: start"},"c":[{"t":"sc-for","a":{"list":"{{groups}}","as":"G","hint-placeholder-count":"6"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"{{G.name}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["{{G.name}}"]},{"t":"span","a":{"class":"dim"},"c":["{{G.sub}}"]}]},{"t":"div","a":{"class":"t-pb","style":"padding-top: 4px"},"c":[{"t":"table","a":{"class":"s-tbl"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"col"},"c":["Team"]},{"t":"th","a":{"scope":"col"},"c":["Record"]},{"t":"th","a":{"scope":"col"},"c":["{{G.rCol}}"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{G.teams}}","as":"r","hint-placeholder-count":"5"},"c":[{"t":"tr","a":{},"c":[{"t":"th","a":{"scope":"row","class":"l"},"c":[{"t":"a","a":{"class":"s-team","href":"{{r.href}}"},"c":[{"t":"img","a":{"class":"s-logo","src":"{{r.logo}}","alt":"","loading":"lazy"},"c":[]},{"t":"span","a":{},"c":["{{r.name}}"]}]}," ",{"t":"span","a":{"class":"dim"},"c":["{{r.tag}}"]}]},{"t":"td","a":{},"c":["{{r.rec}}"]},{"t":"td","a":{"class":"dim"},"c":["{{r.rating}}"]}]}]}]}]}]}]}]}]}]},{"t":"footer","a":{"class":"t-foot"},"c":[{"t":"div","a":{"style":"max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px","class":"dim"},"c":[{"t":"span","a":{},"c":["Teams and standings: ESPN public API, refreshed hourly \u00b7 House rating: points (goals, runs) better than an average team \u00b7 {{updated}}"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];</script>
+<script>window.DC_ROUTES={"Main.dc.html":"/sports/","Teams.dc.html":"/sports/teams/","Team.dc.html":"/sports/team/","Game.dc.html":"/sports/game/","History.dc.html":"/sports/model-history/","Simulator.dc.html":"/sports/simulator/","Odds.dc.html":"/sports/odds/","Injuries.dc.html":"/sports/injuries/","LuckWatch.dc.html":"/sports/luck-watch/","Schedule.dc.html":"/sports/schedule-strength/","TrackRecord.dc.html":"/sports/track-record/","Methodology.dc.html":"/sports/methodology/"};</script>
 <script src="/assets/dc-runtime.js"></script>
 <script src="/assets/sports-data.js"></script>
 <script src="/assets/glossary.js"></script>
-<script>
-class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { q: '', models: {}, standings: {} }; }
-  componentDidMount() {
-    var self = this;
-    var lg = String(this.state.lg || this.props.lg || 'nfl').toLowerCase();
-    if (!SD.LEAGUES[lg] || !SD.LEAGUES[lg].teams) lg = 'nfl';
-    this.setState({ lg: lg });
-    SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () { self.setState({ err: true }); });
-    SD.data('status.json').then(function (x) { self.setState({ status: x }); }, function () {});
-    this.loadLeague(lg);
-  }
-  loadLeague(lg) {
-    var self = this;
-    if (!this.state.models[lg]) SD.data('model/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[lg] = m; self.setState({ models: o }); }, function () {});
-    if (!this.state.standings[lg]) SD.data('standings/' + lg + '.json').then(function (s) {
-      var by = {}, i = 0; s.groups.forEach(function (g) { g.teams.forEach(function (r) { by[r.id] = Object.assign({ _pos: i++ }, r); }); });
-      var o = Object.assign({}, self.state.standings); o[lg] = by; self.setState({ standings: o });
-    }, function () {});
-  }
-  renderVals() {
-    var S = this.state, self = this, lg = S.lg || 'nfl', all = (S.index || {}).leagues || {};
-    var LG = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
-    var q = (S.q || '').trim().toLowerCase();
-    var tabs = LG.map(function (k) {
-      return { label: SD.LEAGUES[k].short, n: all[k] ? all[k].length : '', on: k === lg && !q ? 'true' : 'false', cls: 's-tab' + (k === lg && !q ? ' is-on' : ''),
-        pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, q: '' }); self.loadLeague(k); } };
-    });
-    var row = function (k, t) {
-      var st = (S.standings[k] || {})[t.id], m = S.models[k], mt = m && m.teams ? m.teams[t.id] : null;
-      var ok = mt && (mt.gp >= (m.minGp || 0) || mt.prior !== undefined);
-      return { name: t.short && k.indexOf('ncaa') === 0 ? t.loc || t.short : t.name, href: SD.teamHref(k, t.id), logo: t.logo || '', tag: q ? SD.LEAGUES[k].short : '',
-        rec: st ? (st.overall || [st.w, st.l].join('-')) : '', rating: ok ? (mt.rating > 0 ? '+' : '') + mt.rating.toFixed(1) : '' };
-    };
-    var groups = [];
-    if (q) {
-      var hits = [];
-      LG.forEach(function (k) { (all[k] || []).forEach(function (t) {
-        var hay = [t.name, t.loc, t.nick, t.abbr, t.group].join(' ').toLowerCase();
-        if (hay.indexOf(q) >= 0) hits.push([k, t]);
-      }); });
-      if (hits.length) groups.push({ name: hits.length + ' matches', sub: 'all leagues', rCol: 'Rating', teams: hits.slice(0, 120).map(function (h) { return row(h[0], h[1]); }) });
-    } else {
-      var by = {}, order = [];
-      (all[lg] || []).forEach(function (t) { var g = t.group || 'Other'; if (!by[g]) { by[g] = []; order.push(g); } by[g].push(t); });
-      order.sort(function (a, b) { return a === 'Other' ? 1 : b === 'Other' ? -1 : a < b ? -1 : 1; });
-      groups = order.map(function (g) {
-        var st = S.standings[lg] || {}, pos = function (t) { return st[t.id] ? st[t.id]._pos : 1e6; };
-        var ts = by[g].slice().sort(function (a, b) { return pos(a) - pos(b) || (a.name < b.name ? -1 : 1); });
-        var parent = by[g][0].parent || '';
-        return { name: g, sub: parent.replace(/ Conference$/, '').replace('American Football', 'AFC').replace('National Football', 'NFC'), rCol: 'Rating',
-          teams: ts.map(function (t) { return row(lg, t); }) };
-      });
-    }
-    var L = SD.LEAGUES[lg];
-    return {
-      tabs: tabs, q: S.q, groups: groups, onQ: function (e) { self.setState({ q: e.target.value }); },
-      title: q ? 'Team search' : L.label + ' teams', statusTag: S.index ? 'LIVE DATA' : (S.err ? 'DATA UNAVAILABLE' : 'LOADING…'),
-      note: q ? '' : (all[lg] ? all[lg].length + ' teams. Grouped by ' + (lg.indexOf('ncaa') === 0 ? 'conference' : 'division') + '. Rating is the house model’s margin against an average team; blank until a team has played enough games.' : ''),
-      empty: !!S.index && !groups.length, emptyText: q ? 'No team matches “' + S.q + '”.' : 'No teams in this league’s index yet.',
-      updated: S.status && S.status.updated ? 'Updated ' + F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : ''
-    };
-  }
-}
-DC.mount(Component, {"lg": {"editor": "text", "default": "nfl"}, "$preview": {"width": 1440, "height": 2400}});
-</script>
+<script src="/assets/pages/sports-Teams.js"></script>
+<script>DC.mount(Component, {"lg": {"editor": "text", "default": "nfl"}, "$preview": {"width": 1440, "height": 2400}});</script>
 </body>
 </html>

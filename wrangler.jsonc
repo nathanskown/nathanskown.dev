@@ -13,5 +13,7 @@
   "durable_objects": {
     "bindings": [{ "name": "MUSIC_BOARD", "class_name": "MusicBoard" }]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MusicBoard"] }]
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MusicBoard"] }],
+  // /api/quote: at most 60 uncached lookups per visitor per minute (cache hits are free and not counted)
+  "ratelimits": [{ "name": "QUOTE_LIMITER", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } }]
 }
