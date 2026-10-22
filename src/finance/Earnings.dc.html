@@ -137,9 +137,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
 
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #3D2C13; padding-bottom: 10px">
+<div><div class="f-kicker">PART 1</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Key themes from reported companies</h2><div style="color: #A87933; font-size: 12.5px; margin-top: 2px">Scorecard, beat rates by sector, guidance and the biggest reports so far</div></div>
+<button type="button" class="t-tab" onClick="{{toggle1}}" aria-expanded="{{p1Str}}">{{p1Btn}}</button>
+</div>
+<sc-if value="{{p1Open}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 24px">
 <section aria-label="Season overview" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
 <div style="flex: 1 1 520px; min-width: 0">
-<div class="f-kicker" aria-hidden="true">ERN · S&amp;P 500 reporting season</div>
+<div class="f-kicker" aria-hidden="true">S&amp;P 500 reporting season</div>
 <h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">{{title}}</h1>
 <div style="color: #C99442; font-size: 14.5px; margin-top: 6px; max-width: 760px">{{subtitle}}</div>
 </div>
@@ -246,12 +252,23 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Upcoming earnings · next two weeks</h2>
-<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="color: #A87933; font-size: 12.5px">Largest S&amp;P 500 reporters each day · BMO before open · AMC after close</span>
-<button type="button" class="{{ernWatchCls}}" aria-pressed="{{ernWatchOn}}" onClick="{{ernWatchToggle}}">MY WATCHLIST ONLY</button></span>
 </div>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #3D2C13; padding-bottom: 10px">
+<div><div class="f-kicker">PART 2</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Upcoming reporting calendar</h2><div style="color: #A87933; font-size: 12.5px; margin-top: 2px">Who reports soon · filter by sector · BMO before open, AMC after close</div></div>
+<button type="button" class="t-tab" onClick="{{toggle2}}" aria-expanded="{{p2Str}}">{{p2Btn}}</button>
+</div>
+<sc-if value="{{p2Open}}" hint-placeholder-val="{{ true }}">
+<section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px">
+<span style="color: #A87933; font-size: 12.5px">{{upCount}}</span>
+<button type="button" class="{{ernWatchCls}}" aria-pressed="{{ernWatchOn}}" onClick="{{ernWatchToggle}}">MY WATCHLIST ONLY</button>
+</div>
+<div role="group" aria-label="Filter by sector" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px">
+<sc-for list="{{sectorTabs}}" as="st" hint-placeholder-count="8"><button type="button" class="{{st.cls}}" aria-pressed="{{st.pressed}}" onClick="{{st.pick}}">{{st.label}}</button></sc-for>
+</div>
+<sc-if value="{{noUpcoming}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13.5px; padding: 8px 0">No scheduled reports match this filter.</div></sc-if>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 720px; font-size: 14px">
 <thead>
@@ -281,6 +298,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </table>
 </div>
 </section>
+</sc-if>
 
 </main>
 
@@ -351,7 +369,13 @@ class Component extends DCLogic {
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var ernWatch = st.ernWatch !== undefined ? st.ernWatch : PREFS.get('fin.ernWatch', false);
     var wl = PREFS.get('fin.watch', ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL']);
-    var upcoming = (E.upcoming || []).filter(function (u) { return !ernWatch || wl.indexOf(u.sym) >= 0; }).map(function (u) {
+    var secs = []; (E.upcoming || []).forEach(function (u) { var k = u.sector || 'Other'; if (secs.indexOf(k) < 0) secs.push(k); }); secs.sort();
+    var sec = st.sec && secs.indexOf(st.sec) >= 0 ? st.sec : 'all';
+    var sectorTabs = [{ id: 'all', label: 'All sectors' }].concat(secs.map(function (k) { return { id: k, label: k }; })).map(function (t) {
+      return { label: t.label, pressed: t.id === sec ? 'true' : 'false', cls: 't-tab' + (t.id === sec ? ' is-on' : ''), pick: function () { self.setState({ sec: t.id }); } };
+    });
+    var upAll = (E.upcoming || []).filter(function (u) { return (!ernWatch || wl.indexOf(u.sym) >= 0) && (sec === 'all' || (u.sector || 'Other') === sec); });
+    var upcoming = upAll.map(function (u) {
       var today = u.date === todayIso;
       return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
         nEst: u.nEst ? String(u.nEst) : '—', mcap: F.money(u.mcap, 0), rowStyle: 'text-align: right;' + (today ? ' background: #261C0C;' : '') };
@@ -362,6 +386,10 @@ class Component extends DCLogic {
       progressText: (P.reported || 0) + ' of ' + (P.total || 500) + ' · ' + Math.round(pct) + '%', progressBar: 'width: ' + pct.toFixed(1) + '%; height: 8px; background: #FFB84D;',
       weeks: weeks, score: score, sectorRows: sectorRows, themes: themes, raised: TH.raised === undefined ? '—' : String(TH.raised), lowered: TH.lowered === undefined ? '—' : String(TH.lowered),
       themeNote: TH.n ? 'Share of ' + TH.n + ' news headlines (press releases excluded)' + (TH.since ? ' since ' + F.day(TH.since) : '') : 'Builds as headlines accumulate',
+      p1Open: st.p1 !== false, p2Open: st.p2 !== false, p1Str: st.p1 !== false ? 'true' : 'false', p2Str: st.p2 !== false ? 'true' : 'false',
+      p1Btn: st.p1 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾', p2Btn: st.p2 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾',
+      toggle1: function () { self.setState({ p1: st.p1 === false }); }, toggle2: function () { self.setState({ p2: st.p2 === false }); },
+      sectorTabs: sectorTabs, noUpcoming: !!E.updated && !upcoming.length, upCount: upAll.length + ' scheduled · largest S&P 500 reporters, next two weeks',
       filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
       ernWatchOn: ernWatch ? 'true' : 'false', ernWatchCls: 't-tab' + (ernWatch ? ' is-on' : ''),
       ernWatchToggle: function () { PREFS.set('fin.ernWatch', !ernWatch); self.setState({ ernWatch: !ernWatch }); }
