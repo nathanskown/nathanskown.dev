@@ -214,7 +214,7 @@ class Component extends DCLogic {
       var isEx = x.code === 'M' || x.code === 'X';
       var unit = isEx ? (Q.quote || {}).price : x.price;
       var val = x.shares && unit ? x.shares * unit : null;
-      return { d: F.day(x.date || x.filed), n: F.firm(x.n)ame, role: x.role || '', type: x.type + (x.code === 'S' && x.plan ? ' · 10b5-1' : ''),
+      return { d: F.day(x.date || x.filed), n: x.name, role: x.role || '', type: x.type + (x.code === 'S' && x.plan ? ' · 10b5-1' : ''),
         sh: F.n(x.shares, 0), px: x.price ? F.usd(x.price, 2) + (isEx ? ' strike' : '') : '—', val: val ? F.money(val) + (isEx ? ' now' : '') : '—',
         color: x.code === 'P' ? UP : (x.code === 'S' ? DN : '#FFB84D') };
     });
