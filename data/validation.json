@@ -1,1 +1,1 @@
-{"at":"2026-10-21T23:57:34+00:00","checked":32,"checks":93,"held":[{"file":"finance/macro.json","why":["fewer than 3 macro releases"]}],"recent":[{"at":"2026-10-21T23:57:34+00:00","held":[{"file":"finance/macro.json","why":["fewer than 3 macro releases"]}]}],"lastHeld":"2026-10-21T23:57:34+00:00"}
+{"at":"2026-10-22T00:57:00+00:00","checked":10,"checks":329,"held":[],"recent":[{"at":"2026-10-21T23:57:34+00:00","held":[{"file":"finance/macro.json","why":["fewer than 3 macro releases"]}]}],"lastHeld":"2026-10-21T23:57:34+00:00"}
