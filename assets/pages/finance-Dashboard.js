@@ -1,0 +1,246 @@
+window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"DELAYED 15 MIN"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Tap a tile to chart it \u00b7 tabs switch the movers list"]}]},{"t":"div","a":{"class":"t-cmd"},"c":[{"t":"label","a":{"for":"dashSearch","class":"t-prompt"},"c":["TICKER \u203a"]},{"t":"input","a":{"id":"dashSearch","class":"t-input","type":"search","placeholder":"TICKER OR COMPANY NAME","autocomplete":"off"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Main"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Markets"]},{"t":"a","a":{"class":"t-fkey is-on","href":"#","aria-current":"page"},"c":["1) Markets"]},{"t":"a","a":{"class":"t-fkey","href":"Digest.dc.html"},"c":["2) Digest"]},{"t":"a","a":{"class":"t-fkey","href":"News.dc.html"},"c":["3) Headlines"]},{"t":"a","a":{"class":"t-fkey","href":"Main.dc.html"},"c":["4) Quotes"]},{"t":"a","a":{"class":"t-fkey","href":"IR.dc.html"},"c":["5) IR view"]},{"t":"a","a":{"class":"t-fkey","href":"Earnings.dc.html"},"c":["6) Earnings"]},{"t":"a","a":{"class":"t-fkey","href":"Macro.dc.html"},"c":["7) Macro"]},{"t":"a","a":{"class":"t-fkey","href":"IPO.dc.html"},"c":["8) IPOs"]},{"t":"a","a":{"class":"t-fkey","href":"Screener.dc.html"},"c":["9) Screener"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Market Dashboard"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["{{liveTag}}"]}]}]},{"t":"main","a":{"class":"dash-main","style":"max-width: 1320px; margin: 0 auto; padding: 20px 20px 48px"},"c":[{"t":"section","a":{"aria-label":"Market summary","style":"flex: 1 1 100%; order: 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px"},"c":[{"t":"div","a":{"style":"min-width: 0"},"c":[{"t":"div","a":{"class":"f-kicker","aria-hidden":"true"},"c":["WEI \u00b7 US markets \u00b7 delayed 15 min"]},{"t":"h1","a":{"class":"big","style":"margin: 0; font-size: 56px; line-height: .9; color: #ffd89d; text-shadow: 0 0 2px #ffb84d, 0 0 18px rgba(255,184,77,.4)"},"c":["MARKETS TODAY"]},{"t":"div","a":{"style":"color: #c99442; font-size: 13.5px; margin-top: 6px"},"c":["{{summary}}"]}]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 8px; align-items: center"},"c":[{"t":"span","a":{"class":"t-badge"},"c":[{"t":"span","a":{"aria-hidden":"true","style":"{{mktDot}}"},"c":[]},"{{mktStatus}}"]},{"t":"sc-if","a":{"value":"{{breadthText}}","hint-placeholder-val":"{{ true }}"},"c":[{"t":"span","a":{"class":"t-badge"},"c":["{{breadthText}}"]}]},{"t":"button","a":{"type":"button","class":"t-badge","style":"cursor: pointer; color: #ffd89d","aria-expanded":"{{czOpenAttr}}","onclick":"{{czToggle}}"},"c":["\u2699 {{czBtn}}"]}]}]},{"t":"sc-if","a":{"value":"{{czOpen}}","hint-placeholder-val":"{{ false }}"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Customize this dashboard","style":"flex: 1 1 100%; order: 0"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Customize"]},{"t":"span","a":{"class":"dim"},"c":["Saved in this browser"]}]},{"t":"div","a":{"class":"t-pb","style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px"},"c":[{"t":"div","a":{},"c":[{"t":"div","a":{"class":"t-th","style":"margin-bottom: 8px"},"c":["Top strip \u00b7 pick markets"]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 6px"},"c":[{"t":"sc-for","a":{"list":"{{czTiles}}","as":"c","hint-placeholder-count":"12"},"c":[{"t":"button","a":{"type":"button","class":"{{c.cls}}","aria-pressed":"{{c.pressed}}","onclick":"{{c.toggle}}"},"c":["{{c.label}}"]}]}]},{"t":"div","a":{"class":"t-th","style":"margin: 16px 0 8px"},"c":["Start Market Analysis on"]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 6px"},"c":[{"t":"sc-for","a":{"list":"{{czHome}}","as":"c","hint-placeholder-count":"8"},"c":[{"t":"button","a":{"type":"button","class":"{{c.cls}}","aria-pressed":"{{c.pressed}}","onclick":"{{c.pick}}"},"c":["{{c.label}}"]}]}]}]},{"t":"div","a":{},"c":[{"t":"div","a":{"class":"t-th","style":"margin-bottom: 8px"},"c":["Panels \u00b7 show, hide and reorder"]},{"t":"sc-for","a":{"list":"{{czPanels}}","as":"c","hint-placeholder-count":"10"},"c":[{"t":"div","a":{"style":"display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #241a0b"},"c":[{"t":"span","a":{"style":"flex: 1 1 auto; color: {{c.color}}"},"c":["{{c.label}}"]},{"t":"button","a":{"type":"button","class":"t-tab","aria-label":"{{c.upAria}}","onclick":"{{c.up}}"},"c":["\u25b2"]},{"t":"button","a":{"type":"button","class":"t-tab","aria-label":"{{c.downAria}}","onclick":"{{c.down}}"},"c":["\u25bc"]},{"t":"button","a":{"type":"button","class":"{{c.showCls}}","aria-pressed":"{{c.pressed}}","onclick":"{{c.toggle}}"},"c":["{{c.showLabel}}"]}]}]}]},{"t":"div","a":{},"c":[{"t":"div","a":{"class":"t-th","style":"margin-bottom: 8px"},"c":["Watchlist \u00b7 up to 12 tickers"]},{"t":"div","a":{"style":"display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px"},"c":[{"t":"sc-for","a":{"list":"{{czWatch}}","as":"c","hint-placeholder-count":"5"},"c":[{"t":"button","a":{"type":"button","class":"t-tab","aria-label":"{{c.rmAria}}","onclick":"{{c.remove}}"},"c":["{{c.t}} \u00d7"]}]}]},{"t":"form","a":{"onsubmit":"{{wAdd}}","style":"display: flex; gap: 6px"},"c":[{"t":"input","a":{"class":"cz-input","style":"flex: 1 1 auto; min-width: 0; background: #000; color: #ffd89d; border: 1px solid #382811; min-height: 40px; padding: 0 10px; font: inherit; font-size: 14px; text-transform: uppercase; letter-spacing: .08em","type":"text","value":"{{wDraft}}","onchange":"{{wInput}}","placeholder":"ADD TICKER","aria-label":"Add a ticker to your watchlist","autocomplete":"off"},"c":[]},{"t":"button","a":{"type":"submit","class":"t-tab is-on"},"c":["ADD"]}]},{"t":"div","a":{"class":"dim","style":"font-size: 12px; margin-top: 6px"},"c":["{{wMsg}}"]},{"t":"button","a":{"type":"button","class":"t-tab","style":"margin-top: 16px","onclick":"{{czReset}}"},"c":["RESET ALL TO DEFAULTS"]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Indices and assets","style":"{{P.tiles}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Indices & Assets"]},{"t":"span","a":{"class":"dim"},"c":["1D change"]}]},{"t":"div","a":{"class":"t-pb","style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 8px"},"c":[{"t":"sc-for","a":{"list":"{{tiles}}","as":"t","hint-placeholder-count":"10"},"c":[{"t":"button","a":{"type":"button","class":"{{t.cls}}","onclick":"{{t.pick}}","aria-pressed":"{{t.pressed}}"},"c":[{"t":"span","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; gap: 6px; width: 100%"},"c":[{"t":"span","a":{"style":"font-size: 12px; color: #c99442; text-transform: uppercase; letter-spacing: .04em"},"c":["{{t.name}}"]},{"t":"span","a":{"style":"font-size: 12px; color: {{t.color}}"},"c":["{{t.pctText}}"]}]},{"t":"span","a":{"class":"big","style":"display: block; font-size: 30px; line-height: 1.05; color: #ffd89d; margin-top: 2px"},"c":["{{t.disp}}"]},{"t":"svg","a":{"viewbox":"0 0 160 36","preserveaspectratio":"none","aria-hidden":"true","style":"display: block; width: 100%; height: 30px; margin-top: 4px"},"c":[{"t":"path","a":{"d":"{{t.spark}}","fill":"none","stroke":"{{t.color}}","stroke-width":"1.5","vector-effect":"non-scaling-stroke","stroke-linejoin":"round"},"c":[]}]}]}]}]}]},{"t":"div","a":{"class":"dash-row"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Selected index chart","style":"{{P.chart}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["{{selName}} \u00b7 Intraday"]},{"t":"span","a":{"class":"dim"},"c":["Tap a tile to switch \u00b7 dashed line = prior close"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"style":"display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 8px"},"c":[{"t":"span","a":{"class":"big","style":"font-size: 52px; line-height: .95; color: #ffd89d; text-shadow: 0 0 14px rgba(255,184,77,.35)"},"c":["{{selDisp}}"]},{"t":"span","a":{"style":"font-size: 15px; color: {{selColor}}"},"c":["{{selArrow}} {{selChg}} ({{selPct}})"]}]},{"t":"div","a":{"style":"display: flex; gap: 10px"},"c":[{"t":"div","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"svg","a":{"viewbox":"0 0 800 260","preserveaspectratio":"none","role":"img","aria-label":"Intraday line chart for the selected index","style":"display: block; width: 100%; height: 280px; background: #000; border: 1px solid #241a0b"},"c":[{"t":"line","a":{"x1":"0","y1":"20","x2":"800","y2":"20","stroke":"#241a0b","stroke-width":"1"},"c":[]},{"t":"line","a":{"x1":"0","y1":"93","x2":"800","y2":"93","stroke":"#241a0b","stroke-width":"1"},"c":[]},{"t":"line","a":{"x1":"0","y1":"167","x2":"800","y2":"167","stroke":"#241a0b","stroke-width":"1"},"c":[]},{"t":"line","a":{"x1":"0","y1":"240","x2":"800","y2":"240","stroke":"#241a0b","stroke-width":"1"},"c":[]},{"t":"line","a":{"x1":"0","y1":"{{baseY}}","x2":"800","y2":"{{baseY}}","stroke":"#664a1f","stroke-width":"1","stroke-dasharray":"4 4","vector-effect":"non-scaling-stroke"},"c":[]},{"t":"path","a":{"d":"{{selArea}}","fill":"{{selFill}}","stroke":"none"},"c":[]},{"t":"path","a":{"d":"{{selLine}}","fill":"none","stroke":"{{selColor}}","stroke-width":"2","vector-effect":"non-scaling-stroke","stroke-linejoin":"round"},"c":[]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; color: #c99442; font-size: 12px; margin-top: 6px"},"c":[{"t":"sc-for","a":{"list":"{{xLabels}}","as":"x","hint-placeholder-count":"5"},"c":[{"t":"span","a":{},"c":["{{x}}"]}]}]}]},{"t":"div","a":{"aria-hidden":"true","style":"display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; color: #c99442; font-size: 12px; text-align: right; width: 76px"},"c":[{"t":"span","a":{},"c":["{{yMax}}"]},{"t":"span","a":{},"c":["{{yMid}}"]},{"t":"span","a":{},"c":["{{yMin}}"]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Today's economic data","style":"{{P.econ}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Latest Economic Data"]},{"t":"span","a":{"class":"dim"},"c":["Newest releases \u00b7 FRED"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"style":"overflow-x: auto"},"c":[{"t":"table","a":{"style":"width: 100%; min-width: 330px; font-size: 13px"},"c":[{"t":"thead","a":{},"c":[{"t":"tr","a":{"class":"t-th","style":"text-align: right"},"c":[{"t":"th","a":{"scope":"col","style":"text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid #382811"},"c":["Release"]},{"t":"th","a":{"scope":"col","style":"padding: 6px 8px; border-bottom: 1px solid #382811"},"c":["Latest"]},{"t":"th","a":{"scope":"col","style":"padding: 6px 0 6px 8px; border-bottom: 1px solid #382811"},"c":["Prior"]}]}]},{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{macro}}","as":"m","hint-placeholder-count":"5"},"c":[{"t":"tr","a":{"class":"t-row","style":"text-align: right"},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; padding: 8px 8px 8px 0; color: #ffd89d"},"c":["{{m.n}}",{"t":"span","a":{"style":"display: block; color: #c99442; font-size: 12px"},"c":["{{m.period}}"]}]},{"t":"td","a":{"class":"hi","style":"padding: 8px; font-weight: 600"},"c":["{{m.act}}"]},{"t":"td","a":{"style":"padding: 8px 0 8px 8px; color: #c99442"},"c":["{{m.prior}}"]}]}]}]}]}]},{"t":"div","a":{"style":"margin-top: 14px; padding: 10px 12px; background: #000; border: 1px solid #ffb84d"},"c":[{"t":"div","a":{"style":"font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #ffd89d"},"c":["NEXT FOMC \u00b7 {{fomcLabel}}"]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; font-size: 12.5px; margin-top: 6px"},"c":[{"t":"span","a":{},"c":["FED FUNDS TARGET"]},{"t":"span","a":{"class":"hi"},"c":["{{targetLabel}}"]}]}]},{"t":"h3","a":{"style":"margin: 16px 0 6px; font-size: 12px; font-weight: 500; color: #c99442; letter-spacing: .12em"},"c":["COMING UP"]},{"t":"sc-if","a":{"value":"{{noUpcoming}}","hint-placeholder-val":"{{ false }}"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 12.5px"},"c":["No major releases are scheduled in the next few days."]}]},{"t":"sc-for","a":{"list":"{{upcoming}}","as":"u","hint-placeholder-count":"4"},"c":[{"t":"div","a":{"style":"display: flex; gap: 10px; font-size: 13px; padding: 4px 0"},"c":[{"t":"span","a":{"style":"color: #ffd89d; width: 38px; flex: none"},"c":["{{u.d}}"]},{"t":"span","a":{},"c":["{{u.e}}"]}]}]}]}]}]},{"t":"div","a":{"class":"dash-row"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Top movers","style":"{{P.movers}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["S&P 500 Movers"]},{"t":"div","a":{"class":"t-tabs","role":"group","aria-label":"Mover list"},"c":[{"t":"sc-for","a":{"list":"{{moverTabs}}","as":"mt","hint-placeholder-count":"3"},"c":[{"t":"button","a":{"type":"button","class":"{{mt.cls}}","onclick":"{{mt.pick}}","aria-pressed":"{{mt.pressed}}"},"c":["{{mt.label}}"]}]}]}]},{"t":"div","a":{"class":"t-pb","style":"padding-top: 4px"},"c":[{"t":"sc-for","a":{"list":"{{movers}}","as":"mv","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"class":"t-row","style":"display: flex; align-items: center; gap: 12px; padding: 9px 0"},"c":[{"t":"a","a":{"href":"{{mv.href}}","style":"font-weight: 600; color: #ffd89d; width: 52px; flex: none"},"c":["{{mv.t}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"span","a":{"style":"display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"},"c":["{{mv.n}}"]},{"t":"span","a":{"style":"display: block; font-size: 12px; color: #c99442"},"c":["{{mv.why}}"]}]},{"t":"span","a":{"style":"text-align: right; flex: none"},"c":[{"t":"span","a":{"style":"display: block; font-size: 13px; color: #ffd89d"},"c":["{{mv.px}}"]},{"t":"span","a":{"style":"display: block; font-size: 12.5px; color: {{mv.color}}"},"c":["{{mv.chg}}"]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Sector performance","style":"{{P.sectors}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["S&P 500 Sectors"]},{"t":"span","a":{"class":"dim"},"c":["1D"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px"},"c":[{"t":"sc-for","a":{"list":"{{sectors}}","as":"sc","hint-placeholder-count":"11"},"c":[{"t":"div","a":{"class":"f-heat","style":"{{sc.cellStyle}}"},"c":[{"t":"span","a":{"style":"font-size: 12.5px"},"c":["{{sc.n}}"]},{"t":"span","a":{"style":"font-size: 12.5px; font-weight: 600"},"c":["{{sc.chg}}"]}]}]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; color: #c99442; font-size: 12px; margin-top: 10px"},"c":[{"t":"span","a":{},"c":["Brighter = bigger move"]},{"t":"span","a":{},"c":["Green \u25b2 up \u00b7 Red \u25bc down"]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Treasury yields","style":"{{P.yields}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Treasury Yields"]},{"t":"span","a":{"class":"dim"},"c":["{{curveNote}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"svg","a":{"viewbox":"0 0 300 110","role":"img","aria-label":"Treasury yield curve, today and one month ago","style":"display: block; width: 100%; height: 120px; background: #000; border: 1px solid #241a0b"},"c":[{"t":"line","a":{"x1":"0","y1":"100","x2":"300","y2":"100","stroke":"#382811","stroke-width":"1"},"c":[]},{"t":"path","a":{"d":"{{curvePrev}}","fill":"none","stroke":"#664a1f","stroke-width":"1.5","stroke-dasharray":"4 4"},"c":[]},{"t":"path","a":{"d":"{{curveNow}}","fill":"none","stroke":"#ffb84d","stroke-width":"2"},"c":[]}]},{"t":"table","a":{"style":"width: 100%; font-size: 13px; margin-top: 6px"},"c":[{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{yields}}","as":"y","hint-placeholder-count":"5"},"c":[{"t":"tr","a":{"class":"t-row"},"c":[{"t":"th","a":{"scope":"row","style":"text-align: left; padding: 6px 0"},"c":["{{y.t}}"]},{"t":"td","a":{"style":"text-align: right; padding: 6px 0; color: #ffd89d"},"c":["{{y.v}}"]},{"t":"td","a":{"class":"{{y.chgCls}}","style":"text-align: right; padding: 6px 0 6px 12px; width: 70px"},"c":["{{y.chg}}"]}]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Earnings calendar","style":"{{P.earnings}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Upcoming Earnings \u00b7 S&P 500"]},{"t":"span","a":{"class":"dim"},"c":["Largest reporters \u00b7 BMO before open \u00b7 AMC after close \u00b7 EPS estimate"]}]},{"t":"div","a":{"class":"t-pb","style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 8px"},"c":[{"t":"sc-for","a":{"list":"{{earnDays}}","as":"ed","hint-placeholder-count":"5"},"c":[{"t":"div","a":{"class":"{{ed.colCls}}"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px"},"c":[{"t":"span","a":{"style":"font-weight: 600; color: #ffd89d; letter-spacing: .04em"},"c":["{{ed.day}}"]},{"t":"span","a":{"style":"font-size: 12px; color: #c99442"},"c":["{{ed.tag}}"]}]},{"t":"sc-for","a":{"list":"{{ed.items}}","as":"ei","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid #241a0b; font-size: 12.5px"},"c":[{"t":"span","a":{},"c":[{"t":"a","a":{"href":"{{ei.href}}","style":"font-weight: 600; color: #ffd89d"},"c":["{{ei.t}}"]}," ",{"t":"span","a":{"style":"color: #c99442"},"c":["{{ei.when}}"]}]},{"t":"span","a":{},"c":["{{ei.eps}}"]}]}]}]}]}]}]},{"t":"div","a":{"class":"dash-row"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"Headlines","style":"{{P.headlines}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Headlines"]},{"t":"a","a":{"href":"News.dc.html","style":"font-size: 12px; letter-spacing: .08em"},"c":["ALL HEADLINES ",{"t":"span","a":{"class":"t-k"},"c":["GO"]}]}]},{"t":"div","a":{"class":"t-pb","style":"padding-top: 2px"},"c":[{"t":"sc-for","a":{"list":"{{headlines}}","as":"h","hint-placeholder-count":"6"},"c":[{"t":"a","a":{"class":"t-rowlink","href":"{{h.link}}","target":"_blank","rel":"noopener"},"c":[{"t":"span","a":{"style":"font-size: 12px; color: #c99442; width: 66px; flex: none; padding-top: 1px"},"c":["{{h.time}}"]},{"t":"span","a":{"style":"flex: 1 1 auto; min-width: 0"},"c":[{"t":"span","a":{"style":"display: block; font-size: 13.5px; line-height: 1.45; color: #ffd89d"},"c":["{{h.h}}"]},{"t":"span","a":{"style":"display: block; font-size: 12px; color: #c99442; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em"},"c":["{{h.tag}}"]}]}]}]}]}]},{"t":"aside","a":{"class":"t-panel","aria-label":"Watchlist","style":"{{P.watch}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["My Watchlist"]},{"t":"button","a":{"type":"button","onclick":"{{czEditWatch}}","style":"background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size: 12px; letter-spacing: .08em"},"c":["EDIT ",{"t":"span","a":{"class":"t-k"},"c":["GO"]}]}]},{"t":"div","a":{"class":"t-pb","style":"padding-top: 2px"},"c":[{"t":"sc-for","a":{"list":"{{watch}}","as":"w","hint-placeholder-count":"5"},"c":[{"t":"a","a":{"class":"t-rowlink","href":"{{w.href}}","style":"justify-content: space-between; align-items: center"},"c":[{"t":"span","a":{},"c":[{"t":"span","a":{"style":"display: block; font-weight: 600; color: #ffd89d"},"c":["{{w.t}}"]},{"t":"span","a":{"style":"display: block; font-size: 12px; color: #c99442"},"c":["{{w.n}}"]}]},{"t":"span","a":{"style":"text-align: right"},"c":[{"t":"span","a":{"style":"display: block; color: #ffd89d"},"c":["{{w.px}}"]},{"t":"span","a":{"style":"display: block; font-size: 12.5px; color: {{w.color}}"},"c":["{{w.chg}}"]}]}]}]}]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Prediction market odds","style":"{{P.odds}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Prediction Market Odds"]},{"t":"span","a":{"class":"dim"},"c":["Fed, CPI and recession \u00b7 Kalshi"]}]},{"t":"div","a":{"class":"t-pb","style":"display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 4px 28px; padding-top: 4px"},"c":[{"t":"sc-for","a":{"list":"{{odds}}","as":"od","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"class":"t-row","style":"padding: 9px 0"},"c":[{"t":"div","a":{"style":"font-size: 12px; letter-spacing: .1em; color: #a87933; text-transform: uppercase"},"c":["{{od.group}}"]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; gap: 10px; font-size: 13px"},"c":[{"t":"span","a":{},"c":["{{od.q}}"]},{"t":"span","a":{"style":"color: #ffd89d"},"c":["{{od.v}}"]}]},{"t":"div","a":{"aria-hidden":"true","style":"height: 6px; background: #241a0b; margin: 5px 0 3px"},"c":[{"t":"div","a":{"style":"{{od.bar}}"},"c":[]}]},{"t":"div","a":{"style":"font-size: 12px; color: #a87933"},"c":["{{od.prev}}"]}]}]},{"t":"sc-if","a":{"value":"{{noOdds}}","hint-placeholder-val":"{{ false }}"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 13px"},"c":["Odds appear after the next market refresh."]}]}]},{"t":"div","a":{"style":"padding: 0 14px 12px; font-size: 12px; color: #a87933"},"c":["Market prices from Kalshi, not forecasts from this site. Change is measured against the prior day's last reading."]}]}]},{"t":"footer","a":{"class":"t-foot"},"c":[{"t":"div","a":{"style":"max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em"},"c":[{"t":"span","a":{},"c":["Prices: Yahoo Finance \u00b7 Yields: U.S. Treasury \u00b7 Economic data: FRED \u00b7 Earnings: Nasdaq \u00b7 Delayed quotes, refreshed about every minute while this page is open"]},{"t":"span","a":{},"c":[{"t":"a","a":{"href":"Notes.dc.html"},"c":["Data notes"]}," \u00b7 ",{"t":"a","a":{"href":"Calendar.dc.html"},"c":["Index dates"]}," \u00b7 Not investment advice \u00b7 \u00a9 2026 Nathan Skown"]}]}]},{"t":"sc-if","a":{"value":"{{crt}}","hint-placeholder-val":"{{ true }}"},"c":[{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}]}];
+var CZ = {
+  // [id, label, flex basis]: the dashboard's customizable panels, in default order
+  panels: [['tiles', 'Indices & assets', '1 1 100%'], ['chart', 'Index chart', '999 1 560px'], ['econ', 'Economic data', '1 1 360px'],
+    ['movers', 'S&P 500 movers', '1 1 330px'], ['sectors', 'Sectors', '1 1 330px'], ['yields', 'Treasury yields', '1 1 330px'],
+    ['earnings', 'Earnings calendar', '1 1 100%'], ['headlines', 'Headlines', '999 1 560px'], ['watch', 'Watchlist', '1 1 300px'],
+    ['odds', 'Prediction markets', '1 1 100%']],
+  tiles: ['spx', 'ixic', 'dji', 'rut', 'vix', 'tnx', 'dxy', 'wti', 'gold', 'btc'],
+  watch: ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL'],
+  home: [['dashboard', 'Dashboard', ''], ['digest', 'Digest', 'Digest.dc.html'], ['headlines', 'Headlines', 'News.dc.html'], ['quote', 'Quotes', 'Main.dc.html'],
+    ['ownership', 'Ownership', 'Ownership.dc.html'], ['earnings', 'Earnings', 'Earnings.dc.html'], ['macro', 'Macro', 'Macro.dc.html'], ['ipo', 'IPOs', 'IPO.dc.html']]
+};
+class Component extends DCLogic {
+  pf(k, d) { var st = this.state || {}; return st.pf && st.pf[k] !== undefined ? st.pf[k] : PREFS.get('fin.' + k, d); }
+  savePf(k, v) { PREFS.set('fin.' + k, v); var pf = Object.assign({}, (this.state || {}).pf || {}); pf[k] = v; this.setState({ pf: pf }); }
+  loadWatch() {
+    // prices for watchlist tickers: the nightly core list first, then the on-demand quote API for anything else
+    var self = this, list = this.pf('watch', CZ.watch), have = (this.state || {}).wq || {};
+    var idx = {}; (((this.state || {}).qidx || {}).tickers || []).forEach(function (t) { idx[t.sym] = t; });
+    list.forEach(function (sym) {
+      if (idx[sym] || have[sym]) return;
+      fetch('/api/quote?part=price&sym=' + encodeURIComponent(sym)).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j.quote) return;
+        var o = Object.assign({}, (self.state || {}).wq || {}); o[sym] = { sym: sym, name: j.quote.name, price: j.quote.price, pct: j.quote.pct }; self.setState({ wq: o });
+      }).catch(function () {});
+    });
+  }
+  componentDidMount() {
+    var self = this;
+    // start page: visitors who chose another page land there when they arrive from outside Market Analysis
+    var home = PREFS.get('fin.home', 'dashboard'), dest = CZ.home.filter(function (h) { return h[0] === home; })[0];
+    if (dest && dest[2] && !/\/finance\//.test(document.referrer || '') && (window.DC_ROUTES || {})[dest[2]]) { location.replace(window.DC_ROUTES[dest[2]]); return; }
+    DC.load('/data/finance/quotes/index.json').then(function (j) { self.setState({ qidx: j }); self.loadWatch(); }, function () { self.loadWatch(); });
+    DC.load('/data/finance/odds.json').then(function (j) { self.setState({ odds: j }); }).catch(function () {});
+    ['dashboard', 'macro', 'earnings'].forEach(function (k) {
+      DC.load('/data/finance/' + k + '.json').then(function (j) { var o = {}; o[k] = j; self.setState(o); }).catch(function () { var o = {}; o[k + 'Err'] = true; self.setState(o); });
+    });
+    this.timer = setInterval(function () {
+      DC.load('/data/finance/dashboard.json').then(function (j) { self.setState({ dashboard: j }); }).catch(function () {});
+    }, 300000);
+    /* faster overlay: the Worker re-fetches prices about every minute; if it fails the hourly file stays on screen */
+    var live = function (part) {
+      if (document.hidden) return;
+      fetch('/api/live?part=' + part).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
+        if (j.error) return;
+        var d = Object.assign({}, (self.state || {}).dashboard || {});
+        if (part === 'tiles') {
+          if (!j.tiles || !j.tiles.length) return;
+          var nm = {}; (d.watch || []).forEach(function (w) { nm[w.sym] = w.name; });
+          var byId = {}; j.tiles.forEach(function (t) { byId[t.id] = t; });
+          d.tiles = (d.tiles || []).map(function (t) { return byId[t.id] || t; }).concat(j.tiles.filter(function (t) { return !(d.tiles || []).some(function (x) { return x.id === t.id; }); }));
+          d.asOf = j.asOf || d.asOf;
+          if (j.sectors && j.sectors.length) d.sectors = j.sectors;
+          if (j.watch && j.watch.length) d.watch = j.watch.map(function (w) { w.name = nm[w.sym] || w.name; return w; });
+        } else {
+          if (!j.movers || !j.movers.gainers.length) return;
+          d.movers = j.movers; d.breadth = j.breadth;
+        }
+        d.updated = j.updated;
+        self.setState({ dashboard: d });
+      }).catch(function () {});
+    };
+    this.liveT = setInterval(function () { live('tiles'); }, 60000);
+    this.liveM = setInterval(function () { live('movers'); }, 120000);
+    setTimeout(function () { live('tiles'); live('movers'); }, 1500);
+  }
+  componentWillUnmount() { clearInterval(this.timer); clearInterval(this.liveT); clearInterval(this.liveM); }
+  renderVals() {
+    var UP = '#4ade80', DN = '#ff5f56';
+    var st = this.state || {};
+    var oddsRows = function (O) {
+      var rows = [];
+      ((O && O.groups) || []).forEach(function (g) {
+        (g.markets || []).slice().sort(function (a, b) { return Math.abs(a.pct - 50) - Math.abs(b.pct - 50); }).slice(0, 3).forEach(function (m, k) {
+          var d = m.prev === null || m.prev === undefined ? null : m.pct - m.prev;
+          rows.push({ group: k === 0 ? (g.event || g.title) : '', q: /^(starts|yes)$/i.test(m.label || '') ? 'Yes' : m.label, v: Math.round(m.pct) + '%',
+            bar: 'height: 6px; background: #ffb84d; box-shadow: 0 0 8px rgba(255,184,77,.5); width: ' + Math.max(1, Math.min(100, m.pct)) + '%;',
+            prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + (Math.abs(Math.round(d)) === 1 ? ' pt' : ' pts') + ' vs. prior day (' + Math.round(m.prev) + '%)') });
+        });
+      });
+      return rows;
+    };
+    var oddsList = oddsRows(st.odds);
+    var self = this;
+    var D = st.dashboard || {}, M = st.macro || {}, E = st.earnings || {};
+    var allTiles = D.tiles || [], tilePick = this.pf('tiles', CZ.tiles);
+    var tilesRaw = allTiles.filter(function (t) { return tilePick.indexOf(t.id) >= 0; });
+    if (!tilesRaw.length) tilesRaw = allTiles.slice(0, 1);
+    var sel = st.sel && tilesRaw.some(function (t) { return t.id === st.sel; }) ? st.sel : (tilesRaw[0] && tilesRaw[0].id);
+    var tab = st.tab || 'gainers';
+    var fmt = function (v, d, unit) {
+      if (v === null || v === undefined) return '—';
+      var s = Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+      return unit === '$' ? '$' + s : (unit === '%' ? s + '%' : s);
+    };
+    var path = function (vals, W, top, h, lo, hi) {
+      if (!vals || vals.length < 2) return 'M0,' + (top + h / 2) + ' L' + W + ',' + (top + h / 2);
+      var mn = lo, mx = hi;
+      if (mn === undefined) { mn = Math.min.apply(null, vals); mx = Math.max.apply(null, vals); }
+      var span = (mx - mn) || 1;
+      return 'M' + vals.map(function (v, k) { return ((k / (vals.length - 1)) * W).toFixed(1) + ',' + (top + (1 - (v - mn) / span) * h).toFixed(1); }).join(' L');
+    };
+    var chgText = function (t) {
+      if (t.chg === null || t.chg === undefined) return '—';
+      if (t.unit === '%') return (t.chg >= 0 ? '+' : '−') + Math.abs(t.chg * 100).toFixed(0) + ' bp';
+      return (t.chg >= 0 ? '+' : '−') + (t.unit === '$' ? '$' : '') + Math.abs(t.chg).toLocaleString('en-US', { minimumFractionDigits: t.dec, maximumFractionDigits: t.dec });
+    };
+    var cur = null;
+    var tiles = tilesRaw.map(function (t) {
+      var on = t.id === sel;
+      if (on) cur = t;
+      var up = (t.pct || 0) >= 0;
+      return {
+        name: t.name, disp: fmt(t.price, t.dec, t.unit), color: up ? UP : DN,
+        pctText: t.pct === null || t.pct === undefined ? '—' : (t.unit === '%' ? F.arrow(t.chg) + ' ' + chgText(t) : F.arrow(t.pct) + ' ' + F.pct(t.pct)),
+        spark: path(t.c, 160, 3, 30), pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ sel: t.id }); }, cls: 'tl' + (on ? ' is-on' : '') + (t.pct === null || t.pct === undefined || t.pct === 0 ? '' : (up ? ' is-up' : ' is-dn'))
+      };
+    });
+    cur = cur || { name: 'Loading', c: [], t: [], dec: 2 };
+    var series = cur.c || [];
+    var prior = cur.prev;
+    var all = series.concat(prior ? [prior] : []);
+    var mn = all.length ? Math.min.apply(null, all) : 0, mx = all.length ? Math.max.apply(null, all) : 1;
+    var pad = (mx - mn) * 0.08 || 1; mn -= pad; mx += pad;
+    var selLine = path(series, 800, 20, 220, mn, mx);
+    var cUp = (cur.pct || 0) >= 0;
+    var ts = cur.t || [];
+    var xLabels = ts.length ? [0, 0.25, 0.5, 0.75, 1].map(function (f) { return F.time(ts[Math.min(ts.length - 1, Math.round(f * (ts.length - 1)))]); }) : ['', '', '', '', ''];
+    // market status, computed from the clock in New York
+    var ny = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    var mins = ny.getHours() * 60 + ny.getMinutes(), wd = ny.getDay();
+    var open = wd > 0 && wd < 6 && mins >= 570 && mins < 960;
+    var mktStatus = open ? 'MARKET OPEN · CLOSES ' + F.nyTime(16, 0) + ' ' + window.TZL : (wd > 0 && wd < 6 && mins < 570 ? 'MARKET CLOSED · OPENS ' + F.nyTime(9, 30) + ' ' + window.TZL : 'MARKET CLOSED');
+    var b = D.breadth;
+    var tile = function (id) { return tilesRaw.filter(function (t) { return t.id === id; })[0]; };
+    var spx = tile('spx'), ixic = tile('ixic'), rut = tile('rut');
+    var summary = spx ? 'S&P 500 ' + F.pct(spx.pct) + (ixic ? ' · Nasdaq ' + F.pct(ixic.pct) : '') + (rut ? ' · Russell 2000 ' + F.pct(rut.pct) : '') + (D.asOf ? ' · as of ' + F.day(D.asOf) + ' ' + F.time(D.asOf) + ' ' + window.TZL : '') : (st.dashboardErr ? 'Market data is not available yet. The first refresh runs within the hour.' : 'Loading market data…');
+    var macroRows = (M.latest || []).slice(0, 6).map(function (m) {
+      return { n: m.n, period: new Date(m.period + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }), act: m.act, prior: m.prior };
+    });
+    var nowMs = Date.now();
+    var upcoming = (M.calendar || []).filter(function (c) { return !c.at || new Date(c.at).getTime() > nowMs; }).slice(0, 5).map(function (c) {
+      var day = new Date(c.date + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }).toUpperCase();
+      return { d: c.at ? day + ' ' + F.time(new Date(c.at).getTime() / 1000) : day, e: c.name };
+    });
+    var mov = (D.movers || {})[tab] || [];
+    var movers = mov.map(function (m) {
+      return { t: m.sym, href: 'Main.dc.html?sym=' + m.sym, n: m.name, why: m.sector || '', px: F.usd(m.price, 2), chg: F.arrow(m.pct) + ' ' + F.pct(m.pct, 1), color: m.pct >= 0 ? UP : DN };
+    });
+    var moverTabs = [{ id: 'gainers', label: 'GAINERS' }, { id: 'losers', label: 'LOSERS' }].map(function (t) {
+      var on = t.id === tab;
+      return { label: t.label, pressed: on ? 'true' : 'false', pick: function () { self.setState({ tab: t.id }); }, cls: 't-tab' + (on ? ' is-on' : '') };
+    });
+    var sectors = (D.sectors || []).slice().sort(function (a, b2) { return (b2.pct || 0) - (a.pct || 0); }).map(function (s) {
+      var pos = (s.pct || 0) >= 0, a = Math.min(Math.abs(s.pct || 0) / 1.5, 1);
+      var bg = pos ? 'rgba(74,222,128,' + (0.05 + a * 0.28).toFixed(3) + ')' : 'rgba(255,95,86,' + (0.06 + a * 0.30).toFixed(3) + ')';
+      return { n: s.name, chg: F.arrow(s.pct) + ' ' + F.pct(s.pct), cellStyle: 'display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 10px; background: ' + bg + '; border: 1px solid ' + (pos ? '#1F5A33' : '#6B2420') + '; color: ' + (pos ? '#B8F5CC' : '#FFC2BD') + ';' };
+    });
+    var C = D.curve || {}, cx = [10, 75, 150, 220, 290];
+    var ys = (C.now || []).concat(C.monthAgo || []).filter(function (v) { return v !== null; });
+    var ylo = ys.length ? Math.min.apply(null, ys) - 0.15 : 3, yhi = ys.length ? Math.max.apply(null, ys) + 0.15 : 5;
+    var cy = function (v) { return (100 - (v - ylo) / (yhi - ylo) * 90).toFixed(1); };
+    var curve = function (arr) { return arr && arr.length ? 'M' + arr.map(function (v, k) { return cx[k] + ',' + cy(v); }).join(' L') : ''; };
+    var yields = (C.tenors || []).map(function (t, k) {
+      var d = C.now[k] !== null && C.prevDay[k] !== null ? Math.round((C.now[k] - C.prevDay[k]) * 100) : null;
+      return { t: t + ' Treasury', v: F.n(C.now[k], 2) + '%', chg: d === null ? '—' : (d >= 0 ? '▲ +' : '▼ −') + Math.abs(d) + ' bp', chgCls: d === null ? 'dim' : (d > 0 ? 'dn' : 'up') };
+    });
+    var days = {};
+    (E.upcoming || []).forEach(function (x) { (days[x.date] = days[x.date] || []).push(x); });
+    var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    var earnDays = Object.keys(days).sort().slice(0, 5).map(function (d) {
+      var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, href: 'Main.dc.html?sym=' + x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
+      return { day: new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase(), tag: (d === todayIso ? 'TODAY' : days[d].length + ' reporting') + (days[d].length > 4 ? ' · +' + (days[d].length - 4) + ' more' : ''), items: items, colCls: 't-day' + (d === todayIso ? ' is-today' : '') };
+    });
+    var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
+      return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
+    });
+    var wlist = this.pf('watch', CZ.watch), qi = {};
+    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
+    (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
+    var watch = wlist.map(function (sym) {
+      var w = qi[sym] || (st.wq || {})[sym] || { sym: sym, name: 'Loading…' };
+      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+    });
+    // panel order, visibility and the Customize controls
+    var pp = this.pf('panels', null) || {}, order = (pp.order || []).filter(function (id) { return CZ.panels.some(function (x) { return x[0] === id; }); });
+    CZ.panels.forEach(function (x) { if (order.indexOf(x[0]) < 0) order.push(x[0]); });
+    var hidden = pp.hidden || [];
+    var P = {};
+    order.forEach(function (id, i) { var x = CZ.panels.filter(function (y) { return y[0] === id; })[0]; P[id] = hidden.indexOf(id) >= 0 ? 'display: none' : 'order: ' + (i + 1) + '; flex: ' + x[2] + ';'; });
+    var savePanels = function (o, h) { self.savePf('panels', { order: o, hidden: h }); };
+    var czPanels = order.map(function (id, i) {
+      var x = CZ.panels.filter(function (y) { return y[0] === id; })[0], on = hidden.indexOf(id) < 0;
+      var move = function (d) { var o = order.slice(), j = i + d; if (j < 0 || j >= o.length) return; o[i] = o[j]; o[j] = id; savePanels(o, hidden); };
+      return { label: x[1], color: on ? '#ffd89d' : '#664a1f', upAria: 'Move ' + x[1] + ' up', downAria: 'Move ' + x[1] + ' down',
+        up: function () { move(-1); }, down: function () { move(1); }, pressed: on ? 'true' : 'false', showLabel: on ? 'SHOWN' : 'HIDDEN',
+        showCls: 't-tab' + (on ? ' is-on' : ''), toggle: function () { savePanels(order, on ? hidden.concat([id]) : hidden.filter(function (h) { return h !== id; })); } };
+    });
+    var czTiles = allTiles.map(function (t) {
+      var on = tilePick.indexOf(t.id) >= 0;
+      return { label: t.name, cls: 't-tab' + (on ? ' is-on' : ''), pressed: on ? 'true' : 'false',
+        toggle: function () { self.savePf('tiles', on ? tilePick.filter(function (x) { return x !== t.id; }) : tilePick.concat([t.id])); } };
+    });
+    var homeNow = this.pf('home', 'dashboard');
+    var czHome = CZ.home.map(function (h) { var on = h[0] === homeNow; return { label: h[1], cls: 't-tab' + (on ? ' is-on' : ''), pressed: on ? 'true' : 'false', pick: function () { self.savePf('home', h[0]); } }; });
+    var czWatch = wlist.map(function (sym) { return { t: sym, rmAria: 'Remove ' + sym, remove: function () { self.savePf('watch', wlist.filter(function (x) { return x !== sym; })); } }; });
+    var addWatch = function (e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var v = String(st.wDraft || '').trim().toUpperCase().replace(/\./g, '-');
+      if (!v) return;
+      if (wlist.indexOf(v) >= 0) { self.setState({ wMsg: v + ' is already on your watchlist.' }); return; }
+      if (wlist.length >= 12) { self.setState({ wMsg: 'The watchlist holds 12 tickers. Remove one first.' }); return; }
+      DC.tickers().then(function (T) {
+        var hit = T.bySym[v] ? v : null;
+        if (!hit && !/^[A-Z0-9^][A-Z0-9.\-=^]{0,11}$/.test(v)) { self.setState({ wMsg: '"' + v + '" is not a ticker we recognize.' }); return; }
+        self.savePf('watch', wlist.concat([hit || v])); self.setState({ wDraft: '', wMsg: '' });
+        setTimeout(function () { self.loadWatch(); }, 0);
+      });
+    };
+    var fomc = M.fomc ? new Date(M.fomc + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase() : '—';
+    return {
+      P: P, czOpen: !!st.czOpen, czOpenAttr: st.czOpen ? 'true' : 'false', czBtn: st.czOpen ? 'DONE' : 'CUSTOMIZE',
+      czToggle: function () { self.setState({ czOpen: !st.czOpen }); }, czEditWatch: function () { self.setState({ czOpen: true }); window.scrollTo(0, 0); },
+      czTiles: czTiles, czPanels: czPanels, czHome: czHome, czWatch: czWatch, wDraft: st.wDraft || '', wMsg: st.wMsg || '',
+      wInput: function (e) { self.setState({ wDraft: e.target.value, wMsg: '' }); }, wAdd: addWatch,
+      czReset: function () { ['tiles', 'panels', 'watch', 'home'].forEach(function (k) { try { localStorage.removeItem('nskn.fin.' + k); } catch (e) {} }); self.setState({ pf: {}, wq: {} }); setTimeout(function () { self.loadWatch(); }, 0); },
+      odds: oddsList, noOdds: !!st.odds && !oddsList.length,
+      crt: this.props.crt !== false,
+      liveTag: F.updated(D.updated), summary: summary,
+      mktStatus: mktStatus, mktDot: 'width: 8px; height: 8px; background: ' + (open ? '#4ade80' : '#a87933'),
+      breadthText: b && b.n ? 'S&P 500 · ' + b.adv + ' UP · ' + b.dec + ' DOWN' : '',
+      tiles: tiles, selName: cur.name, selDisp: fmt(cur.price, cur.dec, cur.unit), selChg: chgText(cur), selPct: F.pct(cur.pct),
+      selArrow: F.arrow(cur.pct), selColor: cUp ? UP : DN, selFill: cUp ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
+      selLine: selLine, selArea: selLine + ' L800,260 L0,260 Z',
+      baseY: prior ? (20 + (1 - (prior - mn) / (mx - mn)) * 220).toFixed(1) : '-10',
+      yMax: fmt(mx, cur.dec, cur.unit), yMid: fmt((mx + mn) / 2, cur.dec, cur.unit), yMin: fmt(mn, cur.dec, cur.unit), xLabels: xLabels,
+      macro: macroRows, upcoming: upcoming, noUpcoming: M.updated && !upcoming.length,
+      fomcLabel: fomc, targetLabel: M.target && M.target[0] !== null ? F.n(M.target[0], 2) + '–' + F.n(M.target[1], 2) + '%' : '—',
+      moverTabs: moverTabs, movers: movers, sectors: sectors,
+      curveNow: curve(C.now), curvePrev: curve(C.monthAgo), yields: yields,
+      curveNote: C.date ? 'As of ' + F.day(C.date) + ' · dashed = ' + F.day(C.monthAgoDate) : 'Daily par curve',
+      earnDays: earnDays, headlines: headlines, watch: watch
+    };
+  }
+}

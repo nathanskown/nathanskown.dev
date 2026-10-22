@@ -10,7 +10,7 @@ export { MusicBoard };
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname === "/api/quote") return handleQuote(request, ctx);
+    if (url.pathname === "/api/quote") return handleQuote(request, env, ctx);
     if (url.pathname.startsWith("/api/espn/")) return handleEspn(request, ctx);
     if (url.pathname === "/api/live") return handleLive(request, env, ctx);
     if (url.pathname.startsWith("/api/music/")) return handleMusic(request, env);

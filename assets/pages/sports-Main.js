@@ -1,0 +1,217 @@
+window.DC_TREE=[{"t":"div","a":{"class":"t"},"c":[{"t":"header","a":{},"c":[{"t":"div","a":{"class":"t-title"},"c":[{"t":"a","a":{"class":"t-brand","href":"/"},"c":["1-NSKN"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-live"},"c":[{"t":"span","a":{"class":"t-dot"},"c":[]},"LIVE"]},{"t":"span","a":{"class":"dim"},"c":["ALL TIMES {{tzLabel}}"]}]},{"t":"div","a":{"class":"t-help"},"c":[{"t":"span","a":{"class":"dim t-hide-sm"},"c":["Follow any team \u00b7 pick a league \u00b7 every game and team opens its own page"]}]},{"t":"form","a":{"class":"t-cmd","data-cmd":""},"c":[{"t":"label","a":{"for":"sportSearch","class":"t-prompt"},"c":["SEARCH \u203a"]},{"t":"input","a":{"id":"sportSearch","class":"t-input","type":"search","placeholder":"SEARCH ANY TEAM","autocomplete":"off","enterkeyhint":"go"},"c":[]}]},{"t":"nav","a":{"class":"t-fbar","aria-label":"Sports pages"},"c":[{"t":"span","a":{"class":"t-fbar-title"},"c":["Sports"]},{"t":"a","a":{"class":"t-fkey is-on","href":"#","aria-current":"page"},"c":["1) Scores"]},{"t":"a","a":{"class":"t-fkey","href":"Teams.dc.html"},"c":["2) Teams"]},{"t":"a","a":{"class":"t-fkey","href":"Simulator.dc.html"},"c":["3) Simulator"]},{"t":"a","a":{"class":"t-fkey","href":"Odds.dc.html"},"c":["4) Playoff odds"]},{"t":"a","a":{"class":"t-fkey","href":"Injuries.dc.html"},"c":["5) Injuries"]},{"t":"a","a":{"class":"t-fkey","href":"LuckWatch.dc.html"},"c":["6) Luck"]},{"t":"a","a":{"class":"t-fkey","href":"Schedule.dc.html"},"c":["7) Schedule"]},{"t":"a","a":{"class":"t-fkey","href":"TrackRecord.dc.html"},"c":["8) Track record"]},{"t":"a","a":{"class":"t-fkey","href":"Methodology.dc.html"},"c":["9) Method"]},{"t":"a","a":{"class":"t-fkey","href":"History.dc.html"},"c":["Model history"]},{"t":"a","a":{"class":"t-fkey","href":"/"},"c":["Home"]}]},{"t":"nav","a":{"class":"t-sub2","aria-label":"Favorite teams"},"c":[{"t":"span","a":{"class":"t-sl"},"c":["MY TEAMS"]},{"t":"sc-for","a":{"list":"{{favs}}","as":"f","hint-placeholder-count":"7"},"c":[{"t":"a","a":{"class":"t-chipl","href":"{{f.href}}"},"c":["{{f.label}}"]}]},{"t":"span","a":{"class":"t-sl"},"c":["ALL TEAMS"]},{"t":"a","a":{"class":"t-chipl","href":"Teams.dc.html"},"c":["BROWSE \u203a"]}]},{"t":"div","a":{"class":"t-sub"},"c":[{"t":"span","a":{},"c":["Scores & Schedule"]},{"t":"span","a":{"class":"dim"},"c":["{{todayLabel}}"]},{"t":"span","a":{"style":"flex: 1 1 auto"},"c":[]},{"t":"span","a":{"class":"t-tag"},"c":["{{statusTag}}"]}]}]},{"t":"main","a":{"class":"s-wrap"},"c":[{"t":"section","a":{"aria-label":"Summary","style":"display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 14px"},"c":[{"t":"div","a":{},"c":[{"t":"div","a":{"class":"s-kicker"},"c":["Scores \u00b7 every league"]},{"t":"h1","a":{"style":"margin: 0"},"c":["Scores & schedule"]},{"t":"div","a":{"class":"dim","style":"margin-top: 6px"},"c":["{{dayLine}}"]}]},{"t":"div","a":{"class":"s-strip","role":"status","aria-live":"polite","aria-label":"Slate summary"},"c":[{"t":"div","a":{},"c":[{"t":"span","a":{"class":"k"},"c":["LIVE NOW"]},{"t":"span","a":{"class":"{{strip.liveCls}}"},"c":["{{strip.live}}"]}]},{"t":"div","a":{},"c":[{"t":"span","a":{"class":"k"},"c":["ON THE SLATE"]},{"t":"span","a":{"class":"v"},"c":["{{strip.total}}"]}]},{"t":"div","a":{},"c":[{"t":"span","a":{"class":"k"},"c":["{{strip.nextK}}"]},{"t":"span","a":{"class":"s"},"c":["{{strip.next}}"]},{"t":"span","a":{"class":"s dim"},"c":["{{strip.nextWhen}}"]}]}]},{"t":"div","a":{"class":"s-tabs","role":"group","aria-label":"Day"},"c":[{"t":"sc-for","a":{"list":"{{days}}","as":"d","hint-placeholder-count":"3"},"c":[{"t":"button","a":{"type":"button","class":"{{d.cls}}","aria-pressed":"{{d.on}}","onclick":"{{d.pick}}"},"c":["{{d.label}}"]}]}]}]},{"t":"section","a":{"class":"t-panel","id":"follow","aria-label":"My teams"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["My teams"]},{"t":"span","a":{"class":"dim"},"c":["Saved in this browser"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"div","a":{"style":"max-width: 520px"},"c":[{"t":"label","a":{"for":"teamAdd","class":"sr"},"c":["Add a team to follow"]},{"t":"input","a":{"id":"teamAdd","class":"s-input","type":"search","value":"{{q}}","onchange":"{{onQ}}","placeholder":"{{followHint}}","autocomplete":"off"},"c":[]}]},{"t":"sc-if","a":{"value":"{{hasResults}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"role":"group","aria-label":"Matching teams","class":"s-tabs","style":"margin-top: 8px"},"c":[{"t":"sc-for","a":{"list":"{{results}}","as":"t","hint-placeholder-count":"4"},"c":[{"t":"button","a":{"type":"button","class":"s-tab","onclick":"{{t.add}}"},"c":["+ {{t.name}} ",{"t":"span","a":{"class":"dim"},"c":["{{t.lg}}"]}]}]}]}]},{"t":"sc-if","a":{"value":"{{noMatch}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"dim","style":"margin-top: 8px"},"c":["No team matches \u201c{{q}}\u201d."]}]},{"t":"sc-if","a":{"value":"{{noFollows}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"div","a":{"class":"s-empty","style":"margin-top: 10px"},"c":["You\u2019re not following any teams yet. Search above to add one. Each one gets a daily briefing here: last result, next game with the house's odds, record, form and rating rank. Its games are highlighted below."]}]},{"t":"sc-if","a":{"value":"{{hasFollows}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; margin-top: 10px"},"c":[{"t":"sc-for","a":{"list":"{{mine}}","as":"m","hint-placeholder-count":"3"},"c":[{"t":"div","a":{"class":"s-card","style":"border-color: var(--a)"},"c":[{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: center; gap: 6px"},"c":[{"t":"a","a":{"class":"s-team","href":"{{m.href}}"},"c":[{"t":"img","a":{"class":"s-logo","src":"{{m.logo}}","alt":""},"c":[]},"{{m.name}}"]},{"t":"button","a":{"type":"button","onclick":"{{m.remove}}","aria-label":"{{m.removeLabel}}","style":"flex: none; width: 40px; height: 40px; border: 0; background: transparent; color: var(--dim); cursor: pointer"},"c":["\u2715"]}]},{"t":"div","a":{"style":"font-size: 12.5px"},"c":[{"t":"span","a":{"class":"dim"},"c":["Last "]},{"t":"a","a":{"href":"{{m.lastHref}}","style":"{{m.lastStyle}}"},"c":["{{m.last}}"]}]},{"t":"div","a":{"style":"font-size: 12.5px"},"c":[{"t":"span","a":{"class":"dim"},"c":["Next "]},{"t":"a","a":{"href":"{{m.nextHref}}"},"c":["{{m.next}}"]},{"t":"sc-if","a":{"value":"{{m.hasP}}","hint-placeholder-val":"{{false}}"},"c":[" ",{"t":"span","a":{"class":"s-house"},"c":["\u00b7 house {{m.pNext}}"]}]}]},{"t":"sc-if","a":{"value":"{{m.hasBrief}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 12px; margin-top: 4px; line-height: 1.45"},"c":["{{m.brief}}"]}]}]}]}]}]}]}]},{"t":"nav","a":{"aria-label":"Leagues","class":"s-tabs"},"c":[{"t":"sc-for","a":{"list":"{{chips}}","as":"c","hint-placeholder-count":"10"},"c":[{"t":"button","a":{"type":"button","class":"{{c.cls}}","aria-pressed":"{{c.on}}","onclick":"{{c.pick}}"},"c":["{{c.label}}",{"t":"sc-if","a":{"value":"{{c.live}}","hint-placeholder-val":"{{false}}"},"c":[" ",{"t":"span","a":{"class":"s-live"},"c":["\u25cf"]}]}]}]}]},{"t":"div","a":{"class":"s-cols"},"c":[{"t":"div","a":{"style":"flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 18px"},"c":[{"t":"sc-for","a":{"list":"{{boards}}","as":"B","hint-placeholder-count":"4"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"{{B.name}}"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["{{B.name}}"]},{"t":"span","a":{"class":"dim"},"c":["{{B.sub}}"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{B.msg}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{B.msg}}"]}]},{"t":"div","a":{"style":"display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 8px"},"c":[{"t":"sc-for","a":{"list":"{{B.games}}","as":"g","hint-placeholder-count":"6"},"c":[{"t":"div","a":{"class":"{{g.cls}}"},"c":[{"t":"sc-if","a":{"value":"{{g.title}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"hi","style":"font-size: 13px; margin-bottom: 4px"},"c":["{{g.title}}"]}]},{"t":"sc-for","a":{"list":"{{g.rows}}","as":"r","hint-placeholder-count":"2"},"c":[{"t":"div","a":{"class":"s-line","style":"min-height: 32px"},"c":[{"t":"a","a":{"class":"s-team","href":"{{r.href}}","style":"{{r.style}}"},"c":[{"t":"span","a":{"class":"s-tc","style":"{{r.tc}}","aria-hidden":"true"},"c":[]},{"t":"sc-if","a":{"value":"{{r.logo}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"img","a":{"class":"s-logo","src":"{{r.logo}}","alt":""},"c":[]}]},{"t":"sc-if","a":{"value":"{{r.rank}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"class":"s-rank"},"c":["{{r.rank}}"]}]},{"t":"span","a":{"style":"overflow: hidden; text-overflow: ellipsis; white-space: nowrap"},"c":["{{r.name}}"]},{"t":"span","a":{"class":"dim","style":"font-size: 12px"},"c":["{{r.rec}}"]}]},{"t":"span","a":{"class":"s-sc","style":"{{r.scoreStyle}}"},"c":["{{r.score}}"]}]}]},{"t":"div","a":{"style":"display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 6px"},"c":[{"t":"span","a":{"style":"display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"},"c":[{"t":"span","a":{"class":"{{g.pill}}"},"c":["{{g.status}}"]},{"t":"sc-if","a":{"value":"{{g.sub}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"class":"dim","style":"font-size: 12px"},"c":["{{g.sub}}"]}]}]},{"t":"sc-if","a":{"value":"{{g.href}}","hint-placeholder-val":"{{true}}"},"c":[{"t":"a","a":{"class":"s-go","href":"{{g.href}}","aria-label":"{{g.aria}}","style":"width: auto; padding: 0 10px; height: 32px; font-size: 12px"},"c":["{{g.cta}} \u2192"]}]}]},{"t":"sc-if","a":{"value":"{{g.note}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"dim","style":"font-size: 12px; margin-top: 6px"},"c":["{{g.note}}",{"t":"sc-if","a":{"value":"{{g.house}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"span","a":{"class":"s-house"},"c":["{{g.house}}"]}]}]}]}]}]}]},{"t":"sc-if","a":{"value":"{{B.more}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"button","a":{"type":"button","class":"s-tab","style":"margin-top: 10px","onclick":"{{B.showAll}}"},"c":["{{B.moreLabel}}"]}]}]}]}]}]},{"t":"aside","a":{"style":"flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 18px"},"c":[{"t":"section","a":{"class":"t-panel","aria-label":"House ratings"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["{{power.title}}"]},{"t":"a","a":{"class":"dim","href":"{{power.allHref}}"},"c":["All teams \u2192"]}]},{"t":"div","a":{"class":"t-pb"},"c":[{"t":"sc-if","a":{"value":"{{power.none}}","hint-placeholder-val":"{{false}}"},"c":[{"t":"div","a":{"class":"s-empty"},"c":["{{power.noneText}}"]}]},{"t":"table","a":{"class":"s-tbl"},"c":[{"t":"tbody","a":{},"c":[{"t":"sc-for","a":{"list":"{{power.rows}}","as":"r","hint-placeholder-count":"10"},"c":[{"t":"tr","a":{},"c":[{"t":"td","a":{"class":"s-rank","style":"width: 28px"},"c":["{{r.rank}}"]},{"t":"td","a":{"class":"l"},"c":[{"t":"a","a":{"class":"s-team","href":"{{r.href}}"},"c":[{"t":"img","a":{"class":"s-logo","src":"{{r.logo}}","alt":"","loading":"lazy"},"c":[]},"{{r.name}}"]}]},{"t":"td","a":{"class":"hi"},"c":["{{r.rating}}"]}]}]}]}]},{"t":"p","a":{"class":"s-note","style":"margin: 8px 0 0"},"c":["{{power.note}}"]}]}]},{"t":"section","a":{"class":"t-panel","aria-label":"Browse"},"c":[{"t":"div","a":{"class":"t-ph"},"c":[{"t":"h2","a":{},"c":["Browse every team"]}]},{"t":"div","a":{"class":"t-pb","style":"display: flex; flex-wrap: wrap; gap: 6px"},"c":[{"t":"sc-for","a":{"list":"{{browse}}","as":"b","hint-placeholder-count":"7"},"c":[{"t":"a","a":{"class":"t-chipl","href":"{{b.href}}"},"c":["{{b.label}} ",{"t":"span","a":{"class":"dim","style":"margin-left: 6px"},"c":["{{b.n}}"]}]}]}]}]}]}]}]},{"t":"footer","a":{"class":"t-foot"},"c":[{"t":"div","a":{"style":"max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px","class":"dim"},"c":[{"t":"span","a":{},"c":["Scores and schedules: ESPN public API (cached about 30 seconds) \u00b7 Win probabilities: house model \u00b7 No betting lines \u00b7 All times {{tzLabel}}"]},{"t":"span","a":{},"c":["Built by Nathan Skown"]}]}]},{"t":"div","a":{"class":"t-crt","aria-hidden":"true"},"c":[]}]}];
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lg: 'all', day: 0, q: '', boards: {}, models: {}, follows: [], fsched: {} }; }
+
+  componentDidMount() {
+    var self = this, lg = String(this.state.lg || 'all').toLowerCase();
+    if (lg !== 'all' && !SD.LEAGUES[lg]) lg = 'all';
+    var follows = [];
+    try { follows = JSON.parse(window.localStorage.getItem('skown.sports.follows.v2') || '[]'); } catch (e) {}
+    if (!Array.isArray(follows)) follows = [];
+    this.setState({ lg: lg, follows: follows });
+    SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
+    this.refresh();
+    follows.forEach(function (f) { self.loadFollow(f); });
+  }
+  componentWillUnmount() { clearTimeout(this.timer); }
+
+  ymd(off) {
+    var d = new Date(Date.now() + off * 86400000);
+    var p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d); // ESPN's daily slate follows US Eastern
+    var g = function (t) { return p.filter(function (x) { return x.type === t; })[0].value; };
+    return g('year') + g('month') + g('day');
+  }
+  leaguesShown() { return this.state.lg === 'all' ? SD.ORDER : [this.state.lg]; }
+  refresh() {
+    var self = this, day = this.state.day || 0;
+    var list = this.leaguesShown();
+    var jobs = list.map(function (lg) {
+      var L = SD.LEAGUES[lg], p = {};
+      if (day !== 0 && !L.kind) p.dates = self.ymd(day);
+      return SD.scores(lg, p).then(function (b) { return [lg, b]; }, function () { return [lg, { err: true, events: [] }]; });
+    });
+    list.forEach(function (lg) { if (SD.LEAGUES[lg].teams && !self.state.models[lg]) SD.data('model/' + lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[lg] = m; self.setState({ models: o }); }, function () {}); });
+    Promise.all(jobs).then(function (rs) {
+      var boards = Object.assign({}, self.state.boards);
+      rs.forEach(function (r) { boards[r[0] + ':' + day] = r[1]; });
+      self.setState({ boards: boards, loaded: true });
+      var live = rs.some(function (r) { return (r[1].events || []).some(function (e) { return e.state === 'in' || (e.matches || []).some(function (m) { return m.state === 'in'; }); }); });
+      clearTimeout(self.timer); self.timer = setTimeout(function () { self.refresh(); }, live ? 30000 : 300000);
+    });
+  }
+  loadFollow(f) {
+    var self = this;
+    SD.schedule(f.lg, f.id).then(function (s) { var o = Object.assign({}, self.state.fsched); o[f.lg + ':' + f.id] = s; self.setState({ fsched: o }); }, function () {});
+    if (SD.LEAGUES[f.lg] && SD.LEAGUES[f.lg].teams && !this.state.models[f.lg]) SD.data('model/' + f.lg + '.json').then(function (m) { var o = Object.assign({}, self.state.models); o[f.lg] = m; self.setState({ models: o }); }, function () {});
+  }
+  hint(idx) {
+    // three random teams from different leagues as examples, picked once per visit
+    if (this._hint) return this._hint;
+    var lgs = Object.keys(idx).filter(function (k) { return (idx[k] || []).length; });
+    if (!lgs.length) return 'Follow any team…';
+    var picks = lgs.sort(function () { return Math.random() - 0.5; }).slice(0, 3).map(function (k) { var l = idx[k]; return l[Math.floor(Math.random() * l.length)].nick || l[0].name; });
+    return (this._hint = 'Follow any team: ' + picks.join(', ') + '…');
+  }
+  saveFollows(list) {
+    this.setState({ follows: list, q: '' });
+    try { window.localStorage.setItem('skown.sports.follows.v2', JSON.stringify(list)); } catch (e) {}
+  }
+
+  renderVals() {
+    var S = this.state, self = this, idx = (S.index || {}).leagues || {}, day = S.day || 0;
+    var info = {}; Object.keys(idx).forEach(function (k) { idx[k].forEach(function (t) { info[k + ':' + t.id] = t; }); });
+    var favs = S.follows.length ? SD.favChips() : [{ label: '+ FOLLOW TEAMS', href: '#follow' }];
+    var followed = {}; S.follows.forEach(function (f) { followed[f.lg + ':' + f.id] = 1; });
+
+    // follow search
+    var q = (S.q || '').trim().toLowerCase(), results = [];
+    if (q.length >= 2) {
+      Object.keys(idx).forEach(function (k) { idx[k].forEach(function (t) {
+        if (followed[k + ':' + t.id] || results.length >= 12) return;
+        if ([t.name, t.loc, t.nick, t.abbr].join(' ').toLowerCase().indexOf(q) >= 0)
+          results.push({ name: t.name, lg: SD.LEAGUES[k].short, add: function () { var f = { lg: k, id: t.id, name: t.name }; self.saveFollows(S.follows.concat([f])); self.loadFollow(f); } });
+      }); });
+    }
+    var mine = S.follows.map(function (f) {
+      var t = info[f.lg + ':' + f.id] || {}, s = S.fsched[f.lg + ':' + f.id], last = null, next = null;
+      if (s) { s.games.forEach(function (g) { if (g.done) last = g; else if (!next && g.state !== 'post') next = g; }); }
+      var opp = function (g) { return (g.home || g.neutral ? 'vs ' : 'at ') + (g.opp.abbr || g.opp.short || 'TBD'); };
+      // one-line briefing: record and standing, recent form, house rank, and the house's chance in the next game
+      var md = S.models[f.lg], mt = md && md.teams ? md.teams[String(f.id)] : null, brief = [];
+      if (s && s.team.record) brief.push(s.team.record + (s.team.standing ? ', ' + s.team.standing : ''));
+      if (s) { var form = s.games.filter(function (g) { return g.done && g.result; }).slice(-5).map(function (g) { return g.result; }).join(''); if (form.length >= 3) brief.push('last ' + form.length + ': ' + form); }
+      if (mt && mt.rank) brief.push('house rank ' + mt.rank + ' of ' + Object.keys(md.teams).length);
+      var pNext = '';
+      if (next && next.state === 'pre' && md && mt) {
+        var pr = next.home ? SD.project(md, next.opp.id, f.id, next.neutral, next.start) : SD.project(md, f.id, next.opp.id, next.neutral, next.start);
+        if (pr) pNext = Math.round((next.home ? pr.pHome : pr.pAway) * 100) + '% to win';
+      }
+      return { name: t.name || f.name, logo: t.logo || '', href: SD.teamHref(f.lg, f.id), removeLabel: 'Stop following ' + (t.name || f.name),
+        remove: function () { self.saveFollows(S.follows.filter(function (x) { return !(x.lg === f.lg && x.id === f.id); })); },
+        last: last ? (last.result ? last.result + ' ' : '') + last.score + ' ' + opp(last) : (s ? '—' : 'Loading…'), lastHref: last ? last.href : '#',
+        lastStyle: last && last.result === 'W' ? 'color: var(--up)' : last && last.result === 'L' ? 'color: var(--dn)' : '',
+        next: next ? (next.state === 'in' ? 'LIVE ' + next.score + ' ' : F.day(next.start) + ' ' + F.time(next.start) + ' ') + opp(next) : (s ? 'None scheduled' : ''), nextHref: next ? next.href : '#',
+        brief: brief.join(' · '), hasBrief: brief.length > 0, pNext: pNext, hasP: !!pNext };
+    });
+
+    // league chips
+    var liveIn = function (b) { return b && (b.events || []).some(function (e) { return e.state === 'in' || (e.matches || []).some(function (m) { return m.state === 'in'; }); }); };
+    var hasGames = function (k) { var b = S.boards[k + ':' + day]; return !!b && !b.err && (b.events || []).length > 0; };
+    var order = SD.ORDER.map(function (k, i) { return { k: k, i: i, live: liveIn(S.boards[k + ':' + day]) ? 1 : 0, has: hasGames(k) ? 1 : 0 }; })
+      .sort(function (x, y) { return (y.live - x.live) || (y.has - x.has) || (x.i - y.i); }).map(function (x) { return x.k; });
+    var chips = ['all'].concat(order).map(function (k) {
+      return { label: k === 'all' ? 'ALL' : SD.LEAGUES[k].short, on: S.lg === k ? 'true' : 'false', cls: 's-tab' + (S.lg === k ? ' is-on' : ''), live: k !== 'all' && liveIn(S.boards[k + ':' + day]),
+        pick: function () { history.replaceState(null, '', k === 'all' ? location.pathname : '?lg=' + k); self.setState({ lg: k }); setTimeout(function () { self.refresh(); }, 0); } };
+    });
+    var days = [[-1, 'Yesterday'], [0, 'Today'], [1, 'Tomorrow']].map(function (d) {
+      return { label: d[1], on: day === d[0] ? 'true' : 'false', cls: 's-tab' + (day === d[0] ? ' is-on' : ''), pick: function () { self.setState({ day: d[0] }); setTimeout(function () { self.refresh(); }, 0); } };
+    });
+
+    // scoreboards
+    var all = S.lg === 'all', CAP = 4, liveN = 0;
+    var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600; font-size: 12.5px' : 'color: var(--dim); font-size: 12.5px'; };
+    var pill = function (st) { return 's-pill ' + (st === 'in' ? 'live' : st === 'pre' ? 'pre' : 'final'); };
+    var cardCls = function (st, fol) { return 'sb' + (st === 'in' ? ' is-live' : st === 'post' ? ' is-final' : '') + (fol ? ' is-fol' : ''); };
+    var tc = function (t) { return 'background: ' + (t.color || '#18434c') + '; box-shadow: 0 0 0 1px ' + (t.alt || '#dcfcff') + '66, 0 0 10px ' + (t.color || '#18434c') + '88'; };
+    var slate = [];
+    var rankSt = { 'in': 0, pre: 1, post: 2 };
+    var boards = [];
+    this.leaguesShown().forEach(function (lg) {
+      var L = SD.LEAGUES[lg], b = S.boards[lg + ':' + day], model = S.models[lg];
+      var B = { name: L.label, sub: '', games: [], msg: '', more: false, moreLabel: '', showAll: function () { self.setState({ lg: lg }); history.replaceState(null, '', '?lg=' + lg); } };
+      if (!b) { B.msg = 'Loading…'; boards.push(B); return; }
+      if (b.err) { B.msg = 'The live feed did not respond. It retries automatically.'; boards.push(B); return; }
+      // ESPN's default board for weekly leagues (NFL, college football, soccer) is the whole week or matchday:
+      // keep only games on the selected day (plus anything still live), and say when the next one is.
+      if (L.kind !== 'golf') {
+        var dk = function (iso) { return iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: window.TZ }) : ''; };
+        var target = new Date(Date.now() + day * 86400000).toLocaleDateString('en-CA', { timeZone: window.TZ });
+        var keep = function (e) { return e.state === 'in' || dk(e.start) === target; };
+        var kept = L.kind === 'tennis'
+          ? b.events.map(function (e) { return Object.assign({}, e, { matches: e.matches.filter(keep) }); }).filter(function (e) { return e.matches.length; })
+          : b.events.filter(keep);
+        if (!kept.length) {
+          var flat = L.kind === 'tennis' ? [].concat.apply([], b.events.map(function (e) { return e.matches; })) : b.events;
+          var nx = flat.filter(function (e) { return e.state === 'pre' && dk(e.start) > target; }).sort(function (x, y) { return x.start > y.start ? 1 : -1; })[0];
+          B.msg = 'No games ' + (day === 0 ? 'today' : day < 0 ? 'yesterday' : 'tomorrow') + (nx ? '. Next: ' + new Date(nx.start).toLocaleDateString('en-US', { timeZone: window.TZ, weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + F.time(nx.start) + ' ' + window.TZL : '.');
+          boards.push(B); return;
+        }
+        b = Object.assign({}, b, { events: kept });
+      }
+      var cards = [];
+      if (L.kind === 'golf') {
+        b.events.forEach(function (e) {
+          cards.push({ title: e.name, rows: e.players.slice(0, 5).map(function (p) { return { name: p.pos + ' ' + p.name, rec: p.thru, href: '#', style: '', score: p.score, scoreStyle: 'color: var(--hi); font-size: 20px', tc: 'display: none' }; }),
+            // before it starts ESPN sends a placeholder midnight time in Eastern; show the start date in the visitor's terms
+            status: e.state === 'pre' && e.start ? 'Starts ' + new Date(e.start).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }) : e.detail, stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state), href: '', note: '', live: e.state === 'in', st: e.state, start: e.start });
+        });
+      } else if (L.kind === 'tennis') {
+        b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
+          cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi); font-size: 18px', tc: 'display: none' }; }),
+            status: m.state === 'pre' ? F.time(m.start) + ' ' + window.TZL : m.detail, stStyle: stStyle(m.state), pill: pill(m.state), cls: cardCls(m.state), href: '', note: e.name + ' · ' + m.round, live: m.state === 'in', st: m.state, start: m.start });
+        }); });
+      } else {
+        b.events.forEach(function (e) {
+          var pre = e.state === 'pre', fol = followed[lg + ':' + e.away.id] || followed[lg + ':' + e.home.id];
+          var p = pre && model ? SD.project(model, e.away.id, e.home.id, e.neutral, e.start) : null;
+          var MA = model && model.teams ? model.teams[e.away.id] : null, MH = model && model.teams ? model.teams[e.home.id] : null;
+          var en = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
+          var house = p && en(MA) && en(MH) ? 'House: ' + (p.pHome >= 0.5 ? e.home.abbr + ' ' + Math.round(p.pHome * 100) : e.away.abbr + ' ' + Math.round(p.pAway * 100)) + '% to win' : '';
+          var note = e.note ? e.note + (house ? ' · ' : '') : (house ? ' ' : '');
+          if (day === 0) slate.push({ e: e, lg: lg });
+          var row = function (t) {
+            var won = e.done && t.winner, lost = e.done && !t.winner && (e.away.winner || e.home.winner);
+            var lg2 = info[lg + ':' + t.id] || {};
+            return { name: (lg.indexOf('ncaa') === 0 ? (t.loc || t.short) : t.short), rank: t.rank || '', rec: pre ? t.record : '', logo: lg2.logo || '', href: t.href || '#',
+              style: won ? 'color: var(--wh); font-weight: 600' : lost ? 'color: var(--dim2)' : '', score: pre ? '' : t.score, tc: tc(t),
+              scoreStyle: won ? 'color: var(--wh); text-shadow: 0 0 12px rgba(255,255,255,.4)' : lost ? 'color: var(--dim2)' : 'color: var(--hi)' };
+          };
+          cards.push({ title: '', rows: [row(e.away), row(e.home)],
+            status: pre ? (e.tbd ? 'Time TBD' : F.time(e.start) + ' ' + window.TZL) : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
+            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
+            live: e.state === 'in', st: e.state, start: e.start, fol: fol });
+        });
+      }
+      cards.sort(function (a, b) { return ((b.fol ? 1 : 0) - (a.fol ? 1 : 0)) || (rankSt[a.st] - rankSt[b.st]) || (a.start < b.start ? -1 : 1); });
+      var nLive = cards.filter(function (c) { return c.live; }).length; liveN += nLive;
+      B.sub = [nLive ? nLive + ' live' : '', cards.length ? cards.length + (L.kind === 'golf' ? (cards.length === 1 ? ' event' : ' events') : (L.kind === 'tennis' ? (cards.length === 1 ? ' match' : ' matches') : (cards.length === 1 ? ' game' : ' games'))) : '', b.week ? 'Week ' + b.week : ''].filter(Boolean).join(' · ');
+      if (!cards.length) B.msg = 'No ' + L.label + ' ' + (L.kind === 'golf' ? 'events' : 'games') + ' ' + (day === 0 ? 'on the current slate.' : (day < 0 ? 'yesterday.' : 'tomorrow.'));
+      B.games = all ? cards.slice(0, CAP) : cards;
+      if (all && cards.length > CAP) { B.more = true; B.moreLabel = 'All ' + cards.length + ' ' + L.short + ' →'; }
+      if (all && !cards.length) return;  // keep the all-sports view short
+      boards.push(B);
+    });
+    // leagues with games first (live ones ahead of the rest); empty leagues, which keep their next-game note, move below
+    boards.forEach(function (B, i) { B._i = i; B._has = B.games && B.games.length ? 1 : 0; B._live = B.games && B.games.some(function (g) { return g.live; }) ? 1 : 0; });
+    boards.sort(function (x, y) { return (y._has - x._has) || (y._live - x._live) || (x._i - y._i); });
+    function sameDay(iso) { return F.day(iso) === F.day(new Date().toISOString()); }
+    if (all && S.loaded && !boards.length) boards.push({ name: 'Nothing on', sub: '', games: [], msg: 'No games in any league ' + (day === 0 ? 'right now.' : 'on that day.') });
+
+    // power ratings sidebar
+    var plg = S.lg !== 'all' && SD.LEAGUES[S.lg].teams ? S.lg : 'nfl', pm = S.models[plg];
+    var power = { title: SD.LEAGUES[plg].short + ' house ratings', allHref: 'Teams.dc.html?lg=' + plg, rows: [], none: false, noneText: '', note: '' };
+    if (pm && pm.teams) {
+      var ids = Object.keys(pm.teams).filter(function (k) { var t = pm.teams[k]; return t.gp >= (pm.minGp || 0) || t.prior !== undefined; });
+      ids.sort(function (a, b) { return pm.teams[b].rating - pm.teams[a].rating; });
+      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating > 0 ? '+' : '') + pm.teams[k].rating.toFixed(1) }; });
+      power.none = !power.rows.length; power.noneText = 'Not enough games yet this season.';
+      power.note = 'Margin vs. an average team on a neutral field, in ' + pm.unit + '.';
+    } else { power.none = true; power.noneText = 'Loading…'; }
+    var browse = ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { return { label: SD.LEAGUES[k].short, n: idx[k] ? idx[k].length : '', href: 'Teams.dc.html?lg=' + k }; });
+
+    // summary strip: live count, games on the slate, and the next game to start
+    var nx = slate.filter(function (x) { return x.e.state === 'pre'; }).sort(function (a, b) { return a.e.start < b.e.start ? -1 : 1; })[0];
+    var lv = slate.filter(function (x) { return x.e.state === 'in'; })[0];
+    var strip = { live: S.loaded ? String(liveN) : '–', liveCls: 'v' + (liveN ? ' live' : ''), total: S.loaded ? String(slate.length || boards.reduce(function (n, B) { return n + B.games.length; }, 0)) : '–',
+      nextK: day !== 0 ? 'SLATE' : (nx ? 'NEXT UP' : (lv ? 'NOW PLAYING' : 'NEXT UP')),
+      next: day !== 0 ? (day < 0 ? 'Yesterday’s results' : 'Tomorrow’s schedule') : nx ? SD.LEAGUES[nx.lg].short + ' ' + nx.e.away.abbr + ' @ ' + nx.e.home.abbr : lv ? SD.LEAGUES[lv.lg].short + ' ' + lv.e.away.abbr + ' ' + lv.e.away.score + '–' + lv.e.home.score + ' ' + lv.e.home.abbr : (S.loaded ? 'Nothing else today' : 'Loading…'),
+      nextWhen: day === 0 && nx ? F.day(nx.e.start) + ' · ' + F.time(nx.e.start) + ' ' + window.TZL : (day === 0 && lv ? lv.e.detail : '') };
+    var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return {
+      favs: favs, followHint: this.hint(idx), q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
+      strip: strip, mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
+      dayLine: dl + ' · All times ' + window.TZL + (liveN ? ' · ' + liveN + ' live now' : ''),
+      statusTag: !S.loaded ? 'LOADING…' : (liveN ? 'LIVE · AUTO-REFRESH' : 'LIVE DATA')
+    };
+  }
+}

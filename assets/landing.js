@@ -498,29 +498,16 @@
   })();
 })();
 
-/* "Last updated": the newest site change on GitHub, skipping the bots' data refreshes. Cached for the visit;
-   the date written in index.html stays if GitHub can't be reached. */
+/* "Last updated": the date of the newest site change, from data/site-meta.json (written by the site-meta workflow
+   on every non-data push). One cached same-origin file instead of a GitHub API call from every visitor's browser. */
 (function () {
   var out = document.getElementById('lastUpd');
   if (!out || !window.fetch) return;
-  var show = function (iso) {
-    var d = new Date(iso);
-    if (!isNaN(d)) out.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-  };
-  try { var c = sessionStorage.getItem('nskn.lastUpd'); if (c) { show(c); return; } } catch (e) {}
-  var DATA = /^(data:|refresh |daily challenge|sports data|music: daily)/i;
-  fetch('https://api.github.com/repos/nathanskown/nathanskown.dev/commits?sha=main&per_page=100')
+  fetch('/data/site-meta.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (list) {
-      var hit = (list || []).filter(function (x) {
-        var msg = ((x.commit || {}).message || '').split('\n')[0];
-        var who = ((x.author || {}).login || '') + ' ' + (((x.commit || {}).author || {}).name || '');
-        return !DATA.test(msg) && !/\[bot\]|actions|-bot\b/i.test(who);
-      })[0];
-      if (!hit) return;
-      var iso = hit.commit.committer.date;
-      show(iso);
-      try { sessionStorage.setItem('nskn.lastUpd', iso); } catch (e) {}
+    .then(function (j) {
+      var d = new Date(j && j.updated);
+      if (!isNaN(d)) out.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
     })
     .catch(function () {});
 })();

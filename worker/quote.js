@@ -20,7 +20,6 @@ const json = (obj, status = 200, ttl = 0) =>
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": ttl ? `public, max-age=${ttl}` : "no-store",
-      "access-control-allow-origin": "*",
     },
   });
 
@@ -336,7 +335,7 @@ async function partFilings(cik) {
 }
 
 // ---------------------------------------------------------------- handler
-export async function handleQuote(request, ctx) {
+export async function handleQuote(request, env, ctx) {
   if (request.method !== "GET") return json({ error: "GET only" }, 405);
   const url = new URL(request.url);
   const part = url.searchParams.get("part") || "";
@@ -352,6 +351,11 @@ export async function handleQuote(request, ctx) {
   const cache = caches.default;
   const hit = await cache.match(key);
   if (hit) return hit;
+  // only cache misses cost an upstream call, so only they count against the per-visitor limit
+  if (env && env.QUOTE_LIMITER) {
+    const { success } = await env.QUOTE_LIMITER.limit({ key: request.headers.get("cf-connecting-ip") || "anon" });
+    if (!success) return json({ error: "rate_limited" }, 429);
+  }
   try {
     const body = part === "price" ? await partPrice(sym) : part === "fin" ? await partFin(+cik) : await partFilings(+cik);
     body.api = API_VERSION;
