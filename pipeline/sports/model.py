@@ -171,7 +171,7 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
         extra.annotate_sp(year - 1, games, P["sp"])
     if P.get("av"):
         from . import ctx
-        ctx.annotate(lg, games, P["av"])
+        ctx.annotate(lg, games, P["av"], year - 1)
     rows = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in games]
     rows = [r for r in rows if r[0] != r[1]]
     if not rows:
@@ -463,7 +463,7 @@ def build(lg):
         if P.get("av"):
             from . import ctx
             try:
-                res["ctxGames"] = ctx.annotate(lg, played, P["av"])     # who played comes out of the results too
+                res["ctxGames"] = ctx.annotate(lg, played, P["av"], si["year"])     # who played comes out of the results too
             except Exception as e:
                 print("ctx annotate failed:", str(e)[:120])
         group, hfa_fn, norm_id = context(lg, smap, members)
