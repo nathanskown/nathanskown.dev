@@ -115,6 +115,8 @@ def update_picks(lg, now=None):
     if store.get("season") != cache.get("season"):
         store = {"season": cache.get("season"), "picks": {}}
     picks = store["picks"]
+    from . import blend
+    mkt = blend.market(lg, model)
     stamp = now.replace(microsecond=0).isoformat()
     added = graded = 0
     for eid, g in cache["events"].items():
@@ -136,6 +138,9 @@ def update_picks(lg, now=None):
                 added += 1
             picks[eid] = {"d": g["d"], "h": g["h"], "a": g["a"], "n": int(g["n"]), "m": round(pr[0], 2), "p": round(pr[1], 4),
                           "s": (pk or {}).get("s", stamp)}
+            mk = mkt.get(f"{g['d'][:16]}|{g['h']}|{g['a']}")
+            if mk is not None:
+                picks[eid]["mk"] = round(mk, 2)      # watched, never used in the forecast; internal file, not published
         elif pk and g["done"] and g.get("hs") is not None and g.get("as") is not None:
             pk.update({"hs": g["hs"], "as": g["as"], "d": g["d"]})
             graded += 1
@@ -150,7 +155,8 @@ def _graded_rows(picks):
             continue
         res = _result(pk["hs"], pk["as"])
         rows.append({"id": eid, "d": pk["d"], "h": pk["h"], "a": pk["a"], "hs": pk["hs"], "as": pk["as"], "n": pk.get("n", 0),
-                     "p": pk["p"], "m": pk["m"], "res": res, "err": (pk["hs"] - pk["as"]) - pk["m"], "s": pk.get("s")})
+                     "p": pk["p"], "m": pk["m"], "res": res, "err": (pk["hs"] - pk["as"]) - pk["m"], "s": pk.get("s"),
+                     "mk": pk.get("mk")})
     rows.sort(key=lambda r: r["d"])
     return rows
 
@@ -172,6 +178,13 @@ def summarize(now=None):
                  "recent": [{k: r[k] for k in ("id", "d", "h", "a", "hs", "as", "p", "m", "n")} for r in rows[-RECENT:][::-1]],
                  "firstLogged": min((p.get("s") for p in picks.values() if p.get("s")), default=None),
                  "stats": score(rows)}
+        both = [r for r in rows if r["mk"] is not None]       # graded games that also have a market number
+        if both:
+            sg = (read(f"model/{lg}.json") or {}).get("sigma") or 13.0
+            entry["watch"] = {"n": len(both), "house": score(both),
+                              "market": score([dict(r, p=M.phi(r["mk"] / sg), err=(r["hs"] - r["as"]) - r["mk"]) for r in both]),
+                              "gapMean": round(sum(r["mk"] - r["m"] for r in both) / len(both), 2),
+                              "gapAbs": round(sum(abs(r["mk"] - r["m"]) for r in both) / len(both), 2)}
         out["leagues"][lg] = entry
     out["all"] = score(every)
     write("track/summary.json", out)
