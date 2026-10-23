@@ -59,6 +59,8 @@ def project(model, h, a, neutral, start=None):
     m = H["rating"] - A["rating"] + hfa + rest_edge(model, H, A, start)
     if model.get("spEdges") and start:
         m += model["spEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)
+    if model.get("mkEdges") and start:
+        m += model["mkEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)     # betting-market adjustment (blend.py)
     return m, M.phi(m / spread(model, H, A))
 
 
@@ -115,6 +117,9 @@ def update_picks(lg, now=None):
     if store.get("season") != cache.get("season"):
         store = {"season": cache.get("season"), "picks": {}}
     picks = store["picks"]
+    from . import blend
+    mkt = blend.market(lg, model)
+    plain = dict(model, mkEdges=None)                     # the house number alone, for the side-by-side
     stamp = now.replace(microsecond=0).isoformat()
     added = graded = 0
     for eid, g in cache["events"].items():
@@ -136,6 +141,12 @@ def update_picks(lg, now=None):
                 added += 1
             picks[eid] = {"d": g["d"], "h": g["h"], "a": g["a"], "n": int(g["n"]), "m": round(pr[0], 2), "p": round(pr[1], 4),
                           "s": (pk or {}).get("s", stamp)}
+            hp = project(plain, g["h"], g["a"], g["n"], g["d"])
+            if hp:
+                picks[eid].update({"hm": round(hp[0], 2), "hp": round(hp[1], 4)})
+            mk = mkt.get(f"{g['d'][:16]}|{g['h']}|{g['a']}")
+            if mk is not None:
+                picks[eid]["mk"] = round(mk, 2)
         elif pk and g["done"] and g.get("hs") is not None and g.get("as") is not None:
             pk.update({"hs": g["hs"], "as": g["as"], "d": g["d"]})
             graded += 1
@@ -150,7 +161,8 @@ def _graded_rows(picks):
             continue
         res = _result(pk["hs"], pk["as"])
         rows.append({"id": eid, "d": pk["d"], "h": pk["h"], "a": pk["a"], "hs": pk["hs"], "as": pk["as"], "n": pk.get("n", 0),
-                     "p": pk["p"], "m": pk["m"], "res": res, "err": (pk["hs"] - pk["as"]) - pk["m"], "s": pk.get("s")})
+                     "p": pk["p"], "m": pk["m"], "res": res, "err": (pk["hs"] - pk["as"]) - pk["m"], "s": pk.get("s"),
+                     "hp": pk.get("hp"), "hm": pk.get("hm"), "mk": pk.get("mk")})
     rows.sort(key=lambda r: r["d"])
     return rows
 
@@ -172,6 +184,12 @@ def summarize(now=None):
                  "recent": [{k: r[k] for k in ("id", "d", "h", "a", "hs", "as", "p", "m", "n")} for r in rows[-RECENT:][::-1]],
                  "firstLogged": min((p.get("s") for p in picks.values() if p.get("s")), default=None),
                  "stats": score(rows)}
+        both = [r for r in rows if r["hp"] is not None and r["mk"] is not None]     # games with a house number and a market number
+        if both:
+            sg = (read(f"model/{lg}.json") or {}).get("sigma") or 13.0
+            entry["compare"] = {"n": len(both), "forecast": score(both),
+                                "house": score([dict(r, p=r["hp"], err=(r["hs"] - r["as"]) - r["hm"]) for r in both]),
+                                "market": score([dict(r, p=M.phi(r["mk"] / sg), err=(r["hs"] - r["as"]) - r["mk"]) for r in both])}
         out["leagues"][lg] = entry
     out["all"] = score(every)
     write("track/summary.json", out)
