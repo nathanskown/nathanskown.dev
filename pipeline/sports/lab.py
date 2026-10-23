@@ -175,6 +175,8 @@ def _crawl_ids(lg, year):
         except Exception as e:
             print(f"  {lg} {a}-{b}: {str(e)[:80]}")
             evs = []
+        if len(events) == 0 and cur < start + timedelta(days=step * 3):
+            print(f"  {lg} {a}-{b}: {len(evs)} events; first: {json.dumps((evs[0].get('status') or {}).get('type') if evs else None)[:160]} season={json.dumps(evs[0].get('season') if evs else None)[:100]}", flush=True)
         for e in evs:
             st = (e.get("status") or {}).get("type") or {}
             if st.get("completed") and (e.get("season") or {}).get("type", 2) == 2:
