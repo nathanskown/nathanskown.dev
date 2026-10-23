@@ -47,7 +47,7 @@ STAGES = [
     ("recency", "+ Recency and uncertainty", "Recent games count more; early-season probabilities are widened while ratings are still uncertain."),
     ("rest", "+ Days of rest", "Back-to-backs, byes and short weeks move the projection."),
     ("extra", "+ Expected goals / starting pitchers", "NHL ratings use expected-goals margin (MoneyPuck); MLB projections use the day's starters."),
-    ("avail", "+ Who is playing", "NBA and NFL player availability and college football starting quarterbacks, from box scores, snap counts and injury reports."),
+    ("avail", "+ Who is playing", "NBA and NFL player availability, college football starting quarterbacks and college basketball roster turnover, from box scores, snap counts, rosters and injury reports."),
 ]
 LAST = STAGES[-1][0]
 ORDER = tuple(s[0] for s in STAGES)
@@ -72,7 +72,7 @@ def stage_params(lg, fit):
     out["rest"] = dict(p)
     p = dict(p, **{k: fit[k] for k in ("xg", "sp") if k in fit})
     out["extra"] = dict(p)
-    p = dict(p, **{k: fit[k] for k in ("av",) if k in fit})
+    p = dict(p, **{k: fit[k] for k in ("av", "ret") if k in fit})
     out["avail"] = dict(p)
     return out
 
@@ -93,7 +93,7 @@ def without(lg, fit, group):
     elif group == "extra":
         p.pop("xg", None); p.pop("sp", None)
     elif group == "avail":
-        p.pop("av", None)
+        p.pop("av", None); p.pop("ret", None)
     return p
 
 
