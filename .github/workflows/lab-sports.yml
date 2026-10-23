@@ -46,9 +46,20 @@ jobs:
             git commit -q -m "data: $1"
             for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 5; done
           }
-          python -m pipeline.sports.run "lab-$MODE" || echo "lab $MODE exited with an error"
-          save "sports lab ($MODE)"
-          python - <<'PY'
-          import json
-          s = json.load(open("data/sports/status.json")) if False else {}
+          if [ "$MODE" = "collect" ]; then
+            for lg in $(echo "$LAB_LG" | tr ',' ' '); do
+              echo "::group::collect $lg"
+              LAB_LG=$lg python -m pipeline.sports.run lab-collect || echo "collect $lg exited with an error"
+              echo "::endgroup::"
+              save "sports lab ($lg)"
+              python - "$lg" <<'PY'
+          import json, sys
+          s = json.load(open("data/sports/status.json")).get("lab-collect", {})
+          r = (s.get("sources") or {}).get("collect", {})
+          print("::notice title=lab " + sys.argv[1] + "::" + json.dumps(r.get("result") or r.get("error"))[:1500])
           PY
+            done
+          else
+            python -m pipeline.sports.run "lab-$MODE" || echo "lab $MODE exited with an error"
+            save "sports lab ($MODE)"
+          fi
