@@ -25,7 +25,7 @@ from .model import _event
 
 HISTORY = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah", "mlb"]
 VERSION = 2                                  # 2: betting line kept per game
-SEASONS = {"nfl": 12, "ncaaf": 12, "nhl": 12, "nba": 12, "ncaab": 10, "ncaah": 10, "mlb": 12}
+SEASONS = {"nfl": 20, "ncaaf": 16, "nhl": 18, "nba": 18, "ncaab": 14, "ncaah": 12, "mlb": 18}
 DEFAULT_SEASONS = 5                          # more seasons = more held-out folds, so small effects can be told from noise
 WEEKS = {"nfl": range(1, 19), "ncaaf": range(0, 16)}
 # regular-season window by league as (month, day) in the starting and ending calendar year
