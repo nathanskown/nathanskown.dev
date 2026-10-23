@@ -126,6 +126,7 @@ class League:
                 S.sp, S.spCover = sp_edges(y, rows, {i: t for t, i in self.ix.items()})
             from . import ctx
             S.av, S.avCover = ctx.season_edges(lg, y, rows, {i: t for t, i in self.ix.items()})
+            S.avp = ctx.season_proj_edges(lg, y, rows, {i: t for t, i in self.ix.items()})
             if all(r[6] is not None for r in rows):
                 S.week = np.array([r[6] for r in rows], int)
             else:
@@ -274,6 +275,8 @@ def replay(L, S, p, prior):
         deg += np.bincount(h, minlength=n) + np.bincount(a, minlength=n)
         b += np.bincount(h, yy, n) - np.bincount(a, yy, n)
         np.add.at(adj, (h, a), -1.0); np.add.at(adj, (a, h), -1.0)
+    if p.get("av") and getattr(S, "avp", None) is not None:
+        proj = proj + p["av"] * (S.avp - S.av)    # projections only know what was knowable before the game
     return proj, u
 
 
