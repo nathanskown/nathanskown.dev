@@ -18,7 +18,7 @@ from .common import ESPN, get, read, write, now_iso
 from .leagues import LEAGUES, path
 
 CORE = "https://sports.core.api.espn.com/v2/sports/"
-SEASONS = {"nhl": [2022, 2023, 2024, 2025, 2026], "nba": [2022, 2023, 2024, 2025, 2026], "ncaab": [2025, 2026],
+SEASONS = {"nhl": [2022, 2023, 2024, 2025, 2026], "nba": [2022, 2023, 2024, 2025, 2026], "ncaab": [2023, 2024, 2025, 2026],
            "nfl": [], "ncaaf": [2021, 2022, 2023, 2024, 2025, 2026], "ncaah": [], "mlb": []}
 WINDOW = {"nhl": ((10, 1), (6, 25)), "nba": ((10, 15), (6, 25)), "ncaab": ((11, 1), (3, 20)), "ncaaf": ((8, 20), (1, 20))}
 STEP = {"nhl": 7, "nba": 7, "ncaab": 1, "ncaaf": 7}
@@ -108,6 +108,29 @@ def _mins(v):
     return _num(s)
 
 
+BASKET = ("nba", "ncaab")
+BOX_LEN = 17          # basketball rows: id, name, MIN, PTS, +/-, starter, FGM, FGA, FTM, FTA, OREB, DREB, AST, STL, BLK, TO, PF
+
+
+def _pair(x):
+    try:
+        a, b = str(x).split("-")
+        return float(a), float(b)
+    except (ValueError, AttributeError):
+        return None, None
+
+
+def _complete(lg, row):
+    """A stored row has everything this version collects (older basketball rows lack the full box score)."""
+    if lg in BASKET or lg == "nhl" or lg in FOOTBALL:
+        pl = row.get("pl")
+        if not pl:
+            return False
+        if lg in BASKET:
+            return all(len(r) >= BOX_LEN for rows in pl.values() for r in rows)
+    return True
+
+
 def _players(lg, summ):
     """Compact player rows per side, keyed by the side's ESPN team id."""
     out = {}
@@ -128,9 +151,11 @@ def _players(lg, summ):
                     if name == "passing":
                         rows.append([at.get("id"), at.get("displayName"), _num((_stat(labels, st, "C/ATT") or "0/0").split("/")[-1]), _num(_stat(labels, st, "YDS")),
                                      _num(_stat(labels, st, "TD")), _num(_stat(labels, st, "INT")), _num(_stat(labels, st, "QBR")), _num(_stat(labels, st, "SACKS"))])
-                elif lg in ("nba",):
+                elif lg in BASKET:
                     if st:
-                        rows.append([at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "MIN")), _num(_stat(labels, st, "PTS")), _num(_stat(labels, st, "+/-")), 1 if a.get("starter") else 0])
+                        fg, ft = _pair(_stat(labels, st, "FG")), _pair(_stat(labels, st, "FT"))
+                        rows.append([at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "MIN")), _num(_stat(labels, st, "PTS")), _num(_stat(labels, st, "+/-")), 1 if a.get("starter") else 0,
+                                     fg[0], fg[1], ft[0], ft[1]] + [_num(_stat(labels, st, k)) for k in ("OREB", "DREB", "AST", "STL", "BLK", "TO", "PF")])
         out[tid] = rows
     return out
 
@@ -143,7 +168,7 @@ def row_from(lg, ev, summ):
     ln = _line(summ)
     if ln:
         row.update(ln)
-    if lg in ("nhl", "nba") or lg in FOOTBALL:
+    if lg in ("nhl",) or lg in BASKET or lg in FOOTBALL:
         row["pl"] = _players(lg, summ)
     return row
 
@@ -192,7 +217,7 @@ def collect(lg, year, budget_s=None):
     store = read(rel) or {"year": year, "v": 1, "g": {}}
     t0 = time.time()
     events = _crawl_ids(lg, year)
-    todo = [eid for eid in events if eid not in store["g"]]
+    todo = [eid for eid in events if eid not in store["g"] or not _complete(lg, store["g"][eid])]
     print(f"{lg} {year}: {len(events)} completed games, {len(todo)} to fetch", flush=True)
     done = fail = 0
     for i, eid in enumerate(todo):

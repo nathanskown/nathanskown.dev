@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: sports-lab
+  group: sports-lab-${{ github.event.inputs.mode }}-${{ github.event.inputs.leagues }}
   cancel-in-progress: false
 
 jobs:
