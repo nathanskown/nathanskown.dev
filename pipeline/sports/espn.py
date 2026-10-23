@@ -207,7 +207,7 @@ def injuries(lg):
             a = i.get("athlete") or {}
             det = i.get("details") or {}
             rows.append({k: v for k, v in {
-                "name": a.get("displayName"), "pos": (a.get("position") or {}).get("abbreviation"),
+                "name": a.get("displayName"), "id": a.get("id"), "pos": (a.get("position") or {}).get("abbreviation"),
                 "status": i.get("status") or (i.get("type") or {}).get("description"),
                 "part": det.get("type"), "side": det.get("side") if det.get("side") not in (None, "Not Specified") else None,
                 "ret": det.get("returnDate"), "date": (i.get("date") or "")[:10] or None,

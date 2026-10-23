@@ -124,6 +124,8 @@ class League:
                 S.xgm = np.array([lk.get((inv[r[1]], inv[r[2]]), float(r[3])) for r in rows], float)
             if lg == "mlb":
                 S.sp, S.spCover = sp_edges(y, rows, {i: t for t, i in self.ix.items()})
+            from . import ctx
+            S.av, S.avCover = ctx.season_edges(lg, y, rows, {i: t for t, i in self.ix.items()})
             if all(r[6] is not None for r in rows):
                 S.week = np.array([r[6] for r in rows], int)
             else:
@@ -206,6 +208,8 @@ def _y(S, p):
         hv = hv + p["rest"] * S.rd          # rest edge travels with the home edge: removed from results, added to projections
     if p.get("sp"):
         hv = hv + p["sp"] * S.sp            # same for the starting-pitcher edge (MLB)
+    if p.get("av"):
+        hv = hv + p["av"] * S.av            # and for who is playing (ctx.py: NBA player availability)
     return m - hv, hv
 
 
@@ -464,6 +468,9 @@ def tune(lg):
     preset = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp")}
     preset.setdefault("carry", 0.0)
     preset.setdefault("cap", None)
+    from . import ctx
+    if ctx.params(lg):
+        preset["av"] = ctx.params(lg)      # fitted separately (ctx.job_fit); held fixed here so both use the same results
     L = League(lg)
     covid = COVID.get(lg, set())
     usable = [y for y in L.years if (y - 1) in L.seasons and y not in covid][-WINDOW:]
