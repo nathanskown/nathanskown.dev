@@ -76,7 +76,7 @@ def job_history():
             perf[q] = [x for x in perf[q] if x[0] != y] + rows
         names.update(n)
     write("history/nfl_qb.json", {"through": cur - 1, "perf": perf, "names": names})
-    return {"through": cur - 1, "qbs": len(perf)}
+    return {"through": cur - 1, "qbs": len(perf), "epa": job_epa_history()}
 
 
 def load_perf(cur=None):
@@ -129,6 +129,64 @@ def shifts(perf, games):
             sh.append(((rt - float(np.mean(hist))) * DB if hist else 0.0, rt))
             recent[t].append(rt)
         out.append((g, sh[0][0], sh[1][0], sh[0][1], sh[1][1]))
+    return out
+
+
+# ---------------------------------------------------------------- team efficiency (EPA) margins
+EPA_SCALE = 0.71          # points of margin per point of EPA margin, from 3,403 games 2012-2025 (corr 0.81)
+_GAMES = {}
+
+
+def _games_rows():
+    if "rows" not in _GAMES:
+        _GAMES["rows"] = [r for r in _csv(GAMES_URL) if r["game_type"] == "REG"]
+    return _GAMES["rows"]
+
+
+def _epa_season(year):
+    """{"HOME|AWAY": [home EPA, away EPA]} for one season's played games (passing + rushing EPA, nflverse team stats)."""
+    tw = {}
+    for r in _csv(f"{NV}stats_team/stats_team_week_{year}.csv"):
+        if r.get("season_type") == "REG":
+            tw[(r["team"], r["opponent_team"])] = float(r.get("passing_epa") or 0) + float(r.get("rushing_epa") or 0)
+    out = {}
+    for g in _games_rows():
+        if g["season"] != str(year) or g["home_score"] in ("", None):
+            continue
+        h, a = tw.get((g["home_team"], g["away_team"])), tw.get((g["away_team"], g["home_team"]))
+        if h is not None and a is not None:
+            out[f"{g['home_team']}|{g['away_team']}"] = [round(h, 2), round(a, 2)]
+    return out
+
+
+def job_epa_history():
+    cur = (read("model/nfl.json") or {}).get("season")
+    if not cur:
+        raise RuntimeError("model/nfl.json has no season yet")
+    have = read("history/nfl_epa.json") or {"through": FIRST - 3, "seasons": {}}
+    for y in range(have["through"] + 1, cur):
+        have["seasons"][str(y)] = _epa_season(y)
+    have["through"] = cur - 1
+    write("history/nfl_epa.json", have)
+    return {"through": cur - 1, "games": sum(len(v) for v in have["seasons"].values())}
+
+
+def epa_lookup(year):
+    """{(home ESPN id, away ESPN id): home-minus-away EPA in points of margin} for a season; empty when unavailable."""
+    have = read("history/nfl_epa.json") or {}
+    if str(year) in (have.get("seasons") or {}):
+        raw = have["seasons"][str(year)]
+    else:
+        try:
+            raw = _epa_season(year)
+        except Exception as e:
+            print("NFL EPA lookup failed:", str(e)[:120])
+            return {}
+    out = {}
+    for k, (h, a) in raw.items():
+        ha, aa = k.split("|")
+        if AB2ID.get(ha) and AB2ID.get(aa):
+            out[(AB2ID[ha], AB2ID[aa])] = EPA_SCALE * (h - a)
     return out
 
 

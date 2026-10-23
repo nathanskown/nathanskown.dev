@@ -100,6 +100,14 @@ def annotate_rest(lg, games, P):
 
 def annotate_xg(lg, year, games, P):
     """NHL: set g["xgm"] = home minus away expected goals (MoneyPuck) where the game is matched."""
+    if lg == "nfl" and P.get("xg"):
+        from . import nflqb
+        lk = nflqb.epa_lookup(year)
+        for g in games:
+            v = lk.get((g["h"], g["a"]))
+            if v is not None:
+                g["xgm"] = v
+        return games
     if lg != "nhl" or not P.get("xg"):
         return games
     from . import extra
@@ -512,7 +520,7 @@ def build(lg):
             except Exception as e:
                 print("MLB starters failed:", str(e)[:120])
         res["pv"] = bool(P.get("pv"))
-        if lg == "nhl" and P.get("xg"):
+        if lg in ("nhl", "nfl") and P.get("xg"):
             res["xg"] = P["xg"]
             res["xgGames"] = sum(1 for r in results if r[4].get("xgm") is not None)
         if P.get("hl"):
@@ -526,6 +534,7 @@ def build(lg):
                         + (f", rest days counted ({P['rest']:g} per day of rest advantage)" if P.get("rest") else "")
                         + (", starting pitchers counted (MLB Stats API)" if lg == "mlb" and P.get("sp") else "")
                         + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
+                        + (f", each game's result {P['xg']:.0%} team efficiency (EPA, nflverse)" if lg == "nfl" and P.get("xg") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
                         + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))
         res["tuned"] = bool(P.get("tuned"))
