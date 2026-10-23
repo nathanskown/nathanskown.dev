@@ -227,11 +227,13 @@ def upcoming(lg, beta, events, days=7):
         edges[k] = round(e, 2)
         notes = []
         for t, mm in ((a, ma), (h, mh)):
+            sure = [x for x in mm[1] if STATUS_W.get(x[1], 0) >= 0.75]
+            unsure = len(mm[1]) - len(sure)
             if mm[1] and beta * mm[0] >= 0.3:
-                more = len(mm[1]) - 3
-                notes.append(f"{ab.get(t, '')} without " + ", ".join(_last(n)
-                                                                     + ("" if st == "Out" else f" ({st.lower()})") for n, st, _ in mm[1][:3])
-                             + (f" +{more} more" if more > 0 else "") + f" (−{beta * mm[0]:.1f})")
+                lead = ", ".join(_last(n) + ("" if st == "Out" else f" ({st.lower()})") for n, st, _ in sure[:3])
+                more = len(sure) - 3
+                tail = (f" +{more} more" if more > 0 else "") + (f"{' +' if lead else ''}{unsure} {'questionable' if lead else 'questionable players'}" if unsure else "")
+                notes.append(f"{ab.get(t, '')} without {lead}{tail} (−{beta * mm[0]:.1f})" if lead else f"{ab.get(t, '')}: {unsure} questionable (−{beta * mm[0]:.1f})")
         info[k] = notes or None
     return edges, {k: v for k, v in info.items() if v}
 
@@ -251,11 +253,12 @@ def job_fit():
             ys = sorted({y for y, _, _ in nflsnap.edges()})
         else:
             ys = lab_years(lg)
-        p = dict((read("model/tuned.json") or {}).get(lg, {}).get("params") or {})
-        if len(ys) < 3 or not p:
-            out[lg] = {"adopt": False, "reason": f"needs 3 seasons of data and tuned settings (have {ys})"}
+        from . import model as M
+        live = M.get_params(lg)        # the settings the site runs with (tuned, or preset with measured home edge)
+        p = {k: v for k, v in live.items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp", "rest", "xg", "sp", "ps")}
+        if len(ys) < 3:
+            out[lg] = {"adopt": False, "reason": f"needs 3 seasons of data (have {ys})"}
             continue
-        p.pop("av", None)
         L = T.League(lg)
         covid = T.COVID.get(lg, set())
         years = [y for y in ys[1:] if y in L.seasons and (y - 1) in L.seasons and y not in covid and y < _current(lg)]
