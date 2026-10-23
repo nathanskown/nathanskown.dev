@@ -23,6 +23,7 @@ JOBS = {
     "lab-probe": [("probe", lab.job_probe)],
     "lab-collect": [("collect", lab.job_collect)],
     "lab-cfbd": [("cfbd", lab.job_cfbd)],
+    "lab-probe2": [("probe2", lab.job_probe2)],
     "tune": [("tune", tune.job_tune), ("evolution", evolution.job_evolution), ("qb_fit", nflqb.job_fit), ("model", model.job_model), ("qb", nflqb.job_qb), ("track", track.job_track), ("backtest", track.job_backtest)],
 }
 

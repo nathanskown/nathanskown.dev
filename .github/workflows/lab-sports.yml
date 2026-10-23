@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "probe | collect | cfbd"
+        description: "probe | probe2 | collect | cfbd"
         default: "probe"
       leagues:
         description: "Leagues (comma separated)"

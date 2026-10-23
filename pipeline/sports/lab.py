@@ -245,3 +245,39 @@ def job_cfbd():
         except Exception as e:
             out[name] = f"error: {str(e)[:120]}"
     return out
+
+
+# ---------------------------------------------------------------- probe: what is knowable before a game
+def job_probe2():
+    """Upcoming games: ESPN summary (injuries, probables) and the NHL's own schedule/landing endpoints (starting goalies)."""
+    out = {}
+    for lg in ("nhl", "nba", "ncaaf", "nfl", "ncaab"):
+        try:
+            cache = read(f"model/_games_{lg}.json") or {}
+            up = sorted((g for g in cache.get("events", {}).values() if not g.get("done") and not g.get("off")), key=lambda g: g["d"])
+            if not up:
+                out[lg] = "no upcoming games in cache"
+                continue
+            eid = next(k for k, g in cache["events"].items() if g is up[0])
+            summ = get(ESPN + path(lg) + "/summary", {"event": eid})
+            write(f"lab/_probe/upcoming_{lg}_summary.json", _trim(summ))
+            out[lg] = {"event": eid, "keys": sorted(summ.keys())[:40], "injuries": len(summ.get("injuries") or [])}
+        except Exception as ex:
+            out[lg] = f"error: {str(ex)[:150]}"
+    try:
+        sch = get("https://api-web.nhle.com/v1/schedule/now")
+        write("lab/_probe/nhl_api_schedule.json", _trim(sch))
+        gid = None
+        for day in sch.get("gameWeek", []):
+            for g in day.get("games", []):
+                gid = g["id"]
+                break
+            if gid:
+                break
+        if gid:
+            land = get(f"https://api-web.nhle.com/v1/gamecenter/{gid}/landing")
+            write("lab/_probe/nhl_api_landing.json", _trim(land))
+            out["nhl_api"] = {"game": gid, "keys": sorted(land.keys())}
+    except Exception as ex:
+        out["nhl_api"] = f"error: {str(ex)[:150]}"
+    return out
