@@ -157,7 +157,7 @@ def _crawl_ids(lg, year):
     else:
         start, end = date(year - 1, m0, d0), min(date(year, m1, d1), date.today())
     step, cur, events = STEP[lg], start, {}
-    base = {"limit": "300"}
+    base = {"limit": "300"} if lg == "ncaab" else {}
     if LEAGUES[lg].get("groups"):
         base["groups"] = LEAGUES[lg]["groups"]
     while cur <= end:
@@ -173,7 +173,7 @@ def _crawl_ids(lg, year):
                     evs += get(ESPN + path(lg) + "/scoreboard", dict(base, dates=c.strftime("%Y%m%d"))).get("events", [])
                     c += timedelta(days=1)
         except Exception as e:
-            print(f"  {lg} {a}-{b}: {str(e)[:80]}")
+            print(f"::notice title=lab crawl error {lg}::{a}-{b}: {str(e)[:200]}", flush=True)
             evs = []
         if len(events) == 0 and cur < start + timedelta(days=step * 3):
             print(f"::notice title=lab crawl {lg}::{a}-{b}: {len(evs)} events; first: {json.dumps((evs[0].get('status') or {}).get('type') if evs else None)[:160]} season={json.dumps(evs[0].get('season') if evs else None)[:100]}", flush=True)
