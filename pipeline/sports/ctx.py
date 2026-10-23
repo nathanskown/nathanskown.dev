@@ -305,7 +305,7 @@ def job_collect_current():
     """Box scores for the current season's finished games (new ones only), so player values stay current."""
     from . import lab
     out = {}
-    for lg in [x for x in LEAGUES if x in VALUE or x == "ncaaf"]:
+    for lg in ("nba", "ncaaf", "ncaab"):
         year = (read(f"model/{lg}.json") or {}).get("season")
         if not year:
             continue
