@@ -468,7 +468,7 @@ def market_check(L, years, p):
 
 
 def tune(lg):
-    preset = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp")}
+    preset = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp", "rest")}
     preset.setdefault("carry", 0.0)
     preset.setdefault("cap", None)
     from . import ctx

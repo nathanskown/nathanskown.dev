@@ -47,7 +47,10 @@ STAGES = [
     ("recency", "+ Recency and uncertainty", "Recent games count more; early-season probabilities are widened while ratings are still uncertain."),
     ("rest", "+ Days of rest", "Back-to-backs, byes and short weeks move the projection."),
     ("extra", "+ Expected goals / starting pitchers", "NHL ratings use expected-goals margin (MoneyPuck); MLB projections use the day's starters."),
+    ("avail", "+ Who is playing", "NBA and NFL player availability and college football starting quarterbacks, from box scores, snap counts and injury reports."),
 ]
+LAST = STAGES[-1][0]
+ORDER = tuple(s[0] for s in STAGES)
 
 
 def stage_params(lg, fit):
@@ -69,6 +72,8 @@ def stage_params(lg, fit):
     out["rest"] = dict(p)
     p = dict(p, **{k: fit[k] for k in ("xg", "sp") if k in fit})
     out["extra"] = dict(p)
+    p = dict(p, **{k: fit[k] for k in ("av",) if k in fit})
+    out["avail"] = dict(p)
     return out
 
 
@@ -87,6 +92,8 @@ def without(lg, fit, group):
         p["rest"] = 0
     elif group == "extra":
         p.pop("xg", None); p.pop("sp", None)
+    elif group == "avail":
+        p.pop("av", None)
     return p
 
 
@@ -153,24 +160,24 @@ def league(lg, tuned):
             s = R.holdout(train, hold, sp[sid])
             per[sid].append({"holdout": hold, "n": s["n"], "brier": s["brier"], "logloss": s["logloss"], "acc": s["acc"]})
         # the last stage must reproduce what the tuner recorded for this fold
-        got, rec = per["extra"][-1]["brier"], f["fitted"]["brier"]
+        got, rec = per[LAST][-1]["brier"], f["fitted"]["brier"]
         assert abs(got - rec) < 2e-4, f"{lg} {hold}: ladder end {got:.4f} != tuner {rec:.4f}"
     prev = None
     for sid, label, note in stages:
         rows = per[sid]
-        if sid in ("carry", "tuned", "recency", "rest", "extra"):
+        if sid in ORDER[1:]:
             ps = [stage_params(lg, folds[h]["fit"]) for h in sorted(folds)]
-            before = [("launch", "carry", "tuned", "recency", "rest", "extra")[("launch", "carry", "tuned", "recency", "rest", "extra").index(sid) - 1]]
+            before = [ORDER[ORDER.index(sid) - 1]]
             same = all(p[sid] == p[before[0]] for p in ps)
             if same:
                 continue      # this ingredient does not apply to the league (e.g. no xG outside the NHL)
         ladder.append({"id": sid, "label": label, "note": note, "folds": [{k: _r(v) if isinstance(v, float) else v for k, v in r.items()} for r in rows],
                        "pooled": pool(rows)})
     # leave one out
-    full = pool(per["extra"])
+    full = pool(per[LAST])
     ablation = []
     for g, label in (("carry", "last season carried over"), ("tuned", "fitted settings"), ("recency", "recency and uncertainty"),
-                     ("rest", "days of rest"), ("extra", "expected goals / starting pitchers")):
+                     ("rest", "days of rest"), ("extra", "expected goals / starting pitchers"), ("avail", "who is playing")):
         rows, applies = [], False
         for hold, f in sorted(folds.items()):
             train = [y for y in usable if y < hold]
@@ -184,7 +191,8 @@ def league(lg, tuned):
         ablation.append({"id": g, "label": label, "brier": pl["brier"], "delta": _r(pl["brier"] - full["brier"]),
                          "deltaLogloss": _r(pl["logloss"] - full["logloss"])})
     # every season, launch vs current settings
-    final = {k: v for k, v in (t.get("params") or {}).items() if k not in ("sigma", "sigmaMargin")}
+    live = t.get("params") or dict(t.get("preset") or {}, **(t.get("fixedLive") or {}))     # preset settings when the fit was not adopted
+    final = {k: v for k, v in live.items() if k not in ("sigma", "sigmaMargin")}
     seasons = []
     for y in usable:
         others = [x for x in usable if x != y]
