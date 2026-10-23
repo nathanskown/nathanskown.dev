@@ -166,7 +166,7 @@ def _crawl_ids(lg, year):
         try:
             d = get(ESPN + path(lg) + "/scoreboard", dict(base, dates=f"{a}-{b}" if step > 1 else a))
             evs = d.get("events", [])
-            if len(evs) >= 300 and step > 1:
+            if (len(evs) >= 300 or not evs) and step > 1:         # too many for one request, or a range ESPN would not answer
                 evs = []
                 c = cur
                 while c <= last:
