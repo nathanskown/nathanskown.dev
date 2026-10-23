@@ -76,6 +76,9 @@ def get_params(lg):
         P.update(t.get("fixedLive") or {})
         P["sigma"] = t["sigma"]
         P["sigmaMargin"] = t.get("sigmaMargin", t["sigma"])
+    from . import ctx
+    if ctx.params(lg) and not P.get("av"):
+        P["av"] = ctx.params(lg)
     return P
 
 
@@ -166,6 +169,9 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
     if lg == "mlb" and P.get("sp"):
         from . import extra
         extra.annotate_sp(year - 1, games, P["sp"])
+    if P.get("av"):
+        from . import ctx
+        ctx.annotate(lg, games, P["av"])
     rows = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in games]
     rows = [r for r in rows if r[0] != r[1]]
     if not rows:
@@ -361,7 +367,7 @@ def ridge(results, members, hfa_fn, k, prior=None, cap=None, soft=None, weights=
         elif cap:
             m = max(-cap, min(cap, m))
         w = weights[gi] if weights is not None else 1.0
-        y = m - (0.0 if neutral else hfa_fn(g)) - g.get("restEdge", 0.0) - g.get("spEdge", 0.0)
+        y = m - (0.0 if neutral else hfa_fn(g)) - g.get("restEdge", 0.0) - g.get("spEdge", 0.0) - g.get("ctxEdge", 0.0)
         i, j = ix[h], ix[a]
         A[i, i] += w; A[j, j] += w; A[i, j] -= w; A[j, i] -= w
         b[i] += w * y; b[j] -= w * y
@@ -454,6 +460,12 @@ def build(lg):
         if lg == "mlb" and P.get("sp"):
             from . import extra
             extra.annotate_sp(si["year"], played, P["sp"])       # starting-pitcher edge comes out of the results
+        if P.get("av"):
+            from . import ctx
+            try:
+                res["ctxGames"] = ctx.annotate(lg, played, P["av"])     # who played comes out of the results too
+            except Exception as e:
+                print("ctx annotate failed:", str(e)[:120])
         group, hfa_fn, norm_id = context(lg, smap, members)
         annotate_xg(lg, si["year"], played, P)
         results = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in played]
@@ -519,6 +531,13 @@ def build(lg):
                 res["spEdges"] = extra.upcoming_sp(si["year"], P["sp"])     # announced starters, next 7 days
             except Exception as e:
                 print("MLB starters failed:", str(e)[:120])
+        if P.get("av"):
+            from . import ctx
+            try:
+                res["ctxBeta"] = P["av"]
+                res["ctxEdges"], res["ctxInfo"] = ctx.upcoming(lg, P["av"], events)
+            except Exception as e:
+                print("ctx upcoming failed:", str(e)[:120])
         res["pv"] = bool(P.get("pv"))
         if lg in ("nhl", "nfl") and P.get("xg"):
             res["xg"] = P["xg"]
@@ -533,6 +552,7 @@ def build(lg):
                         + (f", recent games weighted more (half-life {P['hl']} weeks)" if P.get("hl") else "")
                         + (f", rest days counted ({P['rest']:g} per day of rest advantage)" if P.get("rest") else "")
                         + (", starting pitchers counted (MLB Stats API)" if lg == "mlb" and P.get("sp") else "")
+                        + (", who is playing counted (each missing rotation player's value, from ESPN box scores and injury reports)" if P.get("av") else "")
                         + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
                         + (f", each game's result {P['xg']:.0%} team efficiency (EPA, nflverse)" if lg == "nfl" and P.get("xg") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
