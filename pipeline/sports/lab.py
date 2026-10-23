@@ -19,9 +19,10 @@ from .leagues import LEAGUES, path
 
 CORE = "https://sports.core.api.espn.com/v2/sports/"
 SEASONS = {"nhl": [2022, 2023, 2024, 2025, 2026], "nba": [2022, 2023, 2024, 2025, 2026], "ncaab": [2025, 2026],
-           "nfl": [], "ncaaf": [], "ncaah": [], "mlb": []}
-WINDOW = {"nhl": ((10, 1), (6, 25)), "nba": ((10, 15), (6, 25)), "ncaab": ((11, 1), (3, 20))}
-STEP = {"nhl": 7, "nba": 7, "ncaab": 1}
+           "nfl": [], "ncaaf": [2021, 2022, 2023, 2024, 2025, 2026], "ncaah": [], "mlb": []}
+WINDOW = {"nhl": ((10, 1), (6, 25)), "nba": ((10, 15), (6, 25)), "ncaab": ((11, 1), (3, 20)), "ncaaf": ((8, 20), (1, 20))}
+STEP = {"nhl": 7, "nba": 7, "ncaab": 1, "ncaaf": 7}
+FOOTBALL = {"nfl", "ncaaf"}                      # season year = start year, so the window runs into the next calendar year
 PROBE_DATES = {"nfl": "20251116", "ncaaf": "20251115", "nhl": "20260110", "nba": "20260110", "ncaab": "20260110",
                "ncaah": "20260110", "mlb": "20250715"}
 
@@ -123,6 +124,10 @@ def _players(lg, summ):
                         rows.append(["G", at.get("id"), at.get("displayName"), _num(_stat(labels, st, "GA")), _num(_stat(labels, st, "SA")), _mins(_stat(labels, st, "TOI"))])
                     elif name in ("forwards", "defenses"):
                         rows.append(["F" if name == "forwards" else "D", at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "TOI")), _num(_stat(labels, st, "+/-"))])
+                elif lg in FOOTBALL:
+                    if name == "passing":
+                        rows.append([at.get("id"), at.get("displayName"), _num((_stat(labels, st, "C/ATT") or "0/0").split("/")[-1]), _num(_stat(labels, st, "YDS")),
+                                     _num(_stat(labels, st, "TD")), _num(_stat(labels, st, "INT")), _num(_stat(labels, st, "QBR")), _num(_stat(labels, st, "SACKS"))])
                 elif lg in ("nba",):
                     if st:
                         rows.append([at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "MIN")), _num(_stat(labels, st, "PTS")), _num(_stat(labels, st, "+/-")), 1 if a.get("starter") else 0])
@@ -138,7 +143,7 @@ def row_from(lg, ev, summ):
     ln = _line(summ)
     if ln:
         row.update(ln)
-    if lg in ("nhl", "nba"):
+    if lg in ("nhl", "nba") or lg in FOOTBALL:
         row["pl"] = _players(lg, summ)
     return row
 
@@ -147,7 +152,10 @@ def row_from(lg, ev, summ):
 def _crawl_ids(lg, year):
     """All regular-season events in a season window from the scoreboard."""
     (m0, d0), (m1, d1) = WINDOW[lg]
-    start, end = date(year - 1, m0, d0), min(date(year, m1, d1), date.today())
+    if lg in FOOTBALL:
+        start, end = date(year, m0, d0), min(date(year + 1, m1, d1), date.today())
+    else:
+        start, end = date(year - 1, m0, d0), min(date(year, m1, d1), date.today())
     step, cur, events = STEP[lg], start, {}
     base = {"limit": "300"}
     if LEAGUES[lg].get("groups"):
