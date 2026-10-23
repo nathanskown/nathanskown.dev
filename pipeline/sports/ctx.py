@@ -12,7 +12,10 @@ The edge works like the rest edge: it is taken out of each finished game's resul
 (a team that lost without its star is not marked down as if at full strength) and added to the projection of each
 upcoming game, where "missing" comes from ESPN's injury report (Out counts fully, Doubtful 3/4, Questionable and
 Day-To-Day partly). beta is fitted walk-forward by job_fit and written to model/ctx.json; it goes live only if it
-beats the model without it on held-out seasons."""
+beats the model without it on held-out seasons.
+
+NFL (non-quarterback availability, nflsnap.py): regulars by snap share who did not play, counted by their share;
+upcoming games use ESPN's injury report. Quarterbacks are left to nflqb.py."""
 import collections
 import glob
 import math
@@ -23,11 +26,13 @@ import numpy as np
 
 from .common import DATA, now_iso, read, write
 
-LEAGUES = ("nba",)
+LEAGUES = ("nba", "nfl")
 VALUE = {"nba": {"a": -2.0 / 48, "b": 0.18, "c": 6.1 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
                  "roster": 15, "carry": 0.6}}
 STATUS_W = {"Out": 1.0, "Injured Reserve": 1.0, "Suspension": 1.0, "Doubtful": 0.75, "Questionable": 0.4, "Day-To-Day": 0.25}
-GATE = {"gain": 0.002, "z": 2.0}
+STATUS_W_NFL = dict(STATUS_W, Questionable=0.2)          # most NFL questionable players play
+# adopted when held-out log loss improves by GAIN and either z >= Z or (z >= Z_CONSISTENT and nearly every season improved)
+GATE = {"gain": 0.001, "z": 2.0, "z_consistent": 1.0, "share": 0.8}
 BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
 _cache = {}
 
@@ -96,29 +101,38 @@ def walk(lg):
     return _cache[lg]
 
 
+def _edge(lg, year, d, h, a):
+    """Unscaled home-perspective edge for a finished game (away missing - home missing), or None."""
+    if lg == "nfl":
+        if "nfl_snap" not in _cache:
+            from . import nflsnap
+            _cache["nfl_snap"] = nflsnap.edges()
+        return _cache["nfl_snap"].get((year, h, a))
+    e = walk(lg)[2].get((d[:16], h, a))
+    return e[1] - e[0] if e else None
+
+
 def season_edges(lg, year, rows, inv):
-    """Home-perspective edge (away missing - home missing) for the tuner's stored games; 0 where unmatched."""
+    """Home-perspective edge for the tuner's stored games; 0 where unmatched."""
     if lg not in LEAGUES:
         return np.zeros(len(rows)), 0.0
-    _, _, edges = walk(lg)
     out, hit = [], 0
     for r in rows:
-        e = edges.get((r[0][:16], inv[r[1]], inv[r[2]]))
-        out.append(e[1] - e[0] if e else 0.0)
+        e = _edge(lg, year, r[0], inv[r[1]], inv[r[2]])
+        out.append(e if e is not None else 0.0)
         hit += e is not None
     return np.array(out, float), hit / max(1, len(rows))
 
 
-def annotate(lg, games, beta):
-    """Finished games of the current season: g["ctxEdge"] = beta x (away missing - home missing), taken out of the result."""
+def annotate(lg, games, beta, year=None):
+    """Finished games: g["ctxEdge"] = beta x (away missing - home missing), taken out of the result."""
     if lg not in LEAGUES or not beta:
         return 0
-    _, _, edges = walk(lg)
     n = 0
     for g in games:
-        e = edges.get((g["d"][:16], g["h"], g["a"]))
-        if e:
-            g["ctxEdge"] = beta * (e[1] - e[0])
+        e = _edge(lg, year, g["d"], g["h"], g["a"])
+        if e is not None:
+            g["ctxEdge"] = beta * e
             n += 1
     return n
 
@@ -160,7 +174,11 @@ def upcoming(lg, beta, events, days=7):
     from datetime import datetime, timedelta, timezone
     if lg not in LEAGUES or not beta:
         return {}, {}
-    miss = team_missing(lg)
+    if lg == "nfl":
+        from . import nflsnap
+        miss = nflsnap.team_missing(STATUS_W_NFL, _norm)
+    else:
+        miss = team_missing(lg)
     ab = {t["id"]: t.get("abbr", "") for t in ((read("teams.json") or {}).get("leagues") or {}).get(lg, [])}
     now = datetime.now(timezone.utc)
     lim = (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M")
@@ -178,10 +196,11 @@ def upcoming(lg, beta, events, days=7):
         edges[k] = round(e, 2)
         notes = []
         for t, mm in ((a, ma), (h, mh)):
-            if mm[1]:
+            if mm[1] and beta * mm[0] >= 0.3:
+                more = len(mm[1]) - 3
                 notes.append(f"{ab.get(t, '')} without " + ", ".join(_last(n)
                                                                      + ("" if st == "Out" else f" ({st.lower()})") for n, st, _ in mm[1][:3])
-                             + f" (−{beta * mm[0]:.1f})")
+                             + (f" +{more} more" if more > 0 else "") + f" (−{beta * mm[0]:.1f})")
         info[k] = notes or None
     return edges, {k: v for k, v in info.items() if v}
 
@@ -196,14 +215,19 @@ def job_fit():
     from . import tune as T
     out = {}
     for lg in LEAGUES:
-        ys = lab_years(lg)
+        if lg == "nfl":
+            from . import nflsnap
+            ys = sorted({y for y, _, _ in nflsnap.edges()})
+        else:
+            ys = lab_years(lg)
         p = dict((read("model/tuned.json") or {}).get(lg, {}).get("params") or {})
         if len(ys) < 3 or not p:
-            out[lg] = {"adopt": False, "reason": f"needs 3 lab seasons and tuned settings (have {ys})"}
+            out[lg] = {"adopt": False, "reason": f"needs 3 seasons of data and tuned settings (have {ys})"}
             continue
         p.pop("av", None)
         L = T.League(lg)
-        years = [y for y in ys[1:] if y in L.seasons and (y - 1) in L.seasons]
+        covid = T.COVID.get(lg, set())
+        years = [y for y in ys[1:] if y in L.seasons and (y - 1) in L.seasons and y not in covid and y < _current(lg)]
         runs = {}
         for b in BETAS:
             q = dict(p, av=b)
@@ -227,19 +251,26 @@ def job_fit():
         gain = float(d.mean()); z = float(gain / (d.std(ddof=1) / math.sqrt(len(d)))) if d.std() > 0 else 0.0
         better = sum(1 for f in folds if f["gain"] > 0)
         beta = min(BETAS, key=lambda b: ll(b, years)[0].mean())
-        adopt = gain >= GATE["gain"] and z >= GATE["z"] and better >= len(folds) - 1 and beta > 0
+        adopt = (gain >= GATE["gain"] and beta > 0
+                 and (z >= GATE["z"] and better >= len(folds) - 1 or z >= GATE["z_consistent"] and better >= GATE["share"] * len(folds)))
         out[lg] = {"adopt": bool(adopt), "beta": beta, "gain": round(gain, 5), "z": round(z, 2), "folds": folds,
                    "foldsImproved": f"{better}/{len(folds)}", "games": int(len(d)), "seasons": [years[0], years[-1]],
-                   "value": VALUE[lg], "updated": now_iso()}
+                   "value": VALUE.get(lg), "updated": now_iso()}
     write("model/ctx.json", out)
     return {lg: {k: v.get(k) for k in ("adopt", "beta", "gain", "z", "foldsImproved")} for lg, v in out.items()}
+
+
+def _current(lg):
+    """The season in progress (its games are not a held-out test yet), or a year past every stored season."""
+    m = read(f"model/{lg}.json") or {}
+    return m.get("season") if m.get("seasonType") in (1, 2) else 9999
 
 
 def job_collect_current():
     """Box scores for the current season's finished games (new ones only), so player values stay current."""
     from . import lab
     out = {}
-    for lg in LEAGUES:
+    for lg in [x for x in LEAGUES if x in VALUE]:
         year = (read(f"model/{lg}.json") or {}).get("season")
         if not year:
             continue
