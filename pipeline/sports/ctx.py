@@ -2,10 +2,11 @@
 
 NBA (player availability). Every player gets a value in points of margin, learned only from games before the one
 being projected, from the lab box scores (data/sports/lab/nba_{year}.json, ESPN):
-    value = expected minutes x (A + B x shrunk on/off per minute + C x points per minute)
+    value = expected minutes x (A + B x shrunk on/off per minute + D x game score per minute)
 where expected minutes is a recency-weighted average of his minutes when he plays, on/off is his plus-minus per
-minute against his team's margin with him off the floor (shrunk toward 0 by SHRINK minutes), and A, B, C were fitted
-on the 2023-24 seasons and checked on 2025-26 (see VALUE). A team's rotation is every player averaging 10+ minutes
+minute against his team's margin with him off the floor (shrunk toward 0 by SHRINK minutes), game score is Hollinger's box-score
+summary (points, shooting, rebounds, assists, steals, blocks, turnovers, fouls), and A, B, D were fitted on the
+2023-24 seasons and checked on 2025-26 (see VALUE). A team's rotation is every player averaging 10+ minutes
 who played for it within its last 15 games this season. A game's edge is (away value missing - home value missing) x beta.
 
 The edge works like the rest edge: it is taken out of each finished game's result before the ratings are fitted
@@ -27,13 +28,13 @@ import numpy as np
 from .common import DATA, now_iso, read, write
 
 LEAGUES = ("nba", "nfl")
-VALUE = {"nba": {"a": -2.0 / 48, "b": 0.18, "c": 6.1 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
+VALUE = {"nba": {"a": -2.4 / 48, "b": 0.1, "c": 0.0, "d": 8.5 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
                  "roster": 15, "carry": 0.6}}
 STATUS_W = {"Out": 1.0, "Injured Reserve": 1.0, "Suspension": 1.0, "Doubtful": 0.75, "Questionable": 0.4, "Day-To-Day": 0.25}
 STATUS_W_NFL = dict(STATUS_W, Questionable=0.2)          # most NFL questionable players play
 # adopted when held-out log loss improves by GAIN and either z >= Z or (z >= Z_CONSISTENT and nearly every season improved)
 GATE = {"gain": 0.001, "z": 2.0, "z_consistent": 1.0, "share": 0.8}
-BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
 _cache = {}
 
 
@@ -49,7 +50,8 @@ def lab_years(lg):
 def _value(st, V):
     oo = st["oo"] / (st["mins"] + V["shrink"])
     ppm = st["pts"] / max(st["mins"], 1.0)
-    return st["em"] * (V["a"] + V["b"] * oo + V["c"] * ppm)
+    gpm = st.get("gs", 0.0) / max(st.get("gsm", 0.0), 1.0) if st.get("gsm") else ppm * 0.7     # game score per minute
+    return st["em"] * (V["a"] + V["b"] * oo + V["c"] * ppm + V.get("d", 0.0) * gpm)
 
 
 def _rotation(P, team, recent, V):
@@ -67,7 +69,7 @@ def walk(lg):
     for y in lab_years(lg):
         store = read(f"lab/{lg}_{y}.json") or {}
         for st in P.values():
-            for k in ("oo", "pts", "mins"):
+            for k in ("oo", "pts", "mins", "gs", "gsm"):
                 st[k] *= V["carry"]
         tg = collections.defaultdict(list)     # rotations start afresh each season: offseason moves are not absences
         for gid, g in sorted((store.get("g") or {}).items(), key=lambda kv: kv[1]["d"]):
@@ -89,7 +91,7 @@ def walk(lg):
                     mn = mn or 0.0
                     if mn <= 0:
                         continue
-                    st = P.setdefault(pid, {"team": t, "em": mn, "oo": 0.0, "pts": 0.0, "mins": 0.0, "last": None, "name": name})
+                    st = P.setdefault(pid, {"team": t, "em": mn, "oo": 0.0, "pts": 0.0, "mins": 0.0, "gs": 0.0, "gsm": 0.0, "last": None, "name": name})
                     st["team"], st["last"], st["name"] = t, gid, name
                     st["em"] = fm * st["em"] + (1 - fm) * mn
                     on = pm or 0.0
@@ -97,6 +99,11 @@ def walk(lg):
                     st["oo"] = fv * st["oo"] + oo
                     st["pts"] = fv * st["pts"] + (pts or 0.0)
                     st["mins"] = fv * st["mins"] + mn
+                    if len(row) >= 17:       # Hollinger game score from the full box score
+                        fgm, fga, ftm, fta, orb, drb, ast, stl, blk, to, pf = [x or 0.0 for x in row[6:17]]
+                        st["gs"] = fv * st.get("gs", 0.0) + ((pts or 0.0) + 0.4 * fgm - 0.7 * fga - 0.4 * (fta - ftm) + 0.7 * orb + 0.3 * drb
+                                                             + stl + 0.7 * ast + 0.7 * blk - 0.4 * pf - to)
+                        st["gsm"] = fv * st.get("gsm", 0.0) + mn
     _cache[lg] = (P, tg, edges)
     return _cache[lg]
 
