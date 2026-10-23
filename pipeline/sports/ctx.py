@@ -16,7 +16,9 @@ Day-To-Day partly). beta is fitted walk-forward by job_fit and written to model/
 beats the model without it on held-out seasons.
 
 NFL (non-quarterback availability, nflsnap.py): regulars by snap share who did not play, counted by their share;
-upcoming games use ESPN's injury report. Quarterbacks are left to nflqb.py."""
+upcoming games use ESPN's injury report. Quarterbacks are left to nflqb.py.
+
+College football (starting quarterbacks, cfbqb.py): results use who started, projections each team's latest starter."""
 import collections
 import glob
 import math
@@ -27,7 +29,7 @@ import numpy as np
 
 from .common import DATA, now_iso, read, write
 
-LEAGUES = ("nba", "nfl")
+LEAGUES = ("nba", "nfl", "ncaaf")
 VALUE = {"nba": {"a": -2.4 / 48, "b": 0.1, "c": 0.0, "d": 8.5 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
                  "roster": 15, "carry": 0.6}}
 STATUS_W = {"Out": 1.0, "Injured Reserve": 1.0, "Suspension": 1.0, "Doubtful": 0.75, "Questionable": 0.4, "Day-To-Day": 0.25}
@@ -35,6 +37,7 @@ STATUS_W_NFL = dict(STATUS_W, Questionable=0.2)          # most NFL questionable
 # adopted when held-out log loss improves by GAIN and either z >= Z or (z >= Z_CONSISTENT and nearly every season improved)
 GATE = {"gain": 0.001, "z": 2.0, "z_consistent": 1.0, "share": 0.8}
 BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+BETAS_LG = {"ncaaf": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]}       # points per adjusted yard per dropback
 _cache = {}
 
 
@@ -108,8 +111,12 @@ def walk(lg):
     return _cache[lg]
 
 
-def _edge(lg, year, d, h, a):
-    """Unscaled home-perspective edge for a finished game (away missing - home missing), or None."""
+def _edge(lg, year, d, h, a, projection=False):
+    """Unscaled home-perspective edge for a finished game (away missing - home missing), or None.
+    projection=True: the edge as it could have been known before the game (differs only for college football)."""
+    if lg == "ncaaf":
+        from . import cfbqb
+        return cfbqb.edge(year, h, a, projection)
     if lg == "nfl":
         if "nfl_snap" not in _cache:
             from . import nflsnap
@@ -129,6 +136,17 @@ def season_edges(lg, year, rows, inv):
         out.append(e if e is not None else 0.0)
         hit += e is not None
     return np.array(out, float), hit / max(1, len(rows))
+
+
+def season_proj_edges(lg, year, rows, inv):
+    """Projection-side edges where they differ from the result-side ones (else None)."""
+    if lg != "ncaaf":
+        return None
+    out = []
+    for r in rows:
+        e = _edge(lg, year, r[0], inv[r[1]], inv[r[2]], True)
+        out.append(e if e is not None else 0.0)
+    return np.array(out, float)
 
 
 def annotate(lg, games, beta, year=None):
@@ -181,6 +199,12 @@ def upcoming(lg, beta, events, days=7):
     from datetime import datetime, timedelta, timezone
     if lg not in LEAGUES or not beta:
         return {}, {}
+    if lg == "ncaaf":
+        from . import cfbqb
+        now = datetime.now(timezone.utc)
+        ab = {t["id"]: t.get("abbr", "") for t in ((read("teams.json") or {}).get("leagues") or {}).get(lg, [])}
+        return cfbqb.upcoming(beta, events, ab, (now - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
+                              (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M"))
     if lg == "nfl":
         from . import nflsnap
         miss = nflsnap.team_missing(STATUS_W_NFL, _norm)
@@ -236,7 +260,8 @@ def job_fit():
         covid = T.COVID.get(lg, set())
         years = [y for y in ys[1:] if y in L.seasons and (y - 1) in L.seasons and y not in covid and y < _current(lg)]
         runs = {}
-        for b in BETAS:
+        betas = BETAS_LG.get(lg, BETAS)
+        for b in betas:
             q = dict(p, av=b)
             runs[b] = {y: (lambda pr: (pr[0], pr[1], L.seasons[y].m))(T.replay(L, L.seasons[y], q, T.prior_for(L, y, q))) for y in years}
 
@@ -248,7 +273,7 @@ def job_fit():
         folds, diffs = [], []
         for ty in years[1:]:
             tr = [y for y in years if y < ty]
-            best = min(BETAS, key=lambda b: ll(b, tr)[0].mean())
+            best = min(betas, key=lambda b: ll(b, tr)[0].mean())
             base, _ = ll(0.0, [ty], ll(0.0, tr)[1])
             new, _ = ll(best, [ty], ll(best, tr)[1])
             d = base - new
@@ -257,7 +282,7 @@ def job_fit():
         d = np.concatenate(diffs)
         gain = float(d.mean()); z = float(gain / (d.std(ddof=1) / math.sqrt(len(d)))) if d.std() > 0 else 0.0
         better = sum(1 for f in folds if f["gain"] > 0)
-        beta = min(BETAS, key=lambda b: ll(b, years)[0].mean())
+        beta = min(betas, key=lambda b: ll(b, years)[0].mean())
         adopt = (gain >= GATE["gain"] and beta > 0
                  and (z >= GATE["z"] and better >= len(folds) - 1 or z >= GATE["z_consistent"] and better >= GATE["share"] * len(folds)))
         out[lg] = {"adopt": bool(adopt), "beta": beta, "gain": round(gain, 5), "z": round(z, 2), "folds": folds,
@@ -277,7 +302,7 @@ def job_collect_current():
     """Box scores for the current season's finished games (new ones only), so player values stay current."""
     from . import lab
     out = {}
-    for lg in [x for x in LEAGUES if x in VALUE]:
+    for lg in [x for x in LEAGUES if x in VALUE or x == "ncaaf"]:
         year = (read(f"model/{lg}.json") or {}).get("season")
         if not year:
             continue
