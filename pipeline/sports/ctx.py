@@ -79,7 +79,8 @@ def walk(lg):
             margin = g["hs"] - g["as"]
             for t, sgn in ((g["h"], 1), (g["a"], -1)):
                 tg[t].append(gid)
-                for pid, name, mn, pts, pm, _ in pl.get(t, []):
+                for row in pl.get(t, []):
+                    pid, name, mn, pts, pm = row[:5]
                     mn = mn or 0.0
                     if mn <= 0:
                         continue
