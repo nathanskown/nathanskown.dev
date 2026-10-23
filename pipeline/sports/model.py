@@ -41,7 +41,7 @@ PARAMS = {
     # 0.45 goals, so a rating needs about (2.5 / 0.45)^2 = 30 games of weight before its own results
     # dominate; last season carries over strongly (fit on 2023-2026 held-out seasons, October 2026).
     "nhl":   dict(hfa=0.2, sigma=2.4, k=30, cap=None, minGp=3, unit="goals", carry=0.9),
-    "nba":   dict(hfa=2.5, sigma=12.0, k=10, cap=None, minGp=0, unit="points", carry=0.65),
+    "nba":   dict(hfa=2.5, sigma=12.0, k=10, cap=None, minGp=0, unit="points", carry=0.65, rest=1.0),
     "mlb":   dict(hfa=0.15, sigma=4.2, k=20, cap=None, minGp=10, unit="runs"),
     "ncaab": dict(hfa=3.0, sigma=11.0, k=6, cap=40, minGp=3, unit="points"),
     "ncaah": dict(hfa=0.25, sigma=2.4, k=6, cap=None, minGp=3, unit="goals"),
