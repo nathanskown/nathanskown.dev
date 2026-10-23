@@ -18,7 +18,7 @@ probabilities fit what happened).
              rest     points (goals, runs) per day of rest advantage, rest = days since the team's previous
                       game this season, capped per league (REST_CAP) so only the part that matters counts
                       (NFL byes and short weeks, NBA/NHL back-to-backs); a team's first game counts as rested
-             xg       NHL only: share of each game's rating input taken from expected-goals margin (MoneyPuck)
+             xg       NHL: share of each game's rating input taken from expected-goals margin (MoneyPuck); NFL: from EPA margin (nflverse)
                       instead of actual goal margin (0 = goals only); projections still predict real results
              sp       MLB only: weight on the starting-pitcher edge (runs the two starters should differ by over a
                       typical start, from extra.mlb_sp_edges; 1 = take it at face value)
@@ -68,7 +68,7 @@ GRID = {
     "newp": {"ncaaf": ["zero", "pool"], "ncaab": ["zero", "pool"]},
     "ps": {"ncaaf": [0, 1], "ncaab": [0, 1]},
     "sp": {"mlb": [0, 0.5, 0.75, 1.0, 1.25, 1.5]},
-    "xg": {"nhl": [0, 0.15, 0.25, 0.35, 0.5, 0.75, 1.0]},
+    "xg": {"nhl": [0, 0.15, 0.25, 0.35, 0.5, 0.75, 1.0], "nfl": [0, 0.2, 0.4, 0.6, 0.8]},
     "rest": {"nfl": [0, 0.1, 0.2, 0.3], "nba": [0, 0.5, 1.0, 1.5, 2.0], "nhl": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
              "mlb": [0, 0.05, 0.1], "ncaab": [0, 0.25, 0.5, 1.0], "ncaaf": [0, 0.1, 0.2, 0.3], "ncaah": [0, 0.05, 0.1]},
 }
@@ -116,6 +116,11 @@ class League:
             S.xgm = S.m.copy()
             if lg == "nhl":
                 S.xgm, S.xgCover = xg_margins(y, rows, {i: t for t, i in self.ix.items()})
+            if lg == "nfl":
+                from . import nflqb
+                lk = nflqb.epa_lookup(y)
+                inv = {i: t for t, i in self.ix.items()}
+                S.xgm = np.array([lk.get((inv[r[1]], inv[r[2]]), float(r[3])) for r in rows], float)
             if lg == "mlb":
                 S.sp, S.spCover = sp_edges(y, rows, {i: t for t, i in self.ix.items()})
             if all(r[6] is not None for r in rows):
