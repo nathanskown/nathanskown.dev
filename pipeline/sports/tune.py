@@ -251,6 +251,12 @@ def prior_for(L, y, p):
     pr = np.where(seen, p["carry"] * R, 0.0)
     if p.get("newp") == "pool" and seen[L.pool]:
         pr = np.where(seen, pr, p["carry"] * R[L.pool])
+    if p.get("ret") and L.lg == "ncaab":
+        from . import cbbret
+        f = cbbret.feature(y)                # roster turnover (cbbret.py)
+        for t, i in L.ix.items():
+            if i != L.pool and t in f:
+                pr[i] += p["ret"] * f[t]
     return pr
 
 
@@ -474,6 +480,10 @@ def tune(lg):
     from . import ctx
     if ctx.params(lg):
         preset["av"] = ctx.params(lg)      # fitted separately (ctx.job_fit); held fixed here so both use the same results
+    if lg == "ncaab":
+        from . import cbbret
+        if cbbret.gamma():
+            preset["ret"] = cbbret.gamma()
     L = League(lg)
     covid = COVID.get(lg, set())
     usable = [y for y in L.years if (y - 1) in L.seasons and y not in covid][-WINDOW:]

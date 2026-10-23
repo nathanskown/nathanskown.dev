@@ -79,6 +79,10 @@ def get_params(lg):
     from . import ctx
     if ctx.params(lg) and not P.get("av"):
         P["av"] = ctx.params(lg)
+    if lg == "ncaab" and not P.get("ret"):
+        from . import cbbret
+        if cbbret.gamma():
+            P["ret"] = cbbret.gamma()
     return P
 
 
@@ -181,6 +185,12 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
     R, _ = ridge(rows, members, hfa_fn, P["k"], None, P.get("cap"), P.get("soft"), w)
     seen = {t for r in rows for t in r[:2]}
     out = {t: carry * R[t] for t in seen if t in members}
+    if P.get("ret") and lg == "ncaab":
+        from . import cbbret
+        f = cbbret.feature(year)            # roster turnover: returning, departed and transferred-in production
+        for t in members:
+            if t in f:
+                out[t] = out.get(t, 0.0) + P["ret"] * f[t]
     if P.get("newp") == "pool" and POOL in seen:
         # programs new to the division start where last season's outsiders were, not at the division average
         for t in members:
@@ -557,6 +567,7 @@ def build(lg):
                             "ncaaf": ", starting quarterbacks counted (passing from ESPN box scores)"}.get(lg, ", who is playing counted") if P.get("av") else "")
                         + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
                         + (f", each game's result {P['xg']:.0%} team efficiency (EPA, nflverse)" if lg == "nfl" and P.get("xg") else "")
+                        + (", last season's rating adjusted for roster turnover (returning, departed and transferred players' box-score production)" if P.get("ret") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
                         + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))
         res["tuned"] = bool(P.get("tuned"))
