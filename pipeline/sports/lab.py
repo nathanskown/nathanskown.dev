@@ -121,14 +121,42 @@ def _pair(x):
 
 
 def _complete(lg, row):
-    """A stored row has everything this version collects (older basketball rows lack the full box score)."""
+    """A stored row has everything this version collects (older rows lack the full box score)."""
     if lg in BASKET or lg == "nhl" or lg in FOOTBALL:
         pl = row.get("pl")
         if not pl:
             return False
         if lg in BASKET:
             return all(len(r) >= BOX_LEN for rows in pl.values() for r in rows)
+        if lg in FOOTBALL:
+            return "ts" in row and (lg != "ncaaf" or "px" in row)
     return True
+
+
+FB_GROUPS = {"rushing": ("R", ["CAR", "YDS", "TD"]), "receiving": ("C", ["REC", "YDS", "TD"]),
+             "defensive": ("D", ["TOT", "SACKS", "TFL", "PD"]), "interceptions": ("I", ["INT"])}
+
+
+def _football_more(summ):
+    """Rushing, receiving and defensive rows per side (for returning production), and the team totals."""
+    px, ts = {}, {}
+    for t in (summ.get("boxscore") or {}).get("players", []):
+        tid = str((t.get("team") or {}).get("id"))
+        rows = []
+        for g in t.get("statistics", []):
+            spec = FB_GROUPS.get(g.get("name"))
+            if not spec:
+                continue
+            labels = g.get("labels") or []
+            for a in g.get("athletes", []):
+                at, st = a.get("athlete") or {}, a.get("stats") or []
+                if st:
+                    rows.append([spec[0], at.get("id"), at.get("displayName")] + [_num(_stat(labels, st, k)) for k in spec[1]])
+        px[tid] = rows
+    for t in (summ.get("boxscore") or {}).get("teams", []):
+        tid = str((t.get("team") or {}).get("id"))
+        ts[tid] = {x.get("name"): x.get("displayValue") for x in t.get("statistics", []) if x.get("name")}
+    return px, ts
 
 
 def _players(lg, summ):
@@ -170,6 +198,11 @@ def row_from(lg, ev, summ):
         row.update(ln)
     if lg in ("nhl",) or lg in BASKET or lg in FOOTBALL:
         row["pl"] = _players(lg, summ)
+    if lg in FOOTBALL:
+        px, ts = _football_more(summ)
+        row["ts"] = ts
+        if lg == "ncaaf":
+            row["px"] = px
     return row
 
 
