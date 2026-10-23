@@ -552,7 +552,9 @@ def build(lg):
                         + (f", recent games weighted more (half-life {P['hl']} weeks)" if P.get("hl") else "")
                         + (f", rest days counted ({P['rest']:g} per day of rest advantage)" if P.get("rest") else "")
                         + (", starting pitchers counted (MLB Stats API)" if lg == "mlb" and P.get("sp") else "")
-                        + (", who is playing counted (each missing rotation player's value, from ESPN box scores and injury reports)" if P.get("av") else "")
+                        + ({"nba": ", missing players counted (each rotation player's value from ESPN box scores; ESPN injury report)",
+                            "nfl": ", missing regulars counted (snap counts from nflverse; ESPN injury report)",
+                            "ncaaf": ", starting quarterbacks counted (passing from ESPN box scores)"}.get(lg, ", who is playing counted") if P.get("av") else "")
                         + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
                         + (f", each game's result {P['xg']:.0%} team efficiency (EPA, nflverse)" if lg == "nfl" and P.get("xg") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
