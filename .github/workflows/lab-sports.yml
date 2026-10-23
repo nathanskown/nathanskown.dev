@@ -1,0 +1,52 @@
+name: Sports lab
+
+# Collects richer per-game data (closing lines, who played) for every league on GitHub's runners and commits it under
+# data/sports/lab (pipeline/sports/lab.py). Started by hand, or by a push that changes the marker file.
+on:
+  push:
+    branches: [main]
+    paths: [".github/run-lab.txt"]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "probe | collect"
+        default: "probe"
+      leagues:
+        description: "Leagues (comma separated)"
+        default: "nfl,ncaaf,nhl,nba,ncaab,ncaah,mlb"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sports-lab
+  cancel-in-progress: false
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3 numpy==2.1.3
+      - name: Run the lab
+        run: |
+          git config user.name "sports-data-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          MODE="${{ github.event.inputs.mode || 'probe' }}"
+          export LAB_LG="${{ github.event.inputs.leagues || 'nfl,ncaaf,nhl,nba,ncaab,ncaah,mlb' }}"
+          save() {
+            git add data/sports
+            if git diff --cached --quiet; then echo "nothing new for $1"; return; fi
+            git commit -q -m "data: $1"
+            for i in 1 2 3; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep 5; done
+          }
+          python -m pipeline.sports.run "lab-$MODE" || echo "lab $MODE exited with an error"
+          save "sports lab ($MODE)"
+          python - <<'PY'
+          import json
+          s = json.load(open("data/sports/status.json")) if False else {}
+          PY
