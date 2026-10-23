@@ -59,6 +59,8 @@ def project(model, h, a, neutral, start=None):
     m = H["rating"] - A["rating"] + hfa + rest_edge(model, H, A, start)
     if model.get("spEdges") and start:
         m += model["spEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)
+    if model.get("qbEdges") and start:
+        m += model["qbEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)      # NFL starting-QB adjustment (nflqb.py)
     return m, M.phi(m / spread(model, H, A))
 
 

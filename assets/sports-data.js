@@ -297,10 +297,12 @@
     var m = H.rating - A.rating + hfa + restEdge(model, H, A, start);
     // MLB: announced starting pitchers' edge for this exact game, when the model file has it
     if (model.spEdges && start) m += model.spEdges[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || 0;
+    // NFL: the starting quarterback against the team's usual one, when the model file has it for this game
+    if (model.qbEdges && start) m += model.qbEdges[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || 0;
     // when the model says so (pv), widen the spread by how unsure both ratings still are (w = weight of evidence in games)
     var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
     var p = Phi(m / sg);
-    return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, coverage: model.coverage || null, basis: model.basis || '' };
+    return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, qb: model.qbInfo && start ? model.qbInfo[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || null : null, coverage: model.coverage || null, basis: model.basis || '' };
   }
 
   /* In-game win probability: the current score plus the pre-game edge scaled to the time left, with the
