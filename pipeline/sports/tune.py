@@ -50,7 +50,8 @@ from . import model as M
 from .common import now_iso, read, write
 
 LEAGUES = ["nfl", "ncaaf", "nhl", "nba", "ncaab", "ncaah", "mlb"]
-WINDOW = 12
+WINDOW = 16          # newest seasons used; older ones count less (SEASON_HL), so a long window adds data without dragging in old eras
+SEASON_HL = 6.0      # half-life, in seasons, of a training season's weight in the settings search (None = equal weights)
 NFOLDS = 4
 MIN_GAIN = 0.0005
 MIN_Z = 1.5
@@ -319,8 +320,14 @@ def score(P, U, A, s0, pv):
 
 
 def train_ll(L, years, p):
-    P, U, A = run(L, years, p)
-    return score(P, U, A, fit_sigma(P, U, A, p.get("pv"), p.get("ps")), p.get("pv"))["logloss"]
+    P, U, A, W = [], [], [], []
+    for y in years:
+        pr, uu = replay(L, L.seasons[y], p, prior_for(L, y, p))
+        P.append(pr); U.append(uu); A.append(L.seasons[y].m)
+        W.append(np.full(len(pr), 0.5 ** ((years[-1] - y) / SEASON_HL) if SEASON_HL else 1.0))
+    P, U, A, W = map(np.concatenate, (P, U, A, W))
+    sc = score(P, U, A, fit_sigma(P, U, A, p.get("pv"), p.get("ps")), p.get("pv"))
+    return float((sc["ll"] * W).sum() / W.sum())
 
 
 def holdout(L, train, test, p):
