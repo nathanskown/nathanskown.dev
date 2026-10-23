@@ -163,18 +163,20 @@ def _crawl_ids(lg, year):
     while cur <= end:
         last = min(cur + timedelta(days=step - 1), end)
         a, b = cur.strftime("%Y%m%d"), last.strftime("%Y%m%d")
-        try:
-            d = get(ESPN + path(lg) + "/scoreboard", dict(base, dates=f"{a}-{b}" if step > 1 else a))
-            evs = d.get("events", [])
-            if (len(evs) >= 300 or not evs) and step > 1:         # too many for one request, or a range ESPN would not answer
+        evs = []
+        if step > 1:
+            try:
+                evs = get(ESPN + path(lg) + "/scoreboard", dict(base, dates=f"{a}-{b}")).get("events", [])
+            except Exception:
                 evs = []
-                c = cur
-                while c <= last:
+        if step == 1 or not evs or len(evs) >= 300:           # a range ESPN would not answer, or too many for one request
+            evs, c = [], cur
+            while c <= last:
+                try:
                     evs += get(ESPN + path(lg) + "/scoreboard", dict(base, dates=c.strftime("%Y%m%d"))).get("events", [])
-                    c += timedelta(days=1)
-        except Exception as e:
-            print(f"::notice title=lab crawl error {lg}::{a}-{b}: {str(e)[:200]}", flush=True)
-            evs = []
+                except Exception as e:
+                    print(f"::notice title=lab crawl error {lg}::{c}: {str(e)[:160]}", flush=True)
+                c += timedelta(days=1)
         if len(events) == 0 and cur < start + timedelta(days=step * 3):
             print(f"::notice title=lab crawl {lg}::{a}-{b}: {len(evs)} events; first: {json.dumps((evs[0].get('status') or {}).get('type') if evs else None)[:160]} season={json.dumps(evs[0].get('season') if evs else None)[:100]}", flush=True)
         for e in evs:
