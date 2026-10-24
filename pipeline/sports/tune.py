@@ -70,6 +70,9 @@ GRID = {
     "ps": {"ncaaf": [0, 1], "ncaab": [0, 1]},
     "sp": {"mlb": [0, 0.5, 0.75, 1.0, 1.25, 1.5]},
     "xg": {"nhl": [0, 0.15, 0.25, 0.35, 0.5, 0.75, 1.0], "nfl": [0, 0.2, 0.4, 0.6, 0.8]},
+    # ratings from two and three seasons back (KenPom/SP+ style program history), as a share of the change from last season
+    "c2": {"ncaaf": [0, 0.1, 0.15, 0.2, 0.3], "ncaab": [0, 0.1, 0.15, 0.2, 0.3], "ncaah": [0, 0.1, 0.2, 0.3]},
+    "c3": {"ncaaf": [0, 0.1, 0.2], "ncaab": [0, 0.1, 0.2], "ncaah": [0, 0.1, 0.2]},
     "rest": {"nfl": [0, 0.1, 0.2, 0.3], "nba": [0, 0.5, 1.0, 1.5, 2.0], "nhl": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3],
              "mlb": [0, 0.05, 0.1], "ncaab": [0, 0.25, 0.5, 1.0], "ncaaf": [0, 0.1, 0.2, 0.3], "ncaah": [0, 0.05, 0.1]},
 }
@@ -243,11 +246,28 @@ def final(L, S, p):
     return np.linalg.solve(A, b), deg > 0
 
 
+def _final_cached(L, y, p):
+    """final() is the slow part of a prior and does not depend on the carry-over settings: cache it on the league."""
+    cache = L.__dict__.setdefault("_final", {})
+    key = (y, tuple(sorted((k, str(v)) for k, v in p.items() if k not in ("carry", "c2", "c3", "ret", "newp"))))
+    if key not in cache:
+        if len(cache) > 2000:
+            cache.clear()
+        cache[key] = final(L, L.seasons[y], p)
+    return cache[key]
+
+
 def prior_for(L, y, p):
     pr = np.zeros(L.n)
     if not p.get("carry") or (y - 1) not in L.seasons:
         return pr
-    R, seen = final(L, L.seasons[y - 1], p)
+    R1, seen = _final_cached(L, y - 1, p)
+    R = R1.copy()
+    for back, key in ((2, "c2"), (3, "c3")):          # program history: older seasons pull last season's rating toward them
+        if p.get(key) and (y - back) in L.seasons:
+            Rb, sb = _final_cached(L, y - back, p)
+            ok = sb & seen
+            R[ok] += p[key] * (Rb[ok] - R1[ok])
     pr = np.where(seen, p["carry"] * R, 0.0)
     if p.get("newp") == "pool" and seen[L.pool]:
         pr = np.where(seen, pr, p["carry"] * R[L.pool])
@@ -257,6 +277,12 @@ def prior_for(L, y, p):
         for t, i in L.ix.items():
             if i != L.pool and t in f:
                 pr[i] += p["ret"] * f[t]
+    if p.get("rp") and L.lg == "ncaaf":
+        from . import cfbret
+        f = cfbret.feature(y)                # returning production (cfbret.py)
+        for t, i in L.ix.items():
+            if i != L.pool and t in f:
+                pr[i] += p["rp"] * f[t]
     return pr
 
 
@@ -364,7 +390,7 @@ def _grid(lg, preset, fixed):
     out = [("k", sorted({round(preset["k"] * f, 3) for f in GRID["k"]})), ("carry", GRID["carry"])]
     if "hfa" not in fixed:
         out.append(("hfa", sorted({round(preset["hfa"] * f, 3) for f in GRID["hfa"]})))
-    for key in ("cap", "soft", "newp", "ps", "rest", "sp", "xg"):
+    for key in ("cap", "soft", "newp", "ps", "rest", "sp", "xg", "c2", "c3"):
         if lg in GRID[key]:
             out.append((key, GRID[key][lg]))
     out += [("hl", GRID["hl"]), ("pv", GRID["pv"])]
@@ -484,6 +510,10 @@ def tune(lg):
         from . import cbbret
         if cbbret.gamma():
             preset["ret"] = cbbret.gamma()
+    if lg == "ncaaf":
+        from . import cfbret
+        if cfbret.gamma():
+            preset["rp"] = cfbret.gamma()
     L = League(lg)
     covid = COVID.get(lg, set())
     usable = [y for y in L.years if (y - 1) in L.seasons and y not in covid][-WINDOW:]

@@ -33,7 +33,7 @@ LEAGUES = ("nba", "nfl", "ncaaf")
 VALUE = {"nba": {"a": -2.4 / 48, "b": 0.1, "c": 0.0, "d": 8.5 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
                  "roster": 15, "carry": 0.6}}
 STATUS_W = {"Out": 1.0, "Injured Reserve": 1.0, "Suspension": 1.0, "Doubtful": 0.75, "Questionable": 0.4, "Day-To-Day": 0.25}
-STATUS_W_NFL = dict(STATUS_W, Questionable=0.2)          # most NFL questionable players play
+STATUS_W_NFL = dict(STATUS_W, Questionable=0.26, Doubtful=0.98)   # regulars 2013-25: questionable played 74%, doubtful 2% (nflverse)
 # adopted when held-out log loss improves by GAIN and either z >= Z or (z >= Z_CONSISTENT and nearly every season improved)
 GATE = {"gain": 0.001, "z": 2.0, "z_consistent": 1.0, "share": 0.8}
 BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]

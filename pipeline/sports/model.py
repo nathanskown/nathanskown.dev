@@ -83,6 +83,10 @@ def get_params(lg):
         from . import cbbret
         if cbbret.gamma():
             P["ret"] = cbbret.gamma()
+    if lg == "ncaaf" and not P.get("rp"):
+        from . import cfbret
+        if cfbret.gamma():
+            P["rp"] = cfbret.gamma()
     return P
 
 
@@ -154,14 +158,13 @@ def recency(P, dates, now=None):
     return out
 
 
-def season_prior(lg, year, P, members, hfa_fn, norm_id):
-    """{team: carry x rating from last season's full schedule} using stored history, or {} if there is none.
-    Last season is rated with the same settings as this one, recency weighting measured from its last game."""
+def _season_rating(lg, yr, P, members, hfa_fn, norm_id):
+    """({team: rating}, teams that played) for a stored past season, rated with these settings, recency weighting
+    measured from its last game; (None, set()) when the season is not stored."""
     from . import history
-    carry = P.get("carry", 0)
-    prev = history.load(lg).get(year - 1) if carry else None
+    prev = history.load(lg).get(yr)
     if not prev:
-        return {}
+        return None, set()
     games = []
     for g in prev:
         h, a = alias(lg, g["h"]), alias(lg, g["a"])
@@ -169,32 +172,58 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
             continue
         games.append(dict(g, h=h, a=a))
     annotate_rest(lg, games, P)
-    annotate_xg(lg, year - 1, games, P)
+    annotate_xg(lg, yr, games, P)
     if lg == "mlb" and P.get("sp"):
         from . import extra
-        extra.annotate_sp(year - 1, games, P["sp"])
+        extra.annotate_sp(yr, games, P["sp"])
     if P.get("av"):
         from . import ctx
-        ctx.annotate(lg, games, P["av"], year - 1)
+        ctx.annotate(lg, games, P["av"], yr)
     rows = [(norm_id(g["h"]), norm_id(g["a"]), target(g, P), g["n"], g) for g in games]
     rows = [r for r in rows if r[0] != r[1]]
     if not rows:
-        return {}
+        return None, set()
     end = max(datetime.fromisoformat(g["d"][:16] + ":00+00:00") for g in games)
     w = recency(P, [r[4]["d"] for r in rows], end)
     R, _ = ridge(rows, members, hfa_fn, P["k"], None, P.get("cap"), P.get("soft"), w)
-    seen = {t for r in rows for t in r[:2]}
+    return R, {t for r in rows for t in r[:2]}
+
+
+def season_prior(lg, year, P, members, hfa_fn, norm_id):
+    """{team: carry x rating from last season's full schedule} using stored history, or {} if there is none.
+    College leagues may also pull that rating toward the two seasons before it (c2, c3: program history), and
+    college basketball adjusts it for roster turnover (cbbret.py)."""
+    carry = P.get("carry", 0)
+    if not carry:
+        return {}
+    R, seen = _season_rating(lg, year - 1, P, members, hfa_fn, norm_id)
+    if R is None:
+        return {}
+    R = dict(R)
+    R1 = dict(R)
+    for back, key in ((2, "c2"), (3, "c3")):
+        if P.get(key):
+            Rb, sb = _season_rating(lg, year - back, P, members, hfa_fn, norm_id)
+            if Rb is not None:
+                for t in seen & sb:
+                    R[t] += P[key] * (Rb[t] - R1[t])
     out = {t: carry * R[t] for t in seen if t in members}
+    if P.get("newp") == "pool" and POOL in seen:
+        # programs new to the division start where last season's outsiders were, not at the division average
+        for t in members:
+            out.setdefault(t, carry * R[POOL])
     if P.get("ret") and lg == "ncaab":
         from . import cbbret
         f = cbbret.feature(year)            # roster turnover: returning, departed and transferred-in production
         for t in members:
             if t in f:
                 out[t] = out.get(t, 0.0) + P["ret"] * f[t]
-    if P.get("newp") == "pool" and POOL in seen:
-        # programs new to the division start where last season's outsiders were, not at the division average
+    if P.get("rp") and lg == "ncaaf":
+        from . import cfbret
+        f = cfbret.feature(year)            # returning production: share of last season's production still on the roster
         for t in members:
-            out.setdefault(t, carry * R[POOL])
+            if t in f:
+                out[t] = out.get(t, 0.0) + P["rp"] * f[t]
     return out
 
 
@@ -567,6 +596,7 @@ def build(lg):
                             "ncaaf": ", starting quarterbacks counted (passing from ESPN box scores)"}.get(lg, ", who is playing counted") if P.get("av") else "")
                         + (f", each game's result {P['xg']:.0%} expected goals (MoneyPuck.com)" if lg == "nhl" and P.get("xg") else "")
                         + (f", each game's result {P['xg']:.0%} team efficiency (EPA, nflverse)" if lg == "nfl" and P.get("xg") else "")
+                        + (", last season's rating adjusted for returning production (passing, rushing/receiving and defensive production still on the roster)" if P.get("rp") else "")
                         + (", last season's rating adjusted for roster turnover (returning, departed and transferred players' box-score production)" if P.get("ret") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
                         + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))

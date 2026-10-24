@@ -39,7 +39,7 @@ LAUNCH = {
     "ncaab": dict(hfa=3.0, k=6, cap=40),
     "ncaah": dict(hfa=0.25, k=6, cap=None),
 }
-CORE = ("k", "hfa", "divHfa", "cap", "soft", "newp", "ps")
+CORE = ("k", "hfa", "divHfa", "cap", "soft", "newp", "ps", "c2", "c3")
 STAGES = [
     ("launch", "Launch settings", "The model as it went live on Oct 14: one season of results, a prior pulled toward average, no history."),
     ("carry", "+ Last season carried over", "Each team starts the year at its final rating from last season instead of average."),
@@ -72,7 +72,7 @@ def stage_params(lg, fit):
     out["rest"] = dict(p)
     p = dict(p, **{k: fit[k] for k in ("xg", "sp") if k in fit})
     out["extra"] = dict(p)
-    p = dict(p, **{k: fit[k] for k in ("av", "ret") if k in fit})
+    p = dict(p, **{k: fit[k] for k in ("av", "ret", "rp") if k in fit})
     out["avail"] = dict(p)
     return out
 
@@ -93,7 +93,7 @@ def without(lg, fit, group):
     elif group == "extra":
         p.pop("xg", None); p.pop("sp", None)
     elif group == "avail":
-        p.pop("av", None); p.pop("ret", None)
+        p.pop("av", None); p.pop("ret", None); p.pop("rp", None)
     return p
 
 
