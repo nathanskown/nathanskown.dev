@@ -577,6 +577,16 @@ def build(lg):
                 res["ctxEdges"], res["ctxInfo"] = ctx.upcoming(lg, P["av"], events)
             except Exception as e:
                 print("ctx upcoming failed:", str(e)[:120])
+        from . import elo as ELO
+        if ELO.params(lg):
+            try:
+                ev = ELO.current(lg, played, norm_id)
+                res["elo"] = {"w": ELO.params(lg), "hfa": ELO.CONF[lg]["hfa"]}
+                for t, row in res["teams"].items():
+                    if t in ev:
+                        row["elo"] = ev[t]
+            except Exception as e:
+                print("Elo failed:", str(e)[:120])
         res["pv"] = bool(P.get("pv"))
         if lg in ("nhl", "nfl") and P.get("xg"):
             res["xg"] = P["xg"]
@@ -599,7 +609,8 @@ def build(lg):
                         + (", last season's rating adjusted for returning production (passing, rushing/receiving and defensive production still on the roster)" if P.get("rp") else "")
                         + (", last season's rating adjusted for roster turnover (returning, departed and transferred players' box-score production)" if P.get("ret") else "")
                         + f", each team pulled toward {'last season' if prior else 'average'} with {P['k']:g} games of weight"
-                        + (", win probabilities widened while ratings are still uncertain." if P.get("pv") else "."))
+                        + (", win probabilities widened while ratings are still uncertain" if P.get("pv") else "")
+                        + (f", and each win probability blended {ELO.params(lg):.0%} with a FiveThirtyEight-style Elo rating." if ELO.params(lg) else "."))
         res["tuned"] = bool(P.get("tuned"))
         if lg == "nfl":
             res["odds"], res["oddsBasis"] = nfl_odds(res, events, smap)
