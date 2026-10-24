@@ -63,7 +63,11 @@ def project(model, h, a, neutral, start=None):
         m += model["qbEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)      # NFL starting-QB adjustment (nflqb.py)
     if model.get("ctxEdges") and start:
         m += model["ctxEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)     # who is playing: goalies, star availability, college QBs (ctx.py)
-    return m, M.phi(m / spread(model, H, A))
+    p = M.phi(m / spread(model, H, A))
+    e = model.get("elo")
+    if e and e.get("w") and H.get("elo") is not None and A.get("elo") is not None:      # Elo blend (elo.py)
+        p = (1 - e["w"]) * p + e["w"] / (1 + 10 ** (-((H["elo"] - A["elo"]) + (0 if neutral else e["hfa"])) / 400))
+    return m, p
 
 
 def spread(model, H, A):

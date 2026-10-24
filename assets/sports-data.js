@@ -304,6 +304,10 @@
     // when the model says so (pv), widen the spread by how unsure both ratings still are (w = weight of evidence in games)
     var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
     var p = Phi(m / sg);
+    // blended with an Elo rating where that tested better (pipeline/sports/elo.py): p = (1 - w) p + w p_Elo
+    if (model.elo && model.elo.w && H.elo != null && A.elo != null) {
+      p = (1 - model.elo.w) * p + model.elo.w / (1 + Math.pow(10, -((H.elo - A.elo) + (neutral ? 0 : model.elo.hfa)) / 400));
+    }
     return { margin: m, pHome: p, pAway: 1 - p, hfa: hfa, ctx: model.ctxInfo && start ? model.ctxInfo[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || null : null, qb: model.qbInfo && start ? model.qbInfo[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || null : null, coverage: model.coverage || null, basis: model.basis || '' };
   }
 
