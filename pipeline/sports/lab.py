@@ -438,6 +438,8 @@ def job_kalshi():
                 out["bySeries"][f"{st}:{status}"] = f"error {str(e)[:120]}"
                 continue
             ms = d.get("markets") or []
+            if ms and status == "open":
+                out.setdefault("full", {})[st] = ms[0]
             out["bySeries"][f"{st}:{status}"] = {"n": len(ms), "sample": [{k: m.get(k) for k in ("ticker", "event_ticker", "title", "subtitle", "yes_sub_title",
                 "floor_strike", "cap_strike", "strike_type", "yes_bid", "yes_ask", "last_price", "volume", "open_interest", "close_time", "result")} for m in ms[:8]]}
     write("lab/_probe/kalshi.json", out)
