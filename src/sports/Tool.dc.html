@@ -37,6 +37,7 @@
 <a class="{{fk.Schedule}}" href="Schedule.dc.html">7) Schedule</a>
 <a class="{{fk.TrackRecord}}" href="TrackRecord.dc.html">8) Track record</a>
 <a class="{{fk.Methodology}}" href="Methodology.dc.html">9) Method</a>
+<a class="{{fk.Props}}" href="Props.dc.html">0) NFL board</a>
 <a class="t-fkey" href="History.dc.html">Model history</a>
 <a class="t-fkey" href="/">Home</a>
 </nav>
@@ -198,6 +199,35 @@
 </section>
 </sc-if>
 
+<sc-if value="{{isProps}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Player props">
+<div class="t-ph"><h2>{{pr.title}}</h2><span class="dim">{{pr.sub}}</span></div>
+<div class="t-pb">
+<div class="s-tabs" role="group" aria-label="Market">
+<sc-for list="{{pr.tabs}}" as="b" hint-placeholder-count="4"><button type="button" class="{{b.cls}}" aria-pressed="{{b.on}}" onClick="{{b.pick}}">{{b.label}}</button></sc-for>
+</div>
+<div style="max-width: 420px; margin: 10px 0"><input class="s-input" type="search" value="{{pr.q}}" onChange="{{pr.onQ}}" placeholder="Filter by player or team" aria-label="Filter players"></div>
+<sc-if value="{{pr.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{pr.noneText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Kickoff (ET)</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Volume</th><th scope="col">Book line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
+<tbody><sc-for list="{{pr.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.sub}}</span></th><td>{{r.kick}}</td><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td class="dim">{{r.vol}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">{{pr.note}}</p>
+</div>
+</section>
+<section class="t-panel" aria-label="Game totals">
+<div class="t-ph"><h2>Game totals</h2><span class="dim">{{pr.totSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{pr.noTot}}" hint-placeholder-val="{{false}}"><div class="s-empty">No upcoming games in the schedule file yet.</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Game</th><th scope="col">Kickoff (ET)</th><th scope="col">Projected total</th><th scope="col">Away pts</th><th scope="col">Home pts</th><th scope="col">Wind</th></tr></thead>
+<tbody><sc-for list="{{pr.totals}}" as="r" hint-placeholder-count="8"><tr><th scope="row" class="l"><a class="s-team" href="{{r.href}}">{{r.game}}</a></th><td>{{r.kick}}</td><td style="color: var(--wh); font-weight: 600">{{r.total}}</td><td>{{r.ap}}</td><td>{{r.hp}}</td><td class="dim">{{r.wind}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">{{pr.totNote}}</p>
+</div>
+</section>
+</sc-if>
+
 <sc-if value="{{isMeth}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="The model">
 <div class="t-ph"><h2>The house model</h2><span class="dim">Applies to every league</span></div>
@@ -211,6 +241,7 @@
 <p>College basketball preseason ratings account for roster turnover. Each player’s value last season is his box-score production (game score above a replacement level) per team game. A team’s starting rating moves by 0.3 times the value of its current roster, wherever those players were last season, minus the value its own players produced. That way returning stars, departures and transfers all count. Rosters come from ESPN until a team has played three games, then from its box scores. On two held-out seasons it improved log loss in both, mostly in November and December.</p>
 <p>College football preseason ratings use returning production, the idea behind ESPN’s SP+. Each player’s share of his team’s passing, rushing and receiving, and defensive production last season is credited to his current team, so departures and transfers both count. Skill-position production carries the most weight. It improved held-out log loss in each of three test seasons. Both college leagues and college hockey also blend in program history: ratings from two and three seasons back pull last season’s rating a little toward them, as KenPom and SP+ do.</p>
 <p>In the NHL and both college leagues, each win probability is also blended with a FiveThirtyEight-style Elo rating (20% in college, 30% in the NHL). Elo moves after every game by a margin-of-victory multiplier and regresses toward average between seasons. It reacts to recent results differently from the main ratings, so the two make different mistakes, and the blend scored better on held-out seasons. The blend did not clear the bar in the NFL or NBA, so those leagues don’t use it.</p>
+<p>The <a href="Props.dc.html">NFL board</a> adds player props and game totals. Props are volume times efficiency: a receiver’s share of his team’s targets times the team’s pass attempts times his yards per target (catch rate for receptions), a runner’s share of carries times team carries times yards per carry, and a quarterback’s share of attempts times yards per attempt. Shares and rates weight recent games most, are pulled toward position averages, and are adjusted for how many yards the opponent allows. The median and middle 50% are not guesses: they are the projection times how players with projections of that size actually finished in earlier seasons, so a sportsbook line can be turned into a measured over/under rate. Game totals come from separate offense and defense point ratings plus wind. Tested on past seasons, prop medians miss by about 23 receiving yards, 1.7 catches, 26 rushing yards and 63 passing yards, and totals miss by about 10.7 points against 10.4 for the closing line; picking overs and unders against the line from these numbers has been break-even, so treat them as a second opinion.</p>
 <p>The settings that are not obvious are not guessed. The pipeline stores 10 to 12 past regular seasons per league (NFL back to 1999), replays them week by week, projecting each week using only earlier games, and keeps the settings with the lowest log loss. The check is rolling: for each of the four newest seasons the settings are fit only on the seasons before it and scored on that season, which they never saw. They replace the preset values only if they win across those held-out seasons by a clear, statistically tested margin and no held-out season gets clearly worse. Pandemic seasons (2020–21) are left out of fitting. The NFL home edge is the exception: game results are too noisy to pin it down, so it comes from the average closing line over the last five seasons (about 1.6 points, the same for division games since 2021). Lines are used only for that and for checking the model; the site never shows them. <a href="History.dc.html">Model history</a> shows what each ingredient was worth, season by season.</p>
 <p>Three extra inputs are used only in the leagues where the same held-out test showed they help. <b>Rest:</b> each extra day of rest one team has over the other (capped at a few days) is worth a fitted amount, taken out of past results and added to projections; it tested useful in the NFL, NBA, NHL and college football and basketball. <b>MLB starting pitchers:</b> each announced starter gets a rating from the parts of run prevention a pitcher controls (strikeouts, walks, hit batters and home runs per inning), from this season and last, pulled toward average until he has pitched enough innings; the gap between the two starters, scaled to the share of the game a starter usually pitches, is added to the projection. <b>NHL expected goals:</b> goals are noisy, so each past game’s rating input mixes the real goal margin with the expected-goals margin (the quality of the chances each team created); this made held-out NHL predictions better in all four test seasons.</p>
 <p>A game projection is the rating gap plus the home edge, plus any rest and starting-pitcher edge. The win probability treats the final margin as normally distributed around that projection: P(home wins) = Φ((home − away + home edge) ÷ s). In leagues where it tested better, s is the league’s σ widened by how unsure both ratings still are, so early-season and thin-schedule games get less confident probabilities; elsewhere s = σ.</p>
@@ -249,9 +280,9 @@
 <div class="t-crt" aria-hidden="true"></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"tool":{"editor":"enum","options":["Simulator","Odds","Injuries","LuckWatch","Schedule","TrackRecord","Methodology"],"default":"Simulator"},"$preview":{"width":1440,"height":1600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"tool":{"editor":"enum","options":["Simulator","Odds","Injuries","LuckWatch","Schedule","TrackRecord","Methodology","Props"],"default":"Simulator"},"$preview":{"width":1440,"height":1600}}'>
 class Component extends DCLogic {
-  constructor(props) { super(props); this.state = { models: {}, injuries: {}, iq: '' }; }
+  constructor(props) { super(props); this.state = { models: {}, injuries: {}, iq: '', pm: 'rec_yds', pq: '', lines: {} }; }
   componentDidMount() {
     var self = this, key = this.props.tool;
     var ok = key === 'TrackRecord' ? ['all', 'nfl', 'ncaaf', 'nhl', 'nba', 'ncaab', 'ncaah'] : key === 'Odds' ? ['nfl', 'nhl'] : key === 'Injuries' ? ['nfl', 'mlb', 'nhl', 'nba'] : ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'];
@@ -264,6 +295,10 @@ class Component extends DCLogic {
       SD.data('track/summary.json').then(function (x) { self.setState({ track: x }); }, function () { self.setState({ track: { err: true } }); });
       SD.data('track/backtest.json').then(function (x) { self.setState({ back: x }); }, function () { self.setState({ back: { err: true } }); });
     } else if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
+    else if (key === 'Props') {
+      SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () { self.setState({ props: { err: true } }); });
+      try { var sv = JSON.parse(localStorage.getItem('nskn-prop-lines') || '{}'); if (sv && typeof sv === 'object') this.setState({ lines: sv }); } catch (e) {}
+    }
     else this.loadLeague(lg);
   }
   loadStandings(lg) {
@@ -291,7 +326,8 @@ class Component extends DCLogic {
       LuckWatch: ['LUCK', 'Luck watch', 'Teams whose record has outrun, or lagged, what their scoring margin says they should have won.'],
       Schedule: ['SOS', 'Schedule strength', 'How good the opponents each team has faced were, and, where the full schedule is published, how good the ones still to come are.'],
       TrackRecord: ['TRAK', 'Track record', 'Every house-model pick, saved before the game starts and graded after the final. The record begins empty at launch and fills one game at a time; nothing is back-filled.'],
-      Methodology: ['METH', 'Methodology', 'How every rating, projection and probability in the Sports section is built, and where the data comes from.']
+      Methodology: ['METH', 'Methodology', 'How every rating, projection and probability in the Sports section is built, and where the data comes from.'],
+      Props: ['BOARD', 'NFL board', 'Player prop projections and game totals for this NFL week, each with the range it really landed in for similar projections in past seasons. Enter a sportsbook line to see how often a projection like this one clears it.']
     };
     var S = this.state, self = this, key = TOOLS[this.props.tool] ? this.props.tool : 'Simulator', lg = S.lg || 'nfl';
     var fk = {}; Object.keys(TOOLS).forEach(function (k) { fk[k] = 't-fkey' + (k === key ? ' is-on' : ''); });
@@ -301,7 +337,7 @@ class Component extends DCLogic {
     var lgTabs = tabsFor.map(function (k) { return { label: k === 'all' ? 'All' : SD.LEAGUES[k].short, on: k === lg ? 'true' : 'false', cls: 's-tab' + (k === lg ? ' is-on' : ''),
       pick: function () { history.replaceState(null, '', '?lg=' + k); self.setState({ lg: k, simA: null, simH: null }); self.loadLeague(k); } }; });
     var out = { code: TOOLS[key][0], title: TOOLS[key][1], blurb: TOOLS[key][2], fk: fk, tag: 'DATA',
-      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord', isLuck: key === 'LuckWatch', isSos: key === 'Schedule' };
+      showLg: !!live[key] && key !== 'Methodology', lgTabs: lgTabs, isSim: key === 'Simulator', isOdds: key === 'Odds', isInj: key === 'Injuries', isMeth: key === 'Methodology', isTrack: key === 'TrackRecord', isLuck: key === 'LuckWatch', isSos: key === 'Schedule', isProps: key === 'Props' };
     var m = S.models[lg];
     // odds cells: the number plus a cyan heat shade that deepens with the probability; near-locks turn gold
     var heat = function (p) {
@@ -474,6 +510,47 @@ class Component extends DCLogic {
         if (hidden.length) tr.btSub += (tr.btSub ? ' · ' : '') + 'too few games: ' + hidden.join(', ');
       }
       out.trk = tr;
+    }
+    if (key === 'Props') {
+      var X = S.props, mk = S.pm || 'rec_yds', q2 = (S.pq || '').trim().toLowerCase();
+      var LBL = { rec_yds: 'Rec yards', receptions: 'Receptions', rush_yds: 'Rush yards', pass_yds: 'Pass yards' };
+      var pr = { title: 'NFL player props', sub: '', q: S.pq, onQ: function (e) { self.setState({ pq: e.target.value }); }, rows: [], none: false, noneText: '', note: '', totals: [], noTot: false, totSub: '', totNote: '',
+        tabs: Object.keys(LBL).map(function (k) { return { label: LBL[k], on: k === mk ? 'true' : 'false', cls: 's-tab' + (k === mk ? ' is-on' : ''), pick: function () { self.setState({ pm: k }); } }; }) };
+      var dp = mk === 'receptions' ? 1 : 0;
+      if (!X) { pr.none = true; pr.noneText = 'Loading…'; }
+      else if (X.err) { pr.none = true; pr.noneText = 'The board file is not available yet. It is rebuilt once a day.'; }
+      else {
+        pr.sub = 'Week ' + X.week + ' · ' + X.season + ' · updated ' + F.day(X.updated);
+        var tab = (X.tables || {})[mk];
+        var pOver = function (r, L) {
+          if (!tab || !(L > 0)) return null;
+          var qs = tab.ratio[r.band], above = 0;
+          for (var i = 0; i < qs.length; i++) if (r.mean * qs[i] > L) above++;
+          return above / qs.length;
+        };
+        var list = (X.props || []).filter(function (r) { return r.market === mk && (!q2 || (r.player + ' ' + r.team + ' ' + r.opp + ' ' + r.pos).toLowerCase().indexOf(q2) >= 0); });
+        list.sort(function (a, b) { return b.median - a.median; });
+        pr.rows = list.slice(0, 120).map(function (r) {
+          var id = r.player + '|' + r.team + '|' + mk, L = parseFloat((S.lines || {})[id]), po = pOver(r, L);
+          var st = function (p) { return p === null ? 'dim' : p >= 0.58 ? 'color: var(--up); font-weight: 600' : ''; };
+          return { player: r.player, sub: r.pos + ' · ' + r.team + (r.home ? ' vs ' : ' at ') + r.opp, kick: r.kick.replace(' ET', '').slice(5), median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp),
+            vol: r.vol.toFixed(1) + ' ' + r.volLabel, line: (S.lines || {})[id] || '', lineLabel: 'Sportsbook line for ' + r.player + ' ' + LBL[mk],
+            over: po === null ? '—' : Math.round(po * 100) + '%', under: po === null ? '—' : Math.round((1 - po) * 100) + '%', overSt: st(po), underSt: st(po === null ? null : 1 - po),
+            onLine: function (e) { var n = Object.assign({}, self.state.lines); if (e.target.value) n[id] = e.target.value; else delete n[id]; self.setState({ lines: n }); try { localStorage.setItem('nskn-prop-lines', JSON.stringify(n)); } catch (er) {} } };
+        });
+        pr.none = !pr.rows.length; pr.noneText = q2 ? 'Nothing matches “' + S.pq + '”.' : 'No projections for this market this week.';
+        var bt = ((X.backtest || {}).props || {})[mk];
+        pr.note = 'Median and middle 50%: the projection times how players with projections of this size actually finished in the last four seasons (each season scored only from earlier ones). '
+          + (bt ? 'Tested on ' + X.backtest.seasons[0] + '–' + X.backtest.seasons[1] + ': the median missed by ' + bt.mae + ' on average over ' + bt.n + ' player-games, and ' + Math.round(bt.middle50 * 100) + '% of results landed in the middle-50% range. ' : '')
+          + 'Over and under are how often that happened past your line (green when 58% or more; at standard -110 prices you need 52.4% to break even). Players ruled out or doubtful on ESPN’s report are left off; usage of a missing teammate is not redistributed, so re-check after Friday’s injury report. Lines you enter stay in this browser only. This is a projection, not a pick.';
+        var T2 = X.totals || [];
+        pr.totals = T2.map(function (t) { return { game: t.away + ' at ' + t.home, href: t.espn ? '/sports/game/?lg=nfl&id=' + t.espn : '#', kick: t.kick.replace(' ET', '').slice(5), total: t.total.toFixed(1), ap: t.awayPts.toFixed(1), hp: t.homePts.toFixed(1), wind: t.roof === 'dome' || t.roof === 'closed' ? 'roof' : (t.wind ? t.wind + ' mph' : '—') }; });
+        pr.noTot = !pr.totals.length; pr.totSub = 'Week ' + X.week;
+        var tb = (X.backtest || {}).totals;
+        pr.totNote = 'Each team gets an offense and a defense rating in points, solved from every game with recent weeks counting more and last season carried in at 60%; wind over 10 mph at outdoor stadiums takes points off. '
+          + (tb ? 'Tested on ' + tb.games + ' games over seven seasons: it missed the final total by ' + tb.mae + ' points on average, against ' + tb.lineMae + ' for the closing line, and went ' + tb.ou[0] + '–' + tb.ou[1] + ' picking over or under against that line, which is break-even at best. Treat it as a baseline.' : '');
+      }
+      out.pr = pr;
     }
     if (key === 'Methodology') {
       out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : '—',
