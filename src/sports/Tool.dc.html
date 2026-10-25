@@ -209,10 +209,21 @@
 <div style="max-width: 420px; margin: 10px 0"><input class="s-input" type="search" value="{{pr.q}}" onChange="{{pr.onQ}}" placeholder="Filter by player or team" aria-label="Filter players"></div>
 <sc-if value="{{pr.none}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{pr.noneText}}</div></sc-if>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Player</th><th scope="col">Kickoff (ET)</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Volume</th><th scope="col">Book line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
-<tbody><sc-for list="{{pr.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.sub}}</span></th><td>{{r.kick}}</td><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td class="dim">{{r.vol}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Kickoff (ET)</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Volume</th><th scope="col">Kalshi</th><th scope="col">Book line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
+<tbody><sc-for list="{{pr.rows}}" as="r" hint-placeholder-count="10"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.sub}}</span></th><td>{{r.kick}}</td><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td class="dim">{{r.vol}}</td><td style="{{r.kSt}}">{{r.k}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
 </table></div>
 <p class="s-note" style="margin: 10px 0 0">{{pr.note}}</p>
+</div>
+</section>
+<section class="t-panel" aria-label="Kalshi edges">
+<div class="t-ph"><h2>Biggest gaps with Kalshi</h2><span class="dim">{{pr.kSub}}</span></div>
+<div class="t-pb">
+<sc-if value="{{pr.noK}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{pr.noKText}}</div></sc-if>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Market</th><th scope="col">Threshold</th><th scope="col">Kalshi</th><th scope="col">Board</th><th scope="col">Gap</th><th scope="col">Side</th><th scope="col">Bid-ask</th></tr></thead>
+<tbody><sc-for list="{{pr.kRows}}" as="r" hint-placeholder-count="8"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.sub}}</span></th><td>{{r.mk}}</td><td>{{r.line}}</td><td>{{r.k}}</td><td>{{r.ours}}</td><td style="{{r.st}}">{{r.gap}}</td><td>{{r.side}}</td><td class="dim">{{r.spread}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">{{pr.kNote}}</p>
 </div>
 </section>
 <section class="t-panel" aria-label="Game totals">
@@ -533,7 +544,9 @@ class Component extends DCLogic {
         pr.rows = list.slice(0, 120).map(function (r) {
           var id = r.player + '|' + r.team + '|' + mk, L = parseFloat((S.lines || {})[id]), po = pOver(r, L);
           var st = function (p) { return p === null ? 'dim' : p >= 0.58 ? 'color: var(--up); font-weight: 600' : ''; };
-          return { player: r.player, sub: r.pos + ' · ' + r.team + (r.home ? ' vs ' : ' at ') + r.opp + (r.without && r.without.length ? ' · without ' + r.without.join(', ') : ''), kick: r.kick.replace(' ET', '').slice(5), median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp),
+          var kk = r.kalshi, pc2 = function (v) { return Math.round(v * 100) + '%'; };
+          return { k: kk ? kk.line + '+ · ' + pc2(kk.p) + ' (board ' + pc2(kk.ours) + ')' : '—', kSt: kk && Math.abs(kk.ours - kk.p) >= 0.1 && kk.spread <= 0.12 ? 'color: var(--up)' : 'dim',
+            player: r.player, sub: r.pos + ' · ' + r.team + (r.home ? ' vs ' : ' at ') + r.opp + (r.without && r.without.length ? ' · without ' + r.without.join(', ') : ''), kick: r.kick.replace(' ET', '').slice(5), median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp),
             vol: r.vol.toFixed(1) + ' ' + r.volLabel, line: (S.lines || {})[id] || '', lineLabel: 'Sportsbook line for ' + r.player + ' ' + LBL[mk],
             over: po === null ? '—' : Math.round(po * 100) + '%', under: po === null ? '—' : Math.round((1 - po) * 100) + '%', overSt: st(po), underSt: st(po === null ? null : 1 - po),
             onLine: function (e) { var n = Object.assign({}, self.state.lines); if (e.target.value) n[id] = e.target.value; else delete n[id]; self.setState({ lines: n }); try { localStorage.setItem('nskn-prop-lines', JSON.stringify(n)); } catch (er) {} } };
@@ -544,6 +557,13 @@ class Component extends DCLogic {
           + (bt ? 'Tested on ' + X.backtest.seasons[0] + '–' + X.backtest.seasons[1] + ': the median missed by ' + bt.mae + ' on average over ' + bt.n + ' player-games, and ' + Math.round(bt.middle50 * 100) + '% of results landed in the middle-50% range. ' : '')
           + (lv ? 'Live this season (logged before kickoff, graded after): ' + lv.n + ' graded, median missed by ' + lv.mae + ', ' + Math.round(lv.middle50 * 100) + '% inside the middle 50%. ' : 'Live grading starts once this week’s results are published. ')
           + 'Over and under are how often that happened past your line (green when 58% or more; at standard -110 prices you need 52.4% to break even). Players ruled out or doubtful on ESPN’s report are left off, and their targets, carries and pass attempts are passed to the teammates who play (tested on 2019–25, this cut the receiving-yards miss by about 1 yard). Re-check after Friday’s injury report. Lines you enter stay in this browser only. This is a projection, not a pick.';
+        var KE = X.kalshiEdges || [], KR = X.kalshiRecord || {}, pc3 = function (v) { return Math.round(v * 100) + '%'; };
+        pr.kRows = KE.map(function (e) { return { player: e.player, sub: e.team + ' vs ' + e.opp, mk: LBL[e.market], line: e.line + '+', k: pc3(e.kalshi), ours: pc3(e.ours), gap: (e.edge > 0 ? '+' : '') + Math.round(e.edge * 100) + ' pts',
+          st: 'color: var(--up); font-weight: 600', side: e.edge > 0 ? 'Yes (over)' : 'No (under)', spread: Math.round(e.spread * 100) + '¢' }; });
+        pr.noK = !pr.kRows.length; pr.noKText = KR.error ? 'Kalshi did not answer this run.' : 'No gaps of 10+ points on liquid markets right now. Kalshi posts most NFL player markets a day or two before kickoff.';
+        pr.kSub = KR.flags ? 'Record: ' + KR.won + '–' + (KR.flags - KR.won) + ', ' + (KR.profit >= 0 ? '+' : '−') + '$' + Math.abs(KR.profit).toFixed(2) + ' per $1 contract' : 'Record starts with the first settled flag';
+        pr.kNote = 'Kalshi lists each player at several thresholds ("70+ receiving yards"); its price is the market’s chance. Board is this page’s chance of the same thing, from the projection and its measured range. Shown when the two differ by 10 points or more and the market’s bid-ask spread is 12¢ or less. Every flag is saved before kickoff and graded from Kalshi’s own settlement, as if bought at the asking price, so the record above is what it would really have paid. '
+          + (KR.graded ? 'Over ' + KR.graded + ' settled thresholds, Brier score: board ' + KR.brierOurs + ', Kalshi ' + KR.brierKalshi + ' (lower is better). ' : '') + 'A second opinion, not betting advice.';
         var T2 = X.totals || [];
         pr.totals = T2.map(function (t) { return { game: t.away + ' at ' + t.home, href: t.espn ? '/sports/game/?lg=nfl&id=' + t.espn : '#', kick: t.kick.replace(' ET', '').slice(5), total: t.total.toFixed(1), ap: t.awayPts.toFixed(1), hp: t.homePts.toFixed(1), wind: t.roof === 'dome' || t.roof === 'closed' ? 'roof' : (t.wind ? t.wind + ' mph' : '—') }; });
         pr.noTot = !pr.totals.length; pr.totSub = 'Week ' + X.week;
