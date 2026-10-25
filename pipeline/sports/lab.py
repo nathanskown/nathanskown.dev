@@ -9,6 +9,7 @@ request per game after a scoreboard crawl for the event ids. Modes (python -m pi
   collect   per league and season: every completed regular-season game's closing line and box score, kept compact
   cfbd      probe CollegeFootballData lines and player endpoints (needs the CFBD_KEY secret)
 """
+import io
 import json
 import os
 import time
@@ -339,3 +340,55 @@ def job_probe2():
     except Exception as ex:
         out["nhl_api"] = f"error: {str(ex)[:150]}"
     return out
+
+
+# ---------------------------------------------------------------- NFL Big Data Bowl (Kaggle), probe only
+def job_bdb():
+    """List the Big Data Bowl competitions this Kaggle account can reach and the files in the newest ones (names,
+    sizes, CSV headers of the small files). Needs KAGGLE_USERNAME and KAGGLE_KEY secrets, and the competition rules
+    accepted on kaggle.com by that account. Raw data is never committed; only this summary."""
+    import subprocess, zipfile, glob, csv as _csv
+    if not (os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY")):
+        return "no KAGGLE_USERNAME / KAGGLE_KEY secrets"
+    run = lambda *a: subprocess.run(["kaggle", *a], capture_output=True, text=True, timeout=600)
+    lst = run("competitions", "list", "-s", "big data bowl", "--csv")
+    comps = [r["ref"].rstrip("/").split("/")[-1] for r in _csv.DictReader(io.StringIO(lst.stdout))] if lst.returncode == 0 else []
+    out = {"list_error": lst.stderr[-300:] if lst.returncode else None, "competitions": comps, "files": {}}
+    for c in comps[:4]:
+        fl = run("competitions", "files", "-c", c, "--csv")
+        rows = list(_csv.DictReader(io.StringIO(fl.stdout))) if fl.returncode == 0 else []
+        info = {"error": fl.stderr[-300:] if fl.returncode else None, "files": [{k: r.get(k) for k in ("name", "size", "totalBytes", "creationDate") if r.get(k)} for r in rows[:60]], "headers": {}}
+        d = f"/tmp/bdb/{c}"
+        os.makedirs(d, exist_ok=True)
+        for r in rows:
+            name = r.get("name") or ""
+            if name.endswith(".csv") and not any(x in name for x in ("tracking", "input", "output")):
+                dl = run("competitions", "download", "-c", c, "-f", name, "-p", d)
+                for z in glob.glob(d + "/*.zip"):
+                    try:
+                        zipfile.ZipFile(z).extractall(d)
+                    except zipfile.BadZipFile:
+                        pass
+                f = os.path.join(d, os.path.basename(name))
+                if os.path.exists(f):
+                    with open(f, newline="", encoding="utf-8", errors="replace") as fh:
+                        rd = _csv.reader(fh)
+                        info["headers"][name] = [next(rd, []), next(rd, [])]
+                elif dl.returncode:
+                    info["headers"][name] = "download failed: " + dl.stderr[-200:]
+        tr = [r.get("name") for r in rows if any(x in (r.get("name") or "") for x in ("tracking", "input", "output"))]
+        if tr:
+            dl = run("competitions", "download", "-c", c, "-f", tr[0], "-p", d)
+            for z in glob.glob(d + "/*.zip"):
+                try:
+                    zipfile.ZipFile(z).extractall(d)
+                except zipfile.BadZipFile:
+                    pass
+            f = os.path.join(d, os.path.basename(tr[0]))
+            if os.path.exists(f):
+                with open(f, newline="", encoding="utf-8", errors="replace") as fh:
+                    rd = _csv.reader(fh)
+                    info["headers"][tr[0]] = [next(rd, []), next(rd, []), next(rd, [])]
+        out["files"][c] = info
+    write("lab/_probe/bdb.json", out)
+    return {"competitions": comps, "files": {c: len(v["files"]) for c, v in out["files"].items()}}
