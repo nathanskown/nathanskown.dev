@@ -29,6 +29,7 @@ NV = "https://github.com/nflverse/nflverse-data/releases/download/"
 GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
 HL, TEAM_HL, SEASON_CARRY = 8.0, 12.0, 0.5
 K_SHARE, K_YPT, K_YPC, K_YPA, K_OPP = 1.0, 30.0, 60.0, 150.0, 150.0
+REDIST_T, REDIST_C, REDIST_Q = 1.0, 0.5, 1.0     # share of a missing regular's targets / carries passed to the teammates who play (fitted below)
 MARKETS = {"rec_yds": ("tg", 3.5, "yd"), "receptions": ("tg", 3.5, "rec"), "rush_yds": ("car", 8.0, "ryd"), "pass_yds": ("pa", 24.0, "pyd")}
 LABEL = {"rec_yds": "Receiving yards", "receptions": "Receptions", "rush_yds": "Rushing yards", "pass_yds": "Passing yards"}
 OUT_STATUS = {"Out", "Injured Reserve", "Doubtful", "Suspension", "Physically Unable to Perform"}
@@ -99,15 +100,31 @@ class Walker:
                 e.decay(SEASON_CARRY * 0.5)
         self.lgacc = collections.defaultdict(float)
 
-    def project(self, pid, pos, team, opp):
+    def missing(self, season, team, active):
+        """(target share, carry share) of this season's regulars on `team` (seen in its last 3 games) not in `active`,
+        and the same totals for those who are."""
+        recent = [x for x in self.recent[team] if x[0] == season][-3:]
+        pids = set().union(*[x[2] for x in recent]) if recent else set()
+        mt = mc = at = ac = mq = aq = 0.0
+        for q in pids:
+            if self.meta.get(q, (None, None, None))[2] != team:
+                continue
+            t, c, qs = self.P[q]["tsh"].mean(0.0, K_SHARE), self.P[q]["csh"].mean(0.0, K_SHARE), self.P[q]["qsh"].mean(0.0, 0.5)
+            if q in active:
+                at += t; ac += c; aq += qs
+            else:
+                mt += t if t >= 0.05 else 0.0; mc += c if c >= 0.05 else 0.0; mq += qs if qs >= 0.3 else 0.0
+        return mt, mc, at, ac, mq, aq
+
+    def project(self, pid, pos, team, opp, boost=(1.0, 1.0, 1.0)):
         st, tm, df, LG = self.P[pid], self.TEAM[team], self.DEF[opp], self.LG
         pa, ra = tm["pa"].mean(LG["pa"], 2.0), tm["ra"].mean(LG["ra"], 2.0)
         adj_t = (df["ty"].s + LG["ypt"] * K_OPP) / (df["tg"].s + K_OPP) / LG["ypt"]
         adj_c = (df["cy"].s + LG["ypc"] * K_OPP) / (df["cr"].s + K_OPP) / LG["ypc"]
         adj_p = (df["py"].s + LG["ypa"] * K_OPP * 2) / (df["pa"].s + K_OPP * 2) / LG["ypa"]
-        tsh = st["tsh"].mean({"WR": 0.14, "TE": 0.10, "RB": 0.07}.get(pos, 0.03), K_SHARE)
-        csh = st["csh"].mean({"RB": 0.35, "QB": 0.08}.get(pos, 0.01), K_SHARE)
-        qsh = st["qsh"].mean(0.0, 0.5)
+        tsh = st["tsh"].mean({"WR": 0.14, "TE": 0.10, "RB": 0.07}.get(pos, 0.03), K_SHARE) * boost[0]
+        csh = st["csh"].mean({"RB": 0.35, "QB": 0.08}.get(pos, 0.01), K_SHARE) * boost[1]
+        qsh = min(1.0, st["qsh"].mean(0.0, 0.5) * boost[2])
         ypt = (st["ty"].s + LG["ypt"] * K_YPT) / (st["tg"].s + K_YPT)
         crt = (st["tr"].s + LG["cr"] * K_YPT) / (st["tg"].s + K_YPT)
         ypc = (st["cy"].s + LG["ypc"] * K_YPC) / (st["cr"].s + K_YPC)
@@ -159,6 +176,12 @@ def _eligible(market, pos, proj, gp):
     return pos in ("RB", "QB")
 
 
+def _boost(W, season, team, active):
+    mt, mc, at, ac, mq, aq = W.missing(season, team, active)
+    return (1.0 + REDIST_T * mt / at if at > 0.2 else 1.0, 1.0 + REDIST_C * mc / ac if ac > 0.2 else 1.0,
+            1.0 + REDIST_Q * mq / aq if aq > 0.02 else 1.0)
+
+
 def _walk(seasons_rows, collect_from):
     """Run every season in order; collect (season, market, projection, actual) for seasons >= collect_from."""
     W = Walker()
@@ -170,8 +193,12 @@ def _walk(seasons_rows, collect_from):
             byweek[r["wk"]].append(r)
         for wk in sorted(byweek):
             if y >= collect_from:
+                act_by = collections.defaultdict(set)
                 for r in byweek[wk]:
-                    proj, gp = W.project(r["pid"], r["pos"], r["team"], r["opp"])
+                    act_by[r["team"]].add(r["pid"])
+                boosts = {t: _boost(W, y, t, a) for t, a in act_by.items()}
+                for r in byweek[wk]:
+                    proj, gp = W.project(r["pid"], r["pos"], r["team"], r["opp"], boosts.get(r["team"], (1.0, 1.0, 1.0)))
                     for mk, (_, _, ak) in MARKETS.items():
                         if _eligible(mk, r["pos"], proj, gp):
                             act = {"yd": r["yd"], "rec": r["rec"], "ryd": r["ryd"], "pyd": r["pyd"]}[ak]
@@ -280,6 +307,39 @@ def _norm(s):
     return re.sub(r"[^a-z]", "", (s or "").lower().replace(" jr", "").replace(" iii", "").replace(" ii", ""))
 
 
+def _log_and_grade(cur, week, rows, cur_rows):
+    """Keep every projection made before kickoff (the last one wins), then grade it from nflverse once the week's
+    stats are published. data/sports/track/_props_nfl.json; the summary goes on the board."""
+    store = read("track/_props_nfl.json") or {}
+    if store.get("season") != cur:
+        store = {"season": cur, "log": {}}
+    log = store["log"]
+    for r in rows:
+        k = f"{week}|{r['player']}|{r['team']}|{r['market']}"
+        if "act" not in log.get(k, {}):
+            log[k] = {"wk": week, "m": r["median"], "lo": r["p25"], "hi": r["p75"]}
+    played = {(x["wk"], x["name"], x["team"]): x for x in cur_rows}
+    weeks_done = {x["wk"] for x in cur_rows}
+    for k, e in log.items():
+        if "act" in e or e["wk"] not in weeks_done:
+            continue
+        wk, name, team, mk = k.split("|")
+        x = played.get((int(wk), name, team))
+        if x is None:
+            e["act"] = None                      # did not play: void, not graded
+            continue
+        e["act"] = {"rec_yds": x["yd"], "receptions": x["rec"], "rush_yds": x["ryd"], "pass_yds": x["pyd"]}[mk]
+    write("track/_props_nfl.json", store)
+    summ = {}
+    for mk in MARKETS:
+        g = [e for k, e in log.items() if k.endswith("|" + mk) and e.get("act") is not None]
+        if g:
+            summ[mk] = {"n": len(g), "mae": round(sum(abs(e["act"] - e["m"]) for e in g) / len(g), 2),
+                        "middle50": round(sum(e["lo"] <= e["act"] <= e["hi"] for e in g) / len(g), 3),
+                        "overMedian": round(sum(e["act"] > e["m"] for e in g) / len(g), 3)}
+    return summ
+
+
 def job_props():
     cur = (read("model/nfl.json") or {}).get("season")
     if not cur:
@@ -304,11 +364,17 @@ def job_props():
             team, opp = ALIAS.get(team, team), ALIAS.get(opp, opp)
             recent = [x for x in W.recent[team] if x[0] == cur][-3:]
             pids = set().union(*[x[2] for x in recent]) if recent else set()
+            active = {q for q in pids if (AB2ID.get(team), _norm(W.meta.get(q, ("",))[0])) not in out_names}
+            boost = _boost(W, cur, team, active)       # ruled-out regulars' targets, carries and attempts go to those who play
+            def _matters(q):
+                st = W.P[q]
+                return st["tsh"].mean(0.0, K_SHARE) >= 0.05 or st["csh"].mean(0.0, K_SHARE) >= 0.05 or st["qsh"].mean(0.0, 0.5) >= 0.3
+            missing = sorted({W.meta[q][0] for q in pids - active if W.meta.get(q, (None, None, None))[2] == team and _matters(q)})
             for pid in pids:
                 name, pos, tm = W.meta.get(pid, (None, None, None))
-                if tm != team or (AB2ID.get(team), _norm(name)) in out_names:
+                if tm != team or pid not in active:
                     continue
-                proj, gp = W.project(pid, pos, team, opp)
+                proj, gp = W.project(pid, pos, team, opp, boost)
                 for mk, (vk, _, ak) in MARKETS.items():
                     if mk not in tables or not _eligible(mk, pos, proj, gp):
                         continue
@@ -317,7 +383,8 @@ def job_props():
                                  "mean": round(proj[ak], 1), "median": round(proj[ak] * q[49], 1), "p25": round(proj[ak] * q[24], 1),
                                  "p75": round(proj[ak] * q[74], 1), "band": _band(tables[mk], proj[ak]),
                                  "vol": round(proj[vk], 1), "volLabel": {"tg": "targets", "car": "carries", "pa": "attempts"}[vk],
-                                 "espn": g.get("espn"), "kick": f"{g['gameday']} {g['gametime']} ET"})
+                                 "espn": g.get("espn"), "kick": f"{g['gameday']} {g['gametime']} ET",
+                                 "without": missing[:4] if (mk in ("rec_yds", "receptions") and boost[0] > 1.02) or (mk == "rush_yds" and boost[1] > 1.02) or (mk == "pass_yds" and boost[2] > 1.02) else []})
     rows.sort(key=lambda r: (r["market"], -r["median"]))
     up_tot, thist = _totals(games, cur)
     totals = []
@@ -330,7 +397,8 @@ def job_props():
                            awayId=AB2ID.get(g["away_team"]), homeId=AB2ID.get(g["home_team"]), espn=g.get("espn"),
                            start=ev.get("d"), kick=f"{g['gameday']} {g['gametime']} ET", wind=g.get("wind") or None, roof=g.get("roof"),
                            awayPts=t["away"], homePts=t["home"]))
-    out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals,
+    live = _log_and_grade(cur, week, rows, seasons[cur])
+    out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals, "live": live,
            "backtest": {"props": back, "seasons": [cur - 3, cur - 1], "totals": _totals_backtest(thist, cur - 7, cur - 1)},
            "source": "nflverse (CC-BY 4.0) weekly player stats and schedules; ESPN injury report"}
     write("props/nfl.json", out)
