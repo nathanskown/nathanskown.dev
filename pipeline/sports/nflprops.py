@@ -290,13 +290,14 @@ def job_props():
     tables = _tables(hist, {y for y in range(cur - 4, cur)})
     back = _backtest(hist, list(range(cur - 3, cur)))
     games = [r for r in _csv(GAMES_URL) if r["game_type"] == "REG" and int(r["season"]) >= cur - 7]
-    played = {r["week"] for r in games if r["season"] == str(cur) and r["home_score"] not in ("", None)}
-    left = sorted({int(r["week"]) for r in games if r["season"] == str(cur) and r["home_score"] in ("", None)})
+    cache = (read("model/_games_nfl.json") or {}).get("events", {})
+    now16 = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
+    started = lambda r: (cache.get(r.get("espn") or "") or {}).get("d", "9999") <= now16      # kicked off already (ESPN start, UTC)
+    left = sorted({int(r["week"]) for r in games if r["season"] == str(cur) and r["home_score"] in ("", None) and not started(r)})
     week = left[0] if left else None
-    up = [r for r in games if r["season"] == str(cur) and week is not None and int(r["week"]) == week and r["home_score"] in ("", None)]
+    up = [r for r in games if r["season"] == str(cur) and week is not None and int(r["week"]) == week and r["home_score"] in ("", None) and not started(r)]
     inj = (read("injuries/nfl.json") or {}).get("teams", {})
     out_names = {(t, _norm(r.get("name"))) for t, rows in inj.items() for r in rows if r.get("status") in OUT_STATUS}
-    cache = (read("model/_games_nfl.json") or {}).get("events", {})
     rows = []
     for g in up:
         for side, team, opp in (("a", g["away_team"], g["home_team"]), ("h", g["home_team"], g["away_team"])):
