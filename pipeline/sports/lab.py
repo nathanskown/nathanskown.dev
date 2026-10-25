@@ -392,3 +392,42 @@ def job_bdb():
         out["files"][c] = info
     write("lab/_probe/bdb.json", out)
     return {"competitions": comps, "files": {c: len(v["files"]) for c, v in out["files"].items()}}
+
+
+# ---------------------------------------------------------------- Kalshi (public market data, no key) probe
+def job_kalshi():
+    """Find Kalshi's open NFL player-prop markets (public API, no key) and save a summary: series tickers, sample titles,
+    strike values and prices. Nothing is used in forecasts."""
+    base = "https://api.elections.kalshi.com/trade-api/v2"
+    out = {"series": [], "samples": [], "counts": {}}
+    try:
+        ser = get(base + "/series", {"category": "Sports"}, timeout=60)
+        sl = ser.get("series") or []
+        nfl = [x for x in sl if "NFL" in (x.get("ticker") or "") or "NFL" in (x.get("title") or "")]
+        out["series"] = [{k: x.get(k) for k in ("ticker", "title", "frequency")} for x in nfl][:200]
+    except Exception as e:
+        out["series_error"] = str(e)[:200]
+    keys = ("yards", "receptions", "touchdown", "Receiving", "Rushing", "Passing")
+    cursor, seen = None, 0
+    for _ in range(40):
+        try:
+            d = get(base + "/markets", dict({"status": "open", "limit": "1000"}, **({"cursor": cursor} if cursor else {})), timeout=60)
+        except Exception as e:
+            out["markets_error"] = str(e)[:200]
+            break
+        ms = d.get("markets") or []
+        seen += len(ms)
+        for m in ms:
+            t = (m.get("title") or "") + " " + (m.get("subtitle") or "") + " " + (m.get("yes_sub_title") or "")
+            if any(k.lower() in t.lower() for k in keys) and ("NFL" in (m.get("event_ticker") or "") or "NFL" in (m.get("series_ticker") or "") or "NFL" in (m.get("ticker") or "")):
+                st = (m.get("ticker") or "").split("-")[0]
+                out["counts"][st] = out["counts"].get(st, 0) + 1
+                if len(out["samples"]) < 60:
+                    out["samples"].append({k: m.get(k) for k in ("ticker", "event_ticker", "title", "subtitle", "yes_sub_title", "floor_strike", "cap_strike",
+                                                                  "strike_type", "yes_bid", "yes_ask", "last_price", "volume", "open_interest", "close_time")})
+        cursor = d.get("cursor")
+        if not cursor:
+            break
+    out["marketsScanned"] = seen
+    write("lab/_probe/kalshi.json", out)
+    return {"scanned": seen, "propSeries": out["counts"], "nflSeries": len(out["series"])}
