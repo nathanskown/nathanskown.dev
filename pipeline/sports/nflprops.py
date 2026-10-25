@@ -398,8 +398,11 @@ def job_props():
                            start=ev.get("d"), kick=f"{g['gameday']} {g['gametime']} ET", wind=g.get("wind") or None, roof=g.get("roof"),
                            awayPts=t["away"], homePts=t["home"]))
     live = _log_and_grade(cur, week, rows, seasons[cur])
-    out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals, "live": live,
+    from . import kalshi
+    kedges, krec = kalshi.attach(rows, tables, week, cur)
+    out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
            "backtest": {"props": back, "seasons": [cur - 3, cur - 1], "totals": _totals_backtest(thist, cur - 7, cur - 1)},
            "source": "nflverse (CC-BY 4.0) weekly player stats and schedules; ESPN injury report"}
     write("props/nfl.json", out)
-    return {"week": week, "props": len(rows), "totals": len(totals), "backtest": back}
+    return {"week": week, "props": len(rows), "totals": len(totals), "kalshiMatched": sum(1 for r in rows if r.get("kalshi")),
+            "kalshiEdges": len(kedges), "kalshiRecord": krec, "backtest": back}
