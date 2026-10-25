@@ -22,11 +22,11 @@ FONTS = "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600
 TOOLS = {
     "Simulator": "simulator", "Odds": "odds", "Injuries": "injuries",
     "LuckWatch": "luck-watch", "Schedule": "schedule-strength", "TrackRecord": "track-record",
-    "Methodology": "methodology",
+    "Methodology": "methodology", "Props": "nfl-board",
 }
 TOOL_TITLES = {
     "Simulator": "Matchup simulator", "Odds": "Playoff odds", "Injuries": "Injuries",
-    "LuckWatch": "Luck watch", "Schedule": "Schedule strength", "TrackRecord": "Track record", "Methodology": "Methodology",
+    "LuckWatch": "Luck watch", "Schedule": "Schedule strength", "TrackRecord": "Track record", "Methodology": "Methodology", "Props": "NFL board",
 }
 # Every team and game page is the generic Team/Game design reading ?lg=&id= (ESPN ids).
 # These older short URLs stay as presets so existing links keep working.
@@ -103,6 +103,7 @@ PAGE_DESC = {
     ("sports", "track-record"): "Every house-model pick, logged before the game and graded after the final.",
     ("sports", "model-history"): "How the house sports model improved: each ingredient added in turn and scored on seasons it never saw, with a timeline of the data that went in.",
     ("sports", "methodology"): "How the house sports ratings, projections and simulations work.",
+    ("sports", "nfl-board"): "NFL player prop projections with real ranges, a sportsbook-line calculator, and projected game totals for this week.",
 }
 SITE = "https://nathanskown.dev"
 OG_IMAGE = {"finance": "/assets/og/markets.png", "sports": "/assets/og/sports.png"}
