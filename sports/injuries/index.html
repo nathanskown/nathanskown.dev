@@ -282,16 +282,17 @@ class Component extends DCLogic {
         pr.rows = list.slice(0, 120).map(function (r) {
           var id = r.player + '|' + r.team + '|' + mk, L = parseFloat((S.lines || {})[id]), po = pOver(r, L);
           var st = function (p) { return p === null ? 'dim' : p >= 0.58 ? 'color: var(--up); font-weight: 600' : ''; };
-          return { player: r.player, sub: r.pos + ' · ' + r.team + (r.home ? ' vs ' : ' at ') + r.opp, kick: r.kick.replace(' ET', '').slice(5), median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp),
+          return { player: r.player, sub: r.pos + ' · ' + r.team + (r.home ? ' vs ' : ' at ') + r.opp + (r.without && r.without.length ? ' · without ' + r.without.join(', ') : ''), kick: r.kick.replace(' ET', '').slice(5), median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp),
             vol: r.vol.toFixed(1) + ' ' + r.volLabel, line: (S.lines || {})[id] || '', lineLabel: 'Sportsbook line for ' + r.player + ' ' + LBL[mk],
             over: po === null ? '—' : Math.round(po * 100) + '%', under: po === null ? '—' : Math.round((1 - po) * 100) + '%', overSt: st(po), underSt: st(po === null ? null : 1 - po),
             onLine: function (e) { var n = Object.assign({}, self.state.lines); if (e.target.value) n[id] = e.target.value; else delete n[id]; self.setState({ lines: n }); try { localStorage.setItem('nskn-prop-lines', JSON.stringify(n)); } catch (er) {} } };
         });
         pr.none = !pr.rows.length; pr.noneText = q2 ? 'Nothing matches “' + S.pq + '”.' : 'No projections for this market this week.';
-        var bt = ((X.backtest || {}).props || {})[mk];
+        var bt = ((X.backtest || {}).props || {})[mk], lv = (X.live || {})[mk];
         pr.note = 'Median and middle 50%: the projection times how players with projections of this size actually finished in the last four seasons (each season scored only from earlier ones). '
           + (bt ? 'Tested on ' + X.backtest.seasons[0] + '–' + X.backtest.seasons[1] + ': the median missed by ' + bt.mae + ' on average over ' + bt.n + ' player-games, and ' + Math.round(bt.middle50 * 100) + '% of results landed in the middle-50% range. ' : '')
-          + 'Over and under are how often that happened past your line (green when 58% or more; at standard -110 prices you need 52.4% to break even). Players ruled out or doubtful on ESPN’s report are left off; usage of a missing teammate is not redistributed, so re-check after Friday’s injury report. Lines you enter stay in this browser only. This is a projection, not a pick.';
+          + (lv ? 'Live this season (logged before kickoff, graded after): ' + lv.n + ' graded, median missed by ' + lv.mae + ', ' + Math.round(lv.middle50 * 100) + '% inside the middle 50%. ' : 'Live grading starts once this week’s results are published. ')
+          + 'Over and under are how often that happened past your line (green when 58% or more; at standard -110 prices you need 52.4% to break even). Players ruled out or doubtful on ESPN’s report are left off, and their targets, carries and pass attempts are passed to the teammates who play (tested on 2019–25, this cut the receiving-yards miss by about 1 yard). Re-check after Friday’s injury report. Lines you enter stay in this browser only. This is a projection, not a pick.';
         var T2 = X.totals || [];
         pr.totals = T2.map(function (t) { return { game: t.away + ' at ' + t.home, href: t.espn ? '/sports/game/?lg=nfl&id=' + t.espn : '#', kick: t.kick.replace(' ET', '').slice(5), total: t.total.toFixed(1), ap: t.awayPts.toFixed(1), hp: t.homePts.toFixed(1), wind: t.roof === 'dome' || t.roof === 'closed' ? 'roof' : (t.wind ? t.wind + ' mph' : '—') }; });
         pr.noTot = !pr.totals.length; pr.totSub = 'Week ' + X.week;
