@@ -409,7 +409,7 @@ def job_kalshi():
         out["series_error"] = str(e)[:200]
     keys = ("yards", "receptions", "touchdown", "Receiving", "Rushing", "Passing")
     cursor, seen = None, 0
-    for _ in range(40):
+    for _ in range(3):
         try:
             d = get(base + "/markets", dict({"status": "open", "limit": "1000"}, **({"cursor": cursor} if cursor else {})), timeout=60)
         except Exception as e:
@@ -429,5 +429,16 @@ def job_kalshi():
         if not cursor:
             break
     out["marketsScanned"] = seen
+    out["bySeries"] = {}
+    for st in ("KXNFLRECYDS", "KXNFLRSHYDS", "KXNFLPASSYDS", "KXNFLREC", "KXNFLRECEPTIONS", "KXNFLRUSHYDS"):
+        for status in ("open", "settled"):
+            try:
+                d = get(base + "/markets", {"series_ticker": st, "status": status, "limit": "200"}, timeout=60)
+            except Exception as e:
+                out["bySeries"][f"{st}:{status}"] = f"error {str(e)[:120]}"
+                continue
+            ms = d.get("markets") or []
+            out["bySeries"][f"{st}:{status}"] = {"n": len(ms), "sample": [{k: m.get(k) for k in ("ticker", "event_ticker", "title", "subtitle", "yes_sub_title",
+                "floor_strike", "cap_strike", "strike_type", "yes_bid", "yes_ask", "last_price", "volume", "open_interest", "close_time", "result")} for m in ms[:8]]}
     write("lab/_probe/kalshi.json", out)
     return {"scanned": seen, "propSeries": out["counts"], "nflSeries": len(out["series"])}
