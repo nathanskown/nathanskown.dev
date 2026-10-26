@@ -478,3 +478,65 @@ def job_oddscore():
                 got += ok
             out[f"{lg}_{y}"] = {"sampled": len(ids), "withLine": got, "providers": provs, "error": err}
     return out
+
+
+PREF = ("consensus", "ESPN BET", "DraftKings", "Draft Kings", "Caesars Sportsbook", "MGM", "FanDuel", "Bet365", "Unibet")
+
+
+def _core_line(d):
+    """(row fields) from a core odds response: the preferred pre-game provider's closing home margin, total and moneylines,
+    plus the opening home margin when given."""
+    items = [it for it in (d.get("items") or []) if "Live" not in ((it.get("provider") or {}).get("name") or "")
+             and (it.get("spread") is not None or it.get("overUnder") is not None)]
+    if not items:
+        return None
+    items.sort(key=lambda it: PREF.index(it["provider"]["name"]) if it["provider"].get("name") in PREF else 99)
+    it = items[0]
+    home, away = it.get("homeTeamOdds") or {}, it.get("awayTeamOdds") or {}
+    try:
+        sp = None if it.get("spread") is None else -float(it["spread"])
+    except (TypeError, ValueError):
+        sp = None
+    op = None
+    try:
+        a = (((home.get("open") or {}).get("pointSpread") or {}).get("american"))
+        op = -float(str(a).replace("+", "")) if a not in (None, "", "EVEN", "PK") else None
+    except (TypeError, ValueError):
+        op = None
+    return {"sp": sp, "tot": it.get("overUnder"), "ml": [home.get("moneyLine"), away.get("moneyLine")],
+            "prov": it["provider"]["name"], "spO": op}
+
+
+def job_oddsfill():
+    """Fill closing lines into lab seasons whose ESPN summaries had none, from ESPN's core odds endpoint (free, no key)."""
+    lgs = [x for x in os.environ.get("LAB_LG", "nba,ncaab,ncaaf,nhl").split(",") if x in SEASONS]
+    budget = time.time() + float(os.environ.get("LAB_BUDGET_MIN", "320")) * 60
+    out = {}
+    for lg in lgs:
+        sp_, lg_ = path(lg).split("/", 1)
+        for y in SEASONS[lg]:
+            name = f"lab/{lg}_{y}.json"
+            store = read(name) or {}
+            g = store.get("g") or {}
+            todo = [k for k, r in g.items() if r.get("sp") is None and r.get("tot") is None and not r.get("cx")]
+            filled = tried = 0
+            for i, eid in enumerate(todo):
+                if time.time() > budget:
+                    break
+                tried += 1
+                try:
+                    d = get(CORE + f"{sp_}/leagues/{lg_}/events/{eid}/competitions/{eid}/odds", {"limit": "50"}, timeout=30)
+                    ln = _core_line(d)
+                except Exception:
+                    ln = None
+                if ln:
+                    g[eid].update(ln)
+                    filled += 1
+                else:
+                    g[eid]["cx"] = 1                       # checked, nothing there: don't ask again
+                if i % 400 == 399:
+                    write(name, store)
+            if tried:
+                write(name, store)
+            out[f"{lg}_{y}"] = {"missing": len(todo), "tried": tried, "filled": filled}
+    return out
