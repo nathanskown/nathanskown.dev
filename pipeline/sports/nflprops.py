@@ -19,7 +19,7 @@ import collections
 import csv
 import io
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 
@@ -400,6 +400,14 @@ def job_props():
     live = _log_and_grade(cur, week, rows, seasons[cur])
     from . import kalshi
     kedges, krec = kalshi.attach(rows, tables, week, cur)
+    # games that have kicked off keep their last pre-game numbers for four days, so their game pages still show them
+    prev = read("props/nfl.json") or {}
+    since = (datetime.now(timezone.utc) - timedelta(days=4)).strftime("%Y-%m-%dT%H:%M")
+    keep = lambda e: bool(e) and since <= (cache.get(e) or {}).get("d", "") <= now16
+    fresh = {r.get("espn") for r in rows}
+    rows += [dict(r, locked=True) for r in prev.get("props") or [] if r.get("espn") not in fresh and keep(r.get("espn"))]
+    fresh_t = {t.get("espn") for t in totals}
+    totals += [dict(t, locked=True) for t in prev.get("totals") or [] if t.get("espn") not in fresh_t and keep(t.get("espn"))]
     out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
            "backtest": {"props": back, "seasons": [cur - 3, cur - 1], "totals": _totals_backtest(thist, cur - 7, cur - 1)},
            "source": "nflverse (CC-BY 4.0) weekly player stats and schedules; ESPN injury report"}
