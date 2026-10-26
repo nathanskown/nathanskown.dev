@@ -8,7 +8,7 @@ import os
 import sys
 import time
 
-from . import cbbret, cfbret, ctx, elo, nflprops, espn, nflsnap, evolution, extra, history, lab, model, nflqb, odds, track, tune
+from . import cbbret, cfbret, ctx, elo, market, nflprops, espn, nflsnap, evolution, extra, history, lab, model, nflqb, odds, track, tune
 from .common import STATUS, attempt, now_iso, read, write
 
 JOBS = {
@@ -28,8 +28,9 @@ JOBS = {
     "lab-kalshi": [("kalshi", lab.job_kalshi)],
     "lab-oddscore": [("oddscore", lab.job_oddscore)],
     "lab-oddsfill": [("oddsfill", lab.job_oddsfill)],
+    "market": [("market", market.job_build)],
     "ctx-fit": [("ctx_fit", ctx.job_fit), ("ret_fit", cbbret.job_fit), ("cfbret_fit", cfbret.job_fit), ("elo_fit", elo.job_fit), ("model", model.job_model), ("track", track.job_track)],
-    "tune": [("tune", tune.job_tune), ("evolution", evolution.job_evolution), ("qb_fit", nflqb.job_fit), ("ctx_fit", ctx.job_fit), ("ret_fit", cbbret.job_fit), ("cfbret_fit", cfbret.job_fit), ("elo_fit", elo.job_fit), ("model", model.job_model), ("qb", nflqb.job_qb), ("track", track.job_track), ("backtest", track.job_backtest)],
+    "tune": [("market", market.job_build), ("tune", tune.job_tune), ("evolution", evolution.job_evolution), ("qb_fit", nflqb.job_fit), ("ctx_fit", ctx.job_fit), ("ret_fit", cbbret.job_fit), ("cfbret_fit", cfbret.job_fit), ("elo_fit", elo.job_fit), ("model", model.job_model), ("qb", nflqb.job_qb), ("track", track.job_track), ("backtest", track.job_backtest)],
 }
 
 
