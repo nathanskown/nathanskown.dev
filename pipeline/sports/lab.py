@@ -345,11 +345,14 @@ def job_probe2():
 # ---------------------------------------------------------------- NFL Big Data Bowl (Kaggle), probe only
 def job_bdb():
     """List the Big Data Bowl competitions this Kaggle account can reach and the files in the newest ones (names,
-    sizes, CSV headers of the small files). Needs KAGGLE_USERNAME and KAGGLE_KEY secrets, and the competition rules
+    sizes, CSV headers of the small files). Needs a KAGGLE_API_TOKEN secret (or legacy KAGGLE_USERNAME and KAGGLE_KEY), and the competition rules
     accepted on kaggle.com by that account. Raw data is never committed; only this summary."""
     import subprocess, zipfile, glob, csv as _csv
-    if not (os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY")):
-        return "no KAGGLE_USERNAME / KAGGLE_KEY secrets"
+    if not (os.environ.get("KAGGLE_API_TOKEN") or (os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY"))):
+        return "no KAGGLE_API_TOKEN (or KAGGLE_USERNAME / KAGGLE_KEY) secret"
+    for k in ("KAGGLE_API_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY"):       # unset secrets arrive as empty strings
+        if not os.environ.get(k):
+            os.environ.pop(k, None)
     run = lambda *a: subprocess.run(["kaggle", *a], capture_output=True, text=True, timeout=600)
     lst = run("competitions", "list", "-s", "big data bowl", "--csv")
     comps = [r["ref"].rstrip("/").split("/")[-1] for r in _csv.DictReader(io.StringIO(lst.stdout))] if lst.returncode == 0 else []
