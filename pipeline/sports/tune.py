@@ -465,15 +465,11 @@ def market_hfa(L, years):
     return (round(float(np.mean(vals)), 2), len(vals)) if len(vals) > 500 else None
 
 
-def market_check(L, years, p):
-    """NFL only: the model's walk-forward projections next to the closing lines on the same games."""
-    mk = (read("history/market_nfl.json") or {}).get("spread") or {}
-    if not mk:
-        return None
-    inv = {i: t for t, i in L.ix.items()}
+def _market_lookup(mk, L, years):
+    """Per game of `years`, the market value keyed by date|home|away (same day or the day before), NaN if absent."""
     from datetime import date, timedelta
-    P, U, A = run(L, years, p)
-    sp = []
+    inv = {i: t for t, i in L.ix.items()}
+    out = []
     for y in years:
         S = L.seasons[y]
         for d, h, a in zip(S.d, S.h, S.a):
@@ -482,21 +478,48 @@ def market_check(L, years, p):
                 v = mk.get(f"{(date.fromisoformat(d[:10]) + timedelta(days=dd)).isoformat()}|{inv[h]}|{inv[a]}")
                 if v is not None:
                     break
-            sp.append(np.nan if v is None else v)
-    sp = np.array(sp)
-    ok = ~np.isnan(sp)
-    if ok.sum() < 200:
+            out.append(np.nan if v is None else v)
+    return np.array(out, dtype=float)
+
+
+def market_check(L, years, p):
+    """The model's walk-forward projections next to the closing lines on the same games: accuracy of each, and how the
+    model's picks against the spread would have done (pushes left out). NHL is compared on win chance (moneyline)."""
+    store = read(f"history/market_{L.lg}.json") or {}
+    if not (store.get("spread") or store.get("p")):
         return None
-    Pm, Um, Am, Sm = P[ok], U[ok], A[ok], sp[ok]
-    s_mod = fit_sigma(Pm, Um, Am, p.get("pv"), p.get("ps"))
-    s_mk = float(math.sqrt(np.mean((Am - Sm) ** 2)))
-    m_mod = score(Pm, Um, Am, s_mod, p.get("pv"))
-    m_mk = score(Sm, np.zeros_like(Sm), Am, s_mk, 0)
-    return {"games": int(ok.sum()), "seasons": [min(years), max(years)],
-            "model": {k: round(m_mod[k], 4) for k in ("logloss", "brier", "mae", "acc")},
-            "market": {k: round(m_mk[k], 4) for k in ("logloss", "brier", "mae", "acc")},
-            "gapMean": round(float((Pm - Sm).mean()), 2), "gapSd": round(float((Pm - Sm).std()), 2),
-            "slope": round(float(np.polyfit(Pm, Sm, 1)[0]), 3)}
+    P, U, A = run(L, years, p)
+    s_mod = fit_sigma(P, U, A, p.get("pv"), p.get("ps"))
+    m_all = score(P, U, A, s_mod, p.get("pv"))
+    out = {"seasons": [min(years), max(years)]}
+    pm = _market_lookup(store.get("p") or {}, L, years)
+    okp = ~np.isnan(pm)
+    if okp.sum() >= 200:
+        res = m_all["res"][okp]
+        mp = np.clip(pm[okp], 0.01, 0.99)
+        out["winChance"] = {"games": int(okp.sum()),
+                            "model": {"logloss": round(float(m_all["ll"][okp].mean()), 4), "brier": round(float(((m_all["p"][okp] - res) ** 2).mean()), 4)},
+                            "market": {"logloss": round(float(-(res * np.log(mp) + (1 - res) * np.log(1 - mp)).mean()), 4),
+                                       "brier": round(float(((mp - res) ** 2).mean()), 4)}}
+    sp = _market_lookup(store.get("spread") or {}, L, years)
+    ok = ~np.isnan(sp)
+    if ok.sum() >= 200:
+        Pm, Um, Am, Sm = P[ok], U[ok], A[ok], sp[ok]
+        s_mk = float(math.sqrt(np.mean((Am - Sm) ** 2)))
+        m_mod = score(Pm, Um, Am, s_mod, p.get("pv"))
+        m_mk = score(Sm, np.zeros_like(Sm), Am, s_mk, 0)
+        gap, cover = Pm - Sm, Am - Sm
+        ats = {}
+        for th in (0, 1.5, 3, 4.5, 6):
+            pick = (np.abs(gap) >= max(th, 1e-9)) & (cover != 0)
+            w = int((np.sign(gap[pick]) == np.sign(cover[pick])).sum())
+            ats[str(th)] = [w, int(pick.sum()) - w]
+        out.update({"games": int(ok.sum()),
+                    "model": {k: round(m_mod[k], 4) for k in ("logloss", "brier", "mae", "acc")},
+                    "market": {k: round(m_mk[k], 4) for k in ("logloss", "brier", "mae", "acc")},
+                    "gapMean": round(float(gap.mean()), 2), "gapSd": round(float(gap.std()), 2),
+                    "slope": round(float(np.polyfit(Pm, Sm, 1)[0]), 3), "ats": ats})
+    return out
 
 
 def tune(lg):
@@ -571,7 +594,7 @@ def tune(lg):
            "gain": round(gain, 5), "z": round(z, 2), "games": int(len(pooled)), "foldsImproved": f"{pos}/{len(rec)}",
            "folds": rec, "heldOutCalibration": calibration(np.concatenate(held_p), np.concatenate(held_r)),
            "all": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in allm.items() if k not in ("ll", "p", "res")}}
-    if lg == "nfl":
+    if lg in ("nfl", "nba", "nhl", "ncaab", "ncaaf"):
         out["market"] = market_check(L, [y for y in usable if y >= usable[-1] - 9], params)
     if not adopt:
         out["reason"] = (f"held-out gain {gain:.4f} (z {z:.1f}, {pos}/{len(rec)} seasons better, worst {worst:+.4f}) did not clear the bar "
