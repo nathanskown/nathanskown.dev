@@ -36,6 +36,8 @@ jobs:
           CFBD_KEY: ${{ secrets.CFBD_KEY }}
           # Optional. When set, the daily run saves betting-market lines from The Odds API (free plan: 500 credits a month).
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          # Optional. SportsGameOdds (free Amateur plan): player prop lines for the NFL props tracking.
+          SGO_KEY: ${{ secrets.SGO_KEY }}
           CRON: ${{ github.event.schedule }}
         run: |
           git config user.name "sports-data-bot"
