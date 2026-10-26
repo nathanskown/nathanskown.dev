@@ -461,7 +461,8 @@ def job_oddscore():
             got, provs, err = 0, {}, None
             for i, eid in enumerate(ids):
                 try:
-                    d = get(CORE + path(lg) + f"/events/{eid}/competitions/{eid}/odds", {"limit": "50"}, timeout=30)
+                    sp_, lg_ = path(lg).split("/", 1)
+                    d = get(CORE + f"{sp_}/leagues/{lg_}/events/{eid}/competitions/{eid}/odds", {"limit": "50"}, timeout=30)
                 except Exception as e:
                     err = str(e)[:120]
                     continue
