@@ -444,3 +444,36 @@ def job_kalshi():
                 "floor_strike", "cap_strike", "strike_type", "yes_bid", "yes_ask", "last_price", "volume", "open_interest", "close_time", "result")} for m in ms[:8]]}
     write("lab/_probe/kalshi.json", out)
     return {"scanned": seen, "propSeries": out["counts"], "nflSeries": len(out["series"])}
+
+
+# ---------------------------------------------------------------- ESPN core odds probe (free, no key)
+GAPS = {"nba": [2024, 2025, 2023], "ncaab": [2024, 2025, 2023], "ncaaf": [2023, 2024, 2025, 2022], "nhl": [2025, 2024]}
+
+
+def job_oddscore():
+    """For seasons whose ESPN summaries carried no pickcenter line, ask ESPN's core odds endpoint for the same games.
+    Saves one raw response per league to _probe/ and a summary of how many sampled games came back with a spread/total."""
+    out = {}
+    for lg, years in GAPS.items():
+        for y in years:
+            g = (read(f"lab/{lg}_{y}.json") or {}).get("g") or {}
+            ids = list(g)[::max(1, len(g) // 12)][:12]
+            got, provs, err = 0, {}, None
+            for i, eid in enumerate(ids):
+                try:
+                    d = get(CORE + path(lg) + f"/events/{eid}/competitions/{eid}/odds", {"limit": "50"}, timeout=30)
+                except Exception as e:
+                    err = str(e)[:120]
+                    continue
+                items = d.get("items") or []
+                if i == 0:
+                    write(f"lab/_probe/oddscore_{lg}_{y}.json", _trim(d))
+                ok = False
+                for it in items:
+                    p = (it.get("provider") or {}).get("name")
+                    provs[p] = provs.get(p, 0) + 1
+                    if it.get("spread") is not None or it.get("overUnder") is not None:
+                        ok = True
+                got += ok
+            out[f"{lg}_{y}"] = {"sampled": len(ids), "withLine": got, "providers": provs, "error": err}
+    return out
