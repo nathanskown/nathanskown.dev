@@ -262,9 +262,12 @@ footer{max-width:1080px;margin:0 auto;padding:0 18px 40px;color:var(--dim);font-
   /* typewriter */
   var el = $('tw'), TXT = el.textContent;
   if (!reduce) {
-    el.textContent = ''; var i = 0;
+    // the whole sentence stays in the layout (the untyped part is just invisible) so the page never jumps as it types
+    var a = document.createElement('span'), b = document.createElement('span');
+    b.style.visibility = 'hidden'; el.textContent = ''; el.appendChild(a); el.appendChild(b);
+    b.textContent = TXT; var i = 0;
     (function step() {
-      i++; el.textContent = TXT.slice(0, i);
+      i++; a.textContent = TXT.slice(0, i); b.textContent = TXT.slice(i);
       if (i < TXT.length) setTimeout(step, /[,.]$/.test(TXT.slice(0, i)) ? 380 : 34 + Math.random() * 30);
     })();
   }

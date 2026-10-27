@@ -82,6 +82,7 @@ body::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:50;bac
 .t-hide-sm{display:none !important}
 .t-fbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-left:8px}
 .t-fbar::-webkit-scrollbar{display:none}
+.t-fbar{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 .t .t-fkey{min-height:44px;white-space:nowrap}
 .t-fbar-title{display:none}
 .t-cmd{margin:4px 8px 8px}

@@ -203,6 +203,10 @@
     else if (e.key === 'ArrowRight') setMode(mode + 1);
     else if (e.key === 'ArrowLeft') setMode(mode - 1);
   });
+  // touch and keyboard users cannot hover: a tap on the hero stops the rotation, a tap on the ticker pauses it (tap again to resume)
+  $('hero').addEventListener('touchstart', function () { held = true; }, { passive: true });
+  var tk = document.querySelector('.nk-tick');
+  if (tk) tk.addEventListener('click', function () { tk.classList.toggle('is-paused'); });
   // live numbers arrive later; retype the line if the current mode can use them
   LIVE.onUpdate = function () { if (!state.booting && typedOnce) type(); };
 

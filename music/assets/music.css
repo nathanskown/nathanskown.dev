@@ -154,11 +154,12 @@ table.board td.n,table.board th.n{text-align:right}
 .clues li.locked .v{font-size:13px}
 
 /* ---------- guess box + autocomplete ---------- */
-.guess{position:relative;display:flex;align-items:stretch;margin-top:14px;border:1px solid var(--line);background:#000}
+.guess{position:relative;display:flex;flex-wrap:wrap;align-items:stretch;margin-top:14px;border:1px solid var(--line);background:#000}
 .guess:focus-within{border-color:var(--dim)}
 .guess .pfx{display:flex;align-items:center;padding:0 12px;background:var(--band);color:var(--hi);font-size:12px;letter-spacing:.12em;border-right:1px solid var(--line)}
 .guess input{flex:1 1 auto;min-width:0;border:0;background:none;font-size:15px;outline:0}
-.sugg{position:absolute;left:-1px;right:-1px;top:100%;z-index:5;border:1px solid var(--dim);background:#000;max-height:240px;overflow:auto}
+.sugg{flex:0 0 100%;border-top:1px solid var(--dim);background:#000;max-height:200px;overflow:auto}   /* in the page flow, so it pushes SUBMIT down instead of covering it */
+.sugg.hidden{display:none}
 .sugg div{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
 .sugg div:hover,.sugg div.on{background:var(--g);color:#000;text-shadow:none}
 .sugg small{color:inherit;opacity:.6}

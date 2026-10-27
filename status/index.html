@@ -78,7 +78,7 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
   var bad = 0, warn = 0;
   var tally = function (k) { if (k === 'bad') bad++; else if (k === 'warn') warn++; };
   function lead() {
-    $('lead').textContent = bad ? bad + ' problem' + (bad === 1 ? '' : 's') + ' and ' + warn + ' warning' + (warn === 1 ? '' : 's') + '.' : (warn ? 'All feeds up, ' + warn + ' warning' + (warn === 1 ? '' : 's') + '.' : 'All feeds up.');
+    $('lead').textContent = bad ? bad + ' problem' + (bad === 1 ? '' : 's') + ' and ' + warn + ' warning' + (warn === 1 ? '' : 's') + '.' : (warn ? 'Feeds respond, but ' + warn + ' data check' + (warn === 1 ? ' needs' : 's need') + ' attention.' : 'All feeds up and every data check passes.');
   }
   var get = function (u) { var t0 = performance.now(); return fetch(u, { cache: 'no-store' }).then(function (r) { return r.text().then(function (x) { var j = null; try { j = JSON.parse(x); } catch (e) {} return { ok: r.ok, code: r.status, j: j, ms: Math.round(performance.now() - t0) }; }); }, function () { return { ok: false, code: 0, j: null, ms: 0 }; }); };
 
@@ -150,6 +150,8 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
     var today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var stale = (E.upcoming || []).filter(function (x) { return x.date < today; });
     checks.push(['Earnings calendar has no past dates under "upcoming"', !stale.length, stale.length + ' stale rows']);
+    var mAge = M.updated ? (Date.now() - new Date(M.updated).getTime()) / 3600000 : 999;
+    checks.push(['Macro data refreshed in the last 48 hours', mAge < 48, M.updated ? mAge.toFixed(0) + ' hours old' : 'no timestamp']);
     var ru = ['r1000', 'r2000'].filter(function (k) { return !(MEM[k] || []).length; });
     checks.push(['Russell 1000 and 2000 member lists are filled', !ru.length, ru.length ? ru.join(', ') + ' empty (iShares download failing)' : 'ok']);
     var hl = (HL.items || [])[0], hAge = hl ? (Date.now() - new Date(hl.published).getTime()) / 3600000 : 999, wk = new Date().getDay() % 6 === 0;

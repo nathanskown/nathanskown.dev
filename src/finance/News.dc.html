@@ -161,7 +161,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div role="group" aria-label="Sources" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center">
 <span style="color: #A87933; font-size: 12px; letter-spacing: .1em; margin-right: 4px">SOURCES</span>
 <sc-for list="{{sources}}" as="sr" hint-placeholder-count="8">
-<button type="button" onClick="{{sr.toggle}}" aria-pressed="{{sr.pressed}}" style="{{sr.btnStyle}}">{{sr.label}} <span style="font-size: 12px; color: #A87933">{{sr.n}}</span></button>
+<button type="button" onClick="{{sr.toggle}}" aria-pressed="{{sr.pressed}}" style="{{sr.btnStyle}}">{{sr.label}} <span style="font-size: 12px; color: {{sr.nColor}}">{{sr.n}}</span></button>
 </sc-for>
 </div>
 
@@ -388,7 +388,7 @@ class Component extends DCLogic {
       toggleAllPR: function () { saveNP({ allPR: !allPR }); }, allPRPressed: allPR ? 'true' : 'false', allPRStyle: toggle(allPR),
       sources: srcList.map(function (sname) {
         var on = hiddenSrc.indexOf(sname) < 0;
-        return { label: sname, n: srcCount[sname], pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),
+        return { label: sname, n: srcCount[sname], nColor: on ? '#2A1D08' : '#C99442', pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),
           toggle: function () { saveNP({ hidden: on ? hiddenSrc.concat([sname]) : hiddenSrc.filter(function (x) { return x !== sname; }) }); } };
       }),
       watchPressed: watchOnly ? 'true' : 'false', notablePressed: notableOnly ? 'true' : 'false',

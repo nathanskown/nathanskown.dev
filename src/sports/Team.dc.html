@@ -97,9 +97,9 @@
 <sc-if value="{{hasMargins}}" hint-placeholder-val="{{true}}">
 <div style="margin-top: 14px">
 <div class="t-th" style="display: flex; justify-content: space-between"><span>Margin by game</span><span>oldest → newest</span></div>
-<div role="img" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
+<div role="group" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
 <sc-for list="{{margins}}" as="mg" hint-placeholder-count="8">
-<a href="{{mg.href}}" title="{{mg.title}}" style="flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column">
+<a href="{{mg.href}}" title="{{mg.title}}" aria-label="{{mg.title}}" style="flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column">
 <span style="flex: 1 1 0; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line)"><span style="{{mg.up}}"></span></span>
 <span style="flex: 1 1 0; display: flex; align-items: flex-start; justify-content: center"><span style="{{mg.down}}"></span></span>
 </a>
@@ -283,7 +283,7 @@ class Component extends DCLogic {
     var color = '#' + String(me.color || (st.color || '#12363B')).replace('#', '');
     var pick = function (g) { return g.opp || {}; };
     var name = me.name || st.name || (S.loading ? 'Loading…' : 'Team ' + id);
-    if (typeof document !== 'undefined' && name && !S.loading) document.title = name + ' · NSKN Terminal';
+    if (typeof document !== 'undefined' && name && !S.loading) document.title = name + ({ ncaaf: ' Football', ncaab: ' Basketball', ncaah: ' Hockey' }[lg] || '') + ' · NSKN Terminal';
 
     // standings row for this team
     var group = null, row = null;
@@ -295,7 +295,7 @@ class Component extends DCLogic {
     var enough = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
 
     var t = {
-      name: name, logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
+      name: name + ({ ncaaf: ' Football', ncaab: ' Basketball', ncaah: ' Hockey' }[lg] || ''), logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
       group: me.group || (group ? group.name : ''),
       record: st.record || (row && row.overall) || (S.loading ? '' : '0-0'),
       standing: (function (x) { return /\b(null|undefined|nan)\b/i.test(x) ? '' : x; })(st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || ''),
