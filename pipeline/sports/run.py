@@ -25,6 +25,7 @@ JOBS = {
     "lab-cfbd": [("cfbd", lab.job_cfbd)],
     "lab-probe2": [("probe2", lab.job_probe2)],
     "lab-bdb": [("bdb", lab.job_bdb)],
+    "lab-bdb27": [("bdb27", lab.job_bdb27)],
     "lab-kalshi": [("kalshi", lab.job_kalshi)],
     "lab-oddscore": [("oddscore", lab.job_oddscore)],
     "lab-oddsfill": [("oddsfill", lab.job_oddsfill)],
