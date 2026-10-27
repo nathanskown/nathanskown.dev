@@ -726,3 +726,169 @@ def job_bdb27test():
                              "medianMissWalk": round(med(act[te] - pr[te]), 2), "medianMissRoutes": round(med(act[te] - adj), 2)}})
     write("lab/_probe/bdb27test.json", out)
     return out
+
+
+# ---------------------------------------------------------------- Oct 27 data batch
+def job_nflopen():
+    """NFL opening and closing spreads from ESPN's core odds endpoint (free): history/nfl_open_{year}.json
+    {event id: [start, home id, away id, opening home margin, closing home margin, provider]}."""
+    out = {}
+    cur = (read("model/nfl.json") or {}).get("season") or 2026
+    for y in range(2016, cur + 1):
+        name = f"history/nfl_open_{y}.json"
+        store = read(name) or {"year": y, "g": {}}
+        if y < cur and len(store["g"]) > 250:
+            out[y] = "kept"
+            continue
+        ids = []
+        for wk in range(1, 19):
+            try:
+                d = get(CORE + f"football/leagues/nfl/seasons/{y}/types/2/weeks/{wk}/events", {"limit": "40"}, timeout=30)
+            except Exception:
+                continue
+            ids += [it["$ref"].split("/events/")[1].split("?")[0] for it in d.get("items") or []]
+        got = 0
+        for eid in ids:
+            if eid in store["g"]:
+                continue
+            try:
+                d = get(CORE + f"football/leagues/nfl/events/{eid}/competitions/{eid}/odds", {"limit": "50"}, timeout=30)
+                ev = get(CORE + f"football/leagues/nfl/events/{eid}", {}, timeout=30)
+            except Exception:
+                continue
+            comp = (ev.get("competitions") or [{}])[0]
+            side = {}
+            for c in comp.get("competitors") or []:
+                side[c.get("homeAway")] = str(c.get("id"))
+            items = [it for it in d.get("items") or [] if "Live" not in ((it.get("provider") or {}).get("name") or "")]
+            items.sort(key=lambda it: PREF.index(it["provider"]["name"]) if (it.get("provider") or {}).get("name") in PREF else 99)
+            row = None
+            for it in items:
+                home = it.get("homeTeamOdds") or {}
+                pick = lambda k: ((home.get(k) or {}).get("pointSpread") or {}).get("american")
+                o, c = pick("open"), pick("close")
+                def f(v):
+                    if v in (None, ""):
+                        return None
+                    if str(v).upper() in ("PK", "EVEN"):
+                        return 0.0
+                    return -float(str(v).replace("+", ""))
+                try:
+                    o2, c2 = f(o), f(c)
+                except ValueError:
+                    continue
+                if c2 is None and it.get("spread") is not None:
+                    c2 = -float(it["spread"])
+                if o2 is not None and c2 is not None:
+                    row = [(ev.get("date") or "")[:16], side.get("home"), side.get("away"), o2, c2, it["provider"]["name"]]
+                    break
+            if row:
+                store["g"][eid] = row
+                got += 1
+        write(name, store)
+        out[y] = {"events": len(ids), "added": got, "stored": len(store["g"])}
+    return out
+
+
+def job_nhlgoalies():
+    """Every regular-season NHL game's goalies from the NHL's own API (free): who started, minutes, shots and saves.
+    history/nhl_goalies_{year}.json {nhl game id: [date, home abbr, away abbr, home goalies, away goalies]},
+    goalie = [player id, name, started, seconds, shots against, saves]. year = the season's end year (ESPN style)."""
+    out = {}
+    cur = (read("model/nhl.json") or {}).get("season") or 2026
+    budget = time.time() + 300 * 60
+    for y in range(2019, cur + 1):
+        name = f"history/nhl_goalies_{y}.json"
+        store = read(name) or {"year": y, "g": {}}
+        if y < cur and len(store["g"]) > 1000:
+            out[y] = "kept"
+            continue
+        miss = 0
+        for n in range(1, 1400):
+            if time.time() > budget:
+                break
+            gid = f"{y - 1}02{n:04d}"
+            if gid in store["g"]:
+                continue
+            try:
+                b = get(f"https://api-web.nhle.com/v1/gamecenter/{gid}/boxscore", timeout=30)
+            except Exception:
+                miss += 1
+                if miss > 25:
+                    break
+                continue
+            if b.get("gameState") not in ("OFF", "FINAL"):
+                continue
+            miss = 0
+            pg = b.get("playerByGameStats") or {}
+
+            def goalies(side):
+                rows = []
+                for gk in ((pg.get(side) or {}).get("goalies") or []):
+                    toi = str(gk.get("toi") or "0:00").split(":")
+                    sec = int(toi[0]) * 60 + int(toi[1]) if len(toi) == 2 and toi[0].isdigit() else 0
+                    sa = gk.get("shotsAgainst")
+                    sv = gk.get("saves")
+                    if sa is None and gk.get("saveShotsAgainst"):
+                        try:
+                            sv, sa = (int(x) for x in str(gk["saveShotsAgainst"]).split("/"))
+                        except ValueError:
+                            pass
+                    rows.append([gk.get("playerId"), (gk.get("name") or {}).get("default"), bool(gk.get("starter")), sec, sa, sv])
+                return rows
+            store["g"][gid] = [b.get("gameDate"), (b.get("homeTeam") or {}).get("abbrev"), (b.get("awayTeam") or {}).get("abbrev"),
+                               goalies("homeTeam"), goalies("awayTeam")]
+            if len(store["g"]) % 300 == 0:
+                write(name, store)
+        write(name, store)
+        out[y] = len(store["g"])
+    return out
+
+
+def job_torvik():
+    """Can the runners reach barttorvik.com (free college basketball ratings)? Saves status and the first bytes only."""
+    out = {}
+    for name, url in (("season_csv", "https://barttorvik.com/2025_team_results.csv"),
+                      ("timemachine", "https://barttorvik.com/timemachine/team_results/20250115_team_results.json.gz"),
+                      ("trank_json", "https://barttorvik.com/trank.php?year=2025&json=1")):
+        try:
+            import requests
+            r = requests.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0 (research; nathanskown.dev)"})
+            body = r.content
+            if url.endswith(".gz"):
+                import gzip
+                try:
+                    body = gzip.decompress(body)
+                except OSError:
+                    pass
+            out[name] = {"status": r.status_code, "bytes": len(r.content), "type": r.headers.get("content-type"), "head": body[:600].decode("utf-8", "replace")}
+        except Exception as e:
+            out[name] = {"error": str(e)[:200]}
+    write("lab/_probe/torvik.json", out)
+    return {k: (v.get("status"), v.get("bytes")) if "status" in v else v for k, v in out.items()}
+
+
+def job_cfbdportal():
+    """College football transfer portal entries per season from CollegeFootballData (CFBD_KEY), by ESPN team id:
+    history/cfbd_portal.json {year: [[origin id, destination id or None, position, stars, rating], ...]}."""
+    key = os.environ.get("CFBD_KEY", "").strip()
+    if not key:
+        return {"error": "no CFBD_KEY"}
+    H = {"Authorization": f"Bearer {key}"}
+    ids = {t.get("school"): str(t.get("id")) for t in get("https://api.collegefootballdata.com/teams", {}, headers=H, timeout=90) or []}
+    store = read("history/cfbd_portal.json") or {}
+    cur = (read("model/ncaaf.json") or {}).get("season") or 2026
+    out = {}
+    for y in range(2021, cur + 1):
+        if str(y) in store and y < cur:
+            continue
+        try:
+            rows = get("https://api.collegefootballdata.com/player/portal", {"year": y}, headers=H, timeout=90) or []
+        except Exception as e:
+            out[y] = f"error {str(e)[:100]}"
+            continue
+        store[str(y)] = [[ids.get(r.get("origin")), ids.get(r.get("destination")), r.get("position"), r.get("stars"), r.get("rating")] for r in rows]
+        out[y] = len(rows)
+    store["updated"] = now_iso()
+    write("history/cfbd_portal.json", store)
+    return out

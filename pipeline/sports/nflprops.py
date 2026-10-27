@@ -330,7 +330,7 @@ def _book_grade(cur, keys, tables, games):
         if not e.get("d"):
             continue
         day = (datetime.fromisoformat(e["d"]) - _td(hours=6)).date().isoformat()
-        for name, team, mk, line, oo, ou, _res in e["props"]:
+        for name, team, mk, line, oo, ou, _res, *_open in e["props"]:
             w = wk.get((team, day))
             hit = keys.get((cur, w, _norm(name), team, mk)) if w else None
             if hit is None or mk not in tables or hit[1] == line or not (oo and ou):
