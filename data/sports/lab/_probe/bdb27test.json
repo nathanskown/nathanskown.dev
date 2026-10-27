@@ -1,1 +1,1 @@
-{"receiverWeeks":926,"players":89,"corr":{"tprr":0.088,"yprr":0.091,"sep":0.028},"train":386,"test":540,"beta":[-0.4199,0.5923,0.0971],"test2025":{"maeWalk":26.34,"maeWithRoutes":23.52}}
+{"receiverWeeks":926,"players":89,"corr":{"tprr":0.088,"yprr":0.091,"sep":0.028},"train":386,"test":540,"beta":[-0.4199,0.5923,0.0971],"test2025":{"maeWalk":26.34,"maeLevelOnly":24.11,"maeWithRoutes":23.52,"medianMissWalk":22.69,"medianMissRoutes":16.57}}
