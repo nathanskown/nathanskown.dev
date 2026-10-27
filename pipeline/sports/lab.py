@@ -716,7 +716,7 @@ def job_bdb27test():
     tr, te = yy == 2024, yy == 2025
     X = np.column_stack([np.ones_like(pr), tprr - tprr[tr].mean(), yprr - yprr[tr].mean()])
     beta = np.linalg.lstsq(X[tr], lr[tr], rcond=None)[0]
-    adj = pr * np.exp(X[te] @ beta)
+    adj = pr[te] * np.exp(X[te] @ beta)
     base_mae, new_mae = float(np.abs(act[te] - pr[te]).mean()), float(np.abs(act[te] - adj).mean())
     out.update({"train": int(tr.sum()), "test": int(te.sum()), "beta": [round(float(b), 4) for b in beta],
                 "test2025": {"maeWalk": round(base_mae, 2), "maeWithRoutes": round(new_mae, 2)}})
