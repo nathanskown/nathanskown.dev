@@ -68,7 +68,7 @@ def walk(lg):
         return _cache[lg]
     V = VALUE[lg]
     fm, fv = 0.5 ** (1 / V["hl_min"]), 0.5 ** (1 / V["hl_val"])
-    P, tg, edges = {}, collections.defaultdict(list), {}
+    P, tg, edges, lineup = {}, collections.defaultdict(list), {}, {}
     for y in lab_years(lg):
         store = read(f"lab/{lg}_{y}.json") or {}
         for st in P.values():
@@ -86,6 +86,11 @@ def walk(lg):
                 rows = [(st["name"], _value(st, V)) for pid, st in _rotation(P, t, recent, V) if pid not in played]
                 miss[t] = (sum(v for _, v in rows), [n for n, v in sorted(rows, key=lambda r: -r[1]) if v > 0.5])
             edges[(g["d"][:16], g["h"], g["a"])] = (miss[g["h"]][0], miss[g["a"]][0], miss[g["h"]][1], miss[g["a"]][1])
+            if lg == "nba":                 # lineup strength: summed pre-game value of the players who took the floor
+                ls = {}
+                for t in (g["h"], g["a"]):
+                    ls[t] = sum(_value(P[r[0]], V) for r in pl.get(t, []) if (r[2] or 0) > 0 and r[0] in P and P[r[0]]["mins"] > 50)
+                lineup[(g["d"][:16], g["h"], g["a"])] = ls[g["h"]] - ls[g["a"]]
             margin = g["hs"] - g["as"]
             for t, sgn in ((g["h"], 1), (g["a"], -1)):
                 tg[t].append(gid)
@@ -108,7 +113,45 @@ def walk(lg):
                                                              + stl + 0.7 * ast + 0.7 * blk - 0.4 * pf - to)
                         st["gsm"] = fv * st.get("gsm", 0.0) + mn
     _cache[lg] = (P, tg, edges)
+    _cache[lg + "_lu"] = lineup
     return _cache[lg]
+
+
+def season_lineup(lg, year, rows, inv):
+    """NBA: home minus away lineup strength for each finished game of a season (NaN where the lab has no box score)."""
+    if lg != "nba":
+        return None
+    walk(lg)
+    lu = _cache.get(lg + "_lu") or {}
+    out = [lu.get((r[0][:16], inv[r[1]], inv[r[2]]), np.nan) for r in rows]
+    return np.array(out, float) if any(not math.isnan(v) for v in out) else None
+
+
+def lineup_upcoming(lg, events, days=7):
+    """luEdges for upcoming NBA games: each side's rotation value, players on the injury report counted by how likely
+    they are to sit (Out fully, Doubtful 3/4, Questionable and Day-To-Day partly), home minus away."""
+    from datetime import datetime, timedelta, timezone
+    if lg != "nba":
+        return {}
+    V = VALUE[lg]
+    P, tg, _ = walk(lg)
+    inj = (read(f"injuries/{lg}.json") or {}).get("teams", {})
+    def strength(t):
+        recent = set(tg[t][-V["roster"]:])
+        out_w = {_norm(r.get("name")): STATUS_W.get(r.get("status"), 0.0) for r in inj.get(t, [])}
+        return sum(_value(st, V) * (1 - out_w.get(_norm(st["name"]), 0.0)) for pid, st in _rotation(P, t, recent, V) if st["mins"] > 50)
+    now = datetime.now(timezone.utc)
+    lo, lim = (now - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"), (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M")
+    cache, out = {}, {}
+    for g in events.values():
+        if g.get("done") or not g.get("d") or not (lo <= g["d"][:16] <= lim):
+            continue
+        for t in (g["h"], g["a"]):
+            if t not in cache:
+                cache[t] = strength(t) if tg.get(t) else None
+        if cache[g["h"]] is not None and cache[g["a"]] is not None:
+            out[f"{g['d'][:16]}|{g['h']}|{g['a']}"] = round(cache[g["h"]] - cache[g["a"]], 2)
+    return out
 
 
 def _edge(lg, year, d, h, a, projection=False):

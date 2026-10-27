@@ -63,6 +63,10 @@ def project(model, h, a, neutral, start=None):
         m += model["qbEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)      # NFL starting-QB adjustment (nflqb.py)
     if model.get("ctxEdges") and start:
         m += model["ctxEdges"].get(f"{start[:16]}|{h}|{a}", 0.0)     # who is playing: goalies, star availability, college QBs (ctx.py)
+    if model.get("lu") and model.get("luEdges") and start:            # NBA lineup-strength blend (tune.lineup_blend)
+        lu = model["luEdges"].get(f"{start[:16]}|{h}|{a}")
+        if lu is not None:
+            m = model["lu"][0] + model["lu"][1] * m + model["lu"][2] * lu
     if model.get("ms"):
         m *= model["ms"]                                            # margin stretch (tune.margin_scale)
     p = M.phi(m / spread(model, H, A))

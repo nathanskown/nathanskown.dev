@@ -130,6 +130,7 @@ class League:
             from . import ctx
             S.av, S.avCover = ctx.season_edges(lg, y, rows, {i: t for t, i in self.ix.items()})
             S.avp = ctx.season_proj_edges(lg, y, rows, {i: t for t, i in self.ix.items()})
+            S.lu = ctx.season_lineup(lg, y, rows, {i: t for t, i in self.ix.items()})
             if all(r[6] is not None for r in rows):
                 S.week = np.array([r[6] for r in rows], int)
             else:
@@ -558,6 +559,51 @@ def margin_scale(L, years, p, folds):
             "z": round(float(z), 2), "foldsImproved": f"{pos}/{len(rec)} (margin miss)", "folds": rec}
 
 
+def lineup_blend(L, years, p, folds):
+    """NBA: blend the team-rating projection with lineup strength (the summed value of the players who take the
+    floor, ctx.py): margin = b0 + b1 x projection + b2 x lineup difference, fitted on earlier seasons only, the spread
+    refitted, scored on held-out log loss. Games without a box score keep the plain projection."""
+    if not any(getattr(L.seasons[y], "lu", None) is not None for y in years):
+        return {"adopt": False, "reason": "no lineup data"}
+    P, U, A = run(L, years, p)
+    Y = np.concatenate([np.full(len(L.seasons[y].m), y) for y in years])
+    LU = np.concatenate([L.seasons[y].lu if getattr(L.seasons[y], "lu", None) is not None else np.full(len(L.seasons[y].m), np.nan) for y in years])
+    pv, ps = p.get("pv"), p.get("ps")
+    have = ~np.isnan(LU)
+
+    def fit(k):
+        X = np.column_stack([np.ones(k.sum()), P[k], LU[k]])
+        return np.linalg.lstsq(X, A[k], rcond=None)[0]
+
+    def blend(b, k):
+        Q = P.copy()
+        Q[k & have] = b[0] + b[1] * P[k & have] + b[2] * LU[k & have]
+        return Q
+    diffs, rec = [], []
+    for hold in folds:
+        tr, te = (Y < hold) & have, Y == hold
+        if tr.sum() < 800 or (te & have).sum() < 300:
+            continue
+        b = fit(tr)
+        Q = blend(b, (Y < hold) | te)
+        trall = Y < hold
+        s0, s1 = fit_sigma(P[trall], U[trall], A[trall], pv, ps), fit_sigma(Q[trall], U[trall], A[trall], pv, ps)
+        base, new = score(P[te], U[te], A[te], s0, pv), score(Q[te], U[te], A[te], s1, pv)
+        d = base["ll"] - new["ll"]
+        diffs.append(d)
+        rec.append({"holdout": int(hold), "b": [round(float(x), 3) for x in b], "gain": round(float(d.mean()), 5), "mae": [round(base["mae"], 3), round(new["mae"], 3)]})
+    if len(rec) < 2:
+        return {"adopt": False, "reason": "fewer than two held-out seasons with lineup data", "folds": rec}
+    pooled = np.concatenate(diffs)
+    gain = float(pooled.mean()); z = gain / (pooled.std(ddof=1) / math.sqrt(len(pooled))) if pooled.std() > 0 else 0.0
+    pos = sum(1 for r in rec if r["gain"] > 0); worst = min(r["gain"] for r in rec)
+    adopt = gain >= MIN_GAIN and worst >= WORST_FOLD and (z >= MIN_Z or (z >= MIN_Z_CONSISTENT and pos >= len(rec) - 1))
+    b = fit(have)
+    Q = blend(b, np.ones(len(P), bool))
+    return {"adopt": bool(adopt), "b": [round(float(x), 4) for x in b], "sigma": round(fit_sigma(Q, U, A, pv, ps), 3), "gain": round(gain, 5),
+            "z": round(float(z), 2), "foldsImproved": f"{pos}/{len(rec)}", "folds": rec}
+
+
 def tune(lg):
     preset = {k: v for k, v in M.PARAMS[lg].items() if k in ("hfa", "divHfa", "k", "cap", "carry", "soft", "hl", "pv", "newp", "rest")}
     preset.setdefault("carry", 0.0)
@@ -634,6 +680,11 @@ def tune(lg):
         out["ms"] = margin_scale(L, usable, params, folds)
     except Exception as e:
         out["ms"] = {"adopt": False, "reason": str(e)[:160]}
+    if lg == "nba":
+        try:
+            out["lu"] = lineup_blend(L, usable, params, folds)
+        except Exception as e:
+            out["lu"] = {"adopt": False, "reason": str(e)[:160]}
     if lg in ("nfl", "nba", "nhl", "ncaab", "ncaaf"):
         out["market"] = market_check(L, [y for y in usable if y >= usable[-1] - 9], params, out["ms"].get("c") if out["ms"].get("adopt") else None)
     if not adopt:

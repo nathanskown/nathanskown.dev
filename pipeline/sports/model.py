@@ -78,6 +78,8 @@ def get_params(lg):
         P["sigmaMargin"] = t.get("sigmaMargin", t["sigma"])
     if t and (t.get("ms") or {}).get("adopt"):
         P["ms"], P["sigmaMs"] = t["ms"]["c"], t["ms"]["sigma"]       # margin stretch (tune.margin_scale)
+    if t and (t.get("lu") or {}).get("adopt"):
+        P["lu"], P["sigmaLu"] = t["lu"]["b"], t["lu"]["sigma"]       # NBA lineup-strength blend (tune.lineup_blend)
     from . import ctx
     if ctx.params(lg) and not P.get("av"):
         P["av"] = ctx.params(lg)
@@ -474,7 +476,7 @@ def build(lg):
     si = season_info(lg)
     smap = _standings_map(lg)
     members = set(_members(lg))
-    res = {"lg": lg, "season": si["year"], "seasonType": si["type"], "hfa": P["hfa"], "sigma": P.get("sigmaMs") or P["sigma"], "ms": P.get("ms"),
+    res = {"lg": lg, "season": si["year"], "seasonType": si["type"], "hfa": P["hfa"], "sigma": P.get("sigmaLu") or P.get("sigmaMs") or P["sigma"], "ms": P.get("ms"),
            "sigmaMargin": P.get("sigmaMargin", P["sigma"]),
            "k": P["k"], "unit": P["unit"], "minGp": P["minGp"], "teams": {}, "odds": None}
     if P.get("divHfa") is not None:
@@ -572,6 +574,13 @@ def build(lg):
                 res["spEdges"] = extra.upcoming_sp(si["year"], P["sp"])     # announced starters, next 7 days
             except Exception as e:
                 print("MLB starters failed:", str(e)[:120])
+        if P.get("lu"):
+            from . import ctx
+            try:
+                res["lu"] = P["lu"]
+                res["luEdges"] = ctx.lineup_upcoming(lg, events)
+            except Exception as e:
+                print("lineup upcoming failed:", str(e)[:120])
         if P.get("av"):
             from . import ctx
             try:
