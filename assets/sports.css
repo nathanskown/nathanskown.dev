@@ -72,7 +72,9 @@ position:relative;min-height:100vh;background:#020607;color:var(--a);font-family
 .t-day.is-today{background:var(--band);border-color:var(--a)}
 
 .t-foot{border-top:1px solid var(--line);background:#000}
-.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+.t-crt{display:none}
+/* scanlines are a body pseudo-element so contrast tools and screen readers see plain text */
+body::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
 @keyframes t-pulse{50%{opacity:.3}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes arrive{from{background:#0f3a40}to{background:#03090a}}
@@ -270,7 +272,7 @@ body.has-crawl{padding-bottom:34px}
 @keyframes s-crawl{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.s-crawl-track{animation:none}.s-crawl-win{overflow-x:auto}.sb:hover{transform:none}}
 @media (max-width:760px){.s-crawl{height:38px}.s-crawl-l .x{display:none}body.has-crawl{padding-bottom:38px}.s-strip > div{flex:1 1 calc(50% - 8px);min-width:0}.s-bigscore{font-size:64px}}
-@media print{.s-crawl,.t-crt{display:none}}
+@media print{.s-crawl,.t-crt,body::after{display:none}}
 .t-sub2 .t-sl{white-space:nowrap}
 .s-side-a{display:none}
 @media (max-width:760px){
@@ -324,3 +326,8 @@ body.has-crawl{padding-bottom:34px}
 .hs-meta{font-size:12.5px;color:var(--dim)}
 .hs-lim{margin:0;padding-left:18px;max-width:88ch}.hs-lim li{margin:0 0 8px}
 @media (max-width:860px){.hs-row{grid-template-columns:1fr 1fr;gap:6px 12px}.hs-lbl{grid-column:1/-1}.hs-bar{grid-column:1/-1}.hs-num{text-align:left}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+
+/* footer: links read as links without relying on colour; room below so the floating Plain English button never covers the last line */
+.t-foot a{text-decoration:underline;text-underline-offset:3px}
+.t-foot{padding-bottom:64px}

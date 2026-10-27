@@ -371,6 +371,25 @@
         return r.json();
       });
     },
+    /* The 30 core tickers are written to a file each morning. Lay the live price on top of that file so "today" is
+       really today: price, change, charts and the numbers that depend on price move; everything else stays from the file.
+       If the live call fails the morning file is shown unchanged. Resolves to the (possibly updated) q. */
+    overlayLive: function (q) {
+      if (!q || !q.sym) return Promise.resolve(q);
+      return fetch('/api/quote?part=price&sym=' + encodeURIComponent(q.sym)).then(function (r) { return r.ok ? r.json() : null; }).then(function (P) {
+        if (!P || !P.quote || !(P.quote.price > 0)) return q;
+        var old = q.quote && q.quote.price, out = Object.assign({}, q);
+        out.quote = Object.assign({}, q.quote, P.quote);
+        ['charts', 'ytd', 'y1', 'updated'].forEach(function (k) { if (P[k] != null) out[k] = P[k]; });
+        if (q.stats && old > 0) {
+          var k = P.quote.price / old;
+          out.stats = Object.assign({}, q.stats);
+          ['mcap', 'pe'].forEach(function (f) { if (out.stats[f] > 0) out.stats[f] = out.stats[f] * k; });
+        }
+        out.liveOverlay = true;
+        return out;
+      }, function () { return q; });
+    },
     mount: function (Component, defaults) {
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];

@@ -20,7 +20,6 @@ const json = (obj, status = 200, ttl = 0) =>
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": ttl ? `public, max-age=${ttl}` : "no-store",
-      "access-control-allow-origin": "*",
     },
   });
 

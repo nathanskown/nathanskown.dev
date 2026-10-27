@@ -212,6 +212,7 @@ class Component extends DCLogic {
           soft(DC.load('/data/finance/members.json'))
         ]).then(function (r) {
           self.setState({ loading: null, O: r[0], Q: r[1], Fl: r[2], Fn: r[3], E: r[4], M: r[5] || {}, core: core, hitName: hit ? hit.name : null });
+          if (core && r[1]) DC.overlayLive(r[1]).then(function (lq) { if (lq !== r[1] && (self.state || {}).sym === sym) self.setState({ Q: lq }); });
           if (/[?&]print=1/.test(location.search)) setTimeout(function () { window.print(); }, 900);
         });
       });

@@ -171,9 +171,12 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 .nk-status{display:flex;flex-wrap:wrap;gap:6px 22px;padding:7px 10px 9px;font-size:12px;color:var(--dim);letter-spacing:.06em}
 
 /* crt + boot */
-.nk-crt{pointer-events:none;position:absolute;inset:0;z-index:95;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.24) 3px,rgba(0,0,0,0) 4px)}
-.nk-vig{pointer-events:none;position:fixed;inset:0;z-index:96;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(0,0,0,.5) 100%)}
-.nk-sweep{pointer-events:none;position:absolute;left:0;right:0;top:-160px;height:160px;z-index:97;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--g) 5%,transparent) 70%,transparent);animation:nk-sweep 8s linear infinite}
+/* Scanlines, vignette and sweep are drawn as body pseudo-elements, not page elements: contrast checkers and screen
+   readers then see plain text instead of text covered by an overlay, and the sweep moves with transform (no layout work).
+   The vignette is kept light so corner text (the header clock) stays above the 4.5:1 contrast line. */
+.nk-crt,.nk-vig,.nk-sweep{display:none}
+body.nk-crt-on::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:96;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.16) 3px,rgba(0,0,0,0) 4px),radial-gradient(ellipse at center,rgba(0,0,0,0) 65%,rgba(0,0,0,.14) 100%)}
+body.nk-crt-on::before{content:"";pointer-events:none;position:fixed;left:0;right:0;top:0;height:160px;z-index:97;background:linear-gradient(180deg,transparent,color-mix(in srgb,#8dff9c 5%,transparent) 70%,transparent);transform:translateY(-160px);animation:nk-sweep 8s linear infinite;will-change:transform}
 .nk-boot{position:absolute;inset:0;z-index:90;background:#000;padding:clamp(22px,5vw,64px);font-family:'VT323',ui-monospace,monospace;font-size:clamp(19px,2vw,25px);line-height:1.28;color:var(--g);transition:opacity .45s ease}
 .nk-boot.is-out{opacity:0;pointer-events:none}
 .nk-boot-in{max-width:900px}
@@ -191,7 +194,7 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 @keyframes nk-blink{50%{opacity:0}}
 @keyframes nk-pulse{50%{opacity:.3}}
 @keyframes nk-tape{to{transform:translateX(-50%)}}
-@keyframes nk-sweep{from{top:-160px}to{top:100%}}
+@keyframes nk-sweep{from{transform:translateY(-160px)}to{transform:translateY(100vh)}}
 @keyframes nk-in{from{opacity:0}to{opacity:1}}
 @keyframes nk-drop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 @keyframes nk-flicker{0%,91%,93%,96.6%,100%{opacity:1}92%{opacity:.78}96%{opacity:.9}}
@@ -235,8 +238,8 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 .nk-skiplink{position:absolute;left:8px;top:-60px;z-index:200;background:var(--g);color:#000;text-shadow:none;padding:8px 14px;font-weight:600}
 .nk-skiplink:focus{top:8px}
 @media (prefers-reduced-motion:reduce){
-.nk *,.nk-sweep{animation:none !important;transition:none !important}
-.nk-sweep{display:none}
+.nk *{animation:none !important;transition:none !important}
+body.nk-crt-on::before{display:none;animation:none}
 .nk-tape-win{overflow-x:auto}
 }
 .nk [hidden]{display:none !important}

@@ -108,7 +108,7 @@
       return r.json();
     }
     async function prepare(song) {
-      const d = await resolve(song);
+      const d = song.remote ? await song.remote() : await resolve(song);   // daily songs refresh through the server
       if (!d.preview) throw new Error("no preview");
       song.previewUrl = d.preview;
       song.link = d.link || "#";

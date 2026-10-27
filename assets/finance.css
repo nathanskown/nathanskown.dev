@@ -72,7 +72,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t-day.is-today{background:var(--band);border-color:var(--a)}
 
 .t-foot{border-top:1px solid var(--line);background:#000}
-.t-crt{pointer-events:none;position:absolute;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
+.t-crt{display:none}
+/* scanlines are a body pseudo-element so contrast tools and screen readers see plain text */
+body::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:50;background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.14) 3px,rgba(0,0,0,0) 4px)}
 @keyframes t-pulse{50%{opacity:.3}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes arrive{from{background:#3a2a12}to{background:#0a0704}}
@@ -196,7 +198,7 @@ body.has-tape{padding-bottom:34px}
 @keyframes f-tape{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.f-tape-track{animation:none}.f-tape-win{overflow-x:auto}.t .tl:hover,.t .f-heat:hover{transform:none}}
 @media (max-width:760px){.f-tape{height:38px}.f-tape-l .x{display:none}body.has-tape{padding-bottom:38px}.t .f-price{font-size:56px !important}}
-@media print{.f-tape,.t-crt{display:none}}
+@media print{.f-tape,.t-crt,body::after{display:none}}
 
 /* screener */
 .t .sel{width:100%;min-height:40px;background:#000;color:var(--hi);border:1px solid var(--line);font:inherit;font-size:13.5px;padding:0 8px;text-shadow:inherit}
@@ -360,3 +362,7 @@ body.has-tape{padding-bottom:34px}
 .t .t-fkey.t-fref:hover{background:#000;color:var(--a)}
 .t .t-fkey.t-fref.is-on{background:#000;color:var(--gold)}
 .t-fbar .t-fsep+.t-fkey{border-left:0}
+
+/* footer: links read as links without relying on colour; room below so the floating Plain English button never covers the last line */
+.t-foot a{text-decoration:underline;text-underline-offset:3px}
+.t-foot{padding-bottom:64px}

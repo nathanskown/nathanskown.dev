@@ -44,8 +44,10 @@ class Component extends DCLogic {
     var self = this;
     var core = (idx || (this.state || {}).index || { tickers: [] }).tickers.some(function (t) { return t.sym === sym; });
     if (core) {  // core watch list: built nightly, loads instantly
-      DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) { self.setState({ q: q, notTracked: null }); })
-        .catch(function () { self.live(sym); });
+      DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) {
+        self.setState({ q: q, notTracked: null });   // show the morning file at once, then swap in live prices
+        DC.overlayLive(q).then(function (lq) { if (lq !== q && (self.state || {}).sym === sym) self.setState({ q: lq }); });
+      }).catch(function () { self.live(sym); });
       return;
     }
     this.live(sym);

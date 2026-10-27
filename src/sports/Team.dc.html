@@ -298,7 +298,7 @@ class Component extends DCLogic {
       name: name, logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
       group: me.group || (group ? group.name : ''),
       record: st.record || (row && row.overall) || (S.loading ? '' : '0-0'),
-      standing: st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || '',
+      standing: (function (x) { return /\b(null|undefined|nan)\b/i.test(x) ? '' : x; })(st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || ''),
       bandStyle: 'background: radial-gradient(900px 320px at 12% 40%, ' + color + 'cc, transparent 70%), linear-gradient(100deg, ' + color + '66 0%, ' + color + '18 55%, transparent 80%), linear-gradient(180deg, transparent 50%, #03070c 100%), #03070c;',
       rankLine: mt && enough(mt) ? 'House rating ' + sign(mt.rating) + ' ' + unit + ' vs. an average team · No. ' + mt.rank + ' of ' + teamN : ''
     };

@@ -58,7 +58,7 @@ class Component extends DCLogic {
     var st = this.state || {};
     var D = st.data || null;
     var M = Component.METRICS, G = Component.GROUPS, byId = Component.BY_ID;
-    var F = st.f || {};
+    var flt = st.f || {};
     var setState = function (o) { self.setState(o); setTimeout(function () { self.save(); }, 0); };
     var fmt = function (m, v) {
       if (v === null || v === undefined || v === '') return '—';
@@ -76,7 +76,7 @@ class Component extends DCLogic {
     var n = D ? D.n : 0, d = D ? D.d : {};
     var uniOk = function (i) { return st.uni === 'sp500' ? (d.idx[i] & 1) : st.uni === 'sp1500' ? d.idx[i] > 0 : true; };
     var qq = (st.q || '').toLowerCase().trim();
-    var active = M.filter(function (m) { var r = F[m.id]; return r && (r[0] !== null && r[0] !== undefined || r[1] !== null && r[1] !== undefined); });
+    var active = M.filter(function (m) { var r = flt[m.id]; return r && (r[0] !== null && r[0] !== undefined || r[1] !== null && r[1] !== undefined); });
     var inUni = [], pass = [], missing = {};
     var uniCount = 0;
     if (D) {
@@ -88,7 +88,7 @@ class Component extends DCLogic {
         uniCount++;
         var ok = true;
         for (var a = 0; a < active.length; a++) {
-          var m = active[a], v = d[m.id][i], r = F[m.id];
+          var m = active[a], v = d[m.id][i], r = flt[m.id];
           if (v === null || v === undefined) { missing[m.id] = (missing[m.id] || 0) + 1; ok = false; continue; }
           if (r[0] !== null && r[0] !== undefined && v < r[0]) { ok = false; }
           else if (r[1] !== null && r[1] !== undefined && v > r[1]) { ok = false; }
@@ -129,7 +129,7 @@ class Component extends DCLogic {
     var mq = (st.metricQ || '').toLowerCase().trim();
     var groups = G.map(function (g) {
       return { title: g.title, items: M.filter(function (m) { return m.group === g.id && (!mq || m.label.toLowerCase().indexOf(mq) >= 0 || m.id.toLowerCase().indexOf(mq) >= 0); }).map(function (m) {
-        var r = F[m.id] || [null, null];
+        var r = flt[m.id] || [null, null];
         var fill = D && D.fill ? D.fill[m.id] : 0;
         var covN = 0; if (D) { for (var i2 = 0; i2 < n; i2++) { if (uniOk(i2) && d[m.id][i2] !== null && d[m.id][i2] !== undefined) covN++; } }
         var uniAll = 0; if (D) { for (var i3 = 0; i3 < n; i3++) { if (uniOk(i3)) uniAll++; } }
@@ -152,7 +152,7 @@ class Component extends DCLogic {
       }) };
     });
     groups = groups.filter(function (g) { return g.items.length; });
-    var nAct = Object.keys(F).length;
+    var nAct = Object.keys(flt).length;
     // coverage panel
     var uniN = uniCount;
     var coverage = [];

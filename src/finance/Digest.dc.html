@@ -236,7 +236,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 18px">
 
 <section id="watch" class="t-panel" aria-label="What to watch">
-<div class="t-ph"><h2>What to Watch</h2><span class="dim">Times CT</span></div>
+<div class="t-ph"><h2>What to Watch</h2><span class="dim">Times in your time zone</span></div>
 <div class="t-pb" style="padding-top: 4px">
 <sc-for list="{{edWatch}}" as="w" hint-placeholder-count="6">
 <div class="t-row" style="display: flex; gap: 14px; padding: 10px 0">
@@ -497,7 +497,7 @@ class Component extends DCLogic {
     return {
       hasEd: !!ED, noEd: !ED,
       edHeadline: ED ? ED.headline : '', edLede: ED ? ED.lede : '', edStale: stale,
-      edByline: ED ? (usingAuto ? 'Auto-written from today\'s data (rules, no AI) · refreshed ' + tm(D.updated) + ' CT' + (HAND ? ' · a hand-written edition appears here on days one is published' : '') : 'Written by Claude for ' + edDateLabel + ' · ' + tm(ED.written) + ' CT') : '',
+      edByline: ED ? (usingAuto ? 'Auto-written from today\'s data (rules, no AI) · refreshed ' + tm(D.updated) + ' ' + (window.TZL || 'CT') + (HAND ? ' · a hand-written edition appears here on days one is published' : '') : 'Written by Claude for ' + edDateLabel + ' · ' + tm(ED.written) + ' CT') : '',
       edMarketTitle: ED && ED.market ? ED.market.title : '', edPoints: ED && ED.market ? ED.market.points : [],
       edBottom: ED && ED.data ? ED.data.bottom : '',
       edData: ED && ED.data ? ED.data.rows.map(function (r) { var g = SIG[r.signal] || SIG.mix; return { n: r.n, read: r.read, why: r.why, label: g[0], color: g[1] }; }) : [],

@@ -23,7 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/site.css">
 </head>
-<body>
+<body class="nk-crt-on">
 <div class="nk t-green" id="root">
 <a class="nk-skiplink" href="#main">Skip to content</a>
 
@@ -31,12 +31,12 @@
 <div class="nk-title">
 <span class="nk-brand">1-NSKN</span>
 <span class="nk-spacer"></span>
-<span class="nk-live"><span class="nk-dot"></span>DELAYED 15 MIN</span>
+<span class="nk-live"><span class="nk-dot"></span>UPDATED HOURLY</span>
 <span class="nk-dim"><span data-bind="zoneLabel">LOCAL</span> <span data-bind="chiTime">--:--:--</span></span>
 </div>
 </header>
 
-<main class="nk-main" id="main" tabindex="-1">
+<div class="nk-main">
 
 <nav class="nk-side" aria-label="Site">
 <div class="nk-sh">Navigate</div>
@@ -49,9 +49,9 @@
 <button type="button" class="nk-nav" data-go="contact"><span class="nk-num">7)</span>Contact</button>
 </nav>
 
-<section class="nk-center" aria-label="Home">
+<main class="nk-center" id="main" tabindex="-1">
 <div class="nk-ph"><span>NSKN » Home</span></div>
-<div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS · DELAYED 15 MIN</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
+<div class="nk-tick" hidden aria-label="Market ticker"><span class="nk-tick-l">MKTS · UPDATED HOURLY</span><div class="nk-tick-win"><div class="nk-tick-track" id="tickTrack"></div></div></div>
 
 <div class="nk-hero" id="hero">
 <canvas class="nk-canvas" id="surface" aria-hidden="true"></canvas>
@@ -59,10 +59,10 @@
 <div class="nk-kicker"><span class="nk-dot"></span>NSKN TERMINAL<span class="nk-sep">//</span><span id="modeName">MARKETS</span></div>
 <h1 class="nk-word" id="word" aria-label="NSKN Terminal: markets, sports and music"><span aria-hidden="true" id="wordA"></span><span class="nk-word-cur" aria-hidden="true">_</span></h1>
 <p class="nk-typed"><span class="nk-gt">&gt;</span> <span id="typed"></span><span class="nk-caret" aria-hidden="true"></span></p>
-<div class="nk-modes" role="tablist" aria-label="Modes">
-<button type="button" class="nk-mode" role="tab" data-mode="0" style="--mc:#ffbf3a"><span>01 MARKETS</span><i class="nk-mode-bar"></i></button>
-<button type="button" class="nk-mode" role="tab" data-mode="1" style="--mc:#66e6f2"><span>02 SPORTS</span><i class="nk-mode-bar"></i></button>
-<button type="button" class="nk-mode" role="tab" data-mode="2" style="--mc:#d58bff"><span>03 MUSIC</span><i class="nk-mode-bar"></i></button>
+<div class="nk-modes" aria-label="Modes">
+<button type="button" class="nk-mode" aria-pressed="false" data-mode="0" style="--mc:#ffbf3a"><span>01 MARKETS</span><i class="nk-mode-bar"></i></button>
+<button type="button" class="nk-mode" aria-pressed="false" data-mode="1" style="--mc:#66e6f2"><span>02 SPORTS</span><i class="nk-mode-bar"></i></button>
+<button type="button" class="nk-mode" aria-pressed="false" data-mode="2" style="--mc:#d58bff"><span>03 MUSIC</span><i class="nk-mode-bar"></i></button>
 </div>
 
 <div class="nk-secs">
@@ -126,7 +126,7 @@
 </div>
 </div>
 </div>
-</section>
+</main>
 
 <aside class="nk-rail" aria-label="Indicators">
 <div class="nk-rp">
@@ -144,19 +144,16 @@
 
 </aside>
 
-</main>
+</div>
 
 <footer>
 <div class="nk-status">
 <span><a href="/about/">About</a> · <a href="/under-the-hood/">Under the hood</a> · <a href="/editions/">Editions</a> · <a href="/status/">Status</a></span>
-<span>Prices delayed about 15 minutes. Not investment advice.</span>
+<span>Prices are delayed and refreshed hourly while markets are open. Not investment advice.</span>
 <span>© 2026 NATHAN SKOWN</span>
 </div>
 </footer>
 
-<div class="nk-crt" aria-hidden="true"></div>
-<div class="nk-vig" aria-hidden="true"></div>
-<div class="nk-sweep" aria-hidden="true"></div>
 
 <div class="nk-boot" id="boot" hidden>
 <div class="nk-boot-in">

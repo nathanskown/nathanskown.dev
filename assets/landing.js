@@ -103,7 +103,17 @@
   document.addEventListener('click', function (e) {
     var t = e.target.closest ? e.target.closest('[data-go]') : null;
     if (!t || !root.contains(t)) return;
-    var k = t.getAttribute('data-go'); setActive(k, LABEL[k]);
+    var k = t.getAttribute('data-go');
+    if (TITLES[k]) opener = t;
+    setActive(k, LABEL[k]);
+    if (!TITLES[k] && opener && t.closest('#panel')) { try { opener.focus(); } catch (x) {} opener = null; }
+  });
+  var opener = null;
+  // Escape closes an open panel and hands focus back to the control that opened it
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || $('panel').hidden) return;
+    setActive('overview', 'HOME');
+    if (opener) { try { opener.focus(); } catch (x) {} opener = null; }
   });
 
   /* ---------- hero: one big word that cycles MARKETS → SPORTS → MUSIC ----------
@@ -155,7 +165,7 @@
     $('modeName').textContent = m.word;
     if ($('fig')) $('fig').textContent = m.fig;
     var tabs = document.querySelectorAll('.nk-mode');
-    for (var t = 0; t < tabs.length; t++) { var on = +tabs[t].getAttribute('data-mode') === i; tabs[t].classList.toggle('is-on', on); tabs[t].setAttribute('aria-selected', on); }
+    for (var t = 0; t < tabs.length; t++) { var on = +tabs[t].getAttribute('data-mode') === i; tabs[t].classList.toggle('is-on', on); tabs[t].setAttribute('aria-pressed', on); }
     MODES.forEach(function (x, k) { var c = $(x.card); if (c) c.classList.toggle('is-mode', k === i); });
     if (changed || why === 'start') scramble();
   }
@@ -187,7 +197,8 @@
   // keys: 1-3 pick a mode; ← → step through modes
   document.addEventListener('keydown', function (e) {
     var tag = (e.target && e.target.tagName) || '';
-    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/INPUT|TEXTAREA|SELECT|A|BUTTON/.test(tag) && !/^(BODY|HTML)$/.test(tag) && !(e.target.closest && e.target.closest('#hero'))) return;
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.metaKey || e.ctrlKey || e.altKey || !$('panel').hidden) return;
     if (e.key >= '1' && e.key <= '3') setMode(+e.key - 1);
     else if (e.key === 'ArrowRight') setMode(mode + 1);
     else if (e.key === 'ArrowLeft') setMode(mode - 1);
@@ -498,29 +509,16 @@
   })();
 })();
 
-/* "Last updated": the newest site change on GitHub, skipping the bots' data refreshes. Cached for the visit;
-   the date written in index.html stays if GitHub can't be reached. */
+/* "Last updated": a small file the stamp-updated workflow rewrites after each site change (no outside calls).
+   The date written in index.html stays if the file is missing. */
 (function () {
   var out = document.getElementById('lastUpd');
   if (!out || !window.fetch) return;
-  var show = function (iso) {
-    var d = new Date(iso);
-    if (!isNaN(d)) out.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-  };
-  try { var c = sessionStorage.getItem('nskn.lastUpd'); if (c) { show(c); return; } } catch (e) {}
-  var DATA = /^(data:|refresh |daily challenge|sports data|music: daily)/i;
-  fetch('https://api.github.com/repos/nathanskown/nathanskown.dev/commits?sha=main&per_page=100')
+  fetch('/data/lastupdated.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (list) {
-      var hit = (list || []).filter(function (x) {
-        var msg = ((x.commit || {}).message || '').split('\n')[0];
-        var who = ((x.author || {}).login || '') + ' ' + (((x.commit || {}).author || {}).name || '');
-        return !DATA.test(msg) && !/\[bot\]|actions|-bot\b/i.test(who);
-      })[0];
-      if (!hit) return;
-      var iso = hit.commit.committer.date;
-      show(iso);
-      try { sessionStorage.setItem('nskn.lastUpd', iso); } catch (e) {}
+    .then(function (j) {
+      var d = new Date(j && j.at);
+      if (!isNaN(d)) out.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' }).toUpperCase();
     })
     .catch(function () {});
 })();

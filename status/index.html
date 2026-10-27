@@ -88,7 +88,6 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
     ['Quote API (AAPL)', '/api/quote?part=price&sym=AAPL', function (j) { return j && j.quote ? '$' + j.quote.price : ''; }],
     ['ESPN scoreboard (NFL)', '/api/espn/site/v2/sports/football/nfl/scoreboard', function (j) { return j && j.events ? j.events.length + ' games' : ''; }],
     ['Music leaderboard', '/api/music/board?game=track&scope=today', function (j) { return j && j.entries ? j.entries.length + ' scores today' : ''; }],
-    ['Music daily schedule', '/music/data/daily.js', function () { return 'loaded'; }],
     ['Deezer preview lookup', 'https://music-api.nskown.workers.dev/health', function (j) { return j && j.ok ? 'ok' : ''; }]
   ];
   $('live').innerHTML = LIVE.map(function (x) { return row([esc(x[0]), pill('wait', '…'), '']); }).join('');

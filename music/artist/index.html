@@ -137,7 +137,6 @@
 <script src="/music/assets/variety.js"></script>
 <script src="/music/assets/credits.js"></script>
 <script src="/music/data/artists.js"></script>
-<script src="/music/data/daily.js"></script>
 <script>
 (function () {
   "use strict";
@@ -160,10 +159,8 @@
      Stage 0 shows 3 of the artist's lesser-known tracks (deepest cuts first), then each wrong
      guess adds a 4th and 5th track, then genre / era / country, then their biggest hit. */
   function buildStages(a, rnd) {
-    // frozen daily artists carry their exact clue tracks; otherwise pick them now
-    const byName = n => (a.tracks || []).find(t => t.name === n);
-    const frozen = a.picked && a.picked.map(byName).filter(Boolean);
-    const picked = frozen && frozen.length >= 3 ? frozen : MX.shuffle(lesserOf(a), rnd).slice(0, 5).sort((x, y) => y.rank - x.rank);
+    // practice rounds only: the daily's clues are built and handed out one at a time by the server
+    const picked = MX.shuffle(lesserOf(a), rnd).slice(0, 5).sort((x, y) => y.rank - x.rank);
     const stages = [];
     stages.push(picked.slice(0, 3).map((t, i) => ({ k: "TRACK " + (i + 1), v: t.name })));
     for (let i = 3; i < picked.length; i++) stages.push([{ k: "TRACK " + (i + 1), v: picked[i].name }]);
@@ -235,20 +232,61 @@
   const SEEN = MX.seen("artist", 300);
   const spreadArtists = (list, rnd, n) => MXV.spread(list, rnd, { fam: famOf, artist: a => a.name, decade: a => a.debutDecade || null, limit: n });
 
-  function startRound(daily) {
-    const rnd = daily ? MX.mulberry32(MX.hashStr("guess-artist-" + MX.todayKey())) : Math.random;
-    // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change today's artists.
-    const day = daily && ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
-    const frozen = day && day.artist && day.artist.length >= ROUND ? day.artist.slice(0, ROUND) : null;
-    const base = daily ? ARTISTS : SEEN.fresh(filtered(), a => a.name, ROUND * 3);
-    const queue = (frozen || spreadArtists(base, rnd, ROUND)).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
-    S = { queue, i: 0, stage: 0, score: 0, results: [], daily, done: false };
+  /* Practice rounds are picked and checked in the browser. The daily is played against the server (see startDaily):
+     it holds the answers, checks every guess and counts the score, so today's artists are not sent to the page
+     until you have finished each one. */
+  function openGame(daily) {
     document.body.classList.add("in-game");             // shrink the page heading so the game sits near the top
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
     $("game").classList.remove("hidden");
     $("dailyTag").classList.toggle("hidden", !daily);
+  }
+
+  function startRound() {
+    const rnd = Math.random;
+    const base = SEEN.fresh(filtered(), a => a.name, ROUND * 3);
+    const queue = spreadArtists(base, rnd, ROUND).map(a => ({ artist: a, stages: buildStages(a, rnd) }));
+    S = { queue, i: 0, stage: 0, score: 0, results: [], daily: false, remote: false, done: false };
+    openGame(false);
     loadArtist();
+  }
+
+  const errText = e => '<span class="bad">' + MX.esc(MX.lb.message(e && e.code)) + "</span>";
+  const nStages = c => c.total || c.stages.length;
+
+  async function startDaily() {
+    $("dailyBtn").disabled = true; $("dailyNote").textContent = "Loading today's challenge…";
+    let j;
+    try { j = await MX.lb.daily({ a: "start", game: "artist" }); }
+    catch (e) { $("dailyBtn").disabled = false; $("dailyNote").innerHTML = errText(e); return; }
+    $("dailyBtn").disabled = false; dailyNote();
+    const queue = []; for (let k = 0; k < j.total; k++) queue.push({ artist: null, stages: [], total: 0 });
+    S = { queue, i: 0, stage: 0, score: 0, results: [], daily: true, remote: true, sid: j.sid, done: false };
+    openGame(true);
+    showRemote(j);
+  }
+
+  // the server sends only the clues unlocked so far
+  function showRemote(j) {
+    S.i = j.n - 1; S.score = j.score;
+    const c = cur(); c.stages = j.clues; c.total = j.stagesTotal;
+    loadArtist();
+  }
+
+  async function remoteStep(body, onOk) {
+    const sess = S;
+    $("guessBtn").disabled = true; $("skipBtn").disabled = true; $("moreBtn").disabled = true;
+    let j;
+    try { j = await MX.lb.daily(Object.assign({ sid: sess.sid }, body)); }
+    catch (e) {
+      if (sess !== S) return;
+      $("guessBtn").disabled = false; $("skipBtn").disabled = false; updateStats();
+      $("msg").innerHTML = errText(e); return;
+    }
+    if (sess !== S) return;
+    $("guessBtn").disabled = false; $("skipBtn").disabled = false;
+    onOk(j);
   }
 
   /* ---------------- one artist ---------------- */
@@ -256,7 +294,7 @@
 
   function loadArtist() {
     S.stage = 0; S.done = false;
-    SEEN.add(cur().artist.name);
+    if (cur().artist) SEEN.add(cur().artist.name);
     $("guessIn").value = ""; $("guessIn").disabled = false;
     $("guessBtn").disabled = false; $("skipBtn").disabled = false; $("moreBtn").disabled = false;
     $("msg").textContent = "";
@@ -275,7 +313,7 @@
       html += c.stages[s].map(cl =>
         '<li class="' + (isNew ? "new" : "") + '"><span class="k">' + MX.esc(cl.k) + '</span><span class="v">' + MX.esc(cl.v) + "</span></li>").join("");
     }
-    if (S.stage < c.stages.length - 1) {
+    if (S.stage < nStages(c) - 1) {
       html += '<li class="locked"><span class="k">NEXT CLUE</span><span class="v">locked · worth ' + worth(S.stage + 1) + "</span></li>";
     }
     ul.innerHTML = html;
@@ -284,9 +322,9 @@
   function updateStats() {
     $("sNum").textContent = (S.i + 1) + "/" + S.queue.length;
     $("sScore").textContent = S.score;
-    $("sClues").textContent = (S.stage + 1) + "/" + cur().stages.length;
+    $("sClues").textContent = (S.stage + 1) + "/" + nStages(cur());
     $("sWorth").textContent = S.done ? "—" : worth(S.stage);
-    const last = S.stage >= cur().stages.length - 1;
+    const last = S.stage >= nStages(cur()) - 1;
     $("moreBtn").disabled = S.done || last;
     $("moreBtn").innerHTML = last ? "NO MORE CLUES" : "I DON'T KNOW &middot; NEXT CLUE (WORTH " + worth(S.stage + 1) + ")";
   }
@@ -297,6 +335,17 @@
     if (!g) return;
     ac.hide();
     const c = cur();
+    if (S.remote) {
+      remoteStep({ a: "guess", guess: g }, j => {
+        if (j.done) { finishArtist(j.correct, j); return; }
+        S.stage = j.stage; c.stages = j.clues;
+        renderClues(false);
+        $("msg").innerHTML = '<span class="bad">✗ Not it.</span> New clue unlocked — worth ' + worth(S.stage) + " now.";
+        $("guessIn").value = ""; $("guessIn").focus();
+        updateStats();
+      });
+      return;
+    }
     if (MX.isArtistMatch(g, c.artist)) finishArtist(true);
     else if (S.stage < c.stages.length - 1) {
       S.stage++;
@@ -307,24 +356,31 @@
     } else finishArtist(false);
   }
 
-  function finishArtist(got) {
-    const c = cur(), a = c.artist, pts = got ? worth(S.stage) : 0;
+  function finishArtist(got, srv) {
+    const c = cur();
+    let a = c.artist, pts = got ? worth(S.stage) : 0;
+    if (srv) {                                           // daily: the server's verdict, points and reveal
+      const r = srv.reveal;
+      a = c.artist = { name: r.name, tags: r.tags, country: r.country, debutDecade: r.debutDecade, url: r.url, tracks: r.tracks.map(n => ({ name: n })) };
+      pts = srv.pts; S.stage = srv.stage; S.score = srv.score; S.last = srv.lastItem; c.total = srv.stagesTotal;
+    } else S.score += pts;
     $("reveal").classList.toggle("win", got); $("reveal").classList.toggle("lose", !got);
-    S.score += pts; S.done = true;
-    S.results.push({ artist: a, got, pts, stage: S.stage, stages: c.stages.length });
+    S.done = true;
+    S.results.push({ artist: a, got, pts, stage: S.stage, stages: nStages(c) });
     $("guessIn").disabled = true; $("guessBtn").disabled = true; $("skipBtn").disabled = true; $("moreBtn").disabled = true;
     $("msg").innerHTML = got ? '<span class="ok">✓ Correct! +' + pts + "</span>" : '<span class="bad">✗ Out of clues. +0</span>';
     $("rName").textContent = a.name;
     $("rMeta").textContent = [(a.tags || []).slice(0, 3).join(" · "), a.country, a.debutDecade ? "since the " + a.debutDecade + "s" : ""].filter(Boolean).join(" · ");
     $("rTracks").innerHTML = a.tracks.slice(0, 5).map(t => "<li>" + MX.esc(t.name) + "</li>").join("");
     $("rLink").setAttribute("href", a.url || "#");
-    $("nextBtn").textContent = (S.i === S.queue.length - 1) ? "SEE RESULTS ▶" : "NEXT ▶";
+    $("nextBtn").textContent = (S.remote ? S.last : S.i === S.queue.length - 1) ? "SEE RESULTS ▶" : "NEXT ▶";
     $("reveal").classList.remove("hidden");
     updateStats();
     $("nextBtn").focus();
   }
 
   function next() {
+    if (S.remote) { remoteStep({ a: "next" }, j => { if (j.final) { S.score = j.score; showSummary(); } else showRemote(j); }); return; }
     if (S.i < S.queue.length - 1) { S.i++; loadArtist(); } else showSummary();
   }
 
@@ -353,7 +409,7 @@
   function setupBoard(game, score, max) {
     const box = $("lbBox");
     box.classList.add("hidden");
-    if (!S.daily || !MX.lb.enabled()) return;
+    if (!S.daily || !S.sid || !MX.lb.enabled()) return;
     box.classList.remove("hidden");
     $("lbName").value = MX.lb.savedName();
     $("lbMsg").textContent = ""; $("lbTop").innerHTML = ""; $("lbSubmit").disabled = false;
@@ -362,7 +418,7 @@
       if (name.length < 2) { $("lbMsg").innerHTML = '<span class="bad">Names need 2 to 16 letters or numbers.</span>'; return; }
       $("lbSubmit").disabled = true; $("lbMsg").textContent = "Posting…";
       try {
-        const j = await MX.lb.post(game, name, score, max);
+        const j = await MX.lb.post(S.sid, name);
         MX.lb.saveName(name);
         $("lbMsg").innerHTML = j.updated ? '<span class="ok">Posted. You are #' + j.rank + " today.</span>" : "You already have a better score posted today (#" + j.rank + ").";
         $("lbTop").innerHTML = MX.lb.table(j.top, false, name);
@@ -388,18 +444,31 @@
     return Promise.resolve(out);
   };
   const ac = MX.Autocomplete($("guessIn"), $("sugg"), suggest, { onEnter: submitGuess });
-  $("startBtn").onclick = () => startRound(false);
+  $("startBtn").onclick = () => startRound();
   const DAYBOARD = MX.dailyBoard("dayBoard", "artist");
-  $("dailyBtn").onclick = () => startRound(true);
+  $("dailyBtn").onclick = startDaily;
   $("guessBtn").onclick = submitGuess;
   $("moreBtn").onclick = () => {
-    if (!S || S.done || S.stage >= cur().stages.length - 1) return;
+    if (!S || S.done || S.stage >= nStages(cur()) - 1) return;
+    if (S.remote) {
+      remoteStep({ a: "more" }, j => {
+        S.stage = j.stage; cur().stages = j.clues;
+        renderClues(false);
+        $("msg").innerHTML = '<span class="bad">New clue.</span> Worth ' + worth(S.stage) + " now.";
+        updateStats(); $("guessIn").focus();
+      });
+      return;
+    }
     S.stage++;
     renderClues(false);
     $("msg").innerHTML = '<span class="bad">New clue.</span> Worth ' + worth(S.stage) + " now.";
     updateStats(); $("guessIn").focus();
   };
-  $("skipBtn").onclick = () => { if (S && !S.done) finishArtist(false); };
+  $("skipBtn").onclick = () => {
+    if (!S || S.done) return;
+    if (S.remote) { remoteStep({ a: "skip" }, j => finishArtist(false, j)); return; }
+    finishArtist(false);
+  };
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); DAYBOARD.refresh(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));

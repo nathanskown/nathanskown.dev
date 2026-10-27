@@ -437,9 +437,9 @@ class Component extends DCLogic {
   loadWatch() {
     // prices for watchlist tickers: the nightly core list first, then the on-demand quote API for anything else
     var self = this, list = this.pf('watch', CZ.watch), have = (this.state || {}).wq || {};
-    var idx = {}; (((this.state || {}).qidx || {}).tickers || []).forEach(function (t) { idx[t.sym] = t; });
+    // the nightly file shows first; every ticker (core or not) then gets a live price laid over it
     list.forEach(function (sym) {
-      if (idx[sym] || have[sym]) return;
+      if (have[sym]) return;
       fetch('/api/quote?part=price&sym=' + encodeURIComponent(sym)).then(function (r) { return r.json(); }).then(function (j) {
         if (!j.quote) return;
         var o = Object.assign({}, (self.state || {}).wq || {}); o[sym] = { sym: sym, name: j.quote.name, price: j.quote.price, pct: j.quote.pct }; self.setState({ wq: o });
@@ -601,7 +601,7 @@ class Component extends DCLogic {
     ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
     (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
     var watch = wlist.map(function (sym) {
-      var w = qi[sym] || (st.wq || {})[sym] || { sym: sym, name: 'Loading…' };
+      var w = (st.wq || {})[sym] || qi[sym] || { sym: sym, name: 'Loading…' };
       return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
     });
     // panel order, visibility and the Customize controls

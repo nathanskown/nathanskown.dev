@@ -1,30 +1,32 @@
-// Builds music/data/daily.json: the frozen daily-challenge picks for Guess the Track and Guess the Artist.
+// Picks the upcoming daily-challenge songs and artists and uploads them PRIVATELY to the site Worker.
 //
-// Why this exists: if the daily songs were picked from the live catalog each morning, rebuilding the
-// catalog (Last.fm data changes weekly) would change today's challenge halfway through the day.
-// Here every day is chosen once, written down, and never changed afterwards.
+// Why private: the daily answers must never sit in the public repo or reach a browser before a player
+// finishes a song. The Worker keeps the schedule in its own storage, checks guesses and counts the score.
 //
 // - Days are keyed by Chicago's calendar date (the site and leaderboard use the same clock).
-// - Existing days are never rewritten once they arrive, with one exception: a future day picked by an older
-//   picking method (its "v" is below PICK_VERSION) is picked again. Today and past days are never touched.
+// - Picks use real randomness (not a seeded generator), so a day cannot be recomputed from public code.
+// - Only dates the Worker does not already hold are uploaded. The Worker never replaces today or a past day.
 // - Picks go through music/assets/variety.js (the same helper the pages use): genre families take turns,
 //   no artist repeats, and back-to-back decades are avoided, so a day is not five pop songs.
-// - Days older than KEEP_PAST_DAYS are dropped so the file stays small.
 // - Track days draw only from songs of 1970 or later in Pop, Hip-Hop, R&B & Soul, Rock & Alt and Country & Folk.
-//   THEMED lists one-off days with a fixed song list (2026-10-15 = well-known rock).
+//   THEMED lists one-off days with a fixed song list.
 // - Each track day lists 8 songs: the game plays the first 5 that load, so a song Deezer cannot
 //   play is skipped for everyone in the same order.
 // - Each artist day stores the 5 full artist records plus the exact clue tracks ("picked").
 //
-// Run:  node tools/build-daily.mjs     (no packages, Node 18+). Env: MUSIC_DIR (default music), DAYS_AHEAD (30).
-import { readFileSync, writeFileSync, existsSync, renameSync } from "node:fs";
+// Run:  MUSIC_ADMIN_TOKEN=... node tools/build-daily.mjs        (no packages, Node 18+)
+// Env:  MUSIC_ADMIN_TOKEN (required, same value as the Worker secret), MUSIC_API (default https://nathanskown.dev),
+//       MUSIC_DIR (default music), DAYS_AHEAD (30), DRY_RUN=1 (print the dates, upload nothing).
+import { readFileSync, existsSync } from "node:fs";
+import { randomInt } from "node:crypto";
 import { join } from "node:path";
 
 const DIR = process.env.MUSIC_DIR || "music";
 const DAYS_AHEAD = Number(process.env.DAYS_AHEAD || 30);
-const KEEP_PAST_DAYS = 3;
 const TRACKS_PER_DAY = 8, ARTISTS_PER_DAY = 5;
-const PICK_VERSION = 3;
+const API = (process.env.MUSIC_API || "https://nathanskown.dev").replace(/\/+$/, "");
+const TOKEN = process.env.MUSIC_ADMIN_TOKEN || "";
+const DRY = process.env.DRY_RUN === "1";
 
 const load = file => {
   if (!existsSync(file)) return {};
@@ -41,8 +43,7 @@ const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ
   .replace(/\(.*?\)|\[.*?\]/g, " ").replace(/\s[-–—]\s.*$/, " ").replace(/\b(feat|ft)\.?\s.*$/, " ")
   .replace(/&/g, " and ").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
 const normArtist = s => norm(s).replace(/^the /, "");
-function hashStr(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-function mulberry32(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const rnd = () => randomInt(0, 2 ** 32) / 2 ** 32;   // unpredictable: picks cannot be recomputed from the date
 function shuffle(arr, rnd) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 const chicagoKey = d => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
@@ -86,36 +87,42 @@ const playable = A.artists.filter(a => a.tracks && a.tracks.length && lesserOf(a
 if (!seeds.length) { console.error("No songs found in " + DIR + "/data. Nothing to schedule."); process.exit(1); }
 if (!playable.length) { console.error("No playable artists found in " + DIR + "/data/artists.js. Nothing to schedule."); process.exit(1); }
 
-/* ---- existing schedule (kept as-is) ---- */
-// daily.json is not published as a file: the site Worker bundles it and serves /music/data/daily.js with
-// only today and past days, so future answers never reach a browser.
-const out = join(DIR, "data/daily.json");
-const legacy = join(DIR, "data/daily.js");
-const days = (existsSync(out) ? JSON.parse(readFileSync(out, "utf8")) : (load(legacy).DAILY_SCHEDULE || {})).days || {};
+/* ---- what the Worker already holds ---- */
+if (!DRY && TOKEN.length < 24) {
+  console.error("MUSIC_ADMIN_TOKEN is not set (or is shorter than 24 characters). Set the same random value as a Worker secret and as a GitHub Actions secret; see README.");
+  process.exit(1);
+}
+let have = new Set();
+if (!DRY) {
+  const r = await fetch(API + "/api/music/admin/days", { headers: { authorization: "Bearer " + TOKEN } });
+  if (!r.ok) { console.error("Could not read the stored schedule: HTTP " + r.status + " (is MUSIC_ADMIN_TOKEN set on the Worker too?)"); process.exit(1); }
+  have = new Set((await r.json()).days || []);
+}
 
 const today = chicagoKey(new Date());
-const first = addDays(today, -KEEP_PAST_DAYS);
-for (const k of Object.keys(days)) if (k < first) delete days[k];
-
-let added = 0;
+const days = {};
 for (let i = 0; i <= DAYS_AHEAD; i++) {
   const key = addDays(today, i);
-  if (days[key] && (i === 0 || (days[key].v || 1) >= PICK_VERSION)) continue;   // never change today or an up-to-date day
-  const rt = mulberry32(hashStr("daily-track-" + key)), ra = mulberry32(hashStr("daily-artist-" + key));
-  const track = THEMED[key] ? shuffle(THEMED[key], rt) : V.spread(dailyPool, rt, { limit: TRACKS_PER_DAY });
-  const artist = V.spread(playable, ra, { fam: a => V.familyOfTags(a.tags), artist: a => a.name, decade: a => a.debutDecade || null,
+  if (have.has(key)) continue;
+  const track = THEMED[key] ? shuffle(THEMED[key], rnd) : V.spread(dailyPool, rnd, { limit: TRACKS_PER_DAY });
+  const artist = V.spread(playable, rnd, { fam: a => V.familyOfTags(a.tags), artist: a => a.name, decade: a => a.debutDecade || null,
                                          limit: ARTISTS_PER_DAY }).map(a => {
-    const picked = shuffle(lesserOf(a), ra).slice(0, 5).sort((x, y) => y.rank - x.rank).map(t => t.name);
+    const picked = shuffle(lesserOf(a), rnd).slice(0, 5).sort((x, y) => y.rank - x.rank).map(t => t.name);
     return { name: a.name, aliases: a.aliases || [], tier: a.tier, tags: a.tags || [], country: a.country || null,
              debutDecade: a.debutDecade || null, url: a.url || null, tracks: a.tracks, picked };
   });
-  days[key] = { v: PICK_VERSION, track, artist };
-  added++;
+  days[key] = { track, artist };
 }
 
-const sorted = {};
-for (const k of Object.keys(days).sort()) sorted[k] = days[k];
-const body = JSON.stringify({ generatedAt: new Date().toISOString(), days: sorted });
-writeFileSync(out + ".tmp", body);
-renameSync(out + ".tmp", out);
-console.log("Daily schedule: " + Object.keys(sorted).length + " days (" + added + " added or re-picked), " + Object.keys(sorted)[0] + " to " + Object.keys(sorted).slice(-1)[0] + ". " + (body.length / 1024).toFixed(0) + " KB.");
+const dates = Object.keys(days).sort();
+if (!dates.length) { console.log("Daily schedule is already stocked through " + addDays(today, DAYS_AHEAD) + ". Nothing to upload."); process.exit(0); }
+if (DRY) { console.log("Dry run: would upload " + dates.length + " days (" + dates[0] + " to " + dates[dates.length - 1] + ")."); process.exit(0); }
+
+const res = await fetch(API + "/api/music/admin/schedule", {
+  method: "PUT",
+  headers: { authorization: "Bearer " + TOKEN, "content-type": "application/json" },
+  body: JSON.stringify({ days })
+});
+const out = await res.json().catch(() => ({}));
+if (!res.ok) { console.error("Upload failed: HTTP " + res.status + " " + JSON.stringify(out)); process.exit(1); }
+console.log("Uploaded " + out.stored + " days (" + out.skipped + " skipped), " + dates[0] + " to " + dates[dates.length - 1] + ".");
