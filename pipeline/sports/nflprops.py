@@ -182,7 +182,7 @@ def _boost(W, season, team, active):
             1.0 + REDIST_Q * mq / aq if aq > 0.02 else 1.0)
 
 
-def _walk(seasons_rows, collect_from):
+def _walk(seasons_rows, collect_from, keys=None):
     """Run every season in order; collect (season, market, projection, actual) for seasons >= collect_from."""
     W = Walker()
     hist = []
@@ -203,6 +203,8 @@ def _walk(seasons_rows, collect_from):
                         if _eligible(mk, r["pos"], proj, gp):
                             act = {"yd": r["yd"], "rec": r["rec"], "ryd": r["ryd"], "pyd": r["pyd"]}[ak]
                             hist.append((y, mk, proj[ak], act))
+                            if keys is not None:
+                                keys[(y, wk, _norm(r["name"]), r["team"], mk)] = (proj[ak], act)
             W.update(y, wk, byweek[wk])
     return W, hist
 
@@ -307,6 +309,58 @@ def _norm(s):
     return re.sub(r"[^a-z]", "", (s or "").lower().replace(" jr", "").replace(" iii", "").replace(" ii", ""))
 
 
+def _book_grade(cur, keys, tables, games):
+    """Walk-forward projections for this season's finished games against SportsGameOdds closing lines
+    (track/_sgo_nfl_{season}.json, from sgo.py). Fits how far the board's over/under chances must be pulled toward
+    50% to match how often players actually went over, and keeps a record of picks against those lines. Grading only:
+    the lines never move a projection and are never published."""
+    from datetime import timedelta as _td
+    ev = (read(f"track/_sgo_nfl_{cur}.json") or {}).get("events") or {}
+    if not ev:
+        return None
+    wk = {}
+    for g in games:
+        if int(g["season"]) == cur and g["game_type"] == "REG":
+            for t in (g["home_team"], g["away_team"]):
+                wk[(ALIAS.get(t, t), g["gameday"])] = int(g["week"])
+    imp = lambda o: (100 / (o + 100) if o > 0 else -o / (-o + 100)) if o else None
+    pay = lambda o: o / 100 if o > 0 else 100 / -o
+    R = []
+    for e in ev.values():
+        if not e.get("d"):
+            continue
+        day = (datetime.fromisoformat(e["d"]) - _td(hours=6)).date().isoformat()
+        for name, team, mk, line, oo, ou, _res in e["props"]:
+            w = wk.get((team, day))
+            hit = keys.get((cur, w, _norm(name), team, mk)) if w else None
+            if hit is None or mk not in tables or hit[1] == line or not (oo and ou):
+                continue
+            pr, act = hit
+            qs = tables[mk]["ratio"][_band(tables[mk], pr)]
+            po = sum(1 for q in qs if pr * q > line) / len(qs)
+            io, iu = imp(oo), imp(ou)
+            R.append((mk, po, io / (io + iu), act > line, oo, ou))
+    if len(R) < 300:
+        return {"graded": len(R)}
+    po = np.array([r[1] for r in R]); pm = np.array([r[2] for r in R]); y = np.array([r[3] for r in R], float)
+    best = min(np.arange(0.05, 1.001, 0.05), key=lambda k: float(np.mean((0.5 + (po - 0.5) * k - y) ** 2)))
+    pc = 0.5 + (po - 0.5) * best
+    rec = {}
+    for th in (0.05, 0.10):
+        w = n = 0; prof = 0.0
+        for r, p in zip(R, pc):
+            e = p - r[2]
+            if abs(e) < th:
+                continue
+            over = e > 0
+            won = bool(r[3]) == over
+            n += 1; w += int(won); prof += float(pay(r[4] if over else r[5])) if won else -1.0
+        rec[str(th)] = {"won": w, "lost": n - w, "units": round(prof, 1), "roi": round(prof / n, 3) if n else None}
+    return {"graded": len(R), "shrink": round(float(best), 2), "brierRaw": round(float(np.mean((po - y) ** 2)), 4),
+            "brierCalibrated": round(float(np.mean((pc - y) ** 2)), 4), "brierMarket": round(float(np.mean((pm - y) ** 2)), 4),
+            "overRate": round(float(y.mean()), 3), "record": rec, "note": "calibrated chance vs no-vig closing price; units at the closing price"}
+
+
 def _log_and_grade(cur, week, rows, cur_rows):
     """Keep every projection made before kickoff (the last one wins), then grade it from nflverse once the week's
     stats are published. data/sports/track/_props_nfl.json; the summary goes on the board."""
@@ -346,7 +400,8 @@ def job_props():
         raise RuntimeError("no NFL season in model/nfl.json")
     from .nflqb import AB2ID
     seasons = {y: _season_rows(y) for y in range(cur - 6, cur + 1)}
-    W, hist = _walk(seasons, cur - 6)
+    keys = {}
+    W, hist = _walk(seasons, cur - 6, keys)
     tables = _tables(hist, {y for y in range(cur - 4, cur)})
     back = _backtest(hist, list(range(cur - 3, cur)))
     games = [r for r in _csv(GAMES_URL) if r["game_type"] == "REG" and int(r["season"]) >= cur - 7]
@@ -408,9 +463,10 @@ def job_props():
     rows += [dict(r, locked=True) for r in prev.get("props") or [] if r.get("espn") not in fresh and keep(r.get("espn"))]
     fresh_t = {t.get("espn") for t in totals}
     totals += [dict(t, locked=True) for t in prev.get("totals") or [] if t.get("espn") not in fresh_t and keep(t.get("espn"))]
-    out = {"season": cur, "week": week, "updated": now_iso(), "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
+    book = _book_grade(cur, keys, tables, games)
+    out = {"season": cur, "week": week, "updated": now_iso(), "calib": {"shrink": (book or {}).get("shrink", 1.0)} if (book or {}).get("shrink") else None, "book": book, "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
            "backtest": {"props": back, "seasons": [cur - 3, cur - 1], "totals": _totals_backtest(thist, cur - 7, cur - 1)},
            "source": "nflverse (CC-BY 4.0) weekly player stats and schedules; ESPN injury report"}
     write("props/nfl.json", out)
-    return {"week": week, "props": len(rows), "totals": len(totals), "kalshiMatched": sum(1 for r in rows if r.get("kalshi")),
+    return {"week": week, "props": len(rows), "totals": len(totals), "book": book, "kalshiMatched": sum(1 for r in rows if r.get("kalshi")),
             "kalshiEdges": len(kedges), "kalshiRecord": krec, "backtest": back}

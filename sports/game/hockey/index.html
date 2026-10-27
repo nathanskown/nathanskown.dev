@@ -182,7 +182,8 @@ class Component extends DCLogic {
         var mks = Object.keys(LBL).filter(function (k) { return mine.some(function (r) { return r.market === k; }); });
         var mk = mks.indexOf(S.pm) >= 0 ? S.pm : (mks.indexOf('rec_yds') >= 0 ? 'rec_yds' : mks[0]);
         var dp = mk === 'receptions' ? 1 : 0, tab = (X.tables || {})[mk];
-        var pOver = function (r, Lx) { if (!tab || !(Lx > 0)) return null; var qs = tab.ratio[r.band], n = 0; for (var i = 0; i < qs.length; i++) if (r.mean * qs[i] > Lx) n++; return n / qs.length; };
+        var shr = (X.calib && X.calib.shrink) || 1;
+        var pOver = function (r, Lx) { if (!tab || !(Lx > 0)) return null; var qs = tab.ratio[r.band], n = 0; for (var i = 0; i < qs.length; i++) if (r.mean * qs[i] > Lx) n++; return 0.5 + (n / qs.length - 0.5) * shr; };
         var st = function (q) { return q === null ? 'dim' : q >= 0.58 ? 'color: var(--up); font-weight: 600' : ''; };
         var teams = [A, H].map(function (t) {
           var rs = mine.filter(function (r) { return r.market === mk && r.team === t.abbr; }).sort(function (a, b) { return b.median - a.median; });
@@ -203,7 +204,7 @@ class Component extends DCLogic {
           note: 'Median and middle 50%: the projection (share of team volume times efficiency, adjusted for the opponent) times how players with projections of this size actually finished over the last four seasons. '
             + (bt ? 'Tested on ' + X.backtest.seasons[0] + '–' + X.backtest.seasons[1] + ', the median missed by ' + bt.mae + ' on average and ' + Math.round(bt.middle50 * 100) + '% of results landed in the middle 50%. ' : '')
             + (lv ? 'This season so far: ' + lv.n + ' graded, missed by ' + lv.mae + '. ' : '')
-            + 'Players ruled out or doubtful are left off and their volume goes to teammates who play. Enter a line to see how often a projection like this cleared it (green at 58%+; 52.4% breaks even at -110). Lines you enter stay in this browser. A projection, not a pick.' };
+            + 'Players ruled out or doubtful are left off and their volume goes to teammates who play. Enter a line to see the chance of going over it' + (shr < 1 ? ', pulled toward 50% by how much this season\'s graded projections overstated their confidence' : '') + ' (green at 58%+; 52.4% breaks even at -110). Lines you enter stay in this browser. A projection, not a pick.' };
       }
     }
 

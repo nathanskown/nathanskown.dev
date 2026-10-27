@@ -95,20 +95,14 @@ def backfill(season, start, end, cap=400):
 
 
 def job_backfill():
-    """Last season once, then this season's finished games (cheap: only new ones count after the first pass... each
-    fetched event counts, so the window starts after the newest stored game)."""
+    """This season's finished games not stored yet (the window starts at the newest stored game, so each run costs
+    only the games since). Last season is not fetched: its stored "closing" lines were in-game numbers, not pre-game."""
     cur = (read("model/nfl.json") or {}).get("season")
-    out = {}
-    for season in ([cur - 1, cur] if cur else []):
-        store = read(f"track/_sgo_nfl_{season}.json") or {}
-        last = max((e["d"] for e in (store.get("events") or {}).values()), default="")
-        start = (last[:10] if last else f"{season}-09-01")
-        end = f"{season + 1}-02-20"
-        if season < cur and store.get("events") and len(store["events"]) >= 270:
-            out[season] = {"complete": len(store["events"])}
-            continue
-        try:
-            out[season] = backfill(season, start, end)
-        except Exception as e:
-            out[season] = {"error": str(e)[:200]}
-    return out
+    if not cur:
+        return {"error": "no NFL season"}
+    store = read(f"track/_sgo_nfl_{cur}.json") or {}
+    last = max((e["d"] for e in (store.get("events") or {}).values() if e.get("d")), default="")
+    try:
+        return backfill(cur, last[:10] if last else f"{cur}-09-01", f"{cur + 1}-02-20", cap=60)
+    except Exception as e:
+        return {"error": str(e)[:200]}

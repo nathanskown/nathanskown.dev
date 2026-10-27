@@ -15,7 +15,7 @@ JOBS = {
     "live": [("standings", espn.job_standings), ("injuries", espn.job_injuries), ("model", model.job_model),
              ("qb", nflqb.job_qb), ("board", nflprops.job_props), ("track", track.job_track)],
     "daily": [("standings", espn.job_standings), ("teams", espn.teams_index), ("leaders", espn.job_leaders),
-              ("injuries", espn.job_injuries), ("mlb_sp", extra.job_mlb_current), ("nhl_xg", extra.job_nhl_current), ("box", ctx.job_collect_current), ("nfl_snaps", nflsnap.job_snaps), ("ctx_fit", ctx.job_fit), ("rosters", cbbret.job_rosters), ("cfb_rosters", cfbret.job_rosters), ("odds", odds.job_odds), ("model", model.job_model), ("qb", nflqb.job_qb), ("board", nflprops.job_props), ("track", track.job_track),
+              ("injuries", espn.job_injuries), ("mlb_sp", extra.job_mlb_current), ("nhl_xg", extra.job_nhl_current), ("box", ctx.job_collect_current), ("nfl_snaps", nflsnap.job_snaps), ("ctx_fit", ctx.job_fit), ("rosters", cbbret.job_rosters), ("cfb_rosters", cfbret.job_rosters), ("odds", odds.job_odds), ("model", model.job_model), ("qb", nflqb.job_qb), ("sgo", sgo.job_backfill), ("board", nflprops.job_props), ("track", track.job_track),
               ("backtest", track.job_backtest)],
     # one-off, started by hand from the "Sports history and tuning" workflow
     "history": [("history", history.job_history), ("nflqb", nflqb.job_history), ("nfl_snaps", nflsnap.job_snaps)],
