@@ -558,7 +558,8 @@ def job_sgo():
             if isinstance(o, dict):
                 return {k: _nokey(v) for k, v in o.items() if "key" not in k.lower()}
             return [_nokey(v) for v in o] if isinstance(o, list) else o
-        out["usage"] = _nokey(u.get("data") if isinstance(u, dict) else u)
+        ud = (u.get("data") if isinstance(u, dict) else {}) or {}
+        out["usage"] = {"tier": ud.get("tier"), "month": ((ud.get("rateLimits") or {}).get("per-month") or {})}      # no account details: this file is public
     except Exception as e:
         out["usage_error"] = str(e)[:200]
     try:
