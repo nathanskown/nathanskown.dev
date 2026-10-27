@@ -592,3 +592,46 @@ def job_sgo():
     except Exception as e:
         out["events_error"] = str(e)[:200]
     return out
+
+
+def job_bdb27():
+    """Big Data Bowl 2027: download every file and record its shape (columns, two rows, row count, seasons/weeks
+    covered). Nothing raw is committed: only data/sports/lab/_probe/bdb27.json."""
+    import subprocess, zipfile, glob, csv as _csv
+    tok = os.environ.get("KAGGLE_API_TOKEN") or os.environ.get("KAGGLE_API_KEY") or os.environ.get("KAGGLE_TOKEN")
+    if not tok:
+        return "no Kaggle token"
+    os.environ["KAGGLE_API_TOKEN"] = tok.strip()
+    for k in ("KAGGLE_USERNAME", "KAGGLE_KEY"):
+        if not os.environ.get(k):
+            os.environ.pop(k, None)
+    c, d = "nfl-big-data-bowl-2027", "/tmp/bdb27"
+    os.makedirs(d, exist_ok=True)
+    r = subprocess.run(["kaggle", "competitions", "download", "-c", c, "-p", d], capture_output=True, text=True, timeout=3000)
+    out = {"download": r.returncode, "err": (r.stderr or "")[-300:], "files": {}}
+    for z in glob.glob(d + "/*.zip"):
+        try:
+            zipfile.ZipFile(z).extractall(d)
+            os.remove(z)
+        except zipfile.BadZipFile:
+            out["err"] += " bad zip " + z
+    for f in sorted(glob.glob(d + "/**/*.csv", recursive=True)):
+        info = {"bytes": os.path.getsize(f)}
+        with open(f, newline="", encoding="utf-8", errors="replace") as fh:
+            rd = _csv.reader(fh)
+            head = next(rd, [])
+            info["cols"] = head
+            info["rows2"] = [next(rd, []), next(rd, [])]
+            n, seen = 2, {}
+            idx = {k: head.index(k) for k in ("season", "week", "gameId", "nflId", "game_id", "season_year") if k in head}
+            for row in rd:
+                n += 1
+                if n % 7 == 0:
+                    for k, i in idx.items():
+                        if k in ("season", "week", "season_year") and i < len(row):
+                            seen.setdefault(k, set()).add(row[i])
+            info["n"] = n
+            info["values"] = {k: sorted(v)[:40] for k, v in seen.items()}
+        out["files"][os.path.relpath(f, d)] = info
+    write("lab/_probe/bdb27.json", out)
+    return {k: {"n": v["n"], "cols": len(v["cols"])} for k, v in out["files"].items()}
