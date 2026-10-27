@@ -325,21 +325,25 @@ def _book_grade(cur, keys, tables, games):
                 wk[(ALIAS.get(t, t), g["gameday"])] = int(g["week"])
     imp = lambda o: (100 / (o + 100) if o > 0 else -o / (-o + 100)) if o else None
     pay = lambda o: o / 100 if o > 0 else 100 / -o
-    R = []
+    R, OPEN = [], []
     for e in ev.values():
         if not e.get("d"):
             continue
         day = (datetime.fromisoformat(e["d"]) - _td(hours=6)).date().isoformat()
-        for name, team, mk, line, oo, ou, _res, *_open in e["props"]:
+        for name, team, mk, line, oo, ou, _res, *op in e["props"]:
             w = wk.get((team, day))
             hit = keys.get((cur, w, _norm(name), team, mk)) if w else None
             if hit is None or mk not in tables or hit[1] == line or not (oo and ou):
                 continue
             pr, act = hit
             qs = tables[mk]["ratio"][_band(tables[mk], pr)]
-            po = sum(1 for q in qs if pr * q > line) / len(qs)
+            above = lambda L: sum(1 for q in qs if pr * q > L) / len(qs)
+            po = above(line)
             io, iu = imp(oo), imp(ou)
             R.append((mk, po, io / (io + iu), act > line, oo, ou))
+            ol = op[0] if op else None
+            if ol is not None and act != ol:
+                OPEN.append((above(ol), act > ol, ol, line))
     if len(R) < 300:
         return {"graded": len(R)}
     po = np.array([r[1] for r in R]); pm = np.array([r[2] for r in R]); y = np.array([r[3] for r in R], float)
@@ -356,7 +360,16 @@ def _book_grade(cur, keys, tables, games):
             won = bool(r[3]) == over
             n += 1; w += int(won); prof += float(pay(r[4] if over else r[5])) if won else -1.0
         rec[str(th)] = {"won": w, "lost": n - w, "units": round(prof, 1), "roi": round(prof / n, 3) if n else None}
-    return {"graded": len(R), "shrink": round(float(best), 2), "brierRaw": round(float(np.mean((po - y) ** 2)), 4),
+    # against the OPENING line (the first price SportsGameOdds saw), at a flat -110: does the board see what the market
+    # prices in later in the week? Picks use the raw chance's distance from 50%; moved = line moved toward the board's side
+    opn = {}
+    for th in (0.10, 0.20, 0.30):
+        k = [(p, y) for p, y, ol, cl in OPEN if abs(p - 0.5) >= th]
+        w = sum(1 for p, y in k if (p > 0.5) == y)
+        opn[str(th)] = {"won": w, "lost": len(k) - w, "units": round(w * 100 / 110 - (len(k) - w), 1)}
+    mv = [(p > 0.5) == (cl > ol) for p, y, ol, cl in OPEN if cl != ol and p != 0.5]
+    return {"graded": len(R), "shrink": round(float(best), 2), "vsOpen": {"record": opn, "lineMovedTowardBoard": round(sum(mv) / len(mv), 3) if mv else None,
+                                                                          "moved": len(mv), "note": "raw chance vs opening line, flat -110; the replay knows which teammates sat, which the opening line did not (without that: about 1 point of win rate lower)"}, "brierRaw": round(float(np.mean((po - y) ** 2)), 4),
             "brierCalibrated": round(float(np.mean((pc - y) ** 2)), 4), "brierMarket": round(float(np.mean((pm - y) ** 2)), 4),
             "overRate": round(float(y.mean()), 3), "record": rec, "note": "calibrated chance vs no-vig closing price; units at the closing price"}
 
