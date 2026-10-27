@@ -348,8 +348,13 @@ def job_bdb():
     sizes, CSV headers of the small files). Needs a KAGGLE_API_TOKEN secret (or legacy KAGGLE_USERNAME and KAGGLE_KEY), and the competition rules
     accepted on kaggle.com by that account. Raw data is never committed; only this summary."""
     import subprocess, zipfile, glob, csv as _csv
+    if not os.environ.get("KAGGLE_API_TOKEN"):           # a new-style token saved under another name
+        alt = os.environ.get("KAGGLE_TOKEN") or (os.environ.get("KAGGLE_KEY") if not os.environ.get("KAGGLE_USERNAME") else "")
+        if alt:
+            os.environ["KAGGLE_API_TOKEN"] = alt.strip()
+            os.environ.pop("KAGGLE_KEY", None)
     if not (os.environ.get("KAGGLE_API_TOKEN") or (os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY"))):
-        return "no KAGGLE_API_TOKEN (or KAGGLE_USERNAME / KAGGLE_KEY) secret"
+        return {"error": "no Kaggle secret visible", "seen": {k: bool(os.environ.get(k)) for k in ("KAGGLE_API_TOKEN", "KAGGLE_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY")}}
     for k in ("KAGGLE_API_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY"):       # unset secrets arrive as empty strings
         if not os.environ.get(k):
             os.environ.pop(k, None)
