@@ -100,15 +100,20 @@ def cfbd_talent():
     store = read("history/cfbd_talent.json") or {}
     cur = (read("model/ncaaf.json") or {}).get("season") or 2026
     out = {}
+    try:
+        ids = {t.get("school"): str(t.get("id")) for t in get("https://api.collegefootballdata.com/teams", {}, headers=H, timeout=90) or []}
+    except Exception as e:
+        return {"error": f"teams: {str(e)[:120]}"}
     for y in range(2015, cur + 1):
-        if str(y) in store and y < cur:
+        if len(store.get(str(y)) or {}) > 50 and y < cur:
             continue
         try:
             rows = get("https://api.collegefootballdata.com/talent", {"year": y}, headers=H, timeout=90)
         except Exception as e:
             out[y] = f"error {str(e)[:100]}"
             continue
-        store[str(y)] = {str(r.get("teamId") or r.get("id") or r.get("school")): float(r["talent"]) for r in rows or [] if r.get("talent") is not None}
+        store[str(y)] = {ids[r.get("team") or r.get("school")]: float(r["talent"]) for r in rows or []
+                         if r.get("talent") is not None and ids.get(r.get("team") or r.get("school"))}
         out[y] = len(store[str(y)])
     store["updated"] = now_iso()
     write("history/cfbd_talent.json", store)
