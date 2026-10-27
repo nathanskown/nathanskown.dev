@@ -543,3 +543,37 @@ def job_oddsfill():
                 write(name, store)
             out[f"{lg}_{y}"] = {"missing": len(todo), "tried": tried, "filled": filled}
     return out
+
+
+# ---------------------------------------------------------------- SportsGameOdds probe (SGO_KEY; Amateur plan: 2,500 objects a month)
+def job_sgo():
+    """Check the key, save account usage and two upcoming NFL events with their odds (to learn the prop shapes)."""
+    key = os.environ.get("SGO_KEY", "").strip()
+    if not key:
+        return "no SGO_KEY secret"
+    H, base, out = {"X-Api-Key": key}, "https://api.sportsgameodds.com/v2", {}
+    try:
+        u = get(base + "/account/usage", headers=H, timeout=60)
+        def _nokey(o):          # this lands in a public repo: drop anything that names a key
+            if isinstance(o, dict):
+                return {k: _nokey(v) for k, v in o.items() if "key" not in k.lower()}
+            return [_nokey(v) for v in o] if isinstance(o, list) else o
+        out["usage"] = _nokey(u.get("data") if isinstance(u, dict) else u)
+    except Exception as e:
+        out["usage_error"] = str(e)[:200]
+    try:
+        d = get(base + "/events", {"leagueID": "NFL", "oddsAvailable": "true", "limit": "2"}, headers=H, timeout=60)
+        evs = d.get("data") or []
+        write("lab/_probe/sgo_events.json", _trim(d))
+        props = {}
+        for ev in evs:
+            for oid in (ev.get("odds") or {}):
+                parts = oid.split("-")
+                if len(parts) >= 5 and parts[1] not in ("home", "away", "all"):
+                    props[parts[0]] = props.get(parts[0], 0) + 1
+        out["events"] = [{"id": e.get("eventID"), "teams": [((e.get("teams") or {}).get(s) or {}).get("names", {}).get("short") for s in ("away", "home")],
+                          "odds": len(e.get("odds") or {})} for e in evs]
+        out["propStats"] = props
+    except Exception as e:
+        out["events_error"] = str(e)[:200]
+    return out

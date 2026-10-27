@@ -29,6 +29,7 @@ JOBS = {
     "lab-oddscore": [("oddscore", lab.job_oddscore)],
     "lab-oddsfill": [("oddsfill", lab.job_oddsfill)],
     "market": [("market", market.job_build)],
+    "lab-sgo": [("sgo", lab.job_sgo)],
     "ctx-fit": [("ctx_fit", ctx.job_fit), ("ret_fit", cbbret.job_fit), ("cfbret_fit", cfbret.job_fit), ("elo_fit", elo.job_fit), ("model", model.job_model), ("track", track.job_track)],
     "tune": [("market", market.job_build), ("tune", tune.job_tune), ("evolution", evolution.job_evolution), ("qb_fit", nflqb.job_fit), ("ctx_fit", ctx.job_fit), ("ret_fit", cbbret.job_fit), ("cfbret_fit", cfbret.job_fit), ("elo_fit", elo.job_fit), ("model", model.job_model), ("qb", nflqb.job_qb), ("track", track.job_track), ("backtest", track.job_backtest)],
 }
