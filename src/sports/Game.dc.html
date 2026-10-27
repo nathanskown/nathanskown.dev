@@ -62,7 +62,7 @@
 <sc-for list="{{pick.games}}" as="g" hint-placeholder-count="6">
 <a class="s-card" href="{{g.href}}">
 <div class="s-line"><span class="s-team"><img class="s-logo" src="{{g.aLogo}}" alt="">{{g.away}}</span><span class="hi">{{g.as}}</span><span class="s-team"><img class="s-logo" src="{{g.hLogo}}" alt="">{{g.home}}</span><span class="hi">{{g.hs}}</span></div>
-<div style="{{g.stStyle}}; font-size: 12px; margin-top: 4px">{{g.status}}</div>
+<div style="{{g.stStyle}}; font-size:13px; margin-top: 4px">{{g.status}}</div>
 </a>
 </sc-for>
 </div>
@@ -78,7 +78,7 @@
 <sc-if value="{{ok}}" hint-placeholder-val="{{true}}">
 <div class="s-band" style="{{bandStyle}}">
 <div style="max-width: 1280px; margin: 0 auto; padding: 20px 16px">
-<nav aria-label="Breadcrumb" class="dim" style="font-size: 12.5px"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
+<nav aria-label="Breadcrumb" class="dim" style="font-size:13px"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
 <h1 class="sr">{{g.away.name}} at {{g.home.name}}</h1>
 <sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="t-th" style="margin-top: 6px">{{g.note}}</div></sc-if>
 <div class="s-match" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 12px">
@@ -95,7 +95,7 @@
 <img class="s-hero-logo" src="{{g.home.logo}}" alt="">
 </a>
 </div>
-<div class="dim" style="margin-top: 12px; font-size: 12.5px; text-align: center">{{g.info}}</div>
+<div class="dim" style="margin-top: 12px; font-size:13px; text-align: center">{{g.info}}</div>
 </div>
 </div>
 
@@ -129,7 +129,7 @@
 <sc-if value="{{tot.has}}" hint-placeholder-val="{{false}}"><div class="s-stat"><div class="k">Projected total</div><div class="v">{{tot.v}}</div><div class="s">{{tot.s}}</div></div></sc-if>
 </div>
 <div class="s-vs" style="{{proj.vs}}; margin-top: 12px" aria-hidden="true"><i style="{{proj.bar}}"></i></div>
-<div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{proj.aName}}</span><span>{{proj.hName}}</span></div>
+<div style="display: flex; justify-content: space-between; font-size:13px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{proj.aName}}</span><span>{{proj.hName}}</span></div>
 </sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{proj.note}}</p>
 </div>
@@ -199,7 +199,7 @@
 <sc-if value="{{noLeaders}}" hint-placeholder-val="{{false}}"><div class="s-empty">No player leaders in the feed for this game yet.</div></sc-if>
 <sc-for list="{{leaders}}" as="L" hint-placeholder-count="2">
 <div class="t-th" style="margin-top: 6px">{{L.abbr}}</div>
-<sc-for list="{{L.cats}}" as="c" hint-placeholder-count="3"><div class="s-game"><span class="dim" style="width: 130px; flex: none; font-size: 12px">{{c.cat}}</span><span class="o hi">{{c.name}}</span><span class="r" style="white-space: normal; text-align: right">{{c.line}}</span></div></sc-for>
+<sc-for list="{{L.cats}}" as="c" hint-placeholder-count="3"><div class="s-game"><span class="dim" style="width: 130px; flex: none; font-size:13px">{{c.cat}}</span><span class="o hi">{{c.name}}</span><span class="r" style="white-space: normal; text-align: right">{{c.line}}</span></div></sc-for>
 </sc-for>
 </div>
 </section>
@@ -251,7 +251,7 @@
 </sc-if>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:13px" class="dim">
 <span>Scores, box scores and play text: ESPN public API · Projections: house model · No betting lines or third-party win probabilities · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>

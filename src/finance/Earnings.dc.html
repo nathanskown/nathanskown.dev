@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -138,7 +138,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <main style="max-width: 1320px; margin: 0 auto; padding: 26px 24px 56px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #3D2C13; padding-bottom: 10px">
-<div><div class="f-kicker">PART 1</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Key themes from reported companies</h2><div style="color: #A87933; font-size: 12.5px; margin-top: 2px">Scorecard, beat rates by sector, guidance and the biggest reports so far</div></div>
+<div><div class="f-kicker">PART 1</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Key themes from reported companies</h2><div style="color: #A87933; font-size:13px; margin-top: 2px">Scorecard, beat rates by sector, guidance and the biggest reports so far</div></div>
 <button type="button" class="t-tab" onClick="{{toggle1}}" aria-expanded="{{p1Str}}">{{p1Btn}}</button>
 </div>
 <sc-if value="{{p1Open}}" hint-placeholder-val="{{ true }}">
@@ -156,11 +156,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{weeks}}" as="wk" hint-placeholder-count="6">
 <div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 64px; justify-content: flex-end">
 <div style="{{wk.barStyle}}"></div>
-<span style="font-size: 12px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{wk.label}}</span>
+<span style="font-size:13px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{wk.label}}</span>
 </div>
 </sc-for>
 </div>
-<div style="font-size: 12px; color: #A87933; margin-top: 4px">S&amp;P 500 reports per week · current week highlighted</div>
+<div style="font-size:13px; color: #A87933; margin-top: 4px">S&amp;P 500 reports per week · current week highlighted</div>
 </div>
 </section>
 
@@ -168,9 +168,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{score}}" as="sc" hint-placeholder-count="6">
 <div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size: 12.5px">{{sc.label}}</div>
+<div style="color: #C99442; font-size:13px">{{sc.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{sc.color}}; margin-top: 2px">{{sc.value}}</div>
-<div style="color: #A87933; font-size: 12.5px">{{sc.sub}}</div>
+<div style="color: #A87933; font-size:13px">{{sc.sub}}</div>
 </div>
 </sc-for>
 </div>
@@ -180,7 +180,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Beat rate by sector" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">EPS beat rate by sector</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">Share of S&amp;P 500 reporters beating the consensus EPS estimate · count of reporters · small samples early in the season</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 12px">Share of S&amp;P 500 reporters beating the consensus EPS estimate · count of reporters · small samples early in the season</div>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <sc-for list="{{sectorRows}}" as="r" hint-placeholder-count="11">
 <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 96px; align-items: center; gap: 12px; font-size: 13.5px">
@@ -195,11 +195,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Market themes" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Market themes in the news</h2>
-<span style="color: #A87933; font-size: 12.5px">{{themeNote}}</span>
+<span style="color: #A87933; font-size:13px">{{themeNote}}</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 16px">
-<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size: 12.5px; color: #C99442">Guidance raised</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #4ADE80">{{raised}}</div><div style="font-size: 12px; color: #A87933">headlines</div></div>
-<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size: 12.5px; color: #C99442">Guidance lowered</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #FF5F56">{{lowered}}</div><div style="font-size: 12px; color: #A87933">headlines</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size:13px; color: #C99442">Guidance raised</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #4ADE80">{{raised}}</div><div style="font-size:13px; color: #A87933">headlines</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; padding: 10px 12px"><div style="font-size:13px; color: #C99442">Guidance lowered</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #FF5F56">{{lowered}}</div><div style="font-size:13px; color: #A87933">headlines</div></div>
 </div>
 <sc-for list="{{themes}}" as="t" hint-placeholder-count="6">
 <div style="padding: 7px 0">
@@ -230,19 +230,19 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 13px; padding: 2px 8px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{rp.t}}</span>
 <h3 style="margin: 0; font-size: 15.5px; font-weight: 600; color: #FFD89D">{{rp.n}}</h3>
 </div>
-<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{rp.sector}} · {{rp.date}}</div>
+<div style="color: #A87933; font-size:13px; margin-top: 4px">{{rp.sector}} · {{rp.date}}</div>
 </div>
 <div style="text-align: right; flex: none">
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: {{rp.moveColor}}">{{rp.move}}</div>
-<div style="font-size: 12px; color: #A87933">{{rp.moveLabel}}</div>
+<div style="font-size:13px; color: #A87933">{{rp.moveLabel}}</div>
 </div>
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">EPS</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div><div style="font-size: 12px; color: {{rp.epsColor}}">{{rp.epsTag}}</div></div>
-<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Year ago</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.ly}}</div><div style="font-size: 12px; color: {{rp.growthColor}}">{{rp.growth}}</div></div>
-<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size: 12px; color: #C99442">Estimates</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.nEst}}</div><div style="font-size: 12px; color: #A87933">{{rp.mcap}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size:13px; color: #C99442">EPS</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.eps}}</div><div style="font-size:13px; color: {{rp.epsColor}}">{{rp.epsTag}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size:13px; color: #C99442">Year ago</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.ly}}</div><div style="font-size:13px; color: {{rp.growthColor}}">{{rp.growth}}</div></div>
+<div style="background: #0E0A05; padding: 8px 10px"><div style="font-size:13px; color: #C99442">Estimates</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FFD89D">{{rp.nEst}}</div><div style="font-size:13px; color: #A87933">{{rp.mcap}}</div></div>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px">
+<div style="display: flex; flex-wrap: wrap; gap: 8px; font-size:13px">
 <a href="{{rp.newsUrl}}" target="_blank" rel="noopener" style="border: 1px solid #3D2C13; padding: 6px 10px">News ↗</a>
 <a href="{{rp.secUrl}}" target="_blank" rel="noopener" style="border: 1px solid #3D2C13; padding: 6px 10px">8-K filings ↗</a>
 <a href="{{rp.quoteHref}}" style="border: 1px solid #3D2C13; padding: 6px 10px">Quote page</a>
@@ -256,13 +256,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-if>
 
 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #3D2C13; padding-bottom: 10px">
-<div><div class="f-kicker">PART 2</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Upcoming reporting calendar</h2><div style="color: #A87933; font-size: 12.5px; margin-top: 2px">Who reports soon · filter by sector · BMO before open, AMC after close</div></div>
+<div><div class="f-kicker">PART 2</div><h2 style="margin: 2px 0 0; font-size: 22px; font-weight: 600; color: #FFD89D">Upcoming reporting calendar</h2><div style="color: #A87933; font-size:13px; margin-top: 2px">Who reports soon · filter by sector · BMO before open, AMC after close</div></div>
 <button type="button" class="t-tab" onClick="{{toggle2}}" aria-expanded="{{p2Str}}">{{p2Btn}}</button>
 </div>
 <sc-if value="{{p2Open}}" hint-placeholder-val="{{ true }}">
 <section class="t-card" aria-label="Upcoming earnings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px">
-<span style="color: #A87933; font-size: 12.5px">{{upCount}}</span>
+<span style="color: #A87933; font-size:13px">{{upCount}}</span>
 <button type="button" class="{{ernWatchCls}}" aria-pressed="{{ernWatchOn}}" onClick="{{ernWatchToggle}}">MY WATCHLIST ONLY</button>
 </div>
 <div role="group" aria-label="Filter by sector" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px">
@@ -272,7 +272,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 720px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Sector</th>
@@ -303,7 +303,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
 <span>Earnings dates, estimates and results: Nasdaq · Sectors: S&amp;P 500 list (Wikipedia) · Price moves: Yahoo Finance · Themes: market headline feeds · Refreshed daily</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>

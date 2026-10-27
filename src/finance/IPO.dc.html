@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -152,9 +152,9 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{score}}" as="sc" hint-placeholder-count="6">
 <div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size: 12.5px">{{sc.label}}</div>
+<div style="color: #C99442; font-size:13px">{{sc.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{sc.color}}; margin-top: 2px">{{sc.value}}</div>
-<div style="color: #A87933; font-size: 12.5px">{{sc.sub}}</div>
+<div style="color: #A87933; font-size:13px">{{sc.sub}}</div>
 </div>
 </sc-for>
 </div>
@@ -163,12 +163,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="IPO pipeline" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Pipeline: expected to price</h2>
-<span style="color: #A87933; font-size: 12.5px">Nasdaq IPO calendar · proceeds at the proposed price</span>
+<span style="color: #A87933; font-size:13px">Nasdaq IPO calendar · proceeds at the proposed price</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 860px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Expected</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Exchange</th>
@@ -206,7 +206,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 860px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">Priced</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Company</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Range</th>
@@ -239,13 +239,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Monthly IPO volume" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">IPOs priced per month, {{year}}</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 12px">US listings on Nasdaq’s IPO calendar · current month to date</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 12px">US listings on Nasdaq’s IPO calendar · current month to date</div>
 <div style="display: flex; align-items: flex-end; gap: 8px; height: 170px" role="img" aria-label="Bar chart of IPOs priced per month this year">
 <sc-for list="{{months}}" as="m" hint-placeholder-count="10">
 <div style="flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 170px">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #FFB84D">{{m.v}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size:13px; color: #FFB84D">{{m.v}}</span>
 <div style="{{m.barStyle}}"></div>
-<span style="font-size: 12px; color: #A87933">{{m.l}}</span>
+<span style="font-size:13px; color: #A87933">{{m.l}}</span>
 </div>
 </sc-for>
 </div>
@@ -280,17 +280,17 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="New S-1 filings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">New IPO filings</h2>
-<span style="color: #A87933; font-size: 12.5px">Nasdaq IPO calendar</span>
+<span style="color: #A87933; font-size:13px">Nasdaq IPO calendar</span>
 </div>
 <sc-for list="{{filings}}" as="f" hint-placeholder-count="5">
 <a href="{{f.url}}" target="_blank" rel="noopener" style="display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid #221909; color: #FFB84D">
 <span style="min-width: 0">
 <span style="display: block; font-size: 14px; color: #FFD89D">{{f.n}}</span>
-<span style="display: block; font-size: 12.5px; color: #A87933">{{f.meta}}</span>
+<span style="display: block; font-size:13px; color: #A87933">{{f.meta}}</span>
 </span>
 <span style="text-align: right; flex: none">
 <span style="display: block; font-family: 'IBM Plex Mono', monospace; font-size: 13px">{{f.d}}</span>
-<span style="display: block; font-size: 12px; color: #FFE9C7">{{f.form}}</span>
+<span style="display: block; font-size:13px; color: #FFE9C7">{{f.form}}</span>
 </span>
 </a>
 </sc-for>
@@ -299,11 +299,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Lockup expirations" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Lockup expirations</h2>
-<span style="color: #A87933; font-size: 12.5px">Insider shares free to sell</span>
+<span style="color: #A87933; font-size:13px">Insider shares free to sell</span>
 </div>
 <div style="overflow-x: auto"><table style="width: 100%; font-size: 13.5px">
 <thead>
-<tr style="color: #C99442; font-size: 12px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Company</th>
 <th scope="col" style="font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">IPO price</th>
@@ -332,7 +332,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Withdrawn or postponed</h2>
 <sc-for list="{{pulled}}" as="w" hint-placeholder-count="3">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; padding: 11px 0; border-bottom: 1px solid #221909">
-<span style="font-size: 14px; color: #FFD89D">{{w.n}} <span style="color: #A87933; font-size: 12.5px">· {{w.s}}</span></span>
+<span style="font-size: 14px; color: #FFD89D">{{w.n}} <span style="color: #A87933; font-size:13px">· {{w.s}}</span></span>
 <span style="font-size: 13.5px; color: #C99442">{{w.why}}</span>
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px">{{w.d}}</span>
 </div>
@@ -342,7 +342,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
 <span>IPO calendar: Nasdaq · Trading: Yahoo Finance · Refreshed daily</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
@@ -386,7 +386,7 @@ class Component extends DCLogic {
     });
     var vsStyle = function (k) {
       var c = k === 'Above' ? ['#0D2616', '#1F6B3A', UP] : (k === 'Below' ? ['#2A0F0D', '#7A2A24', DN] : ['#1A1309', '#4A3517', '#FFB84D']);
-      return 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
+      return 'font-size:13px; font-weight: 600; padding: 2px 10px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
     };
     var recent = rows.map(function (r) {
       return { d: F.day(r.date), t: r.sym || '—', href: r.sym && r.price ? 'Main.dc.html?sym=' + r.sym : '#', n: r.name + (r.spac ? ' · SPAC' : ''), range: r.range ? '$' + r.range.replace('-', '–$') : '—', px: r.price ? F.usd(r.price, 2) : '—',

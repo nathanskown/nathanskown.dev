@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -151,10 +151,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <button type="submit" style="height: 48px; padding: 0 20px; border-radius: 0; border: 1px solid #FFB84D; background: #FFB84D; color: #000000; text-shadow: none; font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer">Look up</button>
 </form>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px">
-<sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12.5px; color: #A87933; margin-right: 4px">Recent:</span>
+<sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color: #A87933; margin-right: 4px">Recent:</span>
 <sc-for list="{{recentChips}}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.chipStyle}}">{{c.t}}</button></sc-for>
 <span style="flex-basis: 100%; height: 0"></span></sc-if>
-<span style="font-size: 12.5px; color: #A87933; margin-right: 4px">Popular:</span>
+<span style="font-size:13px; color: #A87933; margin-right: 4px">Popular:</span>
 <sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
 <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.chipStyle}}">{{c.t}}</button>
 </sc-for>
@@ -188,30 +188,30 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{d.tiles}}" as="t" hint-placeholder-count="6">
 <div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size: 12.5px">{{t.label}}</div>
+<div style="color: #C99442; font-size:13px">{{t.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 500; color: {{t.color}}; margin-top: 2px">{{t.value}}</div>
-<div style="color: #A87933; font-size: 12.5px">{{t.sub}}</div>
+<div style="color: #A87933; font-size:13px">{{t.sub}}</div>
 </div>
 </sc-for>
 </div>
 </section>
 
 <div style="padding: 14px 16px; border-radius: 0; background: #261C0C; border: 1px solid #8A6326; font-size: 14px">
-<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-right: 10px">THE READ</span>{{d.read}}
+<span style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #FFD89D; margin-right: 10px">THE READ</span>{{d.read}}
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px">
 
 <section class="t-card" aria-label="Institutional ownership trend" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership, last 8 quarters</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 14px">% of shares outstanding held by 13F filers (can top 100%: filers overlap and short positions are not netted) · holders below each bar</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 14px">% of shares outstanding held by 13F filers (can top 100%: filers overlap and short positions are not netted) · holders below each bar</div>
 <div style="display: flex; align-items: flex-end; gap: 8px; height: 210px" role="img" aria-label="Bar chart of institutional ownership percentage over eight quarters">
 <sc-for list="{{d.trend}}" as="q" hint-placeholder-count="8">
 <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 210px">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #FFD89D">{{q.v}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size:13px; color: #FFD89D">{{q.v}}</span>
 <div style="{{q.barStyle}}"></div>
-<span style="font-size: 12px; color: #C99442; font-family: 'IBM Plex Mono', monospace">{{q.l}}</span>
-<span style="font-size: 12px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{q.c}}</span>
+<span style="font-size:13px; color: #C99442; font-family: 'IBM Plex Mono', monospace">{{q.l}}</span>
+<span style="font-size:13px; color: #A87933; font-family: 'IBM Plex Mono', monospace">{{q.c}}</span>
 </div>
 </sc-for>
 </div>
@@ -219,7 +219,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Index vs active ownership" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Index funds vs. active managers</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 14px">% of shares outstanding held by 13F filers · index = Vanguard, BlackRock, State Street, Geode</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 14px">% of shares outstanding held by 13F filers · index = Vanguard, BlackRock, State Street, Geode</div>
 <div aria-hidden="true" style="display: flex; height: 14px; border-radius: 0; overflow: hidden; gap: 2px; margin-bottom: 14px">
 <sc-for list="{{d.mix}}" as="m" hint-placeholder-count="6"><div style="{{m.segStyle}}"></div></sc-for>
 </div>
@@ -240,12 +240,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Top holders" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Top 10 institutional holders</h2>
-<span style="color: #A87933; font-size: 12.5px">{{d.pxLabel}}</span>
+<span style="color: #A87933; font-size:13px">{{d.pxLabel}}</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 760px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px 8px 0; border-bottom: 1px solid #3D2C13">#</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Holder</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Style</th>
@@ -278,7 +278,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top buyers</h2>
 <sc-for list="{{d.buyers}}" as="b" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
-<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{b.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{b.note}}</span></span>
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{b.n}}</span><span style="display: block; font-size:13px; color: #A87933">{{b.note}}</span></span>
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #4ADE80; flex: none">{{b.chg}}</span>
 </div>
 </sc-for>
@@ -288,7 +288,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Top sellers</h2>
 <sc-for list="{{d.sellers}}" as="s" hint-placeholder-count="5">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
-<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{s.n}}</span><span style="display: block; font-size: 12.5px; color: #A87933">{{s.note}}</span></span>
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D">{{s.n}}</span><span style="display: block; font-size:13px; color: #A87933">{{s.note}}</span></span>
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #FF5F56; flex: none">{{s.chg}}</span>
 </div>
 </sc-for>
@@ -306,7 +306,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<div style="max-width: 1320px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
 <span>Source: SEC EDGAR Form 13F data sets (quarterly) · shares outstanding from SEC XBRL · price: Yahoo Finance</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
@@ -355,14 +355,14 @@ class Component extends DCLogic {
     var chips = idx.tickers.map(function (x) {
       var on = x.sym === st.ticker;
       return { t: x.sym, pressed: on ? 'true' : 'false', pick: function () { self.go(x.sym); },
-        chipStyle: 'height: 32px; min-width: 52px; padding: 0 10px; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 12.5px; ' + (on ? 'background: #FFB84D; border: 1px solid #FFB84D; color: #000000; text-shadow: none;' : 'background: #0E0A05; border: 1px solid #3D2C13; color: #C99442;') };
+        chipStyle: 'height: 32px; min-width: 52px; padding: 0 10px; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size:13px; ' + (on ? 'background: #FFB84D; border: 1px solid #FFB84D; color: #000000; text-shadow: none;' : 'background: #0E0A05; border: 1px solid #3D2C13; color: #C99442;') };
     });
     var rec = PREFS.get('fin.recent', []);
     if (D && D.sym && rec[0] !== D.sym) rec = PREFS.set('fin.recent', [D.sym].concat(rec.filter(function (x) { return x !== D.sym; })).slice(0, 10));
     var recentChips = rec.slice(0, 8).map(function (t) {
       var on = t === st.ticker;
       return { t: t, pressed: on ? 'true' : 'false', pick: function () { self.go(t); },
-        chipStyle: 'height: 32px; min-width: 52px; padding: 0 10px; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 12.5px; border-style: dashed; ' + (on ? 'background: #FFB84D; border: 1px solid #FFB84D; color: #000000; text-shadow: none;' : 'background: #0E0A05; border: 1px dashed #3D2C13; color: #C99442;') };
+        chipStyle: 'height: 32px; min-width: 52px; padding: 0 10px; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size:13px; border-style: dashed; ' + (on ? 'background: #FFB84D; border: 1px solid #FFB84D; color: #000000; text-shadow: none;' : 'background: #0E0A05; border: 1px dashed #3D2C13; color: #C99442;') };
     });
     var quarter = function (p) { if (!p) return ''; var d = new Date(p + 'T12:00:00Z'); return 'Q' + (Math.floor(d.getUTCMonth() / 3) + 1) + ' ' + d.getUTCFullYear(); };
     var base = { recentChips: recentChips, hasRecent: recentChips.length > 0, ticker: st.ticker || '', draft: draft, chips: chips, liveTag: F.updated(D ? D.updated : idx.updated),

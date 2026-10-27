@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -221,7 +221,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tbody>
 <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
 <tr class="rrow">
-<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid #221909; font-weight: 400; white-space: nowrap"><a class="tick" href="{{r.href}}">{{r.sym}}</a> <span class="dim" style="font-size: 12px">{{r.name}}</span></th>
+<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid #221909; font-weight: 400; white-space: nowrap"><a class="tick" href="{{r.href}}">{{r.sym}}</a> <span class="dim" style="font-size:13px">{{r.name}}</span></th>
 <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="12">
 <td style="{{c.style}}">{{c.text}}</td>
 </sc-for>
@@ -249,7 +249,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{gapNotes}}" as="g" hint-placeholder-count="8"><li style="margin-bottom: 6px">{{g}}</li></sc-for>
 </ul>
 <sc-if value="{{hasFails}}" hint-placeholder-val="{{ false }}"><div class="t-th" style="margin: 14px 0 6px; color: #ff9a56">Last refresh problems</div>
-<ul style="margin: 0; padding-left: 18px; color: #ff9a56; font-size: 12.5px"><sc-for list="{{fails}}" as="g" hint-placeholder-count="2"><li>{{g}}</li></sc-for></ul></sc-if>
+<ul style="margin: 0; padding-left: 18px; color: #ff9a56; font-size:13px"><sc-for list="{{fails}}" as="g" hint-placeholder-count="2"><li>{{g}}</li></sc-for></ul></sc-if>
 </div>
 </div>
 </section>
@@ -257,7 +257,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
+<div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size:13px; letter-spacing: .04em">
 <span>Prices: Yahoo Finance, prior close · Financials: SEC EDGAR XBRL (last fiscal year) · Ownership: SEC 13F · Rebuilt every morning</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>

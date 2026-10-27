@@ -45,7 +45,9 @@ function finish(resp, url) {
   for (const [k, v] of Object.entries(SECURITY)) h.set(k, v);
   if ((h.get("content-type") || "").includes("text/html")) h.set("content-security-policy", CSP);
   if (resp.status === 200 && !url.pathname.startsWith("/api/") && /max-age=0/.test(h.get("cache-control") || "")) {
-    const rule = cacheRule(url.pathname);
+    // a ?v=<hash> URL changes whenever the file does (tools/stamp_assets.py), so it can be cached for a year
+    const rule = /^[0-9a-f]{8}$/.test(url.searchParams.get("v") || "") && /\.(?:css|js)$/i.test(url.pathname)
+      ? "public, max-age=31536000, immutable" : cacheRule(url.pathname);
     if (rule) h.set("cache-control", rule);
   }
   return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers: h });

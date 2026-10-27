@@ -182,7 +182,7 @@
 </main>
 
 <footer class="t-foot ir-noprint">
-<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
 <span>13F, Form 4, 13D/G: SEC EDGAR · Prices: Yahoo Finance (delayed)</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
@@ -204,7 +204,7 @@ class Component extends DCLogic {
       return DC.tickers().then(function (list) {
         var hit = list.bySym[sym], cik = hit ? hit.cik : null;
         return Promise.all([
-          soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')),
+          soft(DC.load('/data/finance/ownership/index.json')).then(function (ix) { return ix && ix.all && ix.all.indexOf(sym) < 0 ? null : soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')); }),
           core ? soft(DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json')) : soft(api('part=price&sym=' + encodeURIComponent(sym))),
           !core && cik ? soft(api('part=filings&cik=' + cik)) : null,
           !core && cik ? soft(api('part=fin&cik=' + cik)) : null,

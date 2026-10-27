@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -184,7 +184,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <input class="cz-input" style="flex: 1 1 auto; min-width: 0; background: #000; color: #ffd89d; border: 1px solid #382811; min-height: 40px; padding: 0 10px; font: inherit; font-size: 14px; text-transform: uppercase; letter-spacing: .08em" type="text" value="{{wDraft}}" onChange="{{wInput}}" placeholder="ADD TICKER" aria-label="Add a ticker to your watchlist" autocomplete="off">
 <button type="submit" class="t-tab is-on">ADD</button>
 </form>
-<div class="dim" style="font-size: 12px; margin-top: 6px">{{wMsg}}</div>
+<div class="dim" style="font-size:13px; margin-top: 6px">{{wMsg}}</div>
 <button type="button" class="t-tab" style="margin-top: 16px" onClick="{{czReset}}">RESET ALL TO DEFAULTS</button>
 </div>
 </div>
@@ -197,8 +197,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{tiles}}" as="t" hint-placeholder-count="10">
 <button type="button" class="{{t.cls}}" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}">
 <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px; width: 100%">
-<span style="font-size: 12px; color: #c99442; text-transform: uppercase; letter-spacing: .04em">{{t.name}}</span>
-<span style="font-size: 12px; color: {{t.color}}">{{t.pctText}}</span>
+<span style="font-size:13px; color: #c99442; text-transform: uppercase; letter-spacing: .04em">{{t.name}}</span>
+<span style="font-size:13px; color: {{t.color}}">{{t.pctText}}</span>
 </span>
 <span class="big" style="display: block; font-size: 30px; line-height: 1.05; color: #ffd89d; margin-top: 2px">{{t.disp}}</span>
 <svg viewBox="0 0 160 36" preserveAspectRatio="none" aria-hidden="true" style="display: block; width: 100%; height: 30px; margin-top: 4px"><path d="{{t.spark}}" fill="none" stroke="{{t.color}}" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path></svg>
@@ -227,11 +227,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <path d="{{selArea}}" fill="{{selFill}}" stroke="none"></path>
 <path d="{{selLine}}" fill="none" stroke="{{selColor}}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
 </svg>
-<div style="display: flex; justify-content: space-between; color: #c99442; font-size: 12px; margin-top: 6px">
+<div style="display: flex; justify-content: space-between; color: #c99442; font-size:13px; margin-top: 6px">
 <sc-for list="{{xLabels}}" as="x" hint-placeholder-count="5"><span>{{x}}</span></sc-for>
 </div>
 </div>
-<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; color: #c99442; font-size: 12px; text-align: right; width: 76px">
+<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; color: #c99442; font-size:13px; text-align: right; width: 76px">
 <span>{{yMax}}</span><span>{{yMid}}</span><span>{{yMin}}</span>
 </div>
 </div>
@@ -253,7 +253,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <tbody>
 <sc-for list="{{macro}}" as="m" hint-placeholder-count="5">
 <tr class="t-row" style="text-align: right">
-<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{m.n}}<span style="display: block; color: #c99442; font-size: 12px">{{m.period}}</span></th>
+<th scope="row" style="text-align: left; padding: 8px 8px 8px 0; color: #ffd89d">{{m.n}}<span style="display: block; color: #c99442; font-size:13px">{{m.period}}</span></th>
 <td class="hi" style="padding: 8px; font-weight: 600">{{m.act}}</td>
 <td style="padding: 8px 0 8px 8px; color: #c99442">{{m.prior}}</td>
 </tr>
@@ -262,11 +262,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </table>
 </div>
 <div style="margin-top: 14px; padding: 10px 12px; background: #000; border: 1px solid #ffb84d">
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #ffd89d">NEXT FOMC · {{fomcLabel}}</div>
-<div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-top: 6px"><span>FED FUNDS TARGET</span><span class="hi">{{targetLabel}}</span></div>
+<div style="font-size:13px; font-weight: 600; letter-spacing: 0.1em; color: #ffd89d">NEXT FOMC · {{fomcLabel}}</div>
+<div style="display: flex; justify-content: space-between; font-size:13px; margin-top: 6px"><span>FED FUNDS TARGET</span><span class="hi">{{targetLabel}}</span></div>
 </div>
-<h3 style="margin: 16px 0 6px; font-size: 12px; font-weight: 500; color: #c99442; letter-spacing: .12em">COMING UP</h3>
-<sc-if value="{{noUpcoming}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 12.5px">No major releases are scheduled in the next few days.</div></sc-if>
+<h3 style="margin: 16px 0 6px; font-size:13px; font-weight: 500; color: #c99442; letter-spacing: .12em">COMING UP</h3>
+<sc-if value="{{noUpcoming}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size:13px">No major releases are scheduled in the next few days.</div></sc-if>
 <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="4">
 <div style="display: flex; gap: 10px; font-size: 13px; padding: 4px 0"><span style="color: #ffd89d; width: 38px; flex: none">{{u.d}}</span><span>{{u.e}}</span></div>
 </sc-for>
@@ -291,11 +291,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a href="{{mv.href}}" style="font-weight: 600; color: #ffd89d; width: 52px; flex: none">{{mv.t}}</a>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{mv.n}}</span>
-<span style="display: block; font-size: 12px; color: #c99442">{{mv.why}}</span>
+<span style="display: block; font-size:13px; color: #c99442">{{mv.why}}</span>
 </span>
 <span style="text-align: right; flex: none">
 <span style="display: block; font-size: 13px; color: #ffd89d">{{mv.px}}</span>
-<span style="display: block; font-size: 12.5px; color: {{mv.color}}">{{mv.chg}}</span>
+<span style="display: block; font-size:13px; color: {{mv.color}}">{{mv.chg}}</span>
 </span>
 </div>
 </sc-for>
@@ -308,12 +308,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
 <sc-for list="{{sectors}}" as="sc" hint-placeholder-count="11">
 <div class="f-heat" style="{{sc.cellStyle}}">
-<span style="font-size: 12.5px">{{sc.n}}</span>
-<span style="font-size: 12.5px; font-weight: 600">{{sc.chg}}</span>
+<span style="font-size:13px">{{sc.n}}</span>
+<span style="font-size:13px; font-weight: 600">{{sc.chg}}</span>
 </div>
 </sc-for>
 </div>
-<div style="display: flex; justify-content: space-between; color: #c99442; font-size: 12px; margin-top: 10px"><span>Brighter = bigger move</span><span>Green ▲ up · Red ▼ down</span></div>
+<div style="display: flex; justify-content: space-between; color: #c99442; font-size:13px; margin-top: 10px"><span>Brighter = bigger move</span><span>Green ▲ up · Red ▼ down</span></div>
 </div>
 </section>
 
@@ -348,10 +348,10 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="{{ed.colCls}}">
 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px">
 <span style="font-weight: 600; color: #ffd89d; letter-spacing: .04em">{{ed.day}}</span>
-<span style="font-size: 12px; color: #c99442">{{ed.tag}}</span>
+<span style="font-size:13px; color: #c99442">{{ed.tag}}</span>
 </div>
 <sc-for list="{{ed.items}}" as="ei" hint-placeholder-count="3">
-<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid #241a0b; font-size: 12.5px">
+<div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid #241a0b; font-size:13px">
 <span><a href="{{ei.href}}" style="font-weight: 600; color: #ffd89d">{{ei.t}}</a> <span style="color: #c99442">{{ei.when}}</span></span>
 <span>{{ei.eps}}</span>
 </div>
@@ -364,14 +364,14 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="dash-row">
 
 <section class="t-panel" aria-label="Headlines" style="{{P.headlines}}">
-<div class="t-ph"><h2>Headlines</h2><a href="News.dc.html" style="font-size: 12px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
+<div class="t-ph"><h2>Headlines</h2><a href="News.dc.html" style="font-size:13px; letter-spacing: .08em">ALL HEADLINES <span class="t-k">GO</span></a></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{headlines}}" as="h" hint-placeholder-count="6">
 <a class="t-rowlink" href="{{h.link}}" target="_blank" rel="noopener">
-<span style="font-size: 12px; color: #c99442; width: 66px; flex: none; padding-top: 1px">{{h.time}}</span>
+<span style="font-size:13px; color: #c99442; width: 66px; flex: none; padding-top: 1px">{{h.time}}</span>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: block; font-size: 13.5px; line-height: 1.45; color: #ffd89d">{{h.h}}</span>
-<span style="display: block; font-size: 12px; color: #c99442; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em">{{h.tag}}</span>
+<span style="display: block; font-size:13px; color: #c99442; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em">{{h.tag}}</span>
 </span>
 </a>
 </sc-for>
@@ -379,12 +379,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </section>
 
 <aside class="t-panel" aria-label="Watchlist" style="{{P.watch}}">
-<div class="t-ph"><h2>My Watchlist</h2><button type="button" onClick="{{czEditWatch}}" style="background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size: 12px; letter-spacing: .08em">EDIT <span class="t-k">GO</span></button></div>
+<div class="t-ph"><h2>My Watchlist</h2><button type="button" onClick="{{czEditWatch}}" style="background: none; border: 0; cursor: pointer; color: #ffd89d; font: inherit; font-size:13px; letter-spacing: .08em">EDIT <span class="t-k">GO</span></button></div>
 <div class="t-pb" style="padding-top: 2px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="5">
 <a class="t-rowlink" href="{{w.href}}" style="justify-content: space-between; align-items: center">
-<span><span style="display: block; font-weight: 600; color: #ffd89d">{{w.t}}</span><span style="display: block; font-size: 12px; color: #c99442">{{w.n}}</span></span>
-<span style="text-align: right"><span style="display: block; color: #ffd89d">{{w.px}}</span><span style="display: block; font-size: 12.5px; color: {{w.color}}">{{w.chg}}</span></span>
+<span><span style="display: block; font-weight: 600; color: #ffd89d">{{w.t}}</span><span style="display: block; font-size:13px; color: #c99442">{{w.n}}</span></span>
+<span style="text-align: right"><span style="display: block; color: #ffd89d">{{w.px}}</span><span style="display: block; font-size:13px; color: {{w.color}}">{{w.chg}}</span></span>
 </a>
 </sc-for>
 </div>
@@ -396,21 +396,21 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-pb" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 4px 28px; padding-top: 4px">
 <sc-for list="{{odds}}" as="od" hint-placeholder-count="6">
 <div class="t-row" style="padding: 9px 0">
-<div style="font-size: 12px; letter-spacing: .1em; color: #a87933; text-transform: uppercase">{{od.group}}</div>
+<div style="font-size:13px; letter-spacing: .1em; color: #a87933; text-transform: uppercase">{{od.group}}</div>
 <div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px"><span>{{od.q}}</span><span style="color: #ffd89d">{{od.v}}</span></div>
 <div aria-hidden="true" style="height: 6px; background: #241a0b; margin: 5px 0 3px"><div style="{{od.bar}}"></div></div>
-<div style="font-size: 12px; color: #a87933">{{od.prev}}</div>
+<div style="font-size:13px; color: #a87933">{{od.prev}}</div>
 </div>
 </sc-for>
 <sc-if value="{{noOdds}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">Odds appear after the next market refresh.</div></sc-if>
 </div>
-<div style="padding: 0 14px 12px; font-size: 12px; color: #a87933">Market prices from Kalshi, not forecasts from this site. Change is measured against the prior day's last reading.</div>
+<div style="padding: 0 14px 12px; font-size:13px; color: #a87933">Market prices from Kalshi, not forecasts from this site. Change is measured against the prior day's last reading.</div>
 </section>
 
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size: 12px; letter-spacing: .04em">
+<div style="max-width: 1320px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #c99442; font-size:13px; letter-spacing: .04em">
 <span>Prices: Yahoo Finance · Yields: U.S. Treasury · Economic data: FRED · Earnings: Nasdaq · Delayed quotes, refreshed about every minute while this page is open</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>

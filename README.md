@@ -40,6 +40,7 @@ don't follow anyone to another device:
   - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/IPOs/macro, monthly 13F check
   - `refresh-sports.yml`: hourly while games are on (9 AM to 1 AM Central) plus a daily run
   - `refresh-daily.yml`: picks missing upcoming daily-challenge days at random and uploads them privately to the Worker (never committed)
+  - `tools/stamp_assets.py` (run by `build_pages.py`): adds `?v=<hash>` to CSS/JS links so the Worker can cache them for a year
   - `stamp-updated.yml`: writes `data/lastupdated.json` after each site change (shown as LAST UPDATED on the homepage)
   - `refresh-artists.yml`: rebuilds the music catalog (manual, and once whenever the builder or genre mapping changes)
   - `history-sports.yml`: one-off sports history

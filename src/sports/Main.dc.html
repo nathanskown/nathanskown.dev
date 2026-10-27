@@ -94,9 +94,9 @@
 <a class="s-team" href="{{m.href}}"><img class="s-logo" src="{{m.logo}}" alt="">{{m.name}}</a>
 <button type="button" onClick="{{m.remove}}" aria-label="{{m.removeLabel}}" style="flex: none; width: 40px; height: 40px; border: 0; background: transparent; color: var(--dim); cursor: pointer">✕</button>
 </div>
-<div style="font-size: 12.5px"><span class="dim">Last </span><a href="{{m.lastHref}}" style="{{m.lastStyle}}">{{m.last}}</a></div>
-<div style="font-size: 12.5px"><span class="dim">Next </span><a href="{{m.nextHref}}">{{m.next}}</a><sc-if value="{{m.hasP}}" hint-placeholder-val="{{false}}"> <span class="s-house">· house {{m.pNext}}</span></sc-if></div>
-<sc-if value="{{m.hasBrief}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 12px; margin-top: 4px; line-height: 1.45">{{m.brief}}</div></sc-if>
+<div style="font-size:13px"><span class="dim">Last </span><a href="{{m.lastHref}}" style="{{m.lastStyle}}">{{m.last}}</a></div>
+<div style="font-size:13px"><span class="dim">Next </span><a href="{{m.nextHref}}">{{m.next}}</a><sc-if value="{{m.hasP}}" hint-placeholder-val="{{false}}"> <span class="s-house">· house {{m.pNext}}</span></sc-if></div>
+<sc-if value="{{m.hasBrief}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size:13px; margin-top: 4px; line-height: 1.45">{{m.brief}}</div></sc-if>
 </div>
 </sc-for>
 </div>
@@ -120,13 +120,13 @@
 <div class="{{g.cls}}">
 <sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>
 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
-<div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size: 12px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
+<div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size:13px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
 </sc-for>
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 6px">
-<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"><span class="{{g.pill}}">{{g.status}}</span><sc-if value="{{g.sub}}" hint-placeholder-val="{{false}}"><span class="dim" style="font-size: 12px">{{g.sub}}</span></sc-if></span>
-<sc-if value="{{g.href}}" hint-placeholder-val="{{true}}"><a class="s-go" href="{{g.href}}" aria-label="{{g.aria}}" style="width: auto; padding: 0 10px; height: 32px; font-size: 12px">{{g.cta}} →</a></sc-if>
+<span style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0"><span class="{{g.pill}}">{{g.status}}</span><sc-if value="{{g.sub}}" hint-placeholder-val="{{false}}"><span class="dim" style="font-size:13px">{{g.sub}}</span></sc-if></span>
+<sc-if value="{{g.href}}" hint-placeholder-val="{{true}}"><a class="s-go" href="{{g.href}}" aria-label="{{g.aria}}" style="width: auto; padding: 0 10px; height: 32px; font-size:13px">{{g.cta}} →</a></sc-if>
 </div>
-<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size: 12px; margin-top: 6px">{{g.note}}<sc-if value="{{g.house}}" hint-placeholder-val="{{false}}"><span class="s-house">{{g.house}}</span></sc-if></div></sc-if>
+<sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="dim" style="font-size:13px; margin-top: 6px">{{g.note}}<sc-if value="{{g.house}}" hint-placeholder-val="{{false}}"><span class="s-house">{{g.house}}</span></sc-if></div></sc-if>
 </div>
 </sc-for>
 </div>
@@ -159,7 +159,7 @@
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:13px" class="dim">
 <span>Scores and schedules: ESPN public API (cached about 30 seconds) · Win probabilities: house model · No betting lines · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
@@ -279,7 +279,7 @@ class Component extends DCLogic {
 
     // scoreboards
     var all = S.lg === 'all', CAP = 4, liveN = 0;
-    var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600; font-size: 12.5px' : 'color: var(--dim); font-size: 12.5px'; };
+    var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600; font-size:13px' : 'color: var(--dim); font-size:13px'; };
     var pill = function (st) { return 's-pill ' + (st === 'in' ? 'live' : st === 'pre' ? 'pre' : 'final'); };
     var cardCls = function (st, fol) { return 'sb' + (st === 'in' ? ' is-live' : st === 'post' ? ' is-final' : '') + (fol ? ' is-fol' : ''); };
     var tc = function (t) { return 'background: ' + (t.color || '#18434c') + '; box-shadow: 0 0 0 1px ' + (t.alt || '#dcfcff') + '66, 0 0 10px ' + (t.color || '#18434c') + '88'; };
