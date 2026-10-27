@@ -88,3 +88,28 @@ def build(lg):
 
 def job_build():
     return {lg: build(lg) for lg in LGS}
+
+
+def cfbd_talent():
+    """247Sports team talent composite (roster recruiting ratings) per season from CollegeFootballData, by ESPN team
+    id: history/cfbd_talent.json {year: {team id: talent}}. One call per season; seasons already stored are skipped."""
+    key = os.environ.get("CFBD_KEY", "").strip()
+    if not key:
+        return {"error": "no CFBD_KEY"}
+    H = {"Authorization": f"Bearer {key}"}
+    store = read("history/cfbd_talent.json") or {}
+    cur = (read("model/ncaaf.json") or {}).get("season") or 2026
+    out = {}
+    for y in range(2015, cur + 1):
+        if str(y) in store and y < cur:
+            continue
+        try:
+            rows = get("https://api.collegefootballdata.com/talent", {"year": y}, headers=H, timeout=90)
+        except Exception as e:
+            out[y] = f"error {str(e)[:100]}"
+            continue
+        store[str(y)] = {str(r.get("teamId") or r.get("id") or r.get("school")): float(r["talent"]) for r in rows or [] if r.get("talent") is not None}
+        out[y] = len(store[str(y)])
+    store["updated"] = now_iso()
+    write("history/cfbd_talent.json", store)
+    return out
