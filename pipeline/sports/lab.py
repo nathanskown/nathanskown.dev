@@ -718,7 +718,11 @@ def job_bdb27test():
     beta = np.linalg.lstsq(X[tr], lr[tr], rcond=None)[0]
     adj = pr[te] * np.exp(X[te] @ beta)
     base_mae, new_mae = float(np.abs(act[te] - pr[te]).mean()), float(np.abs(act[te] - adj).mean())
+    b0 = float(lr[tr].mean())                                        # level shift only: is it the routes or the intercept?
+    lvl = float(np.abs(act[te] - pr[te] * np.exp(b0)).mean())
+    med = lambda v: float(np.median(np.abs(v)))
     out.update({"train": int(tr.sum()), "test": int(te.sum()), "beta": [round(float(b), 4) for b in beta],
-                "test2025": {"maeWalk": round(base_mae, 2), "maeWithRoutes": round(new_mae, 2)}})
+                "test2025": {"maeWalk": round(base_mae, 2), "maeLevelOnly": round(lvl, 2), "maeWithRoutes": round(new_mae, 2),
+                             "medianMissWalk": round(med(act[te] - pr[te]), 2), "medianMissRoutes": round(med(act[te] - adj), 2)}})
     write("lab/_probe/bdb27test.json", out)
     return out
