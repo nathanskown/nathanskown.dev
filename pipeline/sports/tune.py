@@ -482,16 +482,18 @@ def _market_lookup(mk, L, years):
     return np.array(out, dtype=float)
 
 
-def market_check(L, years, p):
+def market_check(L, years, p, ms=None):
     """The model's walk-forward projections next to the closing lines on the same games: accuracy of each, and how the
     model's picks against the spread would have done (pushes left out). NHL is compared on win chance (moneyline)."""
     store = read(f"history/market_{L.lg}.json") or {}
     if not (store.get("spread") or store.get("p")):
         return None
     P, U, A = run(L, years, p)
+    if ms:
+        P = P * ms
     s_mod = fit_sigma(P, U, A, p.get("pv"), p.get("ps"))
     m_all = score(P, U, A, s_mod, p.get("pv"))
-    out = {"seasons": [min(years), max(years)]}
+    out = {"seasons": [min(years), max(years)], "marginScale": ms}
     pm = _market_lookup(store.get("p") or {}, L, years)
     okp = ~np.isnan(pm)
     if okp.sum() >= 200:
@@ -520,6 +522,40 @@ def market_check(L, years, p):
                     "gapMean": round(float(gap.mean()), 2), "gapSd": round(float(gap.std()), 2),
                     "slope": round(float(np.polyfit(Pm, Sm, 1)[0]), 3), "ats": ats})
     return out
+
+
+def margin_scale(L, years, p, folds):
+    """Do the projected margins need stretching? Ratings are shrunk toward a prior and blowouts damped, so in some
+    leagues the projections come out compressed: actual margins run larger than projected by a steady factor. For
+    each held-out season, the factor c (least squares through zero, actual ~ c x projected) is fitted on earlier
+    seasons only, the spread refitted on c x projection, and the held-out margin miss and log loss compared with the
+    plain projection.
+    Adopted when the held-out margin miss is smaller in every season tested and log loss is no worse."""
+    P, U, A = run(L, years, p)
+    Y = np.concatenate([np.full(len(L.seasons[y].m), y) for y in years])
+    pv, ps = p.get("pv"), p.get("ps")
+    diffs, rec = [], []
+    for hold in folds:
+        tr, te = Y < hold, Y == hold
+        if tr.sum() < 200 or te.sum() < 50:
+            continue
+        c = float(np.sum(P[tr] * A[tr]) / np.sum(P[tr] ** 2))
+        s0, s1 = fit_sigma(P[tr], U[tr], A[tr], pv, ps), fit_sigma(c * P[tr], U[tr], A[tr], pv, ps)
+        base, new = score(P[te], U[te], A[te], s0, pv), score(c * P[te], U[te], A[te], s1, pv)
+        d = base["ll"] - new["ll"]
+        diffs.append(d)
+        rec.append({"holdout": int(hold), "c": round(c, 3), "gain": round(float(d.mean()), 5), "mae": [round(base["mae"], 3), round(new["mae"], 3)]})
+    if not diffs:
+        return {"adopt": False, "reason": "not enough seasons"}
+    pooled = np.concatenate(diffs)
+    gain = float(pooled.mean()); z = gain / (pooled.std(ddof=1) / math.sqrt(len(pooled))) if pooled.std() > 0 else 0.0
+    pos = sum(1 for r in rec if r["mae"][1] < r["mae"][0]); worst = min(r["gain"] for r in rec)
+    # win chances barely move (the spread is refitted to the stretched margins), so the test is the margin itself:
+    # smaller held-out miss in every season tested, and log loss no worse
+    adopt = pos == len(rec) and len(rec) >= 3 and gain >= -0.0002 and worst >= WORST_FOLD
+    c = float(np.sum(P * A) / np.sum(P ** 2))
+    return {"adopt": bool(adopt), "c": round(c, 4), "sigma": round(fit_sigma(c * P, U, A, pv, ps), 3), "gain": round(gain, 5),
+            "z": round(float(z), 2), "foldsImproved": f"{pos}/{len(rec)} (margin miss)", "folds": rec}
 
 
 def tune(lg):
@@ -594,8 +630,12 @@ def tune(lg):
            "gain": round(gain, 5), "z": round(z, 2), "games": int(len(pooled)), "foldsImproved": f"{pos}/{len(rec)}",
            "folds": rec, "heldOutCalibration": calibration(np.concatenate(held_p), np.concatenate(held_r)),
            "all": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in allm.items() if k not in ("ll", "p", "res")}}
+    try:
+        out["ms"] = margin_scale(L, usable, params, folds)
+    except Exception as e:
+        out["ms"] = {"adopt": False, "reason": str(e)[:160]}
     if lg in ("nfl", "nba", "nhl", "ncaab", "ncaaf"):
-        out["market"] = market_check(L, [y for y in usable if y >= usable[-1] - 9], params)
+        out["market"] = market_check(L, [y for y in usable if y >= usable[-1] - 9], params, out["ms"].get("c") if out["ms"].get("adopt") else None)
     if not adopt:
         out["reason"] = (f"held-out gain {gain:.4f} (z {z:.1f}, {pos}/{len(rec)} seasons better, worst {worst:+.4f}) did not clear the bar "
                          f"(gain {MIN_GAIN}, z {MIN_Z}, or z {MIN_Z_CONSISTENT} with most seasons better; no season worse than {WORST_FOLD})")

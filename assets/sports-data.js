@@ -302,6 +302,8 @@
     // who is playing (NHL goalies, NBA availability, college QBs): adjustment written by the pipeline for this game
     if (model.ctxEdges && start) m += model.ctxEdges[String(start).slice(0, 16) + '|' + homeId + '|' + awayId] || 0;
     // when the model says so (pv), widen the spread by how unsure both ratings still are (w = weight of evidence in games)
+    // stretch where replaying past seasons showed the projections come out compressed (model.ms, tune.margin_scale)
+    if (model.ms) { m *= model.ms; hfa *= model.ms; }
     var sg = (model.sigma || 13.5) * (model.pv && H.w && A.w ? Math.sqrt(1 + 1 / H.w + 1 / A.w) : 1);
     var p = Phi(m / sg);
     // blended with an Elo rating where that tested better (pipeline/sports/elo.py): p = (1 - w) p + w p_Elo
