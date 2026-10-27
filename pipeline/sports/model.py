@@ -76,6 +76,10 @@ def get_params(lg):
         P.update(t.get("fixedLive") or {})
         P["sigma"] = t["sigma"]
         P["sigmaMargin"] = t.get("sigmaMargin", t["sigma"])
+    if t and (t.get("ms") or {}).get("adopt"):
+        P["ms"], P["sigmaMs"] = t["ms"]["c"], t["ms"]["sigma"]       # margin stretch (tune.margin_scale)
+    if t and (t.get("lu") or {}).get("adopt"):
+        P["lu"], P["sigmaLu"] = t["lu"]["b"], t["lu"]["sigma"]       # NBA lineup-strength blend (tune.lineup_blend)
     from . import ctx
     if ctx.params(lg) and not P.get("av"):
         P["av"] = ctx.params(lg)
@@ -472,7 +476,7 @@ def build(lg):
     si = season_info(lg)
     smap = _standings_map(lg)
     members = set(_members(lg))
-    res = {"lg": lg, "season": si["year"], "seasonType": si["type"], "hfa": P["hfa"], "sigma": P["sigma"],
+    res = {"lg": lg, "season": si["year"], "seasonType": si["type"], "hfa": P["hfa"], "sigma": P.get("sigmaLu") or P.get("sigmaMs") or P["sigma"], "ms": P.get("ms"),
            "sigmaMargin": P.get("sigmaMargin", P["sigma"]),
            "k": P["k"], "unit": P["unit"], "minGp": P["minGp"], "teams": {}, "odds": None}
     if P.get("divHfa") is not None:
@@ -570,6 +574,13 @@ def build(lg):
                 res["spEdges"] = extra.upcoming_sp(si["year"], P["sp"])     # announced starters, next 7 days
             except Exception as e:
                 print("MLB starters failed:", str(e)[:120])
+        if P.get("lu"):
+            from . import ctx
+            try:
+                res["lu"] = P["lu"]
+                res["luEdges"] = ctx.lineup_upcoming(lg, events)
+            except Exception as e:
+                print("lineup upcoming failed:", str(e)[:120])
         if P.get("av"):
             from . import ctx
             try:
@@ -641,9 +652,10 @@ def nfl_odds(res, events, smap, N=10000):
     div = {t: smap[t]["group"] for t in ids}
     conf = {t: ("AFC" if "AFC" in (div[t] or "") or "American" in (smap[t].get("parent") or "") else "NFC") for t in ids}
     T = res["teams"]
-    rating = np.array([T[t]["rating"] for t in ids])
+    MS = res.get("ms") or 1.0
+    rating = np.array([T[t]["rating"] for t in ids]) * MS
     weight = np.array([T[t].get("w") or (T[t]["gp"] + res["k"]) for t in ids], float)
-    SIG, HFA, DIVH = res["sigma"], res["hfa"], res.get("divHfa", res["hfa"])
+    SIG, HFA, DIVH = res["sigma"], res["hfa"] * MS, res.get("divHfa", res["hfa"]) * MS
     unc = SIG / np.sqrt(weight)
     true = rating[None, :] + RNG.normal(0, 1, (N, 32)) * unc[None, :]
     drift = PARAMS["nfl"].get("drift", 0.0)          # variance per team per week (points^2)
@@ -741,11 +753,12 @@ def nhl_odds(res, smap, N=10000):
     div = {t: smap[t]["group"] for t in ids}
     conf = {t: smap[t].get("parent") or div[t] for t in ids}
     has_div = len(set(div.values())) > len(set(conf.values()))
-    SIG, HFA = res["sigma"], res["hfa"]
+    MS = res.get("ms") or 1.0
+    SIG, HFA = res["sigma"], res["hfa"] * MS
     T = res["teams"]
     gp = np.array([smap[t].get("gp") or 0 for t in ids], float)
     pts0 = np.array([smap[t].get("pts") or 0 for t in ids], float)
-    rating = np.array([T[t]["rating"] for t in ids])
+    rating = np.array([T[t]["rating"] for t in ids]) * MS
     weight = np.array([T[t].get("w") or (T[t]["gp"] + res["k"]) for t in ids], float)
     tr = rating[None, :] + RNG.normal(0, 1, (N, n)) * (SIG / np.sqrt(weight))[None, :]
     pts = np.tile(pts0, (N, 1))
