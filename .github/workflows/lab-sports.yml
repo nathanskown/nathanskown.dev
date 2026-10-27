@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "probe | probe2 | collect | cfbd | bdb | kalshi | oddscore | oddsfill | sgo | sgofill | cfbdlines | bdb27"
+        description: "probe | probe2 | collect | cfbd | bdb | kalshi | oddscore | oddsfill | sgo | sgofill | cfbdlines | bdb27 | bdb27test"
         default: "probe"
       leagues:
         description: "Leagues (comma separated)"
