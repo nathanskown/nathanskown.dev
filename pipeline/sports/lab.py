@@ -349,19 +349,20 @@ def job_bdb():
     accepted on kaggle.com by that account. Raw data is never committed; only this summary."""
     import subprocess, zipfile, glob, csv as _csv
     if not os.environ.get("KAGGLE_API_TOKEN"):           # a new-style token saved under another name
-        alt = os.environ.get("KAGGLE_TOKEN") or (os.environ.get("KAGGLE_KEY") if not os.environ.get("KAGGLE_USERNAME") else "")
+        alt = os.environ.get("KAGGLE_API_KEY") or os.environ.get("KAGGLE_TOKEN") or (os.environ.get("KAGGLE_KEY") if not os.environ.get("KAGGLE_USERNAME") else "")
         if alt:
             os.environ["KAGGLE_API_TOKEN"] = alt.strip()
             os.environ.pop("KAGGLE_KEY", None)
     if not (os.environ.get("KAGGLE_API_TOKEN") or (os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY"))):
-        return {"error": "no Kaggle secret visible", "seen": {k: bool(os.environ.get(k)) for k in ("KAGGLE_API_TOKEN", "KAGGLE_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY")}}
+        return {"error": "no Kaggle secret visible", "seen": {k: bool(os.environ.get(k)) for k in ("KAGGLE_API_TOKEN", "KAGGLE_API_KEY", "KAGGLE_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY")}}
     for k in ("KAGGLE_API_TOKEN", "KAGGLE_USERNAME", "KAGGLE_KEY"):       # unset secrets arrive as empty strings
         if not os.environ.get(k):
             os.environ.pop(k, None)
     run = lambda *a: subprocess.run(["kaggle", *a], capture_output=True, text=True, timeout=600)
     lst = run("competitions", "list", "-s", "big data bowl", "--csv")
     comps = [r["ref"].rstrip("/").split("/")[-1] for r in _csv.DictReader(io.StringIO(lst.stdout))] if lst.returncode == 0 else []
-    out = {"list_error": lst.stderr[-300:] if lst.returncode else None, "competitions": comps, "files": {}}
+    out = {"list_error": (lst.stderr or lst.stdout)[-300:] if lst.returncode else None, "competitions": comps, "files": {},
+           "tokenShape": ("new" if os.environ.get("KAGGLE_API_TOKEN", "").startswith("KGAT") else "other") if os.environ.get("KAGGLE_API_TOKEN") else "legacy pair"}
     for c in comps[:4]:
         fl = run("competitions", "files", "-c", c, "--csv")
         rows = list(_csv.DictReader(io.StringIO(fl.stdout))) if fl.returncode == 0 else []
@@ -399,7 +400,7 @@ def job_bdb():
                     info["headers"][tr[0]] = [next(rd, []), next(rd, []), next(rd, [])]
         out["files"][c] = info
     write("lab/_probe/bdb.json", out)
-    return {"competitions": comps, "files": {c: len(v["files"]) for c, v in out["files"].items()}}
+    return {"competitions": comps, "files": {c: len(v["files"]) for c, v in out["files"].items()}, "list_error": out["list_error"], "tokenShape": out["tokenShape"]}
 
 
 # ---------------------------------------------------------------- Kalshi (public market data, no key) probe
