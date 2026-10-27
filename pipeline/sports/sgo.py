@@ -3,7 +3,8 @@
 Only finished games are fetched. Each one carries every sportsbook's closing over/under line for each player prop, plus
 the player's actual result, so one request per finished game is enough to grade the props board against real lines.
 Stored compactly in data/sports/track/_sgo_nfl_{season}.json: {"events": {eventID: {"d", "home", "away", "props": [
-[name, team, market, close line, close over odds, close under odds, result]]}}}. Never shown on the site; used only to
+[name, team, market, close line, close over odds, close under odds, result, open line, open over odds,
+open under odds]]}}}. Never shown on the site; used only to
 grade the house projections."""
 import os
 import re
@@ -54,7 +55,8 @@ def _extract(ev):
             continue
         p = players.get(pid) or {}
         out.append([p.get("name") or pid, tid.get(p.get("teamID")), mk, line, _num(o.get("closeBookOdds") or o.get("bookOdds")),
-                    _num(un.get("closeBookOdds") or un.get("bookOdds")), _num(o.get("score"))])
+                    _num(un.get("closeBookOdds") or un.get("bookOdds")), _num(o.get("score")),
+                    _num(o.get("openBookOverUnder")), _num(o.get("openBookOdds")), _num(un.get("openBookOdds"))])
     return out
 
 
@@ -106,3 +108,14 @@ def job_backfill():
         return backfill(cur, last[:10] if last else f"{cur}-09-01", f"{cur + 1}-02-20", cap=60)
     except Exception as e:
         return {"error": str(e)[:200]}
+
+
+def job_refetch_open():
+    """One-off: re-fetch this season's stored games so they carry opening lines too (costs one event each)."""
+    cur = (read("model/nfl.json") or {}).get("season")
+    store = read(f"track/_sgo_nfl_{cur}.json") or {}
+    n = len(store.get("events") or {})
+    if n and all(len(p) >= 10 for e in store["events"].values() for p in e["props"][:1]):
+        return {"already": n}
+    write(f"track/_sgo_nfl_{cur}.json", {"season": cur, "events": {}})
+    return backfill(cur, f"{cur}-09-01", f"{cur + 1}-02-20", cap=200)
