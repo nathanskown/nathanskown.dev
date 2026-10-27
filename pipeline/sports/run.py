@@ -32,6 +32,8 @@ JOBS = {
     "lab-oddsfill": [("oddsfill", lab.job_oddsfill)],
     "market": [("market", market.job_build)],
     "totals": [("totals", totals.job_totals)],
+    "lab-retune": [("market", market.job_build), ("tune", tune.job_tune), ("ctx_fit", ctx.job_fit), ("elo_fit", elo.job_fit),
+                   ("model", model.job_model), ("totals", totals.job_totals), ("track", track.job_track), ("backtest", track.job_backtest)],
     "lab-sgo": [("sgo", lab.job_sgo)],
     "lab-sgofill": [("sgofill", sgo.job_backfill)],
     "lab-cfbdlines": [("cfbdlines", market.cfbd_lines)],
