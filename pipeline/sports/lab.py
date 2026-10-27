@@ -363,7 +363,15 @@ def job_bdb():
     comps = [r["ref"].rstrip("/").split("/")[-1] for r in _csv.DictReader(io.StringIO(lst.stdout))] if lst.returncode == 0 else []
     out = {"list_error": (lst.stderr or lst.stdout)[-300:] if lst.returncode else None, "competitions": comps, "files": {},
            "tokenShape": ("new" if os.environ.get("KAGGLE_API_TOKEN", "").startswith("KGAT") else "other") if os.environ.get("KAGGLE_API_TOKEN") else "legacy pair"}
-    for c in comps[:4]:
+    pref = ["nfl-big-data-bowl-2027", "nfl-big-data-bowl-2026-analytics", "nfl-big-data-bowl-2026-prediction", "nfl-big-data-bowl-2025",
+            "nfl-big-data-bowl-2024", "nfl-big-data-bowl-2023"]
+    comps = sorted(comps, key=lambda c: pref.index(c) if c in pref else 99)
+    out["access"] = {}
+    for c in comps:                                   # one small file each: are the rules accepted?
+        t = run("competitions", "download", "-c", c, "-f", "games.csv" if c != "nfl-big-data-bowl-2027" else "nfl-big-data-bowl-2027/games.csv", "-p", f"/tmp/bdbt/{c}")
+        out["access"][c] = t.returncode == 0
+    ok = [c for c in comps if out["access"].get(c)]
+    for c in ok[:3]:
         fl = run("competitions", "files", "-c", c, "--csv")
         rows = list(_csv.DictReader(io.StringIO(fl.stdout))) if fl.returncode == 0 else []
         info = {"error": fl.stderr[-300:] if fl.returncode else None, "files": [{k: r.get(k) for k in ("name", "size", "totalBytes", "creationDate") if r.get(k)} for r in rows[:60]], "headers": {}}
@@ -400,7 +408,7 @@ def job_bdb():
                     info["headers"][tr[0]] = [next(rd, []), next(rd, []), next(rd, [])]
         out["files"][c] = info
     write("lab/_probe/bdb.json", out)
-    return {"competitions": comps, "files": {c: len(v["files"]) for c, v in out["files"].items()}, "list_error": out["list_error"], "tokenShape": out["tokenShape"]}
+    return {"access": out["access"], "files": {c: len(v["files"]) for c, v in out["files"].items()}, "list_error": out["list_error"], "tokenShape": out["tokenShape"]}
 
 
 # ---------------------------------------------------------------- Kalshi (public market data, no key) probe
