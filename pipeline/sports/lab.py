@@ -635,3 +635,90 @@ def job_bdb27():
         out["files"][os.path.relpath(f, d)] = info
     write("lab/_probe/bdb27.json", out)
     return {k: {"n": v["n"], "cols": len(v["cols"])} for k, v in out["files"].items()}
+
+
+def job_bdb27test():
+    """Does Big Data Bowl 2027 route data (drafted 2023-25 players only) explain what the props walk misses?
+    For each receiver-week in 2024-25 the walk-forward projection's miss is compared with the player's routes, targets
+    per route, yards per route and separation earlier in the same season (or last season before week 4). A
+    correction fitted on 2024 is scored on 2025. Raw Kaggle data and per-player values are never committed:
+    only the summary in lab/_probe/bdb27test.json."""
+    import subprocess, zipfile, glob, csv as _csv, collections
+    import numpy as np
+    from . import nflprops as P
+    tok = os.environ.get("KAGGLE_API_TOKEN") or os.environ.get("KAGGLE_API_KEY") or os.environ.get("KAGGLE_TOKEN")
+    if not tok:
+        return "no Kaggle token"
+    os.environ["KAGGLE_API_TOKEN"] = tok.strip()
+    for k in ("KAGGLE_USERNAME", "KAGGLE_KEY"):
+        if not os.environ.get(k):
+            os.environ.pop(k, None)
+    d = "/tmp/bdb27"
+    for f in ("player_play.csv", "players.csv", "games.csv"):
+        subprocess.run(["kaggle", "competitions", "download", "-c", "nfl-big-data-bowl-2027", "-f", "nfl-big-data-bowl-2027/" + f, "-p", d],
+                       capture_output=True, text=True, timeout=1800)
+    for z in glob.glob(d + "/*.zip"):
+        zipfile.ZipFile(z).extractall(d)
+    find = lambda n: (glob.glob(d + "/**/" + n, recursive=True) or [None])[0]
+    games = {r["game_id"]: (int(r["season"]), int(r["week"]), r["season_type"]) for r in _csv.DictReader(open(find("games.csv")))}
+    names = {r["nfl_id"]: (P._norm(r["display_name"]), r["nfl_position"]) for r in _csv.DictReader(open(find("players.csv")))}
+    f = lambda v: None if v in ("", "NA", None) else float(v)
+    agg = collections.defaultdict(lambda: [0, 0, 0.0, 0.0, 0])        # (season, week, nfl_id): routes, targets, rec yds, sep sum, sep n
+    for r in _csv.DictReader(open(find("player_play.csv"), newline="")):
+        g = games.get(r["game_id"])
+        if not g or g[2] != "REG" or r["nfl_id"] not in names or r["team_abbr"] != r["possession_team"]:
+            continue
+        if r["route_ran"] in ("", "NA") or r["play_nullified_by_penalty"] == "Y":
+            continue
+        a = agg[(g[0], g[1], r["nfl_id"])]
+        a[0] += 1
+        if r["target"] == "TRUE":
+            a[1] += 1
+            a[2] += f(r["rec_yards"]) or 0.0
+        s = f(r["separation_at_pass_forward"])
+        if s is not None and r["target"] == "TRUE":
+            a[3] += s; a[4] += 1
+    # season-to-date features before each week
+    feat = {}
+    by = collections.defaultdict(list)
+    for (y, w, pid), a in agg.items():
+        by[(y, pid)].append((w, a))
+    for (y, pid), lst in by.items():
+        lst.sort()
+        cum = [0, 0, 0.0, 0.0, 0]
+        prev = [sum(x[1][i] for x in by.get((y - 1, pid), [])) for i in range(5)]
+        for w, a in lst:
+            src = cum if cum[0] >= 60 else [cum[i] + prev[i] for i in range(5)]
+            if src[0] >= 60:
+                feat[(y, w, names[pid][0])] = (src[1] / src[0], src[2] / src[0], src[3] / src[4] if src[4] >= 10 else None, src[0])
+            cum = [cum[i] + a[i] for i in range(5)]
+    seasons = {yy: P._season_rows(yy) for yy in range(2019, 2026)}
+    keys = {}
+    P._walk(seasons, 2024, keys)
+    rows = []
+    for (y, w, nm, team, mk), (pr, act) in keys.items():
+        if mk != "rec_yds" or y not in (2024, 2025):
+            continue
+        fe = feat.get((y, w, nm))
+        if fe and pr > 0:
+            rows.append((y, pr, act, fe[0], fe[1], fe[2]))
+    out = {"receiverWeeks": len(rows), "players": len({k[2] for k in feat})}
+    if len(rows) < 300:
+        write("lab/_probe/bdb27test.json", out)
+        return out
+    R = np.array([[r[0], r[1], r[2], r[3], r[4]] for r in rows])
+    yy, pr, act, tprr, yprr = R.T
+    lr = np.log((act + 5) / (pr + 5))
+    out["corr"] = {"tprr": round(float(np.corrcoef(tprr, lr)[0, 1]), 3), "yprr": round(float(np.corrcoef(yprr, lr)[0, 1]), 3)}
+    sep = np.array([r[5] if r[5] is not None else np.nan for r in rows])
+    ok = ~np.isnan(sep)
+    out["corr"]["sep"] = round(float(np.corrcoef(sep[ok], lr[ok])[0, 1]), 3) if ok.sum() > 100 else None
+    tr, te = yy == 2024, yy == 2025
+    X = np.column_stack([np.ones_like(pr), tprr - tprr[tr].mean(), yprr - yprr[tr].mean()])
+    beta = np.linalg.lstsq(X[tr], lr[tr], rcond=None)[0]
+    adj = pr * np.exp(X[te] @ beta)
+    base_mae, new_mae = float(np.abs(act[te] - pr[te]).mean()), float(np.abs(act[te] - adj).mean())
+    out.update({"train": int(tr.sum()), "test": int(te.sum()), "beta": [round(float(b), 4) for b in beta],
+                "test2025": {"maeWalk": round(base_mae, 2), "maeWithRoutes": round(new_mae, 2)}})
+    write("lab/_probe/bdb27test.json", out)
+    return out
