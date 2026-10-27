@@ -32,13 +32,15 @@ don't follow anyone to another device:
 - Music: pool filters (genre families and eras, multi-select) and recently played songs and artists, which
   random rounds skip. Rounds and daily challenges are spread across genres with `music/assets/variety.js`.
   The daily challenge rolls over at midnight US Central for everyone so the leaderboard is one shared day.
+  It is scored on the Worker (`worker/music.js`, a Durable Object): answers and the schedule never reach the browser.
 
 ## Live data
 
 - **Static data files** under `data/` are written by GitHub Actions and committed, which redeploys the site:
   - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/IPOs/macro, monthly 13F check
   - `refresh-sports.yml`: hourly while games are on (9 AM to 1 AM Central) plus a daily run
-  - `refresh-daily.yml`: tops up the music daily-challenge schedule weekly
+  - `refresh-daily.yml`: picks missing upcoming daily-challenge days at random and uploads them privately to the Worker (never committed)
+  - `stamp-updated.yml`: writes `data/lastupdated.json` after each site change (shown as LAST UPDATED on the homepage)
   - `refresh-artists.yml`: rebuilds the music catalog (manual, and once whenever the builder or genre mapping changes)
   - `history-sports.yml`: one-off sports history
 - **On-demand APIs** run in the Worker (`worker/`, config in `wrangler.jsonc`):
@@ -54,6 +56,7 @@ don't follow anyone to another device:
 | `OPENFIGI_KEY` | Optional: faster CUSIP-to-ticker matching in the 13F build |
 | `CFBD_KEY`, `ODDS_API_KEY` | Optional sports sources |
 | `LASTFM_API_KEY` | Music catalog builder |
+| `MUSIC_ADMIN_TOKEN` | Daily challenge: same value as the Worker secret of that name (`wrangler secret put MUSIC_ADMIN_TOKEN`), 24+ random characters |
 
 ## Editing what's tracked
 
