@@ -367,3 +367,17 @@ body.has-tape{padding-bottom:34px}
 /* footer: links read as links without relying on colour; room below so the floating Plain English button never covers the last line */
 .t-foot a{text-decoration:underline;text-underline-offset:3px}
 .t-foot{padding-bottom:64px}
+
+/* reserve the loaded height of the big dashboard panels so the page doesn't jump when the data arrives */
+.t section.t-panel[aria-label="Indices and assets"]{min-height:315px}
+.t section.t-panel[aria-label="Selected index chart"]{min-height:419px}
+.t section.t-panel[aria-label="Today's economic data"]{min-height:600px}
+@media (max-width:760px){
+  .t section.t-panel[aria-label="Indices and assets"]{min-height:700px}
+  .t section.t-panel[aria-label="Selected index chart"]{min-height:516px}
+}
+/* the status badges wrap to a second row once the breadth badge arrives; keep that row's room from the start */
+@media (min-width:761px){.t section[aria-label="Market summary"]{min-height:168px}}
+.t section.t-panel[aria-label="Results"]{min-height:520px}
+.t section[aria-label="Headline indicators"]{min-height:332px}
+@media (max-width:760px){.t section[aria-label="Headline indicators"]{min-height:1300px}}

@@ -106,7 +106,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED QUOTES</span>
 </div>
 <div class="t-help">
 <span class="dim t-hide-sm">Pick a range to redraw the price chart</span>
@@ -135,7 +135,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </header>
 
-<main style="max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box">
+<main style="max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box; min-height: 1800px">
 
 <sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}">
 <nav aria-label="Recently viewed" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin">
@@ -502,7 +502,7 @@ class Component extends DCLogic {
           sym: sym, name: q.name || (hit && hit.name) || sym, exch: q.exch || (hit && hit.exch), sector: (M.sectors || {})[sym] || (Fl && Fl.sic) || null,
           updated: P.updated, quote: q, charts: P.charts, ytd: P.ytd, y1: P.y1, news: P.news,
           stats: { mcap: mcap, pe: pe, divYield: P.stats.divYield, hi52: q.hi52, lo52: q.lo52, avgVol3m: P.stats.avgVol3m, beta: P.stats.beta,
-            shares: so, epsTTM: Fn ? Fn.epsTTM : null },
+            shares: so, sharesAsOf: Fn ? Fn.sharesAsOf : null, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
           index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }]
             .concat(((M.r1000 || []).length || (M.r2000 || []).length) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
@@ -608,7 +608,7 @@ class Component extends DCLogic {
       { label: 'Market cap', value: F.money(S.mcap, 2) }, { label: 'P/E (TTM)', value: S.pe ? F.n(S.pe, 1) + 'x' : '—' },
       { label: 'EPS (TTM)', value: S.epsTTM !== null && S.epsTTM !== undefined ? F.usd(S.epsTTM, 2) : '—' }, { label: 'Dividend yield', value: S.divYield ? F.n(S.divYield, 2) + '%' : 'None' },
       { label: '52-week range', value: F.n(S.lo52, 2) + ' – ' + F.n(S.hi52, 2) }, { label: 'Avg. volume (3M)', value: F.big(S.avgVol3m) },
-      { label: 'Beta (5Y, weekly)', value: S.beta !== null && S.beta !== undefined ? F.n(S.beta, 2) : '—' }, { label: 'Shares out.', value: F.big(S.shares) }
+      { label: 'Beta (5Y, weekly)', value: S.beta !== null && S.beta !== undefined ? F.n(S.beta, 2) : '—' }, { label: 'Shares out.', value: F.big(S.shares) + (S.sharesAsOf && S.shares ? ' (' + S.sharesAsOf + ')' : '') }
     ];
     var fq = Q.fin || [];
     var qlab = function (e) { var d = new Date(e + 'T12:00:00Z'); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }); };

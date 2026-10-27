@@ -118,7 +118,10 @@ class Component extends DCLogic {
       var note = [g.season && !/regular/i.test(g.season) ? g.season : '', g.week && L.sport === 'football' ? 'Week ' + String(g.week).replace(/^Week\s*/i, '') : '', g.neutral ? 'Neutral site' : ''].filter(Boolean).join(' · ');
       return { d: dlabel(g.start), at: at, opp: o.name || o.short || 'TBD', oppHref: o.href || '#', href: g.href, aria: 'Game page: ' + (g.home ? '' : 'at ') + (o.name || ''), note: note, g: g, o: o };
     };
-    var done = games.filter(function (g) { return g.done || g.state === 'post'; });
+    // a postponed, canceled or suspended game is not a game played (ESPN marks some of them "post")
+    var called = function (g) { return /postpon|cancel|suspend|forfeit/i.test(g.detail || ''); };
+    games = games.filter(function (g) { return !called(g) || g.state === 'pre'; });
+    var done = games.filter(function (g) { return (g.done || g.state === 'post') && !called(g); });
     var live = games.filter(function (g) { return g.state === 'in'; });
     var up = games.filter(function (g) { return g.state === 'pre' && !g.done; });
     var resultsAll = live.concat(done.slice().reverse()).map(function (g) {

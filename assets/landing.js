@@ -450,7 +450,7 @@
       if (spx && spx.price != null) {
         L.spx = spx.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + ((spx.pct || 0) >= 0 ? '▲' : '▼') + Math.abs(spx.pct || 0).toFixed(2) + '%';
         var cm = document.getElementById('cardMkt');
-        if (cm) cm.innerHTML = 'S&amp;P 500 <b>' + esc(L.spx) + '</b> · 15 MIN DELAY';
+        if (cm) cm.innerHTML = 'S&amp;P 500 <b>' + esc(L.spx) + '</b> · UPDATED HOURLY';
       }
       var NAMES = { spx: 'S&P 500', ixic: 'NASDAQ', dji: 'DOW', rut: 'RUSSELL', vix: 'VIX', tnx: 'US 10Y', dxy: 'DXY', wti: 'WTI', gold: 'GOLD', btc: 'BTC',
         ftse: 'FTSE', dax: 'DAX', sx5e: 'STOXX 50', n225: 'NIKKEI', hsi: 'HANG SENG', tsx: 'TSX', eurusd: 'EUR/USD', usdjpy: 'USD/JPY', gbpusd: 'GBP/USD' };

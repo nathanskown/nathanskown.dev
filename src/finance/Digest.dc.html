@@ -106,7 +106,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED QUOTES</span>
 </div>
 <div class="t-help">
 <span class="dim t-hide-sm">Everything an analyst needs before the open, top to bottom</span>
@@ -269,7 +269,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </section>
 
-<div style="font-size: 12px; letter-spacing: .12em; color: #c99442; padding-top: 6px">DATA BELOW · DELAYED 15 MIN, REFRESHED DURING MARKET HOURS</div>
+<div style="font-size: 12px; letter-spacing: .12em; color: #c99442; padding-top: 6px">DATA BELOW · DELAYED QUOTES, REFRESHED HOURLY DURING MARKET HOURS</div>
 
 </sc-if>
 
@@ -505,7 +505,7 @@ class Component extends DCLogic {
       crt: this.props.crt ?? true,
       dateTitle: dateTitle,
       updatedLabel: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL : '',
-      liveTag: 'DELAYED 15 MIN',
+      liveTag: 'DELAYED QUOTES',
       subtitle: D.updated ? 'Updated ' + tm(D.updated) + ' ' + window.TZL + ' · rebuilt with each market-hours refresh' : 'Loading…',
       missing: !!st.err && !D.updated,
       top5: D.top || [],
