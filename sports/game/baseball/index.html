@@ -40,6 +40,7 @@ class Component extends DCLogic {
     var self = this;
     SD.data('model/' + lg + '.json').then(function (m) { self.setState({ model: m }); }, function () {});
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
+    if (['nba', 'nhl', 'ncaab', 'ncaaf'].indexOf(lg) >= 0 && id) SD.data('model/totals_' + lg + '.json').then(function (x) { self.setState({ totals: x }); }, function () {});
     if (lg === 'nfl' && id) {
       SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
       try { var sv = JSON.parse(localStorage.getItem('nskn-prop-lines') || '{}'); if (sv && typeof sv === 'object') this.setState({ lines: sv }); } catch (e) {}
@@ -173,6 +174,11 @@ class Component extends DCLogic {
 
     // player projections and projected total (NFL board data, matched to this game)
     var X = lg === 'nfl' ? S.props : null, gid = this.gid, pp = { has: false }, tot = { has: false };
+    var TT = S.totals;
+    if (TT && TT.games && g.start) {
+      var tv = TT.games[String(g.start).slice(0, 16) + '|' + H.id + '|' + A.id];
+      if (tv) { var bt = TT.backtest || {}; tot = { has: true, v: tv[0].toFixed(1), s: (A.abbr || '') + ' ' + tv[2].toFixed(1) + ', ' + (H.abbr || '') + ' ' + tv[1].toFixed(1) + ' · ' + (m && m.unit ? m.unit : 'points') + (bt.maeModel ? ' · misses by ' + bt.maeModel + ' on average (' + bt.season + ')' : '') }; }
+    }
     if (X && !X.err) {
       var LBL = { rec_yds: 'Rec yards', receptions: 'Receptions', rush_yds: 'Rush yards', pass_yds: 'Pass yards' };
       var mine = (X.props || []).filter(function (r) { return r.espn === gid; });
