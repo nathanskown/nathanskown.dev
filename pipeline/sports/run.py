@@ -40,6 +40,7 @@ JOBS = {
     "lab-cfbdtalent": [("cfbdtalent", market.cfbd_talent)],
     "lab-nflopen": [("nflopen", lab.job_nflopen)],
     "lab-nhlgoalies": [("nhlgoalies", lab.job_nhlgoalies)],
+    "lab-nhlskaters": [("nhlskaters", lab.job_nhlskaters)],
     "lab-torvik": [("torvik", lab.job_torvik)],
     "lab-cfbdportal": [("cfbdportal", lab.job_cfbdportal)],
     "lab-sgoopen": [("sgoopen", sgo.job_refetch_open)],
