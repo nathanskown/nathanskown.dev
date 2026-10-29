@@ -305,8 +305,10 @@
     var page = window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
     page.then(function (href) {
       if (href) { location.href = href; return; }
+      if (window.DC_SPORTS && q.length > 5) { notFound(); return; }   // a long word on a sports page is not a ticker
       tickerLookup();
     }, tickerLookup);
+    function notFound() { input.value = ''; input.placeholder = '"' + q + '" NOT FOUND · TRY A TEAM, PAGE OR HELP'; }
     function tickerLookup() { tickers().then(function (T) {
       if (T.bySym[sym]) { go(sym); return; }                 // exact US ticker
       var m = q.length > 2 ? matches(T, q, 1)[0] : null;      // company name
