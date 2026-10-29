@@ -59,3 +59,18 @@ don't follow anyone to another device:
 
 `data/finance/config.json` holds the core watch list (quote pages built nightly), news feeds and index
 fund managers. Any other ticker is fetched on demand, so it doesn't need to be listed there.
+
+## Domains (www.nathanskown.dev)
+
+The Worker redirects `www.` and plain `http://` to `https://nathanskown.dev` (301, path and query kept), but a hostname only
+reaches the Worker once Cloudflare has DNS and a certificate for it. One-time setup in the Cloudflare dashboard:
+
+1. Workers & Pages > `nathanskown-dev` > Settings > Domains & Routes > Add > Custom Domain > `www.nathanskown.dev`.
+   Cloudflare creates the proxied DNS record and issues the certificate (about a minute). This needs `nathanskown.dev` to be a zone in the
+   same account and no existing `www` DNS record; if one exists, delete it first.
+2. SSL/TLS > Edge Certificates > turn on "Always Use HTTPS" (belt and braces for plain http).
+3. Check: `curl -sI https://www.nathanskown.dev/about/` shows `301` and `location: https://nathanskown.dev/about/`.
+
+`run_worker_first` in `wrangler.jsonc` makes page requests run the Worker (needed so the redirect also applies to
+real pages); `/assets`, `/data`, `/music/assets` and the favicon still skip it. Worker invocations are counted against the plan
+(100,000 a day on the free plan).
