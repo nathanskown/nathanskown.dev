@@ -224,7 +224,7 @@ class Component extends DCLogic {
     if (pm && pm.teams) {
       var ids = Object.keys(pm.teams).filter(function (k) { var t = pm.teams[k]; return t.gp >= (pm.minGp || 0) || t.prior !== undefined; });
       ids.sort(function (a, b) { return pm.teams[b].rating - pm.teams[a].rating; });
-      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating > 0 ? '+' : '') + pm.teams[k].rating.toFixed(1) }; });
+      power.rows = ids.slice(0, 10).map(function (k, i) { var t = info[plg + ':' + k] || {}; return { rank: i + 1, name: t.short || t.name || k, logo: t.logo || '', href: SD.teamHref(plg, k), rating: (pm.teams[k].rating >= 0.05 ? '+' : '') + (Math.abs(pm.teams[k].rating) < 0.05 ? '0.0' : pm.teams[k].rating.toFixed(1)) }; });
       power.none = !power.rows.length; power.noneText = 'Not enough games yet this season.';
       power.note = 'Margin vs. an average team on a neutral field, in ' + pm.unit + '.';
     } else { power.none = true; power.noneText = 'Loading…'; }
