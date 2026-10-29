@@ -66,26 +66,18 @@ def vanguard(fund, ticker):
         try_(f"{fund} vanguard{qs}", f)
 
 
-def discover(fund, pid, slug, file):
+def latest(fund, pid, slug):
     base = f"https://www.ishares.com/us/products/{pid}/{slug}"
-    r = S.get(base, timeout=40)
-    html = r.text
-    print(f"[{fund} product page] HTTP {r.status_code} bytes={len(html)}")
-    for m in sorted(set(re.findall(r'[^"\'\s<>]*\.ajax\?[^"\'\s<>]*', html)))[:25]:
-        print("   link:", m[:200])
-    for m in sorted(set(re.findall(r'[^"\'\s<>]*fileType=csv[^"\'\s<>]*', html)))[:10]:
-        print("   csv:", m[:200])
-    for kw in ["fileName", "_holdings", ".ajax", "Download", "holdings", "csv"]:
-        idx = [m.start() for m in re.finditer(re.escape(kw), html)]
-        print(f"   kw {kw!r}: {len(idx)} hits")
-        for i in idx[:4]:
-            print("      ...", re.sub(r"\s+", " ", html[max(0, i - 120):i + 160]))
-    for m in re.finditer(r'data-link="([^"]*)"', html):
-        if "ajax" in m.group(1) or "csv" in m.group(1): print("   data-link:", m.group(1)[:200])
+    for u in [base + "/latest-holdings.csv"]:
+        def f(u=u):
+            r = S.get(u, headers={"Referer": base, "Accept": "text/csv,*/*"}, timeout=60, allow_redirects=True)
+            text = show(f"{fund} {u.rsplit('/',1)[-1]}", r)
+            print("   redirects:", [h.status_code for h in r.history], r.url[:120])
+            print("   head:", repr(text[:400]))
+            rows = ishares_rows(text); print("   rows:", None if rows is None else len(rows), "sample:", [x.get("Ticker") for x in (rows or [])[:8]])
+            if rows: print("   columns:", list(rows[0].keys()))
+        try_(f"{fund} latest", f)
 
 
-discover("r1000", 239707, "ishares-russell-1000-etf", "IWB")
-ishares("r1000", 239707, "ishares-russell-1000-etf", "IWB")
-ishares("r2000", 239710, "ishares-russell-2000-etf", "IWM")
-vanguard("r1000", "VONE")
-vanguard("r2000", "VTWO")
+latest("r1000", 239707, "ishares-russell-1000-etf")
+latest("r2000", 239710, "ishares-russell-2000-etf")
