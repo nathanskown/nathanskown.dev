@@ -15,6 +15,9 @@
   // www.nathanskown.dev needs a Custom Domain on this Worker (Cloudflare dashboard, see README "Domains") so that DNS
   // and the certificate exist; once it does, the Worker below redirects it to the main domain.
   "observability": { "enabled": true },
+  // Branch preview builds run `wrangler preview`, which refuses to run without this block. Previews do not get their own
+  // Durable Object namespace, so the music leaderboard is not isolated there; production is unaffected.
+  "previews": {},
   // Music leaderboard storage. The migration creates the SQLite-backed Durable Object on the next deploy.
   "durable_objects": {
     "bindings": [{ "name": "MUSIC_BOARD", "class_name": "MusicBoard" }]
