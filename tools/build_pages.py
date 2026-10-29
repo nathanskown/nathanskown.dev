@@ -106,6 +106,21 @@ PAGE_DESC = {
     ("sports", "model-history"): "How the house sports model improved: each ingredient added in turn and scored on seasons it never saw, with a timeline of the data that went in.",
     ("sports", "methodology"): "How the house sports ratings, projections and simulations work.",
 }
+PAGE_DESC.update({
+    ("finance", "ir"): "Investor-relations view of a US stock: who owns it, which institutions bought and sold last quarter, and how its price compares.",
+    ("finance", "index-calendar"): "Calendar of index events: S&P 500, Nasdaq-100 and Russell additions, deletions and reconstitution dates.",
+    ("finance", "notes"): "How the market data is sourced, refreshed and checked, and where the known gaps are.",
+    ("sports", "team"): "Team page: record, schedule and results, standings, injuries, leaders and house-model ratings.",
+    ("sports", "game"): "Game center: score, box score, plays, win probability and the house-model pick for one game.",
+    ("sports", "luck-watch"): "Which teams are winning more or less than their play deserves, from point differential and the house model.",
+    ("sports", "schedule-strength"): "Schedule strength for every team: opponents played, opponents left, and how hard the rest of the year is.",
+})
+for _slug, _name, _what in [("lions", "Detroit Lions", "NFL"), ("tigers", "Detroit Tigers", "MLB"), ("pistons", "Detroit Pistons", "NBA"),
+                            ("red-wings", "Detroit Red Wings", "NHL"), ("msu-football", "Michigan State football", "college football"),
+                            ("msu-basketball", "Michigan State basketball", "college basketball"), ("msu-hockey", "Michigan State hockey", "college hockey")]:
+    PAGE_DESC[("sports", "team/" + _slug)] = f"{_name} ({_what}): record, schedule and results, standings, injuries, leaders and house-model ratings."
+for _slug, _lg in [("football", "NFL"), ("baseball", "MLB"), ("basketball", "NBA"), ("hockey", "NHL")]:
+    PAGE_DESC[("sports", "game/" + _slug)] = f"{_lg} game center: score, box score, plays, win probability and the house-model pick."
 SITE = "https://nathanskown.dev"
 OG_IMAGE = {"finance": "/assets/og/markets.png", "sports": "/assets/og/sports.png"}
 
@@ -162,7 +177,13 @@ def build_page(path, cfg, props, title, section="", route=""):
     full = f"{title} · NSKN Terminal"
     # pages that show one ticker, team or game from the query string have no single canonical URL
     dynamic = route in ("quote", "ownership", "team", "game") or route.startswith("game/")
-    canon = "" if dynamic else f'<link rel="canonical" href="{url}">\n'
+    canon = "" if dynamic and route not in ("quote", "ownership") else f'<link rel="canonical" href="{url}">\n'
+    ld = json.dumps({"@context": "https://schema.org", "@type": "WebPage", "name": full, "description": desc, "url": url,
+                     "isPartOf": {"@type": "WebSite", "name": "NSKN Terminal", "url": SITE + "/"},
+                     "author": {"@type": "Person", "name": "Nathan Skown", "url": SITE + "/about/"}}, separators=(",", ":")).replace("</", "<\\/")
+    pre = (f'<div id="app"><div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">'
+           f'<h1>{html.escape(title)}</h1><p>{html.escape(desc)}</p>'
+           f'<p><a href="/finance/">Markets</a> <a href="/sports/">Sports</a> <a href="/music/">Music</a> <a href="/about/">About</a> <a href="/under-the-hood/">Under the hood</a></p></div></div>')
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -183,11 +204,13 @@ def build_page(path, cfg, props, title, section="", route=""):
 <meta name="theme-color" content="{cfg["theme"]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="{FONTS}" rel="stylesheet">
+<link rel="preload" as="style" href="{FONTS}" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="{FONTS}" rel="stylesheet"></noscript>
+<script type="application/ld+json">{ld}</script>
 <link rel="stylesheet" href="/{cfg["css"]}">
 </head>
 <body>
-<div id="app"></div>
+{pre}
 <noscript><p style="font-family:monospace;padding:24px">This terminal needs JavaScript turned on.</p></noscript>
 <script>window.DC_ROUTES={routes};window.DC_TREE={tree};</script>
 <script src="/assets/dc-runtime.js"></script>
@@ -211,3 +234,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    import stamp_assets
+    stamp_assets.main()

@@ -20,7 +20,6 @@ const json = (obj, status = 200, ttl = 0) =>
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": ttl ? `public, max-age=${ttl}` : "no-store",
-      "access-control-allow-origin": "*",
     },
   });
 
@@ -195,6 +194,26 @@ function quarters(units, label = "") {
   return q;
 }
 
+
+// Fourth-quarter EPS is not tagged on its own in the 10-K. Subtracting the nine-month EPS from the annual EPS drifts by a cent
+// because the share counts differ, so derive it as fourth-quarter net income over fourth-quarter weighted shares instead.
+function q4Shares(units) {
+  const out = {};
+  if (!Array.isArray(units)) return out;
+  const fy = [], ytd = [];
+  for (const f of units) {
+    if (!f.start || !["10-K", "10-K/A", "10-Q", "10-Q/A"].includes(f.form)) continue;
+    const n = days(f.start, f.end);
+    if (n >= 350 && n <= 380) fy.push(f); else if (n >= 260 && n <= 285) ytd.push(f);
+  }
+  for (const a of fy) {
+    const b = ytd.find((y) => y.start === a.start && days(y.end, a.end) > 70 && days(y.end, a.end) < 110);
+    if (b) { const q = 4 * a.val - 3 * b.val; if (Math.abs(q / a.val - 1) < 0.03) out[a.end] = q; }   // sanity band: share counts barely move in a quarter
+  }
+  return out;
+}
+const directEnds = (units) => new Set(Array.isArray(units) ? units.filter((f) => f.start && days(f.start, f.end) >= 80 && days(f.start, f.end) <= 100).map((f) => f.end) : []);
+
 async function concept(cik, ns, tag) {
   try {
     const j = await getUp(`https://data.sec.gov/api/xbrl/companyconcept/CIK${String(cik).padStart(10, "0")}/${ns}/${tag}.json`,
@@ -232,7 +251,13 @@ async function partFin(cik) {
     const alt = await concept(cik, "us-gaap", "EarningsPerShareBasic");
     epsU = alt && alt["USD/shares"];
   }
-  const series = { rev: revQ, gp: merge(gp && gp.USD), op: merge(op && op.USD), ni: merge(ni && ni.USD), eps: merge(epsU) };
+  const epsSeries = merge(epsU);
+  const sh4 = q4Shares(dil && dil.shares), direct = directEnds(epsU);
+  const niQ = merge(ni && ni.USD);
+  for (const e of Object.keys(epsSeries)) {
+    if (!direct.has(e) && sh4[e] > 0 && niQ[e] > 0) epsSeries[e] = niQ[e] / sh4[e];
+  }
+  const series = { rev: revQ, gp: merge(gp && gp.USD), op: merge(op && op.USD), ni: merge(ni && ni.USD), eps: epsSeries };
   // only recent quarters: some filers stopped using the standard tags years ago, and old numbers shown
   // as "latest" would mislead
   const cutoff = new Date(Date.now() - 548 * 86400000).toISOString().slice(0, 10);

@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/music/assets/music.css">
+<link rel="stylesheet" href="/music/assets/music.css?v=f0448854">
 </head>
 <body>
 <div class="mx">
@@ -150,14 +150,13 @@
   <footer id="foot"></footer>
 </div>
 
-<script src="/music/assets/config.js"></script>
-<script src="/music/assets/common.js"></script>
-<script src="/music/assets/variety.js"></script>
-<script src="/music/assets/credits.js"></script>
+<script src="/music/assets/config.js?v=8fc0ad13"></script>
+<script src="/music/assets/common.js?v=c4cf1d07"></script>
+<script src="/music/assets/variety.js?v=10a04f25"></script>
+<script src="/music/assets/credits.js?v=a81ba3e9"></script>
 <script src="/music/data/tracks.js"></script>
 <script src="/music/data/tracks-generated.js"></script>
-<script src="/music/data/daily.js"></script>
-<script src="/music/assets/sources.js"></script>
+<script src="/music/assets/sources.js?v=15c58aa1"></script>
 <script>
 (function () {
   "use strict";
@@ -225,21 +224,60 @@
   const SEEN = MX.seen("track", 600);
   const songKey = s => MX.norm(s.title) + "|" + MX.normArtist(s.artist);
 
-  function startRound(daily) {
-    // The daily challenge comes from the frozen schedule (data/daily.js) so a catalog rebuild can't change
-    // today's songs. It lists spare songs after the first 5; unplayable ones are skipped in the same order for everyone.
-    const day = daily && ((window.DAILY_SCHEDULE || {}).days || {})[MX.todayKey()];
-    const frozen = day && day.track && day.track.length >= ROUND ? day.track.map(s => Object.assign({}, s)) : null;
-    const rnd = daily ? MX.mulberry32(MX.hashStr("guess-track-" + MX.todayKey())) : Math.random;
-    const base = frozen || (daily ? POOL : SEEN.fresh(filtered(), songKey, ROUND * 3));
-    S = { pool: frozen ? base : MXV.spread(base, rnd, { limit: ROUND * 4 }), p: 0, n: 0, total: Math.min(ROUND, base.length),
-          score: 0, results: [], daily, stage: 0, done: false, cur: null };
+  /* Practice rounds are picked and checked in the browser. The daily is played against the server (see startDaily):
+     it holds the answers, checks every guess and counts the score, so nothing about today's songs is sent to the
+     page until you have finished a song. */
+  function openGame(daily) {
     document.body.classList.add("in-game");             // shrink the page heading so the game sits near the top
     $("setup").classList.add("hidden");
     $("summary").classList.add("hidden");
     $("game").classList.remove("hidden");
     $("dailyTag").classList.toggle("hidden", !daily);
+  }
+
+  function startRound() {
+    const base = SEEN.fresh(filtered(), songKey, ROUND * 3);
+    S = { pool: MXV.spread(base, Math.random, { limit: ROUND * 4 }), p: 0, n: 0, total: Math.min(ROUND, base.length),
+          score: 0, results: [], daily: false, remote: false, stage: 0, done: false, cur: null };
+    openGame(false);
     nextSong();
+  }
+
+  const errText = e => '<span class="bad">' + MX.esc(MX.lb.message(e && e.code)) + "</span>";
+
+  async function startDaily() {
+    $("dailyBtn").disabled = true; $("dailyNote").textContent = "Loading today's challenge…";
+    let j;
+    try { j = await MX.lb.daily({ a: "start", game: "track" }); }
+    catch (e) { $("dailyBtn").disabled = false; $("dailyNote").innerHTML = errText(e); return; }
+    $("dailyBtn").disabled = false; dailyNote();
+    S = { pool: [], p: 0, n: 0, total: j.total, score: 0, results: [], daily: true, remote: true, sid: j.sid, stage: 0, done: true, cur: null };
+    openGame(true);
+    showRemote(j);
+  }
+
+  // the server hands over only an audio link: no title, artist, cover or Deezer address until the song is finished
+  function showRemote(j) {
+    const sid = S.sid;
+    src.stop(); EQ.off(); $("art").classList.remove("playing");
+    S.cur = { id: "daily" + j.n, previewUrl: j.previewUrl, resolvedAt: Date.now(), link: "#", cover: null,
+              remote: async () => { const r = await MX.lb.daily({ a: "refresh", sid }); return { preview: r.previewUrl, link: "#", cover: null }; } };
+    S.n = j.n; S.total = j.total; S.stage = j.stage; S.score = j.score; S.done = false;
+    $("reveal").classList.add("hidden");
+    $("guessIn").value = "";
+    $("playBtn").textContent = "▶ PLAY CLIP";
+    ac.hide();
+    renderSong();
+  }
+
+  async function remoteStep(body, onOk) {
+    const sess = S;
+    setControls(false);
+    let j;
+    try { j = await MX.lb.daily(Object.assign({ sid: sess.sid }, body)); }
+    catch (e) { if (sess !== S) return; setControls(true); updateStats(); $("msg").innerHTML = errText(e); return; }
+    if (sess !== S) return;
+    onOk(j);
   }
 
   /* ---------------- one song ---------------- */
@@ -345,6 +383,10 @@
       () => {                                   // clip wouldn't load: swap in another song
         if (sess !== S || sess.done) return;
         $("msg").innerHTML = '<span class="bad">That clip wouldn\'t load.</span> Switching songs…';
+        if (sess.remote) {                      // the server swaps in the next spare song (only before your first guess)
+          remoteStep({ a: "bad_clip" }, j => { if (j.final) { S.score = j.score; showSummary(); } else showRemote(j); });
+          return;
+        }
         sess.n--;
         setTimeout(() => { if (sess === S) nextSong(); }, 900);
       });
@@ -355,6 +397,16 @@
     const g = $("guessIn").value.trim();
     if (!g) return;
     ac.hide();
+    if (S.remote) {
+      remoteStep({ a: "guess", guess: g }, j => {
+        if (j.done) { finishSong(j.correct, j); return; }
+        S.stage = j.stage; setControls(true);
+        $("msg").innerHTML = '<span class="bad">✗ Not it.</span> Clip extended to ' + CLIPS[S.stage] + "s — worth " + POINTS[S.stage] + " now.";
+        $("guessIn").value = ""; $("guessIn").focus();
+        drawMeter(); updateStats();
+      });
+      return;
+    }
     if (MX.isTitleMatch(g, S.cur.title)) finishSong(true);
     else if (S.stage < CLIPS.length - 1) {
       S.stage++;
@@ -364,11 +416,13 @@
     } else finishSong(false);
   }
 
-  function finishSong(got) {
+  function finishSong(got, srv) {
     src.stop(); EQ.off(); $("art").classList.remove("playing");
     $("reveal").classList.toggle("win", got); $("reveal").classList.toggle("lose", !got);
-    const s = S.cur, pts = got ? POINTS[S.stage] : 0;
-    S.score += pts; S.done = true;
+    // daily: the server's verdict, points and reveal; practice: worked out here
+    const s = srv ? Object.assign(S.cur, srv.reveal) : S.cur, pts = srv ? srv.pts : (got ? POINTS[S.stage] : 0);
+    if (srv) { S.stage = srv.stage; S.score = srv.score; S.last = srv.lastItem; } else S.score += pts;
+    S.done = true;
     S.results.push({ song: s, got, pts, stage: S.stage });
     setArt(s, false);
     setControls(false);
@@ -377,13 +431,16 @@
     $("rTitle").textContent = s.title;
     $("rMeta").textContent = s.artist + (yearLabel(s) ? " · " + yearLabel(s) : "") + (s.genre ? " · " + s.genre : "");
     $("rLink").setAttribute("href", s.link || "#");
-    $("nextBtn").textContent = (S.n >= S.total) ? "SEE RESULTS ▶" : "NEXT ▶";
+    $("nextBtn").textContent = (S.remote ? S.last : S.n >= S.total) ? "SEE RESULTS ▶" : "NEXT ▶";
     $("reveal").classList.remove("hidden");
     updateStats();
     $("nextBtn").focus();
   }
 
-  function next() { if (S.n >= S.total) showSummary(); else nextSong(); }
+  function next() {
+    if (S.remote) { remoteStep({ a: "next" }, j => { if (j.final) { S.score = j.score; showSummary(); } else showRemote(j); }); return; }
+    if (S.n >= S.total) showSummary(); else nextSong();
+  }
 
   /* ---------------- summary ---------------- */
   function showSummary() {
@@ -411,7 +468,7 @@
   function setupBoard(game, score, max) {
     const box = $("lbBox");
     box.classList.add("hidden");
-    if (!S.daily || !MX.lb.enabled()) return;
+    if (!S.daily || !S.sid || !MX.lb.enabled()) return;
     box.classList.remove("hidden");
     $("lbName").value = MX.lb.savedName();
     $("lbMsg").textContent = ""; $("lbTop").innerHTML = ""; $("lbSubmit").disabled = false;
@@ -420,7 +477,7 @@
       if (name.length < 2) { $("lbMsg").innerHTML = '<span class="bad">Names need 2 to 16 letters or numbers.</span>'; return; }
       $("lbSubmit").disabled = true; $("lbMsg").textContent = "Posting…";
       try {
-        const j = await MX.lb.post(game, name, score, max);
+        const j = await MX.lb.post(S.sid, name);
         MX.lb.saveName(name);
         $("lbMsg").innerHTML = j.updated ? '<span class="ok">Posted. You are #' + j.rank + " today.</span>" : "You already have a better score posted today (#" + j.rank + ").";
         $("lbTop").innerHTML = MX.lb.table(j.top, false, name);
@@ -434,18 +491,30 @@
 
   /* ---------------- wiring ---------------- */
   const ac = MX.Autocomplete($("guessIn"), $("sugg"), q => src.suggest(q), { onEnter: submitGuess });
-  $("startBtn").onclick = () => startRound(false);
+  $("startBtn").onclick = () => startRound();
   const DAYBOARD = MX.dailyBoard("dayBoard", "track");
-  $("dailyBtn").onclick = () => startRound(true);
+  $("dailyBtn").onclick = startDaily;
   $("playBtn").onclick = playClip;
   $("guessBtn").onclick = submitGuess;
   $("moreBtn").onclick = () => {
     if (!S || S.done || S.stage >= CLIPS.length - 1) return;
+    if (S.remote) {
+      remoteStep({ a: "more" }, j => {
+        S.stage = j.stage; setControls(true);
+        $("msg").innerHTML = '<span class="bad">Longer clip.</span> Clip extended to ' + CLIPS[S.stage] + "s, worth " + POINTS[S.stage] + " now.";
+        drawMeter(); updateStats(); $("guessIn").focus();
+      });
+      return;
+    }
     S.stage++;
     $("msg").innerHTML = '<span class="bad">Longer clip.</span> Clip extended to ' + CLIPS[S.stage] + "s, worth " + POINTS[S.stage] + " now.";
     drawMeter(); updateStats(); $("guessIn").focus();
   };
-  $("skipBtn").onclick = () => { if (S && !S.done) finishSong(false); };
+  $("skipBtn").onclick = () => {
+    if (!S || S.done) return;
+    if (S.remote) { remoteStep({ a: "skip" }, j => finishSong(false, j)); return; }
+    finishSong(false);
+  };
   $("nextBtn").onclick = next;
   $("againBtn").onclick = () => { document.body.classList.remove("in-game"); $("summary").classList.add("hidden"); $("setup").classList.remove("hidden"); dailyNote(); DAYBOARD.refresh(); };
   $("copyBtn").onclick = () => MX.copyText($("shareTxt").textContent, $("copyMsg"));

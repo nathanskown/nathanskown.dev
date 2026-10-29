@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -106,7 +106,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED QUOTES</span>
 </div>
 <div class="t-help">
 <span class="dim t-hide-sm">Refreshes every minute · filter by source, watchlist or notable</span>
@@ -143,7 +143,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="f-kicker" aria-hidden="true" style="flex: 1 1 100%; margin-bottom: -6px">NEWS · market headlines as they land</div>
 <h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 600; color: #FFD89D">Headlines</h1>
 <span style="{{statusStyle}}"><span aria-hidden="true" style="{{dotStyle}}"></span>{{statusText}}</span>
-<span style="font-size: 12.5px; color: #A87933">{{feedNote}}</span>
+<span style="font-size:13px; color: #A87933">{{feedNote}}</span>
 </div>
 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
 <button type="button" onClick="{{toggleWatch}}" aria-pressed="{{watchPressed}}" style="{{watchStyle}}">Watchlist only</button>
@@ -155,14 +155,14 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <div role="group" aria-label="Source type" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px; align-self: flex-start">
 <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
-<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.btnStyle}}">{{t.label}} <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {{t.countColor}}">{{t.count}}</span></button>
+<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.btnStyle}}">{{t.label}} <span style="font-family: 'IBM Plex Mono', monospace; font-size:13px; color: {{t.countColor}}">{{t.count}}</span></button>
 </sc-for>
 </div>
 
 <div role="group" aria-label="Sources" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center">
-<span style="color: #A87933; font-size: 12px; letter-spacing: .1em; margin-right: 4px">SOURCES</span>
+<span style="color: #A87933; font-size:13px; letter-spacing: .1em; margin-right: 4px">SOURCES</span>
 <sc-for list="{{sources}}" as="sr" hint-placeholder-count="8">
-<button type="button" onClick="{{sr.toggle}}" aria-pressed="{{sr.pressed}}" style="{{sr.btnStyle}}">{{sr.label}} <span style="font-size: 12px; color: #A87933">{{sr.n}}</span></button>
+<button type="button" onClick="{{sr.toggle}}" aria-pressed="{{sr.pressed}}" style="{{sr.btnStyle}}">{{sr.label}} <span style="font-size:13px; color: {{sr.nColor}}">{{sr.n}}</span></button>
 </sc-for>
 </div>
 
@@ -175,16 +175,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section aria-label="Headline feed" aria-live="polite" style="flex: 999 1 600px; min-width: 0; background: #0A0704; border: 1px solid #382811; border-radius: 0; overflow: hidden">
 <sc-for list="{{items}}" as="it" hint-placeholder-count="12">
 <a href="{{it.link}}" target="_blank" rel="noopener" style="{{it.rowStyle}}">
-<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #A87933; width: 66px; flex: none; padding-top: 2px">{{it.time}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size:13px; color: #A87933; width: 66px; flex: none; padding-top: 2px">{{it.time}}</span>
 <span style="flex: 1 1 auto; min-width: 0">
 <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px">
 <span style="{{it.typeStyle}}">{{it.type}}</span>
-<sc-for list="{{it.tickers}}" as="tk" hint-placeholder-count="1"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #FFE9C7">{{tk.t}}</span></sc-for>
-<sc-if value="{{it.notable}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF">NOTABLE</span></sc-if>
-<sc-if value="{{it.fresh}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.05em; color: #4ADE80">NEW</span></sc-if>
+<sc-for list="{{it.tickers}}" as="tk" hint-placeholder-count="1"><span style="font-family: 'IBM Plex Mono', monospace; font-size:13px; font-weight: 600; color: #FFE9C7">{{tk.t}}</span></sc-for>
+<sc-if value="{{it.notable}}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; font-weight: 600; letter-spacing: 0.05em; color: #FFFFFF">NOTABLE</span></sc-if>
+<sc-if value="{{it.fresh}}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; font-weight: 600; letter-spacing: 0.05em; color: #4ADE80">NEW</span></sc-if>
 </span>
 <span style="display: block; font-size: 15px; font-weight: 500; line-height: 1.4; color: #FFD89D">{{it.h}}</span>
-<span style="display: block; font-size: 12.5px; color: #A87933; margin-top: 3px">{{it.src}}</span>
+<span style="display: block; font-size:13px; color: #A87933; margin-top: 3px">{{it.src}}</span>
 </span>
 </a>
 </sc-for>
@@ -197,21 +197,21 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Most-mentioned tickers" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Most-mentioned tickers</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 6px">Headlines tagged with each ticker, last 24 hours</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 6px">Headlines tagged with each ticker, last 24 hours</div>
 <sc-for list="{{top}}" as="ts" hint-placeholder-count="5">
 <div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #221909">
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #A87933; width: 18px; flex: none">{{ts.rank}}</span>
-<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D; line-height: 1.4">{{ts.h}}</span><span style="display: block; font-size: 12px; color: #A87933; margin-top: 2px">{{ts.meta}}</span></span>
+<span style="min-width: 0"><span style="display: block; font-size: 14px; color: #FFD89D; line-height: 1.4">{{ts.h}}</span><span style="display: block; font-size:13px; color: #A87933; margin-top: 2px">{{ts.meta}}</span></span>
 </div>
 </sc-for>
 </section>
 
 <section class="t-card" aria-label="Watchlist" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <h2 style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #FFD89D">Watchlist</h2>
-<div style="color: #A87933; font-size: 12.5px; margin-bottom: 8px">Headlines mentioning these tickers are flagged</div>
+<div style="color: #A87933; font-size:13px; margin-bottom: 8px">Headlines mentioning these tickers are flagged</div>
 <div style="display: flex; flex-wrap: wrap; gap: 6px">
 <sc-for list="{{watch}}" as="w" hint-placeholder-count="6">
-<span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px">{{w.t}} <span style="color: #A87933">{{w.c}}</span></span>
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-family: 'IBM Plex Mono', monospace; font-size:13px">{{w.t}} <span style="color: #A87933">{{w.c}}</span></span>
 </sc-for>
 </div>
 </section>
@@ -226,7 +226,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </section>
 
-<section aria-label="Sources" style="font-size: 12.5px; color: #A87933; line-height: 1.6">
+<section aria-label="Sources" style="font-size:13px; color: #A87933; line-height: 1.6">
 Sources: {{sourceList}}. New items appear within about a minute while this page is open; the archive is saved hourly in market hours, twice a day on weekends. Headlines link to the original; full articles stay on the publisher's site.
 </section>
 
@@ -326,7 +326,7 @@ class Component extends DCLogic {
     all.forEach(function (it) { if (it.type === 'Press release') counts.pr++; else if (it.type === 'SEC filing') counts.sec++; else counts.pub++; });
     var tStyle = function (type) {
       var c = type === 'Press release' ? ['#261C0C', '#8A6326', '#FFFFFF'] : (type === 'SEC filing' ? ['#0E0A05', '#8A6326', '#FFE9C7'] : ['#1A1309', '#4A3517', '#FFB84D']);
-      return 'font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
+      return 'font-size:13px; font-weight: 600; padding: 1px 8px; border-radius: 0; background: ' + c[0] + '; border: 1px solid ' + c[1] + '; color: ' + c[2] + ';';
     };
     var srcCount = {}; all.forEach(function (it) { if (it.source) srcCount[it.source] = (srcCount[it.source] || 0) + 1; });
     var srcList = Object.keys(srcCount).sort();
@@ -380,7 +380,7 @@ class Component extends DCLogic {
       liveTag: F.updated(D.updated),
       feedNote: st.err ? 'Headline data is not available yet. The first refresh runs within the hour.' : (D.updated ? 'Feed refreshed ' + F.ago(D.updated) + ' · this page checks for new items every minute' : 'Loading headlines…'),
       statusText: paused ? 'Paused' : 'Auto-refresh',
-      statusStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 0; font-size: 12.5px; font-weight: 600; ' + (paused ? 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;' : 'background: #0D2616; border: 1px solid #1F6B3A; color: #4ADE80;'),
+      statusStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 0; font-size:13px; font-weight: 600; ' + (paused ? 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;' : 'background: #0D2616; border: 1px solid #1F6B3A; color: #4ADE80;'),
       dotStyle: 'width: 8px; height: 8px; border-radius: 0; background: ' + (paused ? '#664A1F' : '#4ADE80') + ';' + (paused ? '' : ' animation: pulse 1.6s infinite;'),
       pauseLabel: paused ? 'Resume' : 'Pause',
       togglePause: function () { self.setState({ paused: !paused }); },
@@ -389,7 +389,7 @@ class Component extends DCLogic {
       toggleAllPR: function () { saveNP({ allPR: !allPR }); }, allPRPressed: allPR ? 'true' : 'false', allPRStyle: toggle(allPR),
       sources: srcList.map(function (sname) {
         var on = hiddenSrc.indexOf(sname) < 0;
-        return { label: sname, n: srcCount[sname], pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),
+        return { label: sname, n: srcCount[sname], nColor: on ? '#2A1D08' : '#C99442', pressed: on ? 'true' : 'false', btnStyle: btn(on).replace('height: 36px', 'height: 32px'),
           toggle: function () { saveNP({ hidden: on ? hiddenSrc.concat([sname]) : hiddenSrc.filter(function (x) { return x !== sname; }) }); } };
       }),
       watchPressed: watchOnly ? 'true' : 'false', notablePressed: notableOnly ? 'true' : 'false',
