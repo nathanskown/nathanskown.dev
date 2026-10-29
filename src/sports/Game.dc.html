@@ -155,6 +155,21 @@
 </div>
 </section>
 </sc-if>
+<sc-if value="{{sg.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Shots on goal">
+<div class="t-ph"><h2>Shots on goal</h2><span class="dim">{{sg.sub}}</span></div>
+<div class="t-pb">
+<sc-for list="{{sg.teams}}" as="t" hint-placeholder-count="2">
+<h3 style="margin: 14px 0 6px; font-size: 13px; letter-spacing: .08em">{{t.abbr}}</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th><th scope="col">Ceiling</th><th scope="col">Ice time</th></tr></thead>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.l1}}</td><td>{{r.l2}}</td><td>{{r.l3}}</td><td>{{r.l4}}</td><td>{{r.l5}}</td><td>{{r.ceil}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
+</table></div>
+</sc-for>
+<p class="s-note" style="margin: 10px 0 0">{{sg.note}}</p>
+</div>
+</section>
+</sc-if>
 <sc-if value="{{wp.has}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Win probability">
 <div class="t-ph"><h2>Win probability</h2><span class="dim">{{wp.sub}}</span></div>
@@ -273,6 +288,7 @@ class Component extends DCLogic {
     SD.data('model/' + lg + '.json').then(function (m) { self.setState({ model: m }); }, function () {});
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
     if (['nba', 'nhl', 'ncaab', 'ncaaf'].indexOf(lg) >= 0 && id) SD.data('model/totals_' + lg + '.json').then(function (x) { self.setState({ totals: x }); }, function () {});
+    if (lg === 'nhl' && id) SD.data('props/nhl.json').then(function (x) { self.setState({ nhlp: x }); }, function () {});
     if (lg === 'nfl' && id) {
       SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
       try { var sv = JSON.parse(localStorage.getItem('nskn-prop-lines') || '{}'); if (sv && typeof sv === 'object') this.setState({ lines: sv }); } catch (e) {}
@@ -454,8 +470,26 @@ class Component extends DCLogic {
       }
     }
 
+    var sg = { has: false }, NP = lg === 'nhl' ? S.nhlp : null;
+    if (NP && !NP.err && NP.pmf) {
+      var mineS = (NP.props || []).filter(function (r) { return r.espn === gid; });
+      if (mineS.length) {
+        var tailP = function (pm, k) { var t = 0; for (var i = k; i < pm.length; i++) t += pm[i]; return t; };
+        var fmtP = function (v) { return v >= 0.995 ? '99%+' : v < 0.005 ? '<1%' : Math.round(v * 100) + '%'; };
+        var ceilOf = function (pm) { var c = 0; for (var i = 0; i < pm.length; i++) { c += pm[i]; if (c >= 0.9) return i + (i >= pm.length - 1 ? '+' : ''); } return pm.length - 1 + '+'; };
+        var steams = [A, H].map(function (t) {
+          var rs = mineS.filter(function (r) { return r.team === t.abbr; }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, 10);
+          return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = NP.pmf[r.band];
+            return { player: r.player, pos: r.pos, mean: r.mean.toFixed(2), l1: fmtP(tailP(pm, 1)), l2: fmtP(tailP(pm, 2)), l3: fmtP(tailP(pm, 3)), l4: fmtP(tailP(pm, 4)), l5: fmtP(tailP(pm, 5)), ceil: ceilOf(pm), toi: r.toi.toFixed(0) + ' min' }; }) };
+        }).filter(function (t) { return t.rows.length; });
+        var nb2 = NP.backtest || {}, lastY = Object.keys(nb2).sort().pop(), bb = lastY ? nb2[lastY] : null, l3 = bb ? bb.ladder[2] : null;
+        sg = { has: steams.length > 0, sub: mineS[0].locked ? 'Final pre-game numbers' : 'Updated ' + F.day(NP.updated), teams: steams,
+          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
+            + (bb ? ' Tested on ' + lastY + ' using only earlier seasons: ' + Math.round(l3.pred * 100) + '% of players were projected to take 3+ shots and ' + Math.round(l3.act * 100) + '% did.' : '') };
+      }
+    }
     return Object.assign(base, {
-      picker: false, ok: true, pp: pp, tot: tot, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
+      picker: false, ok: true, pp: pp, sg: sg, tot: tot, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
       bandStyle: 'background: linear-gradient(100deg, ' + acolor + 'aa 0%, ' + acolor + '33 32%, rgba(3,7,12,.4) 50%, ' + color + '33 68%, ' + color + 'aa 100%), linear-gradient(180deg, transparent 40%, #03070c 100%), #03070c;',
       heads: heads, lineRows: lineRows, hasLines: heads.length > 0, noLines: !heads.length, noLinesText: pre ? 'Line score fills in once the game starts.' : 'No period scores in the feed.',
       proj: proj, wp: wp, shareMsg: S.shareMsg || '',
