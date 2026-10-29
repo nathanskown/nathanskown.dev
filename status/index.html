@@ -117,6 +117,15 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
         rows.push(row([esc(name), pill(k, k === 'ok' ? 'OK' : k === 'warn' ? (late && !failed.length ? 'LATE' : 'PARTIAL') : 'FAILING'), esc(ago(x.finished)), failed.length ? esc(failed.slice(0, 6).join(', ') + (failed.length > 6 ? ' +' + (failed.length - 6) : '')) : '<span class="dim">none</span>']));
       });
     });
+    // betting-odds feed: a key out of credits freezes the stored lines, which only feed the track record's market comparison
+    var od = ((rs[1].j || {}).daily || {}).sources; od = od && od.odds;
+    if (od && od.ok === false && od.quota) {
+      tally('bad');
+      rows.push(row(['sports · betting odds feed', pill('bad', 'FAILING'), 'Odds API is out of credits. Lines are frozen as of ' + (od.asOf ? esc(ago(od.asOf)) : 'an unknown time') + '; nothing new is being recorded.', '<span class="dim">needs a paid plan or a new key</span>']));
+    } else if (od && od.ok === false) {
+      tally('warn');
+      rows.push(row(['sports · betting odds feed', pill('warn', 'ERROR'), esc(String(od.error || '').slice(0, 140)), '<span class="dim">odds</span>']));
+    }
     $('jobs').innerHTML = rows.join('') || row(['Status files', pill('bad', 'MISSING'), '', '']);
     lead();
   });

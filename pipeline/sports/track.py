@@ -178,6 +178,8 @@ def _graded_rows(picks):
 def summarize(now=None):
     now = now or datetime.now(timezone.utc)
     out = {"updated": now_iso(), "leagues": {}, "excluded": ["mlb"]}
+    stamps = [(read(f"odds/{lg}.json") or {}).get("updated") for lg in LEAGUES]
+    out["marketAsOf"] = max((x for x in stamps if x), default=None)     # when the market lines on file were last refreshed
     every = []
     for lg in LEAGUES:
         store = read(f"track/_picks_{lg}.json") or {}
