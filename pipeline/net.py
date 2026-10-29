@@ -51,9 +51,9 @@ def headers_for(url):
         return {"User-Agent": BROWSER_UA, "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9", "Origin": "https://www.nasdaq.com",
                 "Referer": "https://www.nasdaq.com/"}
-    if host.endswith("ishares.com"):  # the holdings download serves an HTML page to requests that don't look like the site's own button
-        return {"User-Agent": BROWSER_UA, "Accept": "text/csv,application/octet-stream,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9",
-                "Referer": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf", "X-Requested-With": "XMLHttpRequest"}
+    if host.endswith("ishares.com"):  # the holdings file is served to ordinary browser-like requests; anything odd gets the HTML page
+        return {"User-Agent": BROWSER_UA, "Accept": "text/csv,text/plain,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9",
+                "Referer": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf"}
     return {"User-Agent": BROWSER_UA, "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9"}
 
 

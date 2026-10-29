@@ -304,7 +304,7 @@ class Component extends DCLogic {
       { k: 'Price', v: px ? F.usd(px) : NA }, { k: 'Market cap', v: mcap ? F.money(mcap, 1) : NA },
       { k: 'P/E (TTM)', v: okNum(st.pe, 0.5, 500) ? F.n(st.pe, 1) + 'x' : NA }, { k: '52-week range', v: st.hi52 ? F.n(st.lo52, 2) + '–' + F.n(st.hi52, 2) : (Q && Q.quote && Q.quote.hi52 ? F.n(Q.quote.lo52, 2) + '–' + F.n(Q.quote.hi52, 2) : NA) },
       { k: 'Next earnings', v: nx && nx.date ? F.day(nx.date) + (nx.when ? ' ' + nx.when : '') + (nx.est !== null && nx.est !== undefined ? ' · EPS est. ' + F.usd(nx.est) : '') : 'N/A' },
-      { k: 'Indexes', v: idxNames.length ? idxNames.join(', ') : NA }
+      { k: 'Indexes', v: (idxNames.length ? idxNames.join(', ') : NA) + ((M.r1000 || []).length && (M.r2000 || []).length ? '' : ' (Russell membership unavailable right now)') }
     ];
     var peerRows = ((Q && Q.peerRows) || []).slice(0, 6).map(function (p) {
       return { sym: p.sym, cap: okNum(p.mcap, 1e6, 1e13) ? F.money(p.mcap, 1) : NA, pe: okNum(p.pe, 0.5, 500) ? F.n(p.pe, 1) + 'x' : NA, ytd: okNum(p.ytd, -100, 1000) ? F.pct(p.ytd, 1) : NA, y1: okNum(p.y1, -100, 2000) ? F.pct(p.y1, 1) : NA, yc: col(p.ytd || 0), oc: col(p.y1 || 0), st: p.me ? 'background: rgba(255,184,77,.10)' : '' };

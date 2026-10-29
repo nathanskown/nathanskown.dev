@@ -95,7 +95,7 @@ class Component extends DCLogic {
             shares: so, sharesAsOf: Fn ? Fn.sharesAsOf : null, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
           index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }]
-            .concat(((M.r1000 || []).length || (M.r2000 || []).length) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
+            .concat([{ name: 'Russell 1000', member: (M.r1000 || []).length ? inIdx('r1000') : null }, { name: 'Russell 2000', member: (M.r2000 || []).length ? inIdx('r2000') : null }]),
           next: up, own: own, peerRows: [], onDemand: true, staleTags: !!(Fn && Fn.staleTags), secBusy: !!(Fn && Fn.rateLimited && !(Fn.fin || []).length) || (!Fn && !!cik), partial: [(!Fn || Fn.rateLimited) && cik ? 'some SEC financials' : null, !Fl && cik ? 'SEC filings' : null].filter(Boolean)
         } });
       });
@@ -241,8 +241,8 @@ class Component extends DCLogic {
     var cutoff = Date.now() - 180 * 86400000;
     var act = (Q.holders5 || []).filter(function (h) { return h.activist && new Date(h.date).getTime() >= cutoff; })[0];
     var idxRows = (Q.index || []).map(function (ix) {
-      return { n: ix.name, status: ix.member ? 'Member' : 'Not a member',
-        statusStyle: 'font-size:13px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
+      return { n: ix.name, status: ix.member === null || ix.member === undefined ? 'Data unavailable' : ix.member ? 'Member' : 'Not a member',
+        statusStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
     });
     var O = Q.own;
     var N = Q.next;
