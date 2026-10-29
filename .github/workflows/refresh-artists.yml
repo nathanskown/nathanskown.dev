@@ -7,6 +7,7 @@
 # Before the first run, add in your GitHub repo (Settings > Secrets and variables > Actions):
 #   Secret:    LASTFM_API_KEY   your Last.fm API key
 #   Variable:  MB_CONTACT       your email or website (MusicBrainz asks apps to identify themselves)
+#   Secret:    MUSIC_ADMIN_TOKEN  same value as the Worker secret (only for the daily top-up after the commit)
 name: Refresh artist catalog
 
 on:
@@ -45,8 +46,6 @@ jobs:
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           MB_CONTACT: ${{ vars.MB_CONTACT }}
-      - name: Top up the frozen daily schedule
-        run: node tools/build-daily.mjs
       - name: Commit if anything changed
         run: |
           git config user.name "music-catalog-bot"
@@ -56,3 +55,8 @@ jobs:
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git commit -m "Refresh artist catalog"
           for i in 1 2 3; do git pull -q --rebase -X theirs origin "$branch" && git push -q origin "HEAD:$branch" && break; sleep 10; done
+      # Runs after the commit so a missing or wrong MUSIC_ADMIN_TOKEN can never throw away a finished catalog build.
+      - name: Top up the daily schedule on the Worker
+        env:
+          MUSIC_ADMIN_TOKEN: ${{ secrets.MUSIC_ADMIN_TOKEN }}
+        run: node tools/build-daily.mjs
