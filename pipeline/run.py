@@ -18,11 +18,11 @@ def pick():
         return os.environ["JOBS"].split()
     if event == "schedule":
         if cron.startswith("17 11"):
-            return ["daily", "screener", "notes"]
+            return ["daily", "screener", "notes", "fed"]
         if cron.startswith("23 9"):
             return ["quarterly"]
-        return ["market"]
-    want = ["market", "daily", "screener"]
+        return ["market", "fed"]
+    want = ["market", "daily", "screener", "fed"]
     own = read("ownership/index.json") or {}
     if os.environ.get("RUN_13F") == "1" or own.get("v") != own13f.VERSION:
         want.append("quarterly")

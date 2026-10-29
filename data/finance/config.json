@@ -34,6 +34,7 @@
     "BAC": {"cusip": "060505104", "peers": ["JPM", "V"], "aliases": ["Bank of America"]}
   },
   "index_managers": ["VANGUARD", "BLACKROCK", "STATE STREET", "GEODE"],
+  "fomc_baseline": "2025-12-10",
   "fomc_2026": ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"],
   "feeds": {
     "Publication": {
