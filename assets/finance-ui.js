@@ -12,11 +12,11 @@
 
   function skip() {
     var a = document.createElement('a');
-    a.className = 't-skip'; a.href = '#main'; a.textContent = 'Skip to content';
+    a.className = 't-skip'; a.href = '#main'; (function () { var m = document.querySelector('main'); if (m && !m.id) m.id = 'main'; })(); a.textContent = 'Skip to content';
     a.addEventListener('click', function (ev) {
-      var m = document.querySelector('main');
+      var m = document.querySelector('main') || document.querySelector('h1');
       if (!m) return;
-      ev.preventDefault(); m.setAttribute('tabindex', '-1'); m.focus(); m.scrollIntoView();
+      ev.preventDefault(); if (!m.id) m.id = 'main'; m.setAttribute('tabindex', '-1'); m.focus(); m.scrollIntoView();
     });
     document.body.insertBefore(a, document.body.firstChild);   // outside the rendered page tree, which the runtime owns
   }

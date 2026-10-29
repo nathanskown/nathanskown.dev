@@ -30,7 +30,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:12px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
@@ -48,16 +48,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
 .t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:12px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:12.5px}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
 .t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:12.5px;letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:12px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -106,7 +106,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-title">
 <a class="t-brand" href="/">1-NSKN</a>
 <span style="flex: 1 1 auto"></span>
-<span class="t-live"><span class="t-dot"></span>DELAYED 15 MIN</span>
+<span class="t-live"><span class="t-dot"></span>DELAYED QUOTES</span>
 </div>
 <div class="t-help">
 <span class="dim t-hide-sm">Pick a range to redraw the price chart</span>
@@ -135,17 +135,17 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </div>
 </header>
 
-<main style="max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box">
+<main style="max-width: 1280px; margin: 0 auto; padding: 22px 24px 56px; box-sizing: border-box; min-height: 1800px">
 
 <sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}">
 <nav aria-label="Recently viewed" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin">
-<span style="flex: none; color: #A87933; font-size: 12px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
-<sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size: 12.5px">{{rc.t}}</a></sc-for>
+<span style="flex: none; color: #A87933; font-size:13px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
+<sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size:13px">{{rc.t}}</a></sc-for>
 </nav>
 </sc-if>
 <nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
 <sc-for list="{{picker}}" as="pk" hint-placeholder-count="12">
-<a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size: 12.5px; white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
+<a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size:13px; white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
 </sc-for>
 </nav>
 
@@ -169,7 +169,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: {{trendColor}}">{{trendArrow}} {{chgText}} ({{pctText}})</span>
 <span style="color: #C99442; font-size: 13.5px">{{rangeLabel}}</span>
 </div>
-<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{asOf}}</div>
+<div style="color: #A87933; font-size:13px; margin-top: 4px">{{asOf}}</div>
 <sc-if value="{{has52}}" hint-placeholder-val="{{ true }}">
 <div class="f-range" role="img" aria-label="{{pos52Text}}">
 <div class="f-range-l"><span>52W LOW {{lo52}}</span><span>52W HIGH {{hi52}}</span></div>
@@ -188,11 +188,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div aria-hidden="true" style="flex: none; width: 4px; background: #FFB84D; box-shadow: 0 0 10px rgba(255,184,77,.5)"></div>
 <div style="padding: 14px 18px; min-width: 0">
 <div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px">
-<span style="font-size: 12px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
-<sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12.5px; color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
+<span style="font-size:13px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
+<sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
 </div>
 <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #FFE9C7; max-width: 980px">{{aboutText}}</p>
-<div style="margin-top: 6px; font-size: 12px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
+<div style="margin-top: 6px; font-size:13px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
 </div>
 </section>
 </sc-if>
@@ -220,11 +220,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <path d="{{areaPath}}" fill="{{trendFill}}" stroke="none"></path>
 <path d="{{linePath}}" fill="none" stroke="{{trendColor}}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
 </svg>
-<div style="display: flex; justify-content: space-between; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
+<div style="display: flex; justify-content: space-between; color: #A87933; font-size:13px; font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
 <sc-for list="{{xLabels}}" as="x" hint-placeholder-count="5"><span>{{x}}</span></sc-for>
 </div>
 </div>
-<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; box-sizing: border-box; color: #A87933; font-size: 12px; font-family: 'IBM Plex Mono', monospace; text-align: right; width: 64px">
+<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; box-sizing: border-box; color: #A87933; font-size:13px; font-family: 'IBM Plex Mono', monospace; text-align: right; width: 64px">
 <span>{{yMax}}</span><span>{{yMid}}</span><span>{{yMin}}</span>
 </div>
 </div>
@@ -235,7 +235,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{stats}}" as="s" hint-placeholder-count="8">
 <div class="f-stat sm" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size: 12.5px">{{s.label}}</div>
+<div style="color: #C99442; font-size:13px">{{s.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500; margin-top: 2px; color: #FFD89D">{{s.value}}</div>
 </div>
 </sc-for>
@@ -245,12 +245,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Quarterly financials" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Quarterly financials</h2>
-<span style="color: #A87933; font-size: 12.5px">USD millions except per share · SEC XBRL filings · quarter ended</span>
+<span style="color: #A87933; font-size:13px">USD millions except per share · SEC XBRL filings · quarter ended</span>
 </div>
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 560px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Metric</th>
 <sc-for list="{{finHead}}" as="fh" hint-placeholder-count="5"><th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">{{fh}}</th></sc-for>
 </tr>
@@ -274,7 +274,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="overflow-x: auto">
 <table style="width: 100%; min-width: 560px; font-size: 14px">
 <thead>
-<tr style="color: #C99442; font-size: 12.5px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Company</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Mkt cap</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">P/E (TTM)</th>
@@ -301,24 +301,24 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Insider and activist activity" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Insider and activist activity</h2>
-<span style="color: #A87933; font-size: 12.5px">Forms 4, 13D and 13G via SEC EDGAR</span>
+<span style="color: #A87933; font-size:13px">Forms 4, 13D and 13G via SEC EDGAR</span>
 </div>
 <sc-if value="{{activist}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; padding: 12px 14px; border-radius: 0; background: #2A0F0D; border: 1px solid #7A2A24; margin-bottom: 16px">
-<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF8A80; padding-top: 2px">ACTIVIST</span>
+<span style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #FF8A80; padding-top: 2px">ACTIVIST</span>
 <div style="flex: 1 1 300px; min-width: 0; font-size: 13.5px; color: #FFD89D">{{activistText}}</div>
 </div>
 </sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 10px; margin-bottom: 16px">
 <sc-for list="{{insTiles}}" as="it" hint-placeholder-count="4">
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size: 12.5px">{{it.k}}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: {{it.color}}">{{it.v}}</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size:13px">{{it.k}}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: {{it.color}}">{{it.v}}</div></div>
 </sc-for>
 </div>
 <h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">Recent insider transactions</h3>
 <div style="overflow-x: auto; margin-bottom: 16px">
 <table style="width: 100%; min-width: 640px; font-size: 13.5px">
 <thead>
-<tr style="color: #C99442; font-size: 12px; text-align: right">
+<tr style="color: #C99442; font-size:13px; text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Insider</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Transaction</th>
@@ -331,7 +331,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{insiders}}" as="ins" hint-placeholder-count="5">
 <tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
 <td style="text-align: left; padding: 9px 8px 9px 0; border-bottom: 1px solid #221909; white-space: nowrap">{{ins.d}}</td>
-<th scope="row" style="text-align: left; font-weight: 500; padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.n}}<span style="display: block; font-weight: 400; font-size: 12px; color: #A87933">{{ins.role}}</span></th>
+<th scope="row" style="text-align: left; font-weight: 500; padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.n}}<span style="display: block; font-weight: 400; font-size:13px; color: #A87933">{{ins.role}}</span></th>
 <td style="text-align: left; padding: 9px 8px; border-bottom: 1px solid #221909; color: {{ins.color}}">{{ins.type}}</td>
 <td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.sh}}</td>
 <td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.px}}</td>
@@ -345,7 +345,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">5%+ holder filings</h3>
 <sc-for list="{{bigHolders}}" as="bh" hint-placeholder-count="4">
 <a href="{{bh.url}}" target="_blank" rel="noopener" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 14px; padding: 10px 0; border-bottom: 1px solid #221909; color: #FFB84D">
-<span style="font-size: 14px; color: #FFD89D; min-width: 0">{{bh.n}} <span style="font-size: 12.5px; color: #A87933">· {{bh.note}}</span></span>
+<span style="font-size: 14px; color: #FFD89D; min-width: 0">{{bh.n}} <span style="font-size:13px; color: #A87933">· {{bh.note}}</span></span>
 <span style="display: flex; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
 <span style="{{bh.formStyle}}">{{bh.form}}</span>
 <span style="color: #A87933">{{bh.d}}</span>
@@ -358,17 +358,17 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Index membership" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Index membership</h2>
-<span style="color: #A87933; font-size: 12.5px">S&amp;P lists (Wikipedia) · Russell from iShares IWB/IWM holdings · passive ownership from 13F</span>
+<span style="color: #A87933; font-size:13px">S&amp;P lists (Wikipedia) · Russell from iShares IWB/IWM holdings · passive ownership from 13F</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{indexes}}" as="ix" hint-placeholder-count="3">
 <div style="background: #0E0A05; border: 1px solid #382811; padding: 12px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center"><span style="color: #FFD89D">{{ix.n}}</span><span style="{{ix.statusStyle}}">{{ix.status}}</span></div>
 </sc-for>
 <div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size: 12.5px">Held by index fund managers</div>
+<div style="color: #C99442; font-size:13px">Held by index fund managers</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: #FFD89D">{{passiveText}}</div>
 <div aria-hidden="true" style="height: 6px; border-radius: 0; background: #241A0B; margin: 8px 0 6px"><div style="{{passiveBar}}"></div></div>
-<div style="font-size: 12.5px; color: #A87933">{{passiveNote}}</div>
+<div style="font-size:13px; color: #A87933">{{passiveNote}}</div>
 </div>
 </div>
 </section>
@@ -378,12 +378,12 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
 
 <section aria-label="Next earnings" style="background: #261C0C; border: 1px solid #8A6326; border-radius: 0; padding: 18px">
-<div style="color: #FFD89D; font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">NEXT EARNINGS</div>
+<div style="color: #FFD89D; font-size:13px; font-weight: 600; letter-spacing: 0.06em">NEXT EARNINGS</div>
 <div style="font-size: 22px; font-weight: 600; margin: 4px 0 2px; color: #FFE9C7">{{nextDate}}</div>
 <div style="color: #FFB84D; font-size: 13.5px">{{nextWhen}}</div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px">
-<div><div style="color: #C99442; font-size: 12.5px">EPS est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextEst}}</div></div>
-<div><div style="color: #C99442; font-size: 12.5px">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextN}}</div></div>
+<div><div style="color: #C99442; font-size:13px">EPS est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextEst}}</div></div>
+<div><div style="color: #C99442; font-size:13px">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextN}}</div></div>
 </div>
 </section>
 
@@ -397,22 +397,22 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section class="t-card" aria-label="Institutional ownership 13F" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px">
 <h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership (13F)</h2>
-<span style="font-size: 12px; color: #A87933">{{ownPeriod}}</span>
+<span style="font-size:13px; color: #A87933">{{ownPeriod}}</span>
 </div>
 <sc-if value="{{hasOwn}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 14px">
 <div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #FFE9C7">{{ownInst}}</div>
-<div style="font-size: 12.5px; color: {{ownChgColor}}">{{ownChg}}</div>
-<div style="font-size: 12.5px; color: #A87933">{{ownHolders}}</div>
+<div style="font-size:13px; color: {{ownChgColor}}">{{ownChg}}</div>
+<div style="font-size:13px; color: #A87933">{{ownHolders}}</div>
 </div>
 <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 40px; width: 110px">
 <sc-for list="{{ownBars}}" as="ob" hint-placeholder-count="8"><div style="{{ob}}"></div></sc-for>
 </div>
 </div>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
+<div style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
 <sc-for list="{{ownBuy}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">{{ob.v}}</span></div></sc-for>
-<div style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
+<div style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
 <sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
 <p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">{{ownRead}}</p>
 </sc-if>
@@ -425,7 +425,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{news}}" as="n" hint-placeholder-count="4">
 <a href="{{n.link}}" target="_blank" rel="noopener" style="display: block; padding: 12px 0; border-bottom: 1px solid #221909; color: #FFB84D">
 <div style="font-size: 14px; font-weight: 500; line-height: 1.4">{{n.h}}</div>
-<div style="color: #A87933; font-size: 12.5px; margin-top: 4px">{{n.meta}}</div>
+<div style="color: #A87933; font-size:13px; margin-top: 4px">{{n.meta}}</div>
 </a>
 </sc-for>
 </section>
@@ -436,7 +436,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size: 12.5px">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
 <span>Prices: Yahoo Finance (delayed) · Financials, insiders, 13D/G, 13F: SEC EDGAR · Earnings dates: Nasdaq · Refreshed daily</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
@@ -461,8 +461,10 @@ class Component extends DCLogic {
     var self = this;
     var core = (idx || (this.state || {}).index || { tickers: [] }).tickers.some(function (t) { return t.sym === sym; });
     if (core) {  // core watch list: built nightly, loads instantly
-      DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) { self.setState({ q: q, notTracked: null }); })
-        .catch(function () { self.live(sym); });
+      DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) {
+        self.setState({ q: q, notTracked: null });   // show the morning file at once, then swap in live prices
+        DC.overlayLive(q).then(function (lq) { if (lq !== q && (self.state || {}).sym === sym) self.setState({ q: lq }); });
+      }).catch(function () { self.live(sym); });
       return;
     }
     this.live(sym);
@@ -480,7 +482,7 @@ class Component extends DCLogic {
         soft(api('part=price&sym=' + encodeURIComponent(sym))),
         cik ? soft(api('part=fin&cik=' + cik)) : null,
         cik ? soft(api('part=filings&cik=' + cik)) : null,
-        soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')),
+        soft(DC.load('/data/finance/ownership/index.json')).then(function (ix) { return ix && ix.all && ix.all.indexOf(sym) < 0 ? null : soft(DC.load('/data/finance/ownership/' + encodeURIComponent(sym) + '.json')); }),
         soft(DC.load('/data/finance/earnings.json')),
         soft(DC.load('/data/finance/members.json'))
       ]).then(function (res) {
@@ -500,7 +502,7 @@ class Component extends DCLogic {
           sym: sym, name: q.name || (hit && hit.name) || sym, exch: q.exch || (hit && hit.exch), sector: (M.sectors || {})[sym] || (Fl && Fl.sic) || null,
           updated: P.updated, quote: q, charts: P.charts, ytd: P.ytd, y1: P.y1, news: P.news,
           stats: { mcap: mcap, pe: pe, divYield: P.stats.divYield, hi52: q.hi52, lo52: q.lo52, avgVol3m: P.stats.avgVol3m, beta: P.stats.beta,
-            shares: so, epsTTM: Fn ? Fn.epsTTM : null },
+            shares: so, sharesAsOf: Fn ? Fn.sharesAsOf : null, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
           index: [{ name: 'S&P 500', member: inIdx('sp500') }, { name: 'S&P MidCap 400', member: inIdx('sp400') }, { name: 'S&P SmallCap 600', member: inIdx('sp600') }]
             .concat(((M.r1000 || []).length || (M.r2000 || []).length) ? [{ name: 'Russell 1000', member: inIdx('r1000') }, { name: 'Russell 2000', member: inIdx('r2000') }] : []),
@@ -606,7 +608,7 @@ class Component extends DCLogic {
       { label: 'Market cap', value: F.money(S.mcap, 2) }, { label: 'P/E (TTM)', value: S.pe ? F.n(S.pe, 1) + 'x' : '—' },
       { label: 'EPS (TTM)', value: S.epsTTM !== null && S.epsTTM !== undefined ? F.usd(S.epsTTM, 2) : '—' }, { label: 'Dividend yield', value: S.divYield ? F.n(S.divYield, 2) + '%' : 'None' },
       { label: '52-week range', value: F.n(S.lo52, 2) + ' – ' + F.n(S.hi52, 2) }, { label: 'Avg. volume (3M)', value: F.big(S.avgVol3m) },
-      { label: 'Beta (5Y, weekly)', value: S.beta !== null && S.beta !== undefined ? F.n(S.beta, 2) : '—' }, { label: 'Shares out.', value: F.big(S.shares) }
+      { label: 'Beta (5Y, weekly)', value: S.beta !== null && S.beta !== undefined ? F.n(S.beta, 2) : '—' }, { label: 'Shares out.', value: F.big(S.shares) + (S.sharesAsOf && S.shares ? ' (' + S.sharesAsOf + ')' : '') }
     ];
     var fq = Q.fin || [];
     var qlab = function (e) { var d = new Date(e + 'T12:00:00Z'); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }); };
@@ -644,13 +646,13 @@ class Component extends DCLogic {
     var bigs = (Q.holders5 || []).map(function (h) {
       var act = h.activist;
       return { n: h.filer ? F.firm(h.filer) : 'Filer', note: act ? 'activist-eligible 13D' : 'passive 13G', form: h.form, d: F.day(h.date), url: h.url,
-        formStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; ' + (act ? 'background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' : 'background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;') };
+        formStyle: 'font-size:13px; font-weight: 600; padding: 2px 10px; border-radius: 0; ' + (act ? 'background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' : 'background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;') };
     });
     var cutoff = Date.now() - 180 * 86400000;
     var act = (Q.holders5 || []).filter(function (h) { return h.activist && new Date(h.date).getTime() >= cutoff; })[0];
     var idxRows = (Q.index || []).map(function (ix) {
       return { n: ix.name, status: ix.member ? 'Member' : 'Not a member',
-        statusStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
+        statusStyle: 'font-size:13px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
     });
     var O = Q.own;
     var N = Q.next;

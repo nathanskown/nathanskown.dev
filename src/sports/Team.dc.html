@@ -64,7 +64,7 @@
 <div style="display: flex; gap: 18px; align-items: center; min-width: 0">
 <sc-if value="{{t.logo}}" hint-placeholder-val="{{true}}"><img class="s-hero-logo" src="{{t.logo}}" alt="{{t.logoAlt}}"></sc-if>
 <div style="min-width: 0">
-<nav aria-label="Breadcrumb" style="font-size: 12.5px" class="dim"><a href="Main.dc.html">Sports</a> › <a href="{{t.lgHref}}">{{t.lgLabel}}</a><sc-if value="{{t.group}}" hint-placeholder-val="{{true}}"> › {{t.group}}</sc-if></nav>
+<nav aria-label="Breadcrumb" style="font-size:13px" class="dim"><a href="Main.dc.html">Sports</a> › <a href="{{t.lgHref}}">{{t.lgLabel}}</a><sc-if value="{{t.group}}" hint-placeholder-val="{{true}}"> › {{t.group}}</sc-if></nav>
 <h1 style="margin: 4px 0 0">{{t.name}}</h1>
 <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 8px">
 <span class="big" style="font-size: 34px; color: var(--wh)">{{t.record}}</span>
@@ -77,7 +77,7 @@
 <div class="s-next">
 <div class="t-th">{{next.title}}</div>
 <div style="color: var(--wh); font-size: 15px; margin-top: 4px">{{next.line}}</div>
-<sc-if value="{{next.sub}}" hint-placeholder-val="{{true}}"><div class="dim" style="font-size: 12.5px">{{next.sub}}</div></sc-if>
+<sc-if value="{{next.sub}}" hint-placeholder-val="{{true}}"><div class="dim" style="font-size:13px">{{next.sub}}</div></sc-if>
 <sc-if value="{{next.prob}}" hint-placeholder-val="{{true}}"><div class="hi" style="font-size: 13px; margin-top: 4px">{{next.prob}}</div></sc-if>
 <sc-if value="{{next.href}}" hint-placeholder-val="{{true}}"><a class="s-btn" style="margin-top: 10px" href="{{next.href}}">{{next.cta}} →</a></sc-if>
 </div>
@@ -97,9 +97,9 @@
 <sc-if value="{{hasMargins}}" hint-placeholder-val="{{true}}">
 <div style="margin-top: 14px">
 <div class="t-th" style="display: flex; justify-content: space-between"><span>Margin by game</span><span>oldest → newest</span></div>
-<div role="img" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
+<div role="group" aria-label="{{marginAria}}" style="display: flex; gap: 4px; align-items: stretch; height: 120px; margin-top: 8px">
 <sc-for list="{{margins}}" as="mg" hint-placeholder-count="8">
-<a href="{{mg.href}}" title="{{mg.title}}" style="flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column">
+<a href="{{mg.href}}" title="{{mg.title}}" aria-label="{{mg.title}}" style="flex: 1 1 0; min-width: 0; max-width: 46px; display: flex; flex-direction: column">
 <span style="flex: 1 1 0; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--line)"><span style="{{mg.up}}"></span></span>
 <span style="flex: 1 1 0; display: flex; align-items: flex-start; justify-content: center"><span style="{{mg.down}}"></span></span>
 </a>
@@ -204,7 +204,7 @@
 <div class="t-pb">
 <sc-if value="{{noLeaders}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{noLeadersText}}</div></sc-if>
 <sc-for list="{{leaders}}" as="l" hint-placeholder-count="5">
-<div class="s-game"><span class="dim" style="width: 140px; flex: none; font-size: 12px">{{l.k}}</span><span class="o hi">{{l.p}} <span class="dim">{{l.pos}}</span></span><span class="r">{{l.v}}</span></div>
+<div class="s-game"><span class="dim" style="width: 140px; flex: none; font-size:13px">{{l.k}}</span><span class="o hi">{{l.p}} <span class="dim">{{l.pos}}</span></span><span class="r">{{l.v}}</span></div>
 </sc-for>
 </div>
 </section>
@@ -216,7 +216,7 @@
 </sc-if>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 12px" class="dim">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:13px" class="dim">
 <span>Schedules, scores, standings, injuries and leaders: ESPN public API · Ratings, projections and odds: house model · {{updated}} · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>
@@ -283,7 +283,7 @@ class Component extends DCLogic {
     var color = '#' + String(me.color || (st.color || '#12363B')).replace('#', '');
     var pick = function (g) { return g.opp || {}; };
     var name = me.name || st.name || (S.loading ? 'Loading…' : 'Team ' + id);
-    if (typeof document !== 'undefined' && name && !S.loading) document.title = name + ' · NSKN Terminal';
+    if (typeof document !== 'undefined' && name && !S.loading) document.title = name + ({ ncaaf: ' Football', ncaab: ' Basketball', ncaah: ' Hockey' }[lg] || '') + ' · NSKN Terminal';
 
     // standings row for this team
     var group = null, row = null;
@@ -295,10 +295,10 @@ class Component extends DCLogic {
     var enough = function (t) { return t && (t.gp >= (model.minGp || 0) || t.prior !== undefined); };
 
     var t = {
-      name: name, logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
+      name: name + ({ ncaaf: ' Football', ncaab: ' Basketball', ncaah: ' Hockey' }[lg] || ''), logo: me.logo || '', logoAlt: name + ' logo', lgLabel: L.label || lg.toUpperCase(), lgHref: 'Teams.dc.html?lg=' + lg,
       group: me.group || (group ? group.name : ''),
       record: st.record || (row && row.overall) || (S.loading ? '' : '0-0'),
-      standing: st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || '',
+      standing: (function (x) { return /\b(null|undefined|nan)\b/i.test(x) ? '' : x; })(st.standing || (sched && sched.regTeam ? sched.regTeam.standing : '') || ''),
       bandStyle: 'background: radial-gradient(900px 320px at 12% 40%, ' + color + 'cc, transparent 70%), linear-gradient(100deg, ' + color + '66 0%, ' + color + '18 55%, transparent 80%), linear-gradient(180deg, transparent 50%, #03070c 100%), #03070c;',
       rankLine: mt && enough(mt) ? 'House rating ' + sign(mt.rating) + ' ' + unit + ' vs. an average team · No. ' + mt.rank + ' of ' + teamN : ''
     };
@@ -312,7 +312,10 @@ class Component extends DCLogic {
       var note = [g.season && !/regular/i.test(g.season) ? g.season : '', g.week && L.sport === 'football' ? 'Week ' + String(g.week).replace(/^Week\s*/i, '') : '', g.neutral ? 'Neutral site' : ''].filter(Boolean).join(' · ');
       return { d: dlabel(g.start), at: at, opp: o.name || o.short || 'TBD', oppHref: o.href || '#', href: g.href, aria: 'Game page: ' + (g.home ? '' : 'at ') + (o.name || ''), note: note, g: g, o: o };
     };
-    var done = games.filter(function (g) { return g.done || g.state === 'post'; });
+    // a postponed, canceled or suspended game is not a game played (ESPN marks some of them "post")
+    var called = function (g) { return /postpon|cancel|suspend|forfeit/i.test(g.detail || ''); };
+    games = games.filter(function (g) { return !called(g) || g.state === 'pre'; });
+    var done = games.filter(function (g) { return (g.done || g.state === 'post') && !called(g); });
     var live = games.filter(function (g) { return g.state === 'in'; });
     var up = games.filter(function (g) { return g.state === 'pre' && !g.done; });
     var resultsAll = live.concat(done.slice().reverse()).map(function (g) {

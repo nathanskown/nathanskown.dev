@@ -63,7 +63,6 @@ function json(status, body, maxAge = 0) {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": maxAge ? `public, max-age=${maxAge}` : "no-store",
-      "access-control-allow-origin": "*",
     },
   });
 }
@@ -116,7 +115,6 @@ export async function handleEspn(request, ctx) {
   const headers = {
     "content-type": "application/json; charset=utf-8",
     "cache-control": `public, max-age=${Math.min(ttl, 300)}`,
-    "access-control-allow-origin": "*",
     "x-upstream": "espn",
   };
   const len = Number(up.headers.get("content-length") || 0);
