@@ -210,6 +210,12 @@
     for (name in oa) if (!(name in v.attrs)) el.removeAttribute(name);
     for (name in v.attrs) {
       var val = v.attrs[name];
+      if (name === 'src' && el.tagName === 'IMG' && typeof val === 'string') {
+        // ESPN logos are 500px files shown at icon size: ask its image server for a 96px copy and reserve the box
+        var lm = /^https?:\/\/a\.espncdn\.com\/i\/teamlogos\/([^?]+?)\/500(?:-dark)?\/([^/?]+\.png)$/.exec(val);
+        if (lm) { val = 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/' + lm[1] + '/500/' + lm[2] + (/\bs-hero-logo\b/.test(el.className) ? '&w=200&h=200' : '&w=96&h=96'); }
+        if (lm && /\bs-logo\b/.test(el.className) && !el.getAttribute('width')) { el.setAttribute('width', '22'); el.setAttribute('height', '22'); }
+      }
       if (name === 'value' && 'value' in el && el.tagName !== 'BUTTON') { if (el.value !== val) el.value = val; continue; }
       if (oa[name] !== val || el.getAttribute(name) !== val) el.setAttribute(name, val);
     }
@@ -299,8 +305,10 @@
     var page = window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
     page.then(function (href) {
       if (href) { location.href = href; return; }
+      if (window.DC_SPORTS && q.length > 5) { notFound(); return; }   // a long word on a sports page is not a ticker
       tickerLookup();
     }, tickerLookup);
+    function notFound() { input.value = ''; input.placeholder = '"' + q + '" NOT FOUND · TRY A TEAM, PAGE OR HELP'; }
     function tickerLookup() { tickers().then(function (T) {
       if (T.bySym[sym]) { go(sym); return; }                 // exact US ticker
       var m = q.length > 2 ? matches(T, q, 1)[0] : null;      // company name
@@ -400,6 +408,7 @@
       new URLSearchParams(location.search).forEach(function (v, k) { init[k] = /^-?\d+$/.test(v) ? Number(v) : v; });
       if (Object.keys(init).length) c.state = Object.assign({}, c.state || {}, init);
       c._root = document.getElementById('app');
+      c._root.innerHTML = '';   // drop the text-only copy that crawlers read before scripts run
       c._mounted = true;
       render(c);
       if (c.componentDidMount) c.componentDidMount();

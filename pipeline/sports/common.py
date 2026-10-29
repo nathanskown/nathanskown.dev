@@ -79,7 +79,7 @@ def attempt(name, fn, *a, **kw):
         STATUS[name] = {"ok": True, "seconds": round(time.time() - t0, 1)}
         return out
     except Exception as e:
-        STATUS[name] = {"ok": False, "error": str(e)[:300], "seconds": round(time.time() - t0, 1)}
+        STATUS[name] = dict(getattr(e, "status", None) or {}, ok=False, error=str(e)[:300], seconds=round(time.time() - t0, 1))
         print("ERROR", name, e)
         traceback.print_exc()
         return None
