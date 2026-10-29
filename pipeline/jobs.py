@@ -40,8 +40,34 @@ def ds(d):
 # MARKET
 # =====================================================================================
 
+# Tiles whose "previous close" from the intraday chart can be a session too old (overseas markets, futures, crypto).
+# For these the baseline is rebuilt from daily bars so every page measures the day against the same close.
+DAILY_BASE = {"wti", "gold", "btc", "ftse", "dax", "sx5e", "n225", "hsi", "tsx", "eurusd", "usdjpy", "gbpusd"}
+
+
+def _daily_prev(sym, meta):
+    """Last completed session's close: the daily bar before the one for the market's current session."""
+    d = mk.chart(sym, "1mo", "1d")
+    ts, cl = d["t"], d["c"]
+    if len(cl) < 2:
+        return None
+    off = (meta or {}).get("gmtoffset") or 0
+    rmt = (meta or {}).get("regularMarketTime")
+    if rmt is None:
+        return None
+    same = (ts[-1] + off) // 86400 == (rmt + off) // 86400
+    return cl[-2] if same else cl[-1]
+
+
 def _tile(tid, sym, name, unit, dec):
     ch = mk.chart(sym, "1d", "5m")
+    if tid in DAILY_BASE:
+        try:
+            pv = _daily_prev(sym, ch["meta"])
+            if pv:
+                ch["meta"] = {**ch["meta"], "chartPreviousClose": pv, "previousClose": pv}
+        except Exception:
+            pass   # keep the intraday baseline if daily bars are unavailable
     q = mk.quote_from_chart(ch)
     step = max(1, len(ch["c"]) // 80)
     return {"id": tid, "sym": sym, "name": name, "unit": unit, "dec": dec, **q,

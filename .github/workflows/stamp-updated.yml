@@ -1,0 +1,29 @@
+name: Stamp last updated
+
+# Writes the date of the latest site change to data/lastupdated.json (shown on the homepage).
+# Pushes that only touch data files are ignored, so this never loops.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "data/**"
+
+permissions:
+  contents: write
+
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Write and commit the stamp
+        run: |
+          python3 tools/stamp_assets.py   # keeps asset ?v= hashes in step with the files (safety net)
+          echo "{\"at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > data/lastupdated.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Stamp last updated and asset hashes" || exit 0
+          git pull --rebase origin main && git push

@@ -481,12 +481,33 @@
     hits.sort(function (a, b) { return a.score - b.score || LG_PRI[a.lg] - LG_PRI[b.lg] || (a.t.name < b.t.name ? -1 : 1); });
     return hits.slice(0, n || 12);
   }
+  window.DC_SPORTS = true;
+  var PAGE_WORDS = {
+    'injuries': 'injuries', 'injury': 'injuries', 'injury report': 'injuries', 'playoff odds': 'odds', 'playoffs': 'odds', 'odds': 'odds',
+    'simulator': 'simulator', 'matchup': 'simulator', 'methodology': 'methodology', 'method': 'methodology', 'how it works': 'methodology',
+    'track record': 'track-record', 'record': 'track-record', 'picks': 'track-record', 'schedule strength': 'schedule-strength',
+    'strength of schedule': 'schedule-strength', 'luck watch': 'luck-watch', 'luck': 'luck-watch', 'spots': 'spots', 'situational spots': 'spots'
+  };
   window.DC_LOOKUP = function (q) {
+    var pg = PAGE_WORDS[String(q || '').trim().toLowerCase()];
+    if (pg) return Promise.resolve('/sports/' + pg + '/');
     return teamList().then(function (list) {
       var h = findTeams(list, q, 1)[0];
       return h && h.score <= 1 ? '/sports/team/?lg=' + h.lg + '&id=' + encodeURIComponent(h.t.id) : null;
     });
   };
+  /* horizontally scrollable tables must be reachable by keyboard */
+  function focusScrollers() {
+    document.querySelectorAll('.s-scroll:not([data-kb])').forEach(function (el) {
+      el.setAttribute('data-kb', '1'); el.tabIndex = 0; el.setAttribute('role', 'region');
+      var t = el.querySelector('caption,th'); el.setAttribute('aria-label', 'Scrollable table' + (t && t.textContent.trim() ? ': ' + t.textContent.trim().slice(0, 40) : ''));
+    });
+  }
+  function watchScrollers() {
+    focusScrollers();
+    try { new MutationObserver(focusScrollers).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+  }
+  if (document.body) watchScrollers(); else document.addEventListener('DOMContentLoaded', watchScrollers);
   window.DC_SUGGEST = function (q) {
     return teamList().then(function (list) {
       return findTeams(list, q, 12).map(function (h) { return { value: h.t.name + ' (' + LEAGUES[h.lg].short + ')', label: LEAGUES[h.lg].label + (h.t.group ? ' · ' + h.t.group : '') }; });
@@ -540,9 +561,9 @@
     var skip = document.createElement('a');
     skip.className = 't-skip'; skip.href = '#main'; skip.textContent = 'Skip to content';
     skip.addEventListener('click', function (ev) {
-      var m = document.querySelector('main');
+      var m = document.querySelector('main') || document.querySelector('h1');
       if (!m) return;
-      ev.preventDefault(); m.setAttribute('tabindex', '-1'); m.focus(); m.scrollIntoView();
+      ev.preventDefault(); if (!m.id) m.id = 'main'; m.setAttribute('tabindex', '-1'); m.focus(); m.scrollIntoView();
     });
     document.body.insertBefore(skip, document.body.firstChild);   // outside the page's rendered tree, which the runtime owns
     var btn = box.querySelector('button');

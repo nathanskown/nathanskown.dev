@@ -210,6 +210,12 @@
     for (name in oa) if (!(name in v.attrs)) el.removeAttribute(name);
     for (name in v.attrs) {
       var val = v.attrs[name];
+      if (name === 'src' && el.tagName === 'IMG' && typeof val === 'string') {
+        // ESPN logos are 500px files shown at icon size: ask its image server for a 96px copy and reserve the box
+        var lm = /^https?:\/\/a\.espncdn\.com\/i\/teamlogos\/([^?]+?)\/500(?:-dark)?\/([^/?]+\.png)$/.exec(val);
+        if (lm) { val = 'https://a.espncdn.com/combiner/i?img=/i/teamlogos/' + lm[1] + '/500/' + lm[2] + (/\bs-hero-logo\b/.test(el.className) ? '&w=200&h=200' : '&w=96&h=96'); }
+        if (lm && /\bs-logo\b/.test(el.className) && !el.getAttribute('width')) { el.setAttribute('width', '22'); el.setAttribute('height', '22'); }
+      }
       if (name === 'value' && 'value' in el && el.tagName !== 'BUTTON') { if (el.value !== val) el.value = val; continue; }
       if (oa[name] !== val || el.getAttribute(name) !== val) el.setAttribute(name, val);
     }
@@ -299,8 +305,10 @@
     var page = window.DC_LOOKUP ? window.DC_LOOKUP(q) : Promise.resolve(null);
     page.then(function (href) {
       if (href) { location.href = href; return; }
+      if (window.DC_SPORTS && q.length > 5) { notFound(); return; }   // a long word on a sports page is not a ticker
       tickerLookup();
     }, tickerLookup);
+    function notFound() { input.value = ''; input.placeholder = '"' + q + '" NOT FOUND · TRY A TEAM, PAGE OR HELP'; }
     function tickerLookup() { tickers().then(function (T) {
       if (T.bySym[sym]) { go(sym); return; }                 // exact US ticker
       var m = q.length > 2 ? matches(T, q, 1)[0] : null;      // company name
@@ -371,6 +379,26 @@
         return r.json();
       });
     },
+    /* Core-ticker quote files are built once a night, so on their own they show the previous close as if it were
+       today's. overlayLive asks /api/quote for a fresh price and merges it over the file: price, change, charts and the
+       numbers that depend on price move; everything else stays from the file. Resolves to the updated q, or to the
+       same q object when the live call fails (callers compare with !== to know whether the overlay landed). */
+    overlayLive: function (q) {
+      if (!q || !q.sym) return Promise.resolve(q);
+      return fetch('/api/quote?part=price&sym=' + encodeURIComponent(q.sym)).then(function (r) { return r.ok ? r.json() : null; }).then(function (P) {
+        if (!P || !P.quote || !(P.quote.price > 0)) return q;
+        var old = q.quote && q.quote.price, out = Object.assign({}, q);
+        out.quote = Object.assign({}, q.quote, P.quote);
+        ['charts', 'ytd', 'y1', 'updated'].forEach(function (k) { if (P[k] != null) out[k] = P[k]; });
+        if (q.stats && old > 0) {
+          var k = P.quote.price / old;
+          out.stats = Object.assign({}, q.stats);
+          ['mcap', 'pe'].forEach(function (f) { if (out.stats[f] > 0) out.stats[f] = out.stats[f] * k; });
+        }
+        out.liveOverlay = true;
+        return out;
+      }, function () { return q; });
+    },
     mount: function (Component, defaults) {
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];
@@ -380,6 +408,7 @@
       new URLSearchParams(location.search).forEach(function (v, k) { init[k] = /^-?\d+$/.test(v) ? Number(v) : v; });
       if (Object.keys(init).length) c.state = Object.assign({}, c.state || {}, init);
       c._root = document.getElementById('app');
+      c._root.innerHTML = '';   // drop the text-only copy that crawlers read before scripts run
       c._mounted = true;
       render(c);
       if (c.componentDidMount) c.componentDidMount();
