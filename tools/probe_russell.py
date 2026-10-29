@@ -75,6 +75,11 @@ def discover(fund, pid, slug, file):
         print("   link:", m[:200])
     for m in sorted(set(re.findall(r'[^"\'\s<>]*fileType=csv[^"\'\s<>]*', html)))[:10]:
         print("   csv:", m[:200])
+    for kw in ["fileName", "_holdings", ".ajax", "Download", "holdings", "csv"]:
+        idx = [m.start() for m in re.finditer(re.escape(kw), html)]
+        print(f"   kw {kw!r}: {len(idx)} hits")
+        for i in idx[:4]:
+            print("      ...", re.sub(r"\s+", " ", html[max(0, i - 120):i + 160]))
     for m in re.finditer(r'data-link="([^"]*)"', html):
         if "ajax" in m.group(1) or "csv" in m.group(1): print("   data-link:", m.group(1)[:200])
 
