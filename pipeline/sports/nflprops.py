@@ -231,9 +231,32 @@ def _band(tab, p):
     return int(np.searchsorted(tab["edges"], p, side="right"))
 
 
+_U = np.linspace(0.01, 0.99, 99)
+
+
+def _range_diag(items):
+    """Score the WHOLE predicted range, not just its middle. items = [(projection, actual, ratio quantiles 1..99)].
+    pinball = average over the 99 quantiles of the quantile (pinball) loss, the same family as the CRPS (lower is
+    better, in the stat's own units). pit = share of results that finished in each tenth of the predicted range (a
+    well-calibrated range puts 10% in every tenth). tail = share of results above the predicted 75th / 90th / 95th."""
+    if not items:
+        return None
+    pin = 0.0; pit = np.zeros(10); tail = np.zeros(3)
+    for pr, a, q in items:
+        qv = pr * np.asarray(q)
+        d = a - qv
+        pin += float(np.mean(np.maximum(_U * d, (_U - 1) * d)))
+        u = (np.sum(qv < a) + 0.5 * np.sum(qv == a)) / 99.0
+        pit[min(9, int(u * 10))] += 1
+        tail += [a > qv[74], a > qv[89], a > qv[94]]
+    n = len(items)
+    return {"n": n, "pinball": round(pin / n, 3), "pit": [round(float(x) / n, 3) for x in pit], "tail": [round(float(x) / n, 3) for x in tail]}
+
+
 def _backtest(hist, years_test):
     """MAE of the median and coverage of the middle 50%, each season scored with tables from earlier seasons only."""
     res = collections.defaultdict(lambda: [0, 0.0, 0])
+    items = collections.defaultdict(list)
     for ty in years_test:
         tab = _tables(hist, {y for y in range(ty - 4, ty)})
         for y, mk, p, a in hist:
@@ -242,7 +265,8 @@ def _backtest(hist, years_test):
             q = tab[mk]["ratio"][_band(tab[mk], p)]
             med, q25, q75 = p * q[49], p * q[24], p * q[74]
             r = res[mk]; r[0] += 1; r[1] += abs(a - med); r[2] += q25 <= a <= q75
-    return {mk: {"n": n, "mae": round(s / n, 2), "middle50": round(c / n, 3)} for mk, (n, s, c) in res.items() if n}
+            items[mk].append((p, a, q))
+    return {mk: dict({"n": n, "mae": round(s / n, 2), "middle50": round(c / n, 3)}, range=_range_diag(items[mk])) for mk, (n, s, c) in res.items() if n}
 
 
 # ---------------------------------------------------------------- totals
@@ -340,7 +364,7 @@ def _book_grade(cur, keys, tables, games):
             above = lambda L: sum(1 for q in qs if pr * q > L) / len(qs)
             po = above(line)
             io, iu = imp(oo), imp(ou)
-            R.append((mk, po, io / (io + iu), act > line, oo, ou))
+            R.append((mk, po, io / (io + iu), act > line, oo, ou, day))
             ol = op[0] if op else None
             if ol is not None and act != ol:
                 OPEN.append((above(ol), act > ol, ol, line))
@@ -368,10 +392,46 @@ def _book_grade(cur, keys, tables, games):
         w = sum(1 for p, y in k if (p > 0.5) == y)
         opn[str(th)] = {"won": w, "lost": len(k) - w, "units": round(w * 100 / 110 - (len(k) - w), 1)}
     mv = [(p > 0.5) == (cl > ol) for p, y, ol, cl in OPEN if cl != ol and p != 0.5]
-    return {"graded": len(R), "shrink": round(float(best), 2), "vsOpen": {"record": opn, "lineMovedTowardBoard": round(sum(mv) / len(mv), 3) if mv else None,
+    diag = _book_diag(R, pc, pay)
+    return {"graded": len(R), "diag": diag, "shrink": round(float(best), 2), "vsOpen": {"record": opn, "lineMovedTowardBoard": round(sum(mv) / len(mv), 3) if mv else None,
                                                                           "moved": len(mv), "note": "raw chance vs opening line, flat -110; the replay knows which teammates sat, which the opening line did not (without that: about 1 point of win rate lower)"}, "brierRaw": round(float(np.mean((po - y) ** 2)), 4),
             "brierCalibrated": round(float(np.mean((pc - y) ** 2)), 4), "brierMarket": round(float(np.mean((pm - y) ** 2)), 4),
             "overRate": round(float(y.mean()), 3), "record": rec, "note": "calibrated chance vs no-vig closing price; units at the closing price"}
+
+
+def _book_diag(R, pc, pay):
+    """Results-only diagnostics for the picks graded against closing prices (no line is stored or shown): is the stated
+    chance honest at each level, does a bigger gap to the market pay, overs vs unders, each stat, and the latest
+    stretch. The same questions any prop service's record has to answer."""
+    rows = []
+    for r, p in zip(R, pc):
+        e = p - r[2]
+        over = e > 0
+        won = bool(r[3]) == over
+        u = float(pay(r[4] if over else r[5])) if won else -1.0
+        rows.append({"mk": r[0], "e": abs(float(e)), "over": over, "won": won, "u": u, "side": max(float(p), 1 - float(p)), "day": r[6]})
+    def rec(sub):
+        n = len(sub); w = sum(x["won"] for x in sub); un = sum(x["u"] for x in sub)
+        return {"n": n, "won": w, "units": round(un, 1), "roi": round(un / n, 3) if n else None}
+    out = {"edge": [], "calib": [], "side": {}, "market": {}, "recent": {}}
+    for lo, hi in ((0.0, 0.05), (0.05, 0.10), (0.10, 0.15), (0.15, 1.0)):
+        out["edge"].append(dict(rec([x for x in rows if lo <= x["e"] < hi]), lo=lo, hi=hi))
+    for lo, hi in ((0.5, 0.55), (0.55, 0.60), (0.60, 0.65), (0.65, 1.01)):
+        sub = [x for x in rows if lo <= x["side"] < hi]
+        if sub:
+            out["calib"].append({"lo": lo, "hi": min(hi, 1.0), "n": len(sub), "exp": round(sum(x["side"] for x in sub) / len(sub), 3), "act": round(sum(x["won"] for x in sub) / len(sub), 3)})
+    picks = [x for x in rows if x["e"] >= 0.05]
+    out["side"] = {"over": rec([x for x in picks if x["over"]]), "under": rec([x for x in picks if not x["over"]])}
+    for mk in MARKETS:
+        sub = [x for x in picks if x["mk"] == mk]
+        if sub:
+            out["market"][mk] = rec(sub)
+    picks.sort(key=lambda x: x["day"])
+    for k in (50, 200):
+        if len(picks) >= k:
+            out["recent"][str(k)] = rec(picks[-k:])
+    out["picks"] = rec(picks)
+    return out
 
 
 def _log_and_grade(cur, week, rows, cur_rows):
@@ -477,7 +537,12 @@ def job_props():
     fresh_t = {t.get("espn") for t in totals}
     totals += [dict(t, locked=True) for t in prev.get("totals") or [] if t.get("espn") not in fresh_t and keep(t.get("espn"))]
     book = _book_grade(cur, keys, tables, games)
-    out = {"season": cur, "week": week, "updated": now_iso(), "calib": {"shrink": (book or {}).get("shrink", 1.0)} if (book or {}).get("shrink") else None, "book": book, "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
+    live_items = collections.defaultdict(list)
+    for (y, _wk, _nm, _tm, mk), (pr, act) in keys.items():
+        if y == cur and mk in tables and pr > 0:
+            live_items[mk].append((pr, act, tables[mk]["ratio"][_band(tables[mk], pr)]))
+    liverange = {mk: _range_diag(v) for mk, v in live_items.items() if len(v) >= 30}
+    out = {"season": cur, "week": week, "updated": now_iso(), "calib": {"shrink": (book or {}).get("shrink", 1.0)} if (book or {}).get("shrink") else None, "book": book, "liveRange": liverange, "props": rows, "tables": tables, "totals": totals, "live": live, "kalshiEdges": kedges, "kalshiRecord": krec,
            "backtest": {"props": back, "seasons": [cur - 3, cur - 1], "totals": _totals_backtest(thist, cur - 7, cur - 1)},
            "source": "nflverse (CC-BY 4.0) weekly player stats and schedules; ESPN injury report"}
     write("props/nfl.json", out)

@@ -1,5 +1,5 @@
-// Site entry point on Cloudflare Workers. Static files (pages, data JSON) are served straight
-// from the assets upload; only requests that match no file reach this code.
+// Site entry point on Cloudflare Workers. wrangler.jsonc sets assets.run_worker_first so pages and the API pass through here
+// (and get the CSP and cache headers below); /assets, /data and other static files skip it and use the _headers file.
 import { handleQuote } from "./quote.js";
 import { handleEspn } from "./sports.js";
 import { handleLive } from "./live.js";
@@ -53,17 +53,29 @@ function finish(resp, url) {
   return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers: h });
 }
 
+/* One canonical address: https://nathanskown.dev. www and plain http get a permanent redirect that keeps the path and query.
+   Local development and the *.workers.dev preview address are left alone. */
+const APEX = "nathanskown.dev";
+export function canonicalRedirect(url) {
+  const host = url.hostname.toLowerCase();
+  const ours = host === APEX || host === "www." + APEX;
+  if (!ours) return null;
+  if (host === "www." + APEX || url.protocol === "http:") {
+    const to = new URL(url.toString());
+    to.protocol = "https:";
+    to.hostname = APEX;
+    to.port = "";
+    return new Response(null, { status: 301, headers: { location: to.toString(), "cache-control": "public, max-age=3600" } });
+  }
+  return null;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const local = /^(localhost|127\.0\.0\.1)$/.test(url.hostname);
 
-    // one canonical address: https, no www
-    if (!local && (url.protocol === "http:" || url.hostname === "www.nathanskown.dev")) {
-      url.protocol = "https:";
-      url.hostname = "nathanskown.dev";
-      return new Response(null, { status: 301, headers: { location: url.toString(), "strict-transport-security": SECURITY["strict-transport-security"] } });
-    }
+    const moved = canonicalRedirect(url);
+    if (moved) return finish(moved, url);
 
     let resp;
     if (url.pathname === "/api/quote") resp = await handleQuote(request, ctx);

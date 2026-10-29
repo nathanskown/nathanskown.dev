@@ -845,6 +845,56 @@ def job_nhlgoalies():
     return out
 
 
+def job_nhlskaters():
+    """Every regular-season NHL game's skaters from the NHL's own API (free): minutes, shots on goal, goals, assists.
+    history/nhl_skaters_{year}.json {nhl game id: [date, home abbr, away abbr, home skaters, away skaters]},
+    skater = [player id, name, position, seconds, shots on goal, goals, assists]. year = the season's end year."""
+    out = {}
+    cur = (read("model/nhl.json") or {}).get("season") or 2026
+    budget = time.time() + 300 * 60
+    for y in range(max(2023, cur - 3), cur + 2):
+        name = f"history/nhl_skaters_{y}.json"
+        store = read(name) or {"year": y, "g": {}}
+        if y < cur and len(store["g"]) > 1000:
+            out[y] = "kept"
+            continue
+        miss = 0
+        for n in range(1, 1400):
+            if time.time() > budget:
+                break
+            gid = f"{y - 1}02{n:04d}"
+            if gid in store["g"]:
+                continue
+            try:
+                b = get(f"https://api-web.nhle.com/v1/gamecenter/{gid}/boxscore", timeout=30)
+            except Exception:
+                miss += 1
+                if miss > 25:
+                    break
+                continue
+            if b.get("gameState") not in ("OFF", "FINAL"):
+                continue
+            miss = 0
+            pg = b.get("playerByGameStats") or {}
+
+            def skaters(side):
+                rows = []
+                for grp in ("forwards", "defense"):
+                    for sk in ((pg.get(side) or {}).get(grp) or []):
+                        toi = str(sk.get("toi") or "0:00").split(":")
+                        sec = int(toi[0]) * 60 + int(toi[1]) if len(toi) == 2 and toi[0].isdigit() else 0
+                        rows.append([sk.get("playerId"), (sk.get("name") or {}).get("default"), sk.get("position"), sec,
+                                     sk.get("sog") or 0, sk.get("goals") or 0, sk.get("assists") or 0])
+                return rows
+            store["g"][gid] = [b.get("gameDate"), (b.get("homeTeam") or {}).get("abbrev"), (b.get("awayTeam") or {}).get("abbrev"),
+                               skaters("homeTeam"), skaters("awayTeam")]
+            if len(store["g"]) % 300 == 0:
+                write(name, store)
+        write(name, store)
+        out[y] = len(store["g"])
+    return out
+
+
 def job_torvik():
     """Can the runners reach barttorvik.com (free college basketball ratings)? Saves status and the first bytes only."""
     out = {}
