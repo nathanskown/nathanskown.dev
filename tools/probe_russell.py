@@ -66,6 +66,20 @@ def vanguard(fund, ticker):
         try_(f"{fund} vanguard{qs}", f)
 
 
+def discover(fund, pid, slug, file):
+    base = f"https://www.ishares.com/us/products/{pid}/{slug}"
+    r = S.get(base, timeout=40)
+    html = r.text
+    print(f"[{fund} product page] HTTP {r.status_code} bytes={len(html)}")
+    for m in sorted(set(re.findall(r'[^"\'\s<>]*\.ajax\?[^"\'\s<>]*', html)))[:25]:
+        print("   link:", m[:200])
+    for m in sorted(set(re.findall(r'[^"\'\s<>]*fileType=csv[^"\'\s<>]*', html)))[:10]:
+        print("   csv:", m[:200])
+    for m in re.finditer(r'data-link="([^"]*)"', html):
+        if "ajax" in m.group(1) or "csv" in m.group(1): print("   data-link:", m.group(1)[:200])
+
+
+discover("r1000", 239707, "ishares-russell-1000-etf", "IWB")
 ishares("r1000", 239707, "ishares-russell-1000-etf", "IWB")
 ishares("r2000", 239710, "ishares-russell-2000-etf", "IWM")
 vanguard("r1000", "VONE")
