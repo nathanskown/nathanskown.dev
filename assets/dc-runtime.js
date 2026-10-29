@@ -379,9 +379,10 @@
         return r.json();
       });
     },
-    /* The 30 core tickers are written to a file each morning. Lay the live price on top of that file so "today" is
-       really today: price, change, charts and the numbers that depend on price move; everything else stays from the file.
-       If the live call fails the morning file is shown unchanged. Resolves to the (possibly updated) q. */
+    /* Core-ticker quote files are built once a night, so on their own they show the previous close as if it were
+       today's. overlayLive asks /api/quote for a fresh price and merges it over the file: price, change, charts and the
+       numbers that depend on price move; everything else stays from the file. Resolves to the updated q, or to the
+       same q object when the live call fails (callers compare with !== to know whether the overlay landed). */
     overlayLive: function (q) {
       if (!q || !q.sym) return Promise.resolve(q);
       return fetch('/api/quote?part=price&sym=' + encodeURIComponent(q.sym)).then(function (r) { return r.ok ? r.json() : null; }).then(function (P) {

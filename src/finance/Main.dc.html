@@ -462,8 +462,12 @@ class Component extends DCLogic {
     var core = (idx || (this.state || {}).index || { tickers: [] }).tickers.some(function (t) { return t.sym === sym; });
     if (core) {  // core watch list: built nightly, loads instantly
       DC.load('/data/finance/quotes/' + encodeURIComponent(sym) + '.json').then(function (q) {
-        self.setState({ q: q, notTracked: null });   // show the morning file at once, then swap in live prices
-        DC.overlayLive(q).then(function (lq) { if (lq !== q && (self.state || {}).sym === sym) self.setState({ q: lq }); });
+        // show the nightly file at once, then replace its price with a live one (the file is last night's close)
+        self.setState({ q: Object.assign({}, q, { liveChecking: true }), notTracked: null });
+        DC.overlayLive(q).then(function (lq) {
+          if ((self.state || {}).sym !== sym) return;
+          self.setState({ q: lq !== q ? lq : Object.assign({}, q, { liveFailed: true }) });
+        });
       }).catch(function () { self.live(sym); });
       return;
     }
@@ -500,7 +504,7 @@ class Component extends DCLogic {
         var inIdx = function (k) { return (M[k] || []).indexOf(sym) >= 0; };
         self.setState({ loading: null, notTracked: null, q: {
           sym: sym, name: q.name || (hit && hit.name) || sym, exch: q.exch || (hit && hit.exch), sector: (M.sectors || {})[sym] || (Fl && Fl.sic) || null,
-          updated: P.updated, quote: q, charts: P.charts, ytd: P.ytd, y1: P.y1, news: P.news,
+          updated: P.updated, liveOverlay: true, quote: q, charts: P.charts, ytd: P.ytd, y1: P.y1, news: P.news,
           stats: { mcap: mcap, pe: pe, divYield: P.stats.divYield, hi52: q.hi52, lo52: q.lo52, avgVol3m: P.stats.avgVol3m, beta: P.stats.beta,
             shares: so, sharesAsOf: Fn ? Fn.sharesAsOf : null, epsTTM: Fn ? Fn.epsTTM : null },
           fin: Fn ? Fn.fin : [], insider: Fl ? Fl.insider : { rows: [] }, holders5: Fl ? Fl.holders5 : [], eightK: Fl ? Fl.eightK : [],
@@ -662,7 +666,16 @@ class Component extends DCLogic {
     var mv = function (x) { return { n: F.firm(x.n), note: x.note, v: (x.sh >= 0 ? '+' : '−') + F.big(Math.abs(x.sh)) }; };
     var q = Q.quote || {};
     var quarter = function (p) { var d = new Date(p + 'T12:00:00Z'); return 'Q' + (Math.floor(d.getUTCMonth() / 3) + 1) + ' ' + d.getUTCFullYear(); };
-    var labels = { '1D': 'today', '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', 'YTD': 'year to date', '1Y': 'past year', '5Y': 'past 5 years' };
+    // honest labels: a live price is "today" (and delayed); a nightly-file price is last night's close unless its date is today
+    var etDay = function (ts) { try { return new Date(ts * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch (e) { return ''; } };
+    var isLive = !!Q.liveOverlay, sameDay = q.time && etDay(q.time) === etDay(Date.now() / 1000);
+    var sessionWord = sameDay ? 'today' : 'since the prior close';
+    var when = q.time ? F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL : '';
+    var asOfText = !q.time ? '' : isLive ? 'Live quote as of ' + when + ' · delayed about 15 minutes'
+      : Q.liveChecking ? 'Checking for a live quote… showing the nightly file, as of ' + when
+      : Q.liveFailed ? 'Live quote unavailable, showing the nightly file as of ' + when + (sameDay ? '' : ' (the last close)')
+      : 'As of ' + when + ' · delayed';
+    var labels = { '1D': sessionWord, '5D': 'past 5 days', '1M': 'past month', '6M': 'past 6 months', 'YTD': 'year to date', '1Y': 'past year', '5Y': 'past 5 years' };
     return Object.assign(base, {
       sym: Q.sym, name: Q.name, irHref: 'IR.dc.html?sym=' + encodeURIComponent(Q.sym), tearHref: 'IR.dc.html?print=1&sym=' + encodeURIComponent(Q.sym), subline: [Q.exch, Q.sector].filter(Boolean).join(' · '),
       has52: S.lo52 != null && S.hi52 != null && S.hi52 > S.lo52 && q.price != null, lo52: F.usd(S.lo52, 2), hi52: F.usd(S.hi52, 2),
@@ -670,8 +683,8 @@ class Component extends DCLogic {
       pos52Text: S.hi52 > S.lo52 && q.price != null ? 'Price is ' + Math.round(Math.max(0, Math.min(100, (q.price - S.lo52) / (S.hi52 - S.lo52) * 100))) + '% of the way from the 52-week low to the high' : '',
       priceText: F.usd(q.price, 2), trendColor: up ? UP : DN, trendFill: up ? 'rgba(74,222,128,0.10)' : 'rgba(255,95,86,0.10)',
       trendArrow: up ? '▲' : '▼', chgText: dChg === null ? '—' : (up ? '+' : '−') + '$' + F.n(Math.abs(dChg), 2), pctText: F.pct(dChg !== null ? dChg / dPrev * 100 : null),
-      rangeLabel: 'today',
-      rangeChgText: vals.length > 1 ? (rUp ? '▲ +' : '▼ −') + F.n(Math.abs(chg / first * 100), 2) + '% ' + labels[cur] : '', rangeColor: rUp ? UP : DN, asOf: (q.time ? 'As of ' + F.day(q.time) + ' · ' + F.time(q.time) + ' ' + window.TZL + ' · delayed' : '') + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
+      rangeLabel: sessionWord,
+      rangeChgText: vals.length > 1 ? (rUp ? '▲ +' : '▼ −') + F.n(Math.abs(chg / first * 100), 2) + '% ' + labels[cur] : '', rangeColor: rUp ? UP : DN, asOf: asOfText + ((Q.partial || []).length ? ' · ' + Q.partial.join(' and ') + ' unavailable right now' : ''),
       ranges: ranges, linePath: line, areaPath: line + ' L800,260 L0,260 Z', xLabels: xLabels,
       yMax: F.n(mx, 2), yMid: F.n((mx + mn) / 2, 2), yMin: F.n(mn, 2), stats: stats,
       finHead: fq.map(function (x) { return qlab(x.end); }), fin: fin, noFin: !fq.length, noFinText: Q.secBusy ? 'The SEC\'s data service is rate-limiting requests right now. Reload in a couple of minutes.' : Q.staleTags ? 'This company\'s recent filings use XBRL tags the SEC\'s standardized data API does not return, so there are no current quarterly figures to show.' : 'No quarterly XBRL financials on file (common for ETFs, funds and foreign filers).', peers: peers, hasPeers: peers.length > 1,
