@@ -237,6 +237,21 @@
 <thead><tr><th scope="col" class="l">Test</th><th scope="col">Skater games</th><th scope="col">Range score</th><th scope="col">Minutes-only baseline</th><sc-for list="{{trk.sg.heads}}" as="h" hint-placeholder-count="5"><th scope="col">{{h}}</th></sc-for></tr></thead>
 <tbody><sc-for list="{{trk.sg.rows}}" as="r" hint-placeholder-count="3"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.rps}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
 </table></div>
+<sc-if value="{{trk.sg.hasGoal}}" hint-placeholder-val="{{false}}">
+<h3 style="margin: 16px 0 6px; font-size: 14px">Anytime goal</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Test</th><th scope="col">Skater games</th><th scope="col">Brier score</th><th scope="col">League-rate baseline</th><th scope="col">Under 10%</th><th scope="col">10–20%</th><th scope="col">20–30%</th><th scope="col">30%+</th></tr></thead>
+<tbody><sc-for list="{{trk.sg.goalRows}}" as="r" hint-placeholder-count="2"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.brier}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
+</table></div>
+</sc-if>
+<sc-if value="{{trk.sg.hasSave}}" hint-placeholder-val="{{false}}">
+<h3 style="margin: 16px 0 6px; font-size: 14px">Goalie saves</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Test</th><th scope="col">Starts</th><th scope="col">Range score</th><th scope="col">League-distribution baseline</th><th scope="col">20+</th><th scope="col">25+</th><th scope="col">30+</th><th scope="col">35+</th></tr></thead>
+<tbody><sc-for list="{{trk.sg.saveRows}}" as="r" hint-placeholder-count="2"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.rps}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 6px 0 0">Saves are graded for goalies who started and played at least 20 minutes, using the pre-game tables. Which goalie starts is the larger uncertainty and is not graded here.</p>
+</sc-if>
 <p class="s-note" style="margin: 6px 0 0">{{trk.sg.note}}</p>
 </div>
 </section>
@@ -507,7 +522,7 @@ class Component extends DCLogic {
       var pc = function (v) { return v === null || v === undefined ? '—' : Math.round(v * 100) + '%'; };
       var L = ((S.index || {}).leagues) || {};
       var nm = function (k, id) { var t = ((L[k] || []).filter(function (x) { return x.id === id; })[0]) || {}; return { name: t.short || t.name || id, abbr: t.abbr || id }; };
-      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '', pp: { has: false }, sg: { has: false } };
+      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '', pp: { has: false }, sg: { has: false, hasGoal: false, hasSave: false } };
       var pickRow = function (k, r, graded) {
         var h = nm(k, r.h), a = nm(k, r.a), fav = r.p >= 0.5 ? h : a, fp = Math.max(r.p, 1 - r.p);
         var row = { game: a.name + ' at ' + h.name + (r.n ? ' (neutral)' : ''), lg: SD.LEAGUES[k].short, href: SD.gameHref ? SD.gameHref(k, r.id) : '#', date: F.day(r.d + ':00Z'), pick: fav.abbr + ' ' + Math.abs(r.m).toFixed(1), prob: pc(fp) };
@@ -592,6 +607,12 @@ class Component extends DCLogic {
         var lb = NX.backtest[bts[bts.length - 1]];
         sgp.cards = [{ k: 'Range score, latest test', v: lb.rps, s: 'minutes-only baseline ' + (lb.baselineRps || '—') + ' · lower is better' }, { k: 'Live graded', v: LL && LL.n ? LL.n : 0, s: (LL && LL.pending ? LL.pending : (NX.props || []).length) + ' projections waiting on their games' }];
         sgp.note = 'Range score is the ranked probability score: the average squared gap between the predicted and actual cumulative chances of each shot count, lower is better (CRPS for counts). The live row starts empty and fills as games finish; nothing is back-filled.';
+        var bg = NX.backtestGoals || {}, bk = NX.backtestSaves || {}, pcx = function (v) { return Math.round(v * 100) + '%'; };
+        sgp.goalRows = Object.keys(bg).sort().map(function (y) { var b = bg[y], cc = {}; (b.calib || []).forEach(function (c) { cc[c.lo] = pcx(c.pred) + ' said, ' + pcx(c.act) + ' did'; });
+          return { label: 'Season ending ' + y, n: b.n, brier: b.brier, base: b.leagueBrier, cells: [0, 0.1, 0.2, 0.3].map(function (k) { return cc[k] || '—'; }) }; });
+        sgp.hasGoal = sgp.goalRows.length > 0;
+        sgp.saveRows = Object.keys(bk).sort().map(function (y) { var b = bk[y]; return { label: 'Season ending ' + y, n: b.n, rps: b.rps, base: b.baselineRps, cells: b.ladder.map(function (l) { return pcx(l.pred) + ' said, ' + pcx(l.act) + ' did'; }) }; });
+        sgp.hasSave = sgp.saveRows.length > 0;
         tr.sg = sgp;
       }
       out.trk = tr;
