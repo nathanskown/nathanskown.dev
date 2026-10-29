@@ -4,6 +4,8 @@ on:
     branches: [russell-lists]
     paths: [".github/workflows/probe-russell.yml", "tools/probe_russell.py"]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -12,4 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install requests
-      - run: python tools/probe_russell.py
+      - run: python tools/probe_russell.py 2>&1 | tee /tmp/probe.txt
+      - name: Publish results to branch probe-output
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan probe-output; git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/probe.txt probe.txt; git add probe.txt; git commit -qm "probe results"; git push -f origin probe-output
