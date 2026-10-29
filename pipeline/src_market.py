@@ -170,19 +170,39 @@ def index_members(page):
     raise RuntimeError(f"no constituents table on {page}")
 
 
+# iShares publishes each fund's current holdings at a fixed "latest-holdings.csv" address (the old numbered .ajax download
+# started returning the HTML product page instead, which is why the Russell lists were empty). The file opens with a few
+# fund-info lines ("Fund Holdings as of,..."), a blank line, then the Ticker table.
 ISHARES = {
-    "r1000": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/1467271812596.ajax?fileType=csv&fileName=IWB_holdings&dataType=fund",
-    "r2000": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/1467271812596.ajax?fileType=csv&fileName=IWM_holdings&dataType=fund",
+    "r1000": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/latest-holdings.csv",
+    "r2000": "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/latest-holdings.csv",
 }
+RUSSELL_ASOF = {}   # key -> "YYYY-MM-DD" holdings date of the file last parsed
 # iShares writes share classes without the dot (BRKB); Yahoo and the SEC list use BRK-B
 ISHARES_FIX = {"BRKB": "BRK-B", "BFB": "BF-B", "BFA": "BF-A", "LENB": "LEN-B", "HEIA": "HEI-A", "MOGA": "MOG-A",
                "UHALB": "UHAL-B", "CWENA": "CWEN-A", "GEFB": "GEF-B", "CRDA": "CRD-A", "LGFA": "LGF-A", "LGFB": "LGF-B"}
 
 
-def russell_members(key):
-    """Russell 1000 / 2000 constituents from the iShares IWB / IWM daily holdings file -> [ticker]."""
+def _asof_date(text):
+    m = re.search(r'Fund Holdings as of\s*,\s*"?([A-Za-z]{3,9} \d{1,2}, \d{4})', text[:2000])
+    if not m:
+        return None
+    from datetime import datetime as _dt
+    for fmt in ("%b %d, %Y", "%B %d, %Y"):
+        try:
+            return _dt.strptime(m.group(1), fmt).date().isoformat()
+        except ValueError:
+            pass
+    return None
+
+
+def parse_ishares_holdings(text, key):
+    """iShares holdings CSV text -> (sorted tickers, as-of date). Raises when it is not the holdings table (an HTML
+    page, a changed layout) or the list is implausibly short, so the caller records a failure instead of storing junk."""
     import csv as _csv
-    text = get(ISHARES[key], kind="text", timeout=40).lstrip("\ufeff")
+    text = text.lstrip("\ufeff")
+    if text.lstrip()[:15].lower().startswith(("<!doctype", "<html")):
+        raise RuntimeError(f"iShares {key} returned a web page, not the holdings file")
     lines = [ln.lstrip("\ufeff") for ln in text.splitlines()]
     start = next((i for i, ln in enumerate(lines) if re.match(r'^\s*"?Ticker"?\s*,', ln)), None)
     if start is None:
@@ -192,7 +212,17 @@ def russell_members(key):
         t = (row.get("Ticker") or "").strip().upper()
         if not t or t == "-" or (row.get("Asset Class") or "").strip() != "Equity":
             continue
-        out.append(ISHARES_FIX.get(t, t.replace(".", "-")))
+        t = ISHARES_FIX.get(t, t.replace(".", "-").replace(" ", "-"))   # "BRK B" / "MOG A" -> BRK-B / MOG-A
+        out.append(t)
     if len(out) < (800 if key == "r1000" else 1500):
         raise RuntimeError(f"iShares {key} list looks short: {len(out)}")
-    return sorted(set(out))
+    return sorted(set(out)), _asof_date(text)
+
+
+def russell_members(key):
+    """Russell 1000 / 2000 constituents from the iShares IWB / IWM daily holdings file -> [ticker].
+    The file's as-of date is left in RUSSELL_ASOF[key]."""
+    text = get(ISHARES[key], kind="text", timeout=60)
+    tickers, asof = parse_ishares_holdings(text, key)
+    RUSSELL_ASOF[key] = asof
+    return tickers

@@ -152,14 +152,22 @@ th{color:var(--dim);font-weight:500;font-size:12.5px}
     var stale = (E.upcoming || []).filter(function (x) { return x.date < today; });
     checks.push(['Earnings calendar has no past dates under "upcoming"', !stale.length, stale.length + ' stale rows']);
     var ru = ['r1000', 'r2000'].filter(function (k) { return !(MEM[k] || []).length; });
-    checks.push(['Russell 1000 and 2000 member lists are filled', !ru.length, ru.length ? ru.join(', ') + ' empty (iShares download failing)' : 'ok']);
+    var ruOld = ['r1000', 'r2000'].filter(function (k) {
+      var d = (MEM.russellAsOf || {})[k]; return (MEM[k] || []).length && d && (Date.now() - new Date(d + 'T12:00:00Z').getTime()) / 86400000 > 7;
+    });
+    var ruStale = ['r1000', 'r2000'].filter(function (k) { return (MEM.russellFresh || {})[k] === false && (MEM[k] || []).length; });
+    checks.push(['Russell 1000 and 2000 member lists are filled and current', !ru.length && !ruOld.length,
+      ru.length ? ru.join(', ') + ' EMPTY: the iShares holdings download is failing, so Russell index membership shows as unavailable on quote pages'
+        : ruOld.length ? ruOld.join(', ') + ' older than 7 days (holdings dated ' + ru.concat(['r1000', 'r2000']).map(function (k) { return (MEM.russellAsOf || {})[k] || '?'; }).join(' / ') + ')'
+        : (ruStale.length ? 'ok, but the latest download failed for ' + ruStale.join(', ') + ' (showing the last good list) · ' : 'ok · ') + 'holdings dated ' + ['r1000', 'r2000'].map(function (k) { return (MEM.russellAsOf || {})[k] || '?'; }).join(' / '),
+      ru.length ? 'bad' : '']);
     var hl = (HL.items || [])[0], hAge = hl ? (Date.now() - new Date(hl.published).getTime()) / 3600000 : 999, wk = new Date().getDay() % 6 === 0;
     checks.push(['Newest headline is under 6 hours old (weekdays)', wk || hAge < 6, hl ? hAge.toFixed(1) + ' hours old' : 'no headlines']);
     checks.push(['Digest was built today (New York date)', !DG.date || DG.date === today || wk, 'digest date ' + (DG.date || 'missing')]);
     checks.push(['Digest has an auto-written story', !!((DG.auto || {}).story), (DG.auto || {}).story ? 'ok' : 'missing']);
     var edOld = ED.date && DG.date && ED.date !== DG.date;
     checks.push(['Hand-written editorial is for today (optional)', !edOld, edOld ? 'last written for ' + ED.date + '; the page uses the auto-written story' : 'ok']);
-    $('checks').innerHTML = checks.map(function (c) { var k = c[1] ? 'ok' : 'warn'; tally(k); return row([esc(c[0]), pill(k, c[1] ? 'PASS' : 'CHECK'), esc(c[2])]); }).join('');
+    $('checks').innerHTML = checks.map(function (c) { var k = c[1] ? 'ok' : (c[3] === 'bad' ? 'bad' : 'warn'); tally(k); return row([esc(c[0]), pill(k, c[1] ? 'PASS' : (k === 'bad' ? 'FAILING' : 'CHECK')), esc(c[2])]); }).join('');
     lead();
   });
 })();

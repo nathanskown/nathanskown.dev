@@ -67,8 +67,16 @@ def build_members():
     if not out["sp500"]:
         raise RuntimeError("S&P 500 list empty")
     old = read("members.json", {}) or {}
+    asof, fresh = dict(old.get("russellAsOf") or {}), {}
     for key in ("r1000", "r2000"):  # Russell lists from iShares; keep yesterday's list if today's download fails
-        out[key] = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None) or old.get(key, [])
+        got = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None)
+        out[key] = got or old.get(key, [])
+        fresh[key] = bool(got)
+        if got:
+            asof[key] = mk.RUSSELL_ASOF.get(key) or today().isoformat()
+    # the pages and /status read these: a stale or empty list is shown as such, never silently dropped
+    out["russellAsOf"] = asof
+    out["russellFresh"] = fresh
     log_index_changes(old, out)
     write("members.json", out)
     return out
@@ -305,9 +313,9 @@ def quote_page(sym, info, mem, spx_daily, cal):
     news = attempt(f"news {sym}", mi.feed, f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={sym}&region=US&lang=en-US", default=[]) or []
     idx = [{"name": "S&P 500", "member": sym in mem.get("sp500", [])}, {"name": "S&P MidCap 400", "member": sym in mem.get("sp400", [])},
            {"name": "S&P SmallCap 600", "member": sym in mem.get("sp600", [])}]
-    if mem.get("r1000") or mem.get("r2000"):
-        idx += [{"name": "Russell 1000", "member": sym in mem.get("r1000", [])},
-                {"name": "Russell 2000", "member": sym in mem.get("r2000", [])}]
+    # an empty list means "membership unavailable" (member: None), not "not a member"
+    idx += [{"name": "Russell 1000", "member": (sym in mem["r1000"]) if mem.get("r1000") else None},
+            {"name": "Russell 2000", "member": (sym in mem["r2000"]) if mem.get("r2000") else None}]
     eight_k = [{"date": f["filingDate"], "items": f.get("items"), "url": sec.filing_url(cik, f["accessionNumber"], f["primaryDocument"])}
                for f in filings if f["form"] == "8-K"][:6]
     return {"sym": sym, "name": q["name"] or title, "exch": q["exch"], "sector": mem.get("sectors", {}).get(sym) or (sub or {}).get("sicDescription"),
