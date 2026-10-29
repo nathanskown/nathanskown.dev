@@ -295,8 +295,9 @@ def _et(date, hh, mm=0):
     return datetime.combine(date, dtime(hh, mm), tzinfo=ET).astimezone(timezone.utc)
 
 
-def price_at(t, c, when):
-    """Close of the last 5-minute bar that has finished by `when` (UTC epoch seconds in t)."""
+def price_at(t, c, when, tol=1200):
+    """Close of the last 5-minute bar that has finished by `when` (bar starts are UTC epoch seconds in t).
+    With tol=None any earlier bar of the series counts (the last reading before a close); otherwise the bar must be within tol seconds."""
     ts = when.timestamp()
     best = None
     for k, start in enumerate(t):
@@ -304,7 +305,7 @@ def price_at(t, c, when):
             best = k
         else:
             break
-    return (c[best], t[best] + 300) if best is not None and ts - (t[best] + 300) <= 1200 else (None, None)
+    return (c[best], t[best] + 300) if best is not None and (tol is None or ts - (t[best] + 300) <= tol) else (None, None)
 
 
 def intraday_moves(t, c, release):
@@ -314,7 +315,7 @@ def intraday_moves(t, c, release):
     for key, when in (("p5", release + timedelta(minutes=5)), ("p30", release + timedelta(minutes=30)),
                       ("pc", _et(release.astimezone(ET).date(), 16, 0))):
         # a point in the future is not measured yet
-        out[key] = price_at(t, c, when)[0] if when <= datetime.now(timezone.utc) else None
+        out[key] = price_at(t, c, when, None if key == "pc" else 1200)[0] if when <= datetime.now(timezone.utc) else None
     return out
 
 
@@ -358,11 +359,12 @@ def reaction(date, bars, daily, ty2, today):
     out = {"measured": now_iso(), "assets": {}, "intraday": True, "final": False}
     complete = True
     for key, label, sym, unit in ASSETS:
-        a = {"label": label, "unit": unit}
+        a = {"label": label, "unit": unit, "sym": sym}
         ch = bars.get(sym)
         kind = "zt" if key == "us2y" else ""
         if ch and ch["t"]:
             mv = intraday_moves(ch["t"], ch["c"], release)
+            a["base"] = mv["base"]
             for k2, src in (("m5", "p5"), ("m30", "p30"), ("close", "pc")):
                 a[k2] = _move(unit, mv["base"], mv[src], kind)
             if mv["base"] is None:
