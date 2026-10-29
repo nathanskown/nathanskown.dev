@@ -381,3 +381,16 @@ body.has-tape{padding-bottom:34px}
 .t section.t-panel[aria-label="Results"]{min-height:520px}
 .t section[aria-label="Headline indicators"]{min-height:332px}
 @media (max-width:760px){.t section[aria-label="Headline indicators"]{min-height:1300px}}
+/* redline */
+.t .rl{white-space:pre-wrap;word-wrap:break-word;font-size:15px;line-height:1.75;color:var(--wh);max-width:860px}
+.t .rl .ins{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;background:rgba(74,222,128,.14);color:#9ff0bd}
+.t .rl .del{text-decoration:line-through;text-decoration-thickness:2px;background:rgba(255,95,86,.14);color:#ff9a92}
+.t .rl-sw{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--dim)}
+.t .rl-sw ins{text-decoration:underline;text-decoration-thickness:2px;background:rgba(74,222,128,.14);color:#9ff0bd;padding:0 4px}
+.t .rl-sw del{text-decoration:line-through;text-decoration-thickness:2px;background:rgba(255,95,86,.14);color:#ff9a92;padding:0 4px}
+.t .fd-btn{min-height:36px;padding:0 12px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font:inherit;font-size:13px}
+.t .fd-btn:hover{color:var(--hi);border-color:var(--a)}
+.t .fd-btn[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
+.t .fd-pt{display:grid;grid-template-columns:150px 1fr;gap:4px 14px;padding:9px 0;border-bottom:1px solid var(--line2)}
+@media (max-width:640px){.t .fd-pt{grid-template-columns:1fr}}
+.t .fd-topic{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2)}

@@ -1416,3 +1416,9 @@ def notes():
     from . import notes as _notes
     n = _notes.main()
     record("data notes", True, note=(n or {}).get("month") or "no note due")
+
+
+def fed():
+    """Fed Day Redline: FOMC statements, their word-level changes and the market reaction (pipeline/fed.py)."""
+    from . import fed as _fed
+    return _fed.job_fed()
