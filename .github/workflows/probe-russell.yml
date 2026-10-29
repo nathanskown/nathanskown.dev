@@ -1,0 +1,15 @@
+name: Probe Russell sources
+on:
+  push:
+    branches: [russell-lists]
+    paths: [".github/workflows/probe-russell.yml", "tools/probe_russell.py"]
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - run: python tools/probe_russell.py
