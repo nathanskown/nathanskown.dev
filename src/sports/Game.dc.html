@@ -147,8 +147,8 @@
 <sc-for list="{{pp.teams}}" as="t" hint-placeholder-count="2">
 <h3 style="margin: 14px 0 6px; font-size: 13px; letter-spacing: .08em">{{t.abbr}} <span class="dim" style="font-weight: 400; letter-spacing: 0">{{t.sub}}</span></h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Player</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Volume</th><th scope="col">Your line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
-<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td class="dim">{{r.vol}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Ceiling</th><th scope="col">Chance of reaching</th><th scope="col">Volume</th><th scope="col">Your line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td>{{r.ceil}}</td><td class="dim">{{r.ladder}}</td><td class="dim">{{r.vol}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
 <p class="s-note" style="margin: 10px 0 0">{{pp.note}}</p>
@@ -422,6 +422,14 @@ class Component extends DCLogic {
         var dp = mk === 'receptions' ? 1 : 0, tab = (X.tables || {})[mk];
         var shr = (X.calib && X.calib.shrink) || 1;
         var pOver = function (r, Lx) { if (!tab || !(Lx > 0)) return null; var qs = tab.ratio[r.band], n = 0; for (var i = 0; i < qs.length; i++) if (r.mean * qs[i] > Lx) n++; return 0.5 + (n / qs.length - 0.5) * shr; };
+        var LAD = { rec_yds: [30, 40, 50, 60, 70, 80, 100, 120], receptions: [2, 3, 4, 5, 6, 7, 8, 10], rush_yds: [30, 40, 50, 60, 80, 100, 120], pass_yds: [175, 200, 225, 250, 275, 300, 350] };
+        var ladder = function (r) {
+          if (!tab) return '—';
+          var qs = tab.ratio[r.band], out = [];
+          (LAD[mk] || []).forEach(function (T) { var n = 0, cut = mk === 'receptions' ? T - 0.5 : T; for (var i = 0; i < qs.length; i++) if (r.mean * qs[i] >= cut) n++; var pr = n / qs.length; if (pr >= 0.08 && pr <= 0.92) out.push({ T: T, pr: pr }); });
+          if (out.length > 3) { var mid = 0, bd = 9; out.forEach(function (o, i) { var d = Math.abs(o.pr - 0.5); if (d < bd) { bd = d; mid = i; } }); var a = Math.max(0, Math.min(out.length - 3, mid - 1)); out = out.slice(a, a + 3); }
+          return out.length ? out.map(function (o) { return o.T + '+ ' + Math.round(o.pr * 100) + '%'; }).join(' · ') : '—';
+        };
         var st = function (q) { return q === null ? 'dim' : q >= 0.58 ? 'color: var(--up); font-weight: 600' : ''; };
         var teams = [A, H].map(function (t) {
           var rs = mine.filter(function (r) { return r.market === mk && r.team === t.abbr; }).sort(function (a, b) { return b.median - a.median; });
@@ -429,20 +437,20 @@ class Component extends DCLogic {
           var w = (rs[0] && rs[0].without && rs[0].without.length) ? 'without ' + rs[0].without.join(', ') : '';
           return { abbr: t.abbr || '', sub: w, rows: rs.slice(0, 8).map(function (r) {
             var id = r.player + '|' + r.team + '|' + mk, Lx = parseFloat((S.lines || {})[id]), po = pOver(r, Lx);
-            return { player: r.player, pos: r.pos, median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp), vol: r.vol.toFixed(1) + ' ' + r.volLabel,
+            return { player: r.player, pos: r.pos, median: r.median.toFixed(dp), range: r.p25.toFixed(dp) + '–' + r.p75.toFixed(dp), ceil: tab ? (r.mean * tab.ratio[r.band][89]).toFixed(dp) : '—', ladder: ladder(r), vol: r.vol.toFixed(1) + ' ' + r.volLabel,
               line: (S.lines || {})[id] || '', lineLabel: 'Line for ' + r.player + ' ' + LBL[mk],
               over: po === null ? '—' : Math.round(po * 100) + '%', under: po === null ? '—' : Math.round((1 - po) * 100) + '%', overSt: st(po), underSt: st(po === null ? null : 1 - po),
               onLine: function (e) { var n = Object.assign({}, cmp.state.lines); if (e.target.value) n[id] = e.target.value; else delete n[id]; cmp.setState({ lines: n }); try { localStorage.setItem('nskn-prop-lines', JSON.stringify(n)); } catch (er) {} } };
           }) };
         }).filter(function (t) { return t.rows.length; });
-        var bt = ((X.backtest || {}).props || {})[mk], lv = (X.live || {})[mk], locked = mine[0].locked;
+        var bt = ((X.backtest || {}).props || {})[mk], lv = (X.live || {})[mk], locked = mine[0].locked, lr = (X.liveRange || {})[mk], liveTail = lr && lr.n >= 100 ? Math.round(lr.tail[1] * 100) + '% finished above the stated 90th percentile, 10% expected' : '';
         pp = { has: true, sub: (locked ? 'Final pre-game numbers' : 'Week ' + X.week + ' · updated ' + F.day(X.updated)),
           tabs: mks.map(function (k) { return { label: LBL[k], on: k === mk ? 'true' : 'false', cls: 's-tab' + (k === mk ? ' is-on' : ''), pick: function () { cmp.setState({ pm: k }); } }; }),
           teams: teams, none: !teams.length, noneText: 'No projections for this stat in this game.',
           note: 'Median and middle 50%: the projection (share of team volume times efficiency, adjusted for the opponent) times how players with projections of this size actually finished over the last four seasons. '
             + (bt ? 'Tested on ' + X.backtest.seasons[0] + '–' + X.backtest.seasons[1] + ', the median missed by ' + bt.mae + ' on average and ' + Math.round(bt.middle50 * 100) + '% of results landed in the middle 50%. ' : '')
             + (lv ? 'This season so far: ' + lv.n + ' graded, missed by ' + lv.mae + '. ' : '')
-            + 'Players ruled out or doubtful are left off and their volume goes to teammates who play. Enter a line to see the chance of going over it' + (shr < 1 ? ', pulled toward 50% by how much this season\'s graded projections overstated their confidence' : '') + ' (green at 58%+; 52.4% breaks even at -110). Lines you enter stay in this browser. A projection, not a pick.' };
+            + 'Players ruled out or doubtful are left off and their volume goes to teammates who play. Enter a line to see the chance of going over it' + (shr < 1 ? ', pulled toward 50% by how much this season\'s graded projections overstated their confidence' : '') + ' (green at 58%+; 52.4% breaks even at -110). Ceiling is the 90th percentile: one result in ten finishes above it. Chance of reaching is how often players with projections this size cleared each mark; the top of the range is checked against results on the Track record page' + (liveTail ? ' (this season ' + liveTail + ')' : '') + '. Lines you enter stay in this browser. A projection, not a pick.' };
       }
     }
 

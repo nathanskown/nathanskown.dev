@@ -184,6 +184,47 @@
 <p class="s-note" style="margin: 10px 0 0">A pick is refreshed every hour until the game starts, then frozen. What gets graded is the last projection made before the start.</p>
 </div>
 </section>
+<sc-if value="{{trk.pp.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Player stat projections">
+<div class="t-ph"><h2>NFL player stat projections</h2><span class="dim">{{trk.pp.sub}}</span></div>
+<div class="t-pb">
+<p class="s-note hi" style="margin: 0 0 10px">The projections on NFL game pages (receiving yards, receptions, rushing yards, passing yards), scored on results. Part 1 grades the whole predicted range, not only the middle. Part 2 shows what happens when those chances are compared with sportsbook prices after the fact. Prices are used only to grade; they never change a projection and are not shown.</p>
+<h3 style="margin: 4px 0 6px; font-size: 14px">1. Where results landed in the predicted range</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Stat</th><th scope="col">Graded</th><th scope="col">Range score, this season</th><th scope="col">Range score, past tests</th><th scope="col">Finished above the 75th</th><th scope="col">Above the 90th</th><th scope="col">Above the 95th</th></tr></thead>
+<tbody><sc-for list="{{trk.pp.range}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.mk}}</th><td>{{r.n}}</td><td>{{r.now}}</td><td>{{r.past}}</td><td>{{r.t75}}</td><td>{{r.t90}}</td><td>{{r.t95}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 6px 0 10px">Range score is the average pinball loss across 99 points of the range, the same family as CRPS: lower is better, in the stat’s own units, and it punishes a range that is too narrow as much as one that is too wide. If the ranges are honest, 25%, 10% and 5% of results finish above the 75th, 90th and 95th. This season’s figures against those targets, and against the past tests, show whether the upper end is trustworthy.</p>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Which tenth of the range the result fell in</th><sc-for list="{{trk.pp.tenths}}" as="h" hint-placeholder-count="10"><th scope="col">{{h}}</th></sc-for></tr></thead>
+<tbody><sc-for list="{{trk.pp.pit}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.mk}}</th><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="10"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 6px 0 14px">Each tenth should hold about 10% of results. Piles at either end mean ranges that are too narrow.</p>
+<sc-if value="{{trk.pp.hasBook}}" hint-placeholder-val="{{false}}">
+<h3 style="margin: 4px 0 6px; font-size: 14px">2. Picks graded against closing sportsbook prices</h3>
+<div class="s-grid">
+<sc-for list="{{trk.pp.cards}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
+</div>
+<h4 style="margin: 14px 0 6px; font-size: 13px">Is the stated chance honest?</h4>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Chance on the picked side</th><th scope="col">Picks</th><th scope="col">Stated</th><th scope="col">Hit</th></tr></thead>
+<tbody><sc-for list="{{trk.pp.calib}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td></tr></sc-for></tbody>
+</table></div>
+<h4 style="margin: 14px 0 6px; font-size: 13px">Does a bigger gap to the market pay?</h4>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Gap</th><th scope="col">Picks</th><th scope="col">Won</th><th scope="col">Units</th><th scope="col">Return per pick</th></tr></thead>
+<tbody><sc-for list="{{trk.pp.edge}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.won}}</td><td style="{{r.st}}">{{r.units}}</td><td style="{{r.st}}">{{r.roi}}</td></tr></sc-for></tbody>
+</table></div>
+<h4 style="margin: 14px 0 6px; font-size: 13px">Overs, unders, each stat and the latest picks</h4>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Split (gap of 5 points or more)</th><th scope="col">Picks</th><th scope="col">Won</th><th scope="col">Units</th><th scope="col">Return per pick</th></tr></thead>
+<tbody><sc-for list="{{trk.pp.splits}}" as="r" hint-placeholder-count="8"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.won}}</td><td style="{{r.st}}">{{r.units}}</td><td style="{{r.st}}">{{r.roi}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 6px 0 0">{{trk.pp.bookNote}}</p>
+</sc-if>
+</div>
+</section>
+</sc-if>
 <section class="t-panel" aria-label="Backtest">
 <div class="t-ph"><h2>Backtest (not a track record)</h2><span class="dim">{{trk.btSub}}</span></div>
 <div class="t-pb">
@@ -212,13 +253,29 @@
 <p>College football preseason ratings use returning production, the idea behind ESPN’s SP+. Each player’s share of his team’s passing, rushing and receiving, and defensive production last season is credited to his current team, so departures and transfers both count. Skill-position production carries the most weight. It improved held-out log loss in each of three test seasons. Both college leagues and college hockey also blend in program history: ratings from two and three seasons back pull last season’s rating a little toward them, as KenPom and SP+ do.</p>
 <p>In the NHL and both college leagues, each win probability is also blended with a FiveThirtyEight-style Elo rating (20% in college, 30% in the NHL). Elo moves after every game by a margin-of-victory multiplier and regresses toward average between seasons. It reacts to recent results differently from the main ratings, so the two make different mistakes, and the blend scored better on held-out seasons. The blend did not clear the bar in the NFL or NBA, so those leagues don’t use it.</p>
 <p>Two further steps passed the same held-out tests. NBA projections are blended with lineup strength, the summed pre-game value of the players expected to play (injury-report players counted by how likely they are to sit); it lowered held-out log loss in each of four test seasons. College basketball margins are stretched by a factor fitted on earlier seasons, because ratings pulled toward a starting point came out compressed (actual margins ran about 1.2 times the projected ones); it cut the held-out margin miss in every test season and leaves win chances essentially unchanged. NBA, NHL, college basketball and college football game pages also show a projected total from offense and defense ratings; checked on the newest complete season they miss by a little more than the closing total, so treat them as context.</p>
-<p>NFL game pages add player stat projections and a projected total. A player projection is volume times efficiency: a receiver’s share of his team’s targets times the team’s pass attempts times his yards per target (catch rate for receptions), a runner’s share of carries times team carries times yards per carry, and a quarterback’s share of attempts times yards per attempt. Shares and rates weight recent games most, are pulled toward position averages, and are adjusted for how many yards the opponent allows. The median and middle 50% are not guesses: they are the projection times how players with projections of that size actually finished in earlier seasons, so a sportsbook line can be turned into a measured over/under rate. Game totals come from separate offense and defense point ratings plus wind. Tested on past seasons, prop medians miss by about 23 receiving yards, 1.7 catches, 26 rushing yards and 63 passing yards, and totals miss by about 10.7 points against 10.4 for the closing line; picking overs and unders against the line from these numbers has been break-even, so treat them as a second opinion.</p>
+<p>NFL game pages add player stat projections and a projected total. A player projection is volume times efficiency: a receiver’s share of his team’s targets times the team’s pass attempts times his yards per target (catch rate for receptions), a runner’s share of carries times team carries times yards per carry, and a quarterback’s share of attempts times yards per attempt. Shares and rates weight recent games most, are pulled toward position averages, and are adjusted for how many yards the opponent allows. The median and middle 50% are not guesses: they are the projection times how players with projections of that size actually finished in earlier seasons, so a sportsbook line can be turned into a measured over/under rate. Game totals come from separate offense and defense point ratings plus wind. Tested on past seasons, prop medians miss by about 23 receiving yards, 1.7 catches, 26 rushing yards and 63 passing yards, and totals miss by about 10.7 points against 10.4 for the closing line; picking overs and unders against the line from these numbers has been break-even, so treat them as a second opinion. Game pages also show each player’s ceiling (the 90th percentile) and the chance of reaching a few round numbers. The Track record page scores the whole range, not just the middle: it counts how often results finished above the stated 75th, 90th and 95th and in each tenth of the range, and lists how the picks did against closing prices by size of gap, overs versus unders, each stat and the latest 50 and 200. We also tested giving each player his own range (from his past games, from his yards per target, and from a simulation of volume times efficiency). Each scored worse on held-out seasons than one shared range per projection size, so the shared ranges stay. The Methodology page has a price calculator that removes the book’s cut and shows break-even and expected return.</p>
 <p>The settings that are not obvious are not guessed. The pipeline stores 10 to 12 past regular seasons per league (NFL back to 1999), replays them week by week, projecting each week using only earlier games, and keeps the settings with the lowest log loss. The check is rolling: for each of the four newest seasons the settings are fit only on the seasons before it and scored on that season, which they never saw. They replace the preset values only if they win across those held-out seasons by a clear, statistically tested margin and no held-out season gets clearly worse. Pandemic seasons (2020–21) are left out of fitting. The NFL home edge is the exception: game results are too noisy to pin it down, so it comes from the average closing line over the last five seasons (about 1.6 points, the same for division games since 2021). Lines are used only for that and for checking the model; the site never shows them. <a href="History.dc.html">Model history</a> shows what each ingredient was worth, season by season.</p>
 <p>Three extra inputs are used only in the leagues where the same held-out test showed they help. <b>Rest:</b> each extra day of rest one team has over the other (capped at a few days) is worth a fitted amount, taken out of past results and added to projections; it tested useful in the NFL, NBA, NHL and college football and basketball. <b>MLB starting pitchers:</b> each announced starter gets a rating from the parts of run prevention a pitcher controls (strikeouts, walks, hit batters and home runs per inning), from this season and last, pulled toward average until he has pitched enough innings; the gap between the two starters, scaled to the share of the game a starter usually pitches, is added to the projection. <b>NHL expected goals:</b> goals are noisy, so each past game’s rating input mixes the real goal margin with the expected-goals margin (the quality of the chances each team created); this made held-out NHL predictions better in all four test seasons.</p>
 <p>A game projection is the rating gap plus the home edge, plus any rest and starting-pitcher edge. The win probability treats the final margin as normally distributed around that projection: P(home wins) = Φ((home − away + home edge) ÷ s). In leagues where it tested better, s is the league’s σ widened by how unsure both ratings still are, so early-season and thin-schedule games get less confident probabilities; elsewhere s = σ.</p>
 <p>Season odds replay the rest of the season 10,000 times. Each simulation draws every team’s true strength from its rating and uncertainty, lets NFL strengths drift a little week to week (injuries, form), plays the remaining games, seeds the playoff bracket and plays it out. Replaying 2003–2025 NFL seasons from weeks 4, 8 and 12, teams given 90% or more made the playoffs about 93–96% of the time and teams given 10% or less about 1–5%. NFL tiebreakers are simplified to division record, then point margin. The NHL simulation plays each team’s remaining games against a league-average opponent instead of the real schedule.</p>
 <p>The Track record page logs the model’s pick for every NFL, college football, NHL, NBA and college basketball and hockey game before it starts, freezes it at kickoff and grades it after the final. It begins empty at launch and is not back-filled. The backtest beside it replays past games using only earlier results; it is labelled separately because we ran it after the fact. MLB is not logged. <a href="History.dc.html">Model history</a> replays how the model improved over past seasons.</p>
 <p style="margin-bottom: 0">What it leaves out: injuries outside the NBA, weather, lineup news other than MLB starters, NFL and NBA availability, and anything else a betting market knows. The gains from the extra inputs are real but small (each lowers held-out log loss by roughly 0.1–0.3%). Treat it as a well-calibrated baseline, not a forecast to bet on.</p>
+</div>
+</section>
+<section class="t-panel" aria-label="Price calculator">
+<div class="t-ph"><h2>Price calculator</h2><span class="dim">Runs in your browser</span></div>
+<div class="t-pb">
+<p class="s-note hi" style="margin: 0 0 10px">Turns two American prices into the market’s real chance (the book’s cut removed), the break-even rate, and the return you would expect at a chance you choose. Nothing is stored or sent.</p>
+<div class="s-grid">
+<label><span class="t-th">Price, side A (e.g. -115)</span><input class="s-input" type="number" step="1" inputmode="numeric" value="{{calc.a}}" onChange="{{calc.onA}}"></label>
+<label><span class="t-th">Price, side B (e.g. -105)</span><input class="s-input" type="number" step="1" inputmode="numeric" value="{{calc.b}}" onChange="{{calc.onB}}"></label>
+<label><span class="t-th">Your chance for side A (%)</span><input class="s-input" type="number" step="0.5" inputmode="decimal" value="{{calc.m}}" onChange="{{calc.onM}}"></label>
+<label><span class="t-th">Price you got on A (optional)</span><input class="s-input" type="number" step="1" inputmode="numeric" value="{{calc.g}}" onChange="{{calc.onG}}"></label>
+</div>
+<div class="s-grid" style="margin-top: 10px">
+<sc-for list="{{calc.out}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
+</div>
+<p class="s-note" style="margin: 10px 0 0">The book’s cut is the amount the two implied chances add up past 100%. The no-vig chance splits it in proportion. Expected return per unit staked at side A is your chance times the payout minus the chance you lose. If you enter the price you got and the closing price for A, the last card shows whether you beat the close: the best single check of whether a pick had real value, whatever the result.</p>
 </div>
 </section>
 <section class="t-panel" aria-label="League settings">
@@ -265,6 +322,7 @@ class Component extends DCLogic {
     if (key === 'TrackRecord') {
       SD.data('track/summary.json').then(function (x) { self.setState({ track: x }); }, function () { self.setState({ track: { err: true } }); });
       SD.data('track/backtest.json').then(function (x) { self.setState({ back: x }); }, function () { self.setState({ back: { err: true } }); });
+      SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
     } else if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
     else this.loadLeague(lg);
   }
@@ -424,7 +482,7 @@ class Component extends DCLogic {
       var pc = function (v) { return v === null || v === undefined ? '—' : Math.round(v * 100) + '%'; };
       var L = ((S.index || {}).leagues) || {};
       var nm = function (k, id) { var t = ((L[k] || []).filter(function (x) { return x.id === id; })[0]) || {}; return { name: t.short || t.name || id, abbr: t.abbr || id }; };
-      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '' };
+      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '', pp: { has: false } };
       var pickRow = function (k, r, graded) {
         var h = nm(k, r.h), a = nm(k, r.a), fav = r.p >= 0.5 ? h : a, fp = Math.max(r.p, 1 - r.p);
         var row = { game: a.name + ' at ' + h.name + (r.n ? ' (neutral)' : ''), lg: SD.LEAGUES[k].short, href: SD.gameHref ? SD.gameHref(k, r.id) : '#', date: F.day(r.d + ':00Z'), pick: fav.abbr + ' ' + Math.abs(r.m).toFixed(1), prob: pc(fp) };
@@ -475,9 +533,46 @@ class Component extends DCLogic {
         if (!tr.bt.length) { tr.btNone = true; tr.btNoneText = 'Not enough completed games to backtest yet.'; }
         if (hidden.length) tr.btSub += (tr.btSub ? ' · ' : '') + 'too few games: ' + hidden.join(', ');
       }
+      var PX = S.props;
+      if (PX && !PX.err && (lg === 'all' || lg === 'nfl') && PX.liveRange) {
+        var NAME = { rec_yds: 'Receiving yards', receptions: 'Receptions', rush_yds: 'Rushing yards', pass_yds: 'Passing yards' }, pcr = function (v) { return v === null || v === undefined ? '—' : Math.round(v * 100) + '%'; };
+        var bk = (PX.backtest || {}).props || {}, mks = Object.keys(NAME).filter(function (k) { return PX.liveRange[k]; });
+        var sgn = function (v) { return v > 0 ? 'color: var(--up)' : v < 0 ? 'color: var(--dn)' : ''; }, un = function (v) { return (v > 0 ? '+' : '') + v.toFixed(1); }, rr = function (v) { return v === null || v === undefined ? '—' : (v > 0 ? '+' : '') + (v * 100).toFixed(1) + '%'; };
+        var pp = { has: mks.length > 0, sub: 'Week ' + PX.week + ' · updated ' + F.day(PX.updated), tenths: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], hasBook: false, cards: [], calib: [], edge: [], splits: [], bookNote: '' };
+        pp.range = mks.map(function (k) { var a = PX.liveRange[k], b = (bk[k] || {}).range || {}; return { mk: NAME[k], n: a.n, now: a.pinball, past: b.pinball !== undefined ? b.pinball : '—', t75: pcr(a.tail[0]), t90: pcr(a.tail[1]), t95: pcr(a.tail[2]) }; });
+        pp.pit = mks.map(function (k) { return { mk: NAME[k], cells: PX.liveRange[k].pit.map(pcr) }; });
+        var D = ((PX.book || {}).diag);
+        if (D && D.picks && D.picks.n) {
+          var bg = PX.book;
+          pp.hasBook = true;
+          pp.cards = [{ k: 'Graded props', v: bg.graded, s: 'this season, against closing prices' }, { k: 'Picks (gap 5+ points)', v: D.picks.n, s: D.picks.won + ' won · ' + un(D.picks.units) + ' units' },
+            { k: 'Over / under', v: (D.side.over.n || 0) + ' / ' + (D.side.under.n || 0), s: 'overs ' + un(D.side.over.units) + ' · unders ' + un(D.side.under.units) },
+            { k: 'Pulled toward 50%', v: bg.shrink, s: '1.00 = chances taken at face value' }];
+          pp.calib = (D.calib || []).map(function (c) { return { band: Math.round(c.lo * 100) + '–' + Math.round(c.hi * 100) + '%', n: c.n, exp: pcr(c.exp), act: pcr(c.act) }; });
+          pp.edge = (D.edge || []).map(function (e) { return { label: e.hi >= 1 ? Math.round(e.lo * 100) + '+ points' : Math.round(e.lo * 100) + '–' + Math.round(e.hi * 100) + ' points', n: e.n, won: e.won, units: un(e.units), roi: rr(e.roi), st: sgn(e.units) }; });
+          var sp = function (label, e) { return e && e.n ? { label: label, n: e.n, won: e.won, units: un(e.units), roi: rr(e.roi), st: sgn(e.units) } : null; };
+          pp.splits = [sp('Overs', D.side.over), sp('Unders', D.side.under)].concat(Object.keys(NAME).map(function (k) { return sp(NAME[k], (D.market || {})[k]); })).concat([sp('Last 50 picks', (D.recent || {})['50']), sp('Last 200 picks', (D.recent || {})['200'])]).filter(Boolean);
+          var vo = (bg.vsOpen || {}), v10 = vo.record && vo.record['0.1'];
+          pp.bookNote = 'Gap is how far the chance, after the pull toward 50%, sits from the no-vig chance in the closing price. Units assume a one-unit stake at the closing price; one bad week can move a small total a lot. ' + (v10 && v10.won + v10.lost ? 'Against the opening price, picks where the raw chance was 60% or more (or 40% or less) have gone ' + v10.won + '–' + v10.lost + ' at a flat -110, which is promising but not proven: the sample is one season, and the replay knows which teammates sat, which the opening price did not. ' : '') + 'A record near zero would mean the projections are about as good as the price, which is the realistic bar.';
+        }
+        tr.pp = pp;
+      }
       out.trk = tr;
     }
     if (key === 'Methodology') {
+      var cs = S.calc || { a: '-115', b: '-105', m: '', g: '' }, imp = function (o) { o = parseFloat(o); return !o || Math.abs(o) < 100 ? null : (o > 0 ? 100 / (o + 100) : -o / (-o + 100)); }, pay = function (o) { o = parseFloat(o); return o > 0 ? o / 100 : 100 / -o; };
+      var ia = imp(cs.a), ib = imp(cs.b), cOut = [], setC = function (k) { return function (e) { var n = Object.assign({}, S.calc || { a: '-115', b: '-105', m: '', g: '' }); n[k] = e.target.value; self.setState({ calc: n }); }; };
+      if (ia !== null && ib !== null) {
+        var tot = ia + ib, nv = ia / tot, mine = parseFloat(cs.m) / 100;
+        cOut = [{ k: 'No-vig chance, A', v: (nv * 100).toFixed(1) + '%', s: 'B: ' + ((1 - nv) * 100).toFixed(1) + '%' }, { k: 'Book’s cut', v: ((tot - 1) * 100).toFixed(1) + '%', s: 'break-even: A ' + (ia * 100).toFixed(1) + '%, B ' + (ib * 100).toFixed(1) + '%' }];
+        if (mine > 0 && mine < 1) {
+          var evA = mine * pay(cs.a) - (1 - mine), evB = (1 - mine) * pay(cs.b) - mine;
+          cOut.push({ k: 'Expected return, A', v: (evA * 100 > 0 ? '+' : '') + (evA * 100).toFixed(1) + '%', s: 'per unit staked · B ' + (evB * 100 > 0 ? '+' : '') + (evB * 100).toFixed(1) + '%' });
+        } else cOut.push({ k: 'Expected return', v: '—', s: 'enter your chance for A' });
+        var ig = imp(cs.g);
+        if (ig !== null) cOut.push({ k: 'Vs. the close', v: ((nv - ig) * 100 > 0 ? '+' : '') + ((nv - ig) * 100).toFixed(1) + ' pts', s: 'positive: you got a better price than the closing no-vig chance' });
+      } else cOut = [{ k: 'Enter two prices', v: '—', s: 'American odds such as -110 or +150' }];
+      out.calc = { a: cs.a, b: cs.b, m: cs.m, g: cs.g, onA: setC('a'), onB: setC('b'), onM: setC('m'), onG: setC('g'), out: cOut };
       out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : '—',
         rows: ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { var x = S.models[k] || {};
           return { lg: SD.LEAGUES[k].label, hfa: x.hfa !== undefined ? x.hfa + ' ' + (x.unit || '') : '…', sigma: x.sigma !== undefined ? x.sigma : '…', k: x.k !== undefined ? x.k : '…', games: x.games !== undefined ? x.games : (k === 'mlb' ? 'season totals' : '…'), src: x.source || (x.err ? 'not loaded' : '…'), start: x.prior || 'average', fit: (x.tuned ? 'fit on past seasons' : 'preset') + (x.rest ? ' · rest ' + x.rest + '/day' : '') + (x.sp ? ' · starters' : '') + (x.xg ? ' · ' + Math.round(x.xg * 100) + '% xG' : '') }; }) };
