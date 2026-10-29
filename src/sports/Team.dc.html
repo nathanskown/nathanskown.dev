@@ -165,6 +165,18 @@
 </div>
 </section>
 
+<sc-if value="{{hasTrend}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Shot and goal trend">
+<div class="t-ph"><h2>Shot and goal trend</h2><span class="dim">{{trendSub}}</span></div>
+<div class="t-pb">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Window</th><th scope="col">GP</th><th scope="col">Goals for</th><th scope="col">Goals against</th><th scope="col">Shots for</th><th scope="col">Shots against</th><th scope="col">Shot diff.</th></tr></thead>
+<tbody><sc-for list="{{trend}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.gp}}</td><td>{{r.gf}}</td><td>{{r.ga}}</td><td>{{r.sf}}</td><td>{{r.sa}}</td><td style="{{r.sdSt}}">{{r.sd}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 10px 0 0">Per game, all situations, with the league rank in brackets (1 = best). Short windows are noisy: five games say little.</p>
+</div>
+</section>
+</sc-if>
 <section class="t-panel" aria-label="Outlook">
 <div class="t-ph"><h2>Outlook</h2><span class="dim">House model</span></div>
 <div class="t-pb">
@@ -236,9 +248,9 @@ class Component extends DCLogic {
     var self = this, pro = ['nfl', 'mlb', 'nhl', 'nba'].indexOf(lg) >= 0;
     var soft = function (p) { return p.then(function (x) { return x; }, function () { return null; }); };
     Promise.all([soft(SD.data('teams.json')), soft(SD.data('model/' + lg + '.json')), soft(SD.data('standings/' + lg + '.json')),
-      pro ? soft(SD.data('injuries/' + lg + '.json')) : null, pro ? soft(SD.data('leaders/' + lg + '.json')) : null, soft(SD.data('status.json'))])
+      pro ? soft(SD.data('injuries/' + lg + '.json')) : null, pro ? soft(SD.data('leaders/' + lg + '.json')) : null, soft(SD.data('status.json')), lg === 'nhl' ? soft(SD.data('model/nhl_trend.json')) : null])
       .then(function (r) {
-        self.setState({ index: r[0], model: r[1], standings: r[2], injuries: r[3], leadersData: r[4], status: r[5] });
+        self.setState({ index: r[0], model: r[1], standings: r[2], injuries: r[3], leadersData: r[4], status: r[5], trendData: r[6] });
         return self.loadSchedule();
       });
   }
@@ -427,7 +439,15 @@ class Component extends DCLogic {
     }
     if (!leaders.length) noLeadersText = S.loading ? 'Loading…' : (pro ? 'Leaders load from the daily data refresh.' : 'No completed games with box scores yet.');
 
+    var trend = [], TD = S.trendData;
+    if (lg === 'nhl' && TD && TD.teams && t && t.abbr) {
+      var NA = { TB: 'TBL', NJ: 'NJD', SJ: 'SJS', LA: 'LAK', UTAH: 'UTA' }, tt = TD.teams[NA[t.abbr] || t.abbr];
+      if (tt) [['season', 'This season'], ['l15', 'Last 15'], ['l10', 'Last 10'], ['l5', 'Last 5']].forEach(function (w) { var x = tt[w[0]]; if (!x) return;
+        trend.push({ label: w[1], gp: x.gp, gf: x.gf.toFixed(2) + ' (' + x.rgf + ')', ga: x.ga.toFixed(2) + ' (' + x.rga + ')', sf: x.sf.toFixed(1) + ' (' + x.rsf + ')', sa: x.sa.toFixed(1) + ' (' + x.rsa + ')',
+          sd: (x.sd > 0 ? '+' : '') + x.sd.toFixed(1) + ' (' + x.rsd + ')', sdSt: x.sd > 0 ? 'color: var(--up)' : x.sd < 0 ? 'color: var(--dn)' : '' }); });
+    }
     return Object.assign(base, {
+      hasTrend: trend.length > 0, trend: trend, trendSub: 'Updated ' + (TD && TD.updated ? F.day(TD.updated) : ''),
       ok: true, missing: false, statusTag: S.loading ? 'LOADING…' : (live.length ? 'LIVE GAME' : 'DATA'), t: t, next: next,
       profile: profile, profileNote: mt && model ? 'House rating from ' + (model.games || 'all') + ' games this season' : '',
       margins: margins, hasMargins: margins.length > 1, marginAria: 'Bar chart of game margins: ' + diffs.join(', '),

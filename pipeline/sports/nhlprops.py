@@ -243,6 +243,30 @@ def _log_and_grade(cur, props, games, pmf):
     return out
 
 
+def _trend(games, cur):
+    """Per team: this season and the last 15 / 10 / 5 games, per game: goals for and against, shots for and against, shot
+    difference, each with its league rank (1 = best). From the same box scores; shots are shots on goal, all situations."""
+    per = collections.defaultdict(list)
+    for dt, y, gid, h, a, hs, as_ in sorted(g for g in games if g[1] == cur):
+        sh_h, sh_a = sum(x[4] for x in hs), sum(x[4] for x in as_)
+        go_h, go_a = sum(x[5] for x in hs), sum(x[5] for x in as_)
+        per[h].append((go_h, go_a, sh_h, sh_a)); per[a].append((go_a, go_h, sh_a, sh_h))
+    out = {}
+    for t, g in per.items():
+        out[t] = {}
+        for name, n in (("season", None), ("l15", 15), ("l10", 10), ("l5", 5)):
+            w = g if n is None else g[-n:]
+            m = np.mean(np.array(w, float), axis=0)
+            out[t][name] = {"gp": len(w), "gf": round(float(m[0]), 2), "ga": round(float(m[1]), 2), "sf": round(float(m[2]), 1), "sa": round(float(m[3]), 1), "sd": round(float(m[2] - m[3]), 1)}
+    for name in ("season", "l15", "l10", "l5"):
+        for k, rev in (("gf", True), ("ga", False), ("sf", True), ("sa", False), ("sd", True)):
+            order = sorted(out, key=lambda t: out[t][name][k], reverse=rev)
+            for i, t in enumerate(order):
+                out[t][name]["r" + k] = 1 + sum(1 for u in order if (out[u][name][k] > out[t][name][k] if rev else out[u][name][k] < out[t][name][k]))
+    write("model/nhl_trend.json", {"season": cur, "updated": now_iso(), "teams": out})
+    return len(out)
+
+
 def job_props():
     cur = (read("model/nhl.json") or {}).get("season")
     if not cur:
@@ -356,6 +380,7 @@ def job_props():
                 props.append({"pid": pid, "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
                               "band": band(mu), "toi": round(float(toi), 1), "start": e["d"],
                               "pg": round(grate[gband(S.gmu(pid, mu))], 3), "gx": round(float(S.gmu(pid, mu)), 2)})
+    _trend(games, cur)
     goalies = []
     out_g = {teams.get(t, t): {key(r["name"]) for r in rs if r.get("status") in OUT_STATUS and r.get("pos") == "G"} for t, rs in inj.items()}
     for eid, e in sorted(ev.items(), key=lambda kv: kv[1]["d"]):
