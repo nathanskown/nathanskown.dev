@@ -371,6 +371,26 @@
         return r.json();
       });
     },
+    /* Core-ticker quote files are built once a night, so on their own they show the previous close as if it were
+       today's. overlayLive asks /api/quote for a fresh price and merges it over the file: price, change, charts and the
+       numbers that depend on price move; everything else stays from the file. Resolves to the updated q, or to the
+       same q object when the live call fails (callers compare with !== to know whether the overlay landed). */
+    overlayLive: function (q) {
+      if (!q || !q.sym) return Promise.resolve(q);
+      return fetch('/api/quote?part=price&sym=' + encodeURIComponent(q.sym)).then(function (r) { return r.ok ? r.json() : null; }).then(function (P) {
+        if (!P || !P.quote || !(P.quote.price > 0)) return q;
+        var old = q.quote && q.quote.price, out = Object.assign({}, q);
+        out.quote = Object.assign({}, q.quote, P.quote);
+        ['charts', 'ytd', 'y1', 'updated'].forEach(function (k) { if (P[k] != null) out[k] = P[k]; });
+        if (q.stats && old > 0) {
+          var k = P.quote.price / old;
+          out.stats = Object.assign({}, q.stats);
+          ['mcap', 'pe'].forEach(function (f) { if (out.stats[f] > 0) out.stats[f] = out.stats[f] * k; });
+        }
+        out.liveOverlay = true;
+        return out;
+      }, function () { return q; });
+    },
     mount: function (Component, defaults) {
       var props = {};
       for (var k in (defaults || {})) if (k.charAt(0) !== '$' && defaults[k] && 'default' in defaults[k]) props[k] = defaults[k]['default'];
