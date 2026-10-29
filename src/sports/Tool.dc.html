@@ -275,6 +275,14 @@
 <div class="s-grid" style="margin-top: 10px">
 <sc-for list="{{calc.out}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
 </div>
+<h3 style="margin: 16px 0 6px; font-size: 14px">Converter: prediction-market price or percent to American odds</h3>
+<div class="s-grid">
+<label><span class="t-th">Price in cents or percent (e.g. 62)</span><input class="s-input" type="number" step="0.5" inputmode="decimal" value="{{calc.c}}" onChange="{{calc.onC}}"></label>
+<label><span class="t-th">American odds (e.g. -150 or +130)</span><input class="s-input" type="number" step="1" inputmode="numeric" value="{{calc.d}}" onChange="{{calc.onD}}"></label>
+</div>
+<div class="s-grid" style="margin-top: 10px">
+<sc-for list="{{calc.conv}}" as="c" hint-placeholder-count="2"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
+</div>
 <p class="s-note" style="margin: 10px 0 0">The book’s cut is the amount the two implied chances add up past 100%. The no-vig chance splits it in proportion. Expected return per unit staked at side A is your chance times the payout minus the chance you lose. If you enter the price you got and the closing price for A, the last card shows whether you beat the close: the best single check of whether a pick had real value, whatever the result.</p>
 </div>
 </section>
@@ -560,8 +568,8 @@ class Component extends DCLogic {
       out.trk = tr;
     }
     if (key === 'Methodology') {
-      var cs = S.calc || { a: '-115', b: '-105', m: '', g: '' }, imp = function (o) { o = parseFloat(o); return !o || Math.abs(o) < 100 ? null : (o > 0 ? 100 / (o + 100) : -o / (-o + 100)); }, pay = function (o) { o = parseFloat(o); return o > 0 ? o / 100 : 100 / -o; };
-      var ia = imp(cs.a), ib = imp(cs.b), cOut = [], setC = function (k) { return function (e) { var n = Object.assign({}, S.calc || { a: '-115', b: '-105', m: '', g: '' }); n[k] = e.target.value; self.setState({ calc: n }); }; };
+      var cs = S.calc || { a: '-115', b: '-105', m: '', g: '', c: '', d: '' }, imp = function (o) { o = parseFloat(o); return !o || Math.abs(o) < 100 ? null : (o > 0 ? 100 / (o + 100) : -o / (-o + 100)); }, pay = function (o) { o = parseFloat(o); return o > 0 ? o / 100 : 100 / -o; };
+      var ia = imp(cs.a), ib = imp(cs.b), cOut = [], setC = function (k) { return function (e) { var n = Object.assign({}, S.calc || { a: '-115', b: '-105', m: '', g: '', c: '', d: '' }); n[k] = e.target.value; self.setState({ calc: n }); }; };
       if (ia !== null && ib !== null) {
         var tot = ia + ib, nv = ia / tot, mine = parseFloat(cs.m) / 100;
         cOut = [{ k: 'No-vig chance, A', v: (nv * 100).toFixed(1) + '%', s: 'B: ' + ((1 - nv) * 100).toFixed(1) + '%' }, { k: 'Book’s cut', v: ((tot - 1) * 100).toFixed(1) + '%', s: 'break-even: A ' + (ia * 100).toFixed(1) + '%, B ' + (ib * 100).toFixed(1) + '%' }];
@@ -572,7 +580,11 @@ class Component extends DCLogic {
         var ig = imp(cs.g);
         if (ig !== null) cOut.push({ k: 'Vs. the close', v: ((nv - ig) * 100 > 0 ? '+' : '') + ((nv - ig) * 100).toFixed(1) + ' pts', s: 'positive: you got a better price than the closing no-vig chance' });
       } else cOut = [{ k: 'Enter two prices', v: '—', s: 'American odds such as -110 or +150' }];
-      out.calc = { a: cs.a, b: cs.b, m: cs.m, g: cs.g, onA: setC('a'), onB: setC('b'), onM: setC('m'), onG: setC('g'), out: cOut };
+      var cv = [], pc0 = parseFloat(cs.c), am = parseFloat(cs.d);
+      if (pc0 > 0 && pc0 < 100) { var pp0 = pc0 / 100; cv.push({ k: 'Percent to American', v: (pp0 >= 0.5 ? '-' + Math.round(pp0 / (1 - pp0) * 100) : '+' + Math.round((1 - pp0) / pp0 * 100)), s: pc0 + '% implied chance' }); }
+      if (Math.abs(am) >= 100) { cv.push({ k: 'American to percent', v: ((am > 0 ? 100 / (am + 100) : -am / (-am + 100)) * 100).toFixed(1) + '%', s: 'break-even rate, vig included' }); }
+      if (!cv.length) cv = [{ k: 'Enter a price or odds', v: '—', s: '62 or -150' }];
+      out.calc = { c: cs.c, d: cs.d, onC: setC('c'), onD: setC('d'), conv: cv, a: cs.a, b: cs.b, m: cs.m, g: cs.g, onA: setC('a'), onB: setC('b'), onM: setC('m'), onG: setC('g'), out: cOut };
       out.meth = { updated: S.status && S.status.updated ? F.day(S.status.updated) + ' ' + F.time(S.status.updated) + ' ' + window.TZL : '—',
         rows: ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].map(function (k) { var x = S.models[k] || {};
           return { lg: SD.LEAGUES[k].label, hfa: x.hfa !== undefined ? x.hfa + ' ' + (x.unit || '') : '…', sigma: x.sigma !== undefined ? x.sigma : '…', k: x.k !== undefined ? x.k : '…', games: x.games !== undefined ? x.games : (k === 'mlb' ? 'season totals' : '…'), src: x.source || (x.err ? 'not loaded' : '…'), start: x.prior || 'average', fit: (x.tuned ? 'fit on past seasons' : 'preset') + (x.rest ? ' · rest ' + x.rest + '/day' : '') + (x.sp ? ' · starters' : '') + (x.xg ? ' · ' + Math.round(x.xg * 100) + '% xG' : '') }; }) };
