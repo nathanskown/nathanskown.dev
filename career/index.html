@@ -193,6 +193,60 @@ td.cur .cell{outline:1px solid rgba(255,255,255,.25);outline-offset:2px}
 footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--mute);font-size:13px}
 footer a{color:var(--dim)}
 
+/* draft banner + CONFIRM tags (review only: delete before launch) */
+.draft{position:relative;z-index:11;padding:7px 14px;background:#2a1a00;border-bottom:1px solid #ffa45c;color:#ffd9b0;font-size:13px}
+.draft b{color:#000;background:#ffa45c;padding:0 6px;margin-right:6px}
+.draft i{font-style:normal;color:#ffa45c;font-weight:600}
+[data-confirm]{outline:1px dashed rgba(255,164,92,.55);outline-offset:4px}
+li[data-confirm]::after,.case[data-confirm] .ck::after{content:"CONFIRM";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.12em;color:#000;background:#ffa45c;padding:0 5px;vertical-align:2px}
+
+/* lens picker */
+.lenses{display:flex;flex-wrap:wrap;gap:8px}
+.lb{font:inherit;font-size:13px;letter-spacing:.08em;padding:9px 14px;min-height:44px;background:#03050d;color:var(--hi);border:1px solid var(--line2);cursor:pointer;text-align:left}
+.lb small{display:block;font-size:11.5px;color:var(--mute);letter-spacing:.04em}
+.lb:hover{border-color:var(--ac);color:#fff}
+.lb[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:#000;font-weight:600}
+.lb[aria-pressed="true"] small{color:#1b2440}
+.lp{margin-top:16px;border:1px solid var(--ac);background:linear-gradient(180deg,#0a1230,#03050d);box-shadow:0 0 40px rgba(143,176,255,.12);animation:lpIn .35s ease-out}
+@keyframes lpIn{from{opacity:0;transform:translateY(8px)}}
+.lp-h{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line2)}
+.lp-h .vt{font-size:38px;line-height:.9;color:#fff}
+.lp-h a{font-size:13px}
+.lp-g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);margin:0}
+.lp-g dt,.lp-g dd{margin:0;padding:10px 16px;border-bottom:1px solid var(--line)}
+.lp-g dt{color:var(--ac);font-size:13px;letter-spacing:.06em}
+.lp-g dd{color:var(--hi);font-size:14px}
+.lp-g dd .w{color:var(--mute);font-size:12.5px}
+.lp-f{padding:10px 16px;font-size:13.5px;color:var(--dim)}
+.lp-f b{color:#fff;font-weight:500}
+@media (max-width:700px){.lp-g{grid-template-columns:1fr}.lp-g dt{border-bottom:0;padding-bottom:0}}
+@media (max-width:640px){.bar{flex-wrap:nowrap;white-space:nowrap}.lchip{max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.lchip{font:inherit;font-size:12.5px;font-weight:600;letter-spacing:.08em;background:#000;color:var(--ac);border:0;padding:2px 8px;cursor:pointer}
+/* highlighting under a lens */
+body.lensed [data-l]{transition:opacity .4s,box-shadow .4s,background .4s}
+body.lensed .stop li[data-l]:not(.lit),body.lensed .case:not(.lit),body.lensed .big:not(.lit){opacity:.38}
+body.lensed .stop li.lit{background:linear-gradient(90deg,rgba(143,176,255,.13),transparent 85%);box-shadow:inset 2px 0 0 var(--ac)}
+body.lensed .stop li.lit::before{color:#fff}
+body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,255,.18)}
+
+/* more-from-role */
+.more{margin:-4px 0 16px;max-width:64ch}
+.more summary{cursor:pointer;list-style:none;display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line2);font-size:13px;letter-spacing:.08em;color:var(--hi)}
+.more summary::-webkit-details-marker{display:none}
+.more summary::before{content:"+";color:var(--c)}
+.more[open] summary::before{content:"–"}
+.more summary span{color:#000;background:var(--c);padding:0 5px;font-size:11.5px;font-weight:600}
+.more ul{margin-top:14px}
+
+/* selected work */
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:12px}
+.case{position:relative;padding:16px 16px 14px;border:1px solid var(--line2);background:linear-gradient(180deg,#070c1d,#03050d);border-top:2px solid var(--c)}
+.case .ck{font-size:11.5px;letter-spacing:.14em;color:var(--c)}
+.case h3{margin:6px 0 6px;font-size:16px;line-height:1.35;color:#fff}
+.case p{margin:0;font-size:13.5px;line-height:1.6;color:var(--hi)}
+.case p b{color:#fff;font-weight:500}
+.case.own{--c:#8dff9c;border-color:rgba(141,255,156,.35)}
+
 /* ---------- phones and narrow tablets ---------- */
 @media (max-width:900px){
   .path{grid-template-columns:minmax(0,1fr);gap:0}
@@ -217,7 +271,8 @@ footer a{color:var(--dim)}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<nav class="bar" aria-label="Page"><a href="/">← 1-NSKN</a><span class="sp"></span><a href="#path">Path</a><a class="opt" href="#numbers">Numbers</a><a class="opt" href="#toolkit">Toolkit</a><a href="#contact">Contact</a><i class="prog" id="prog" aria-hidden="true"></i></nav>
+<div class="draft" id="draft"><b>REVIEW DRAFT</b> <span id="draftN"></span> lines tagged <i>CONFIRM</i> come from typical job descriptions, not your records. Confirm or cut each one before this goes live.</div>
+<nav class="bar" aria-label="Page"><a href="/">← 1-NSKN</a><button type="button" class="lchip" id="lchip" hidden></button><span class="sp"></span><a class="opt" href="#lens">Your lens</a><a href="#path">Path</a><a class="opt" href="#work">Work</a><a class="opt" href="#toolkit">Toolkit</a><a href="#contact">Contact</a><i class="prog" id="prog" aria-hidden="true"></i></nav>
 
 <main id="main">
 
@@ -237,6 +292,14 @@ footer a{color:var(--dim)}
 <span class="seat br"><i></i>Investor relations</span>
 </div>
 <a class="cue" href="#path"><i aria-hidden="true"></i>Scroll the path</a>
+</section>
+
+
+<section id="lens" aria-labelledby="h-lens">
+<h2 id="h-lens"><span class="sn">0</span>Read it your way</h2>
+<p class="lede2">Hiring for a specific seat? Pick it. The page lights up the experience that matters to that job, and the panel lays out what the role usually asks for next to where I’ve done it. Each lens also has its own link you can share.</p>
+<div class="lenses" role="group" aria-label="Choose a hiring lens" id="lensBtns"></div>
+<div class="lp" id="lensPanel" hidden aria-live="polite"></div>
 </section>
 
 <section id="path" aria-labelledby="h-path">
@@ -273,9 +336,9 @@ footer a{color:var(--dim)}
 <h3 class="org">Michigan State University, Broad Scholar Program</h3>
 <p class="role"><b>Professorial Assistant</b> · East Lansing, MI · Sep 2017 – May 2019</p>
 <ul>
-<li>Dissected SEC filings from financial institutions to find and summarize <b>loan loss allowance fraud</b> cases.</li>
-<li>Analyzed 10-K annual reports to study how oil and gas booms affected corporate earnings.</li>
-<li>Turned the research into organized spreadsheets a professor could read at a glance.</li>
+<li data-l="ib cd ss bs">Dissected SEC filings from financial institutions to find and summarize <b>loan loss allowance fraud</b> cases.</li>
+<li data-l="ss bs ib">Analyzed 10-K annual reports to study how oil and gas booms affected corporate earnings.</li>
+<li data-l="cons">Turned the research into organized spreadsheets a professor could read at a glance.</li>
 </ul>
 <div class="adds"><span class="k">ADDS</span><span>Financial statements</span><span>Research</span><span>Data</span></div>
 <div class="used"><b>Worked with:</b> SEC filings · 10-Ks · Excel</div>
@@ -287,9 +350,9 @@ footer a{color:var(--dim)}
 <h3 class="org">Mercedes-Benz Financial Services USA</h3>
 <p class="role"><b>Finance and Controlling Intern</b> · Farmington Hills, MI · May – Aug 2018</p>
 <ul>
-<li>Paired with another intern to become the go-to experts on <b>new corporate software</b> the department was adopting.</li>
-<li>Wrote a detailed guide and gave an in-depth presentation that helped the Finance and Controlling department switch over.</li>
-<li>Shadowed teams across departments and locations to learn auto finance end to end, from building the car to the final sale.</li>
+<li data-l="cons">Paired with another intern to become the go-to experts on <b>new corporate software</b> the department was adopting.</li>
+<li data-l="cons ir">Wrote a detailed guide and gave an in-depth presentation that helped the Finance and Controlling department switch over.</li>
+<li data-l="cd ib">Shadowed teams across departments and locations to learn auto finance end to end, from building the car to the final sale.</li>
 </ul>
 <div class="adds"><span class="k">ADDS</span><span>Corporate finance</span><span>Communication</span><span>Systems</span></div>
 <div class="used"><b>Worked with:</b> Tableau · MyForecast · Oracle SmartView · Excel · Access</div>
@@ -300,11 +363,11 @@ footer a{color:var(--dim)}
 <span class="st">Company side</span>
 <h3 class="org">Horizon Global</h3>
 <p class="role"><b>Shared Services Finance Intern</b> · Plymouth, MI · May – Aug 2019</p>
-<div class="big"><span class="v vt">$1M</span><span class="d">of aged receivables collected in three months on a liquidity project with the Accounts Receivable team. Target met.</span></div>
+<div class="big" data-l="cd ib cons"><span class="v vt">$1M</span><span class="d">of aged receivables collected in three months on a liquidity project with the Accounts Receivable team. Target met.</span></div>
 <ul>
-<li>Built pivot tables and charts from A/R aging reports that focused collections and showed management where receivables were trending.</li>
-<li>Flagged pricing discrepancies on large checks from OE customers using VLOOKUPs and pivot tables.</li>
-<li>Coded customer complaints in the CRM to ease month-end reporting, and helped the Accounting team with month-end journal entries.</li>
+<li data-l="cd cons ib">Built pivot tables and charts from A/R aging reports that focused collections and showed management where receivables were trending.</li>
+<li data-l="cd ib">Flagged pricing discrepancies on large checks from OE customers using VLOOKUPs and pivot tables.</li>
+<li data-l="cons">Coded customer complaints in the CRM to ease month-end reporting, and helped the Accounting team with month-end journal entries.</li>
 </ul>
 <div class="adds"><span class="k">ADDS</span><span>Working capital</span><span>Month-end close</span><span>Excel analysis</span></div>
 <div class="used"><b>Worked with:</b> Excel (pivot tables, VLOOKUP) · CRM</div>
@@ -317,10 +380,15 @@ footer a{color:var(--dim)}
 <p class="role"><b>Investment Research Analyst</b> · Southfield, MI · Aug 2021 – Feb 2023</p>
 <p class="pre">Started as an <b>Investment Research Analyst Intern</b>, Jul – Aug 2020, and came back full time.</p>
 <ul>
-<li>Ran <b>manager due diligence</b> across equities, fixed income and alternatives through portfolio manager calls and outside research, then presented my recommendations to the Research Committee, which decides where millions of dollars are placed.</li>
-<li>Researched individual stocks, funds and portfolios for financial advisors and handled their ad-hoc requests.</li>
-<li>Built charts and tables that explained market and economic ideas for thought leadership posted online and used in client meetings.</li>
-<li>Built a <b>tax swap analysis spreadsheet</b> on Morningstar Direct data that saves time in asset class reviews.</li>
+<li data-l="wm bs cd">Ran <b>manager due diligence</b> across equities, fixed income and alternatives through portfolio manager calls and outside research, then presented my recommendations to the Research Committee, which decides where millions of dollars are placed.</li>
+<li data-l="wm bs" data-confirm>Covered the full range of vehicles: <b>mutual funds, ETFs, separately managed accounts and alternative investments</b>, alongside individual stocks and bonds.</li>
+<li data-l="wm bs ss" data-confirm>Prepared and interpreted reports on how portfolios and strategies were built: <b>holdings, style, and risk and return statistics</b>, measured against benchmarks and peer groups in Callan PEP and Morningstar Direct.</li>
+<li data-l="wm bs" data-confirm>Kept in regular contact with money management firms as part of <b>ongoing monitoring</b> of the managers already on the platform, not just new ones.</li>
+<li data-l="wm cons">Researched individual stocks, funds and portfolios for financial advisors and handled their ad-hoc requests.</li>
+<li data-l="wm ss">Built charts and tables that explained market and economic ideas for thought leadership posted online and used in client meetings.</li>
+<li data-l="wm ss cons" data-confirm>Presented to committees on asset classes, investment vehicles, and <b>economic and capital market conditions</b>.</li>
+<li data-l="wm bs cons">Built a <b>tax swap analysis spreadsheet</b> on Morningstar Direct data that saves time in asset class reviews.</li>
+<li data-l="wm bs">Used Bloomberg, Morningstar Direct, Callan PEP, Black Diamond and FRED every day for data gathering and visualization.</li>
 </ul>
 <div class="adds"><span class="k">ADDS</span><span>Investor perspective</span><span>Due diligence</span><span>Advisor support</span></div>
 <div class="used"><b>Worked with:</b> Bloomberg · Morningstar Direct · Callan PEP · Black Diamond · FRED</div>
@@ -337,13 +405,25 @@ footer a{color:var(--dim)}
 <div class="rung"><div class="b"></div><div class="t">Associate<small>May 2025</small></div></div>
 </div>
 <ul>
-<li>Primary day-to-day advisor to a portfolio of <b>6–8 public companies</b>, owning the client relationship and the IR plan.</li>
-<li>Run <b>investor perception studies</b>: interview portfolio managers and sell-side analysts, then bring the findings to the C-suite.</li>
-<li>Own investor targeting and corporate access from call list to follow-up, and help host client investor days.</li>
-<li>Write and edit earnings presentations, press releases, earnings call scripts, investor decks and fact sheets.</li>
-<li>Build ownership analyses, board reports, earnings recaps and peer benchmarking.</li>
-<li>Project-manage client work and mentor junior analysts and interns.</li>
+<li data-l="ir cons cd">Primary day-to-day advisor to a portfolio of <b>6–8 public companies</b>, owning the client relationship and the IR plan.</li>
+<li data-l="ir bs ss cd cons">Run <b>investor perception studies</b>: interview portfolio managers and sell-side analysts on how they value each company, then bring the findings to the C-suite.</li>
+<li data-l="ir bs">Own investor targeting and corporate access from call list to follow-up, and help host client investor days.</li>
+<li data-l="ir ib ss">Write and edit earnings presentations, press releases, earnings call scripts, investor decks and fact sheets.</li>
+<li data-l="ir ib cd bs">Build <b>ownership analyses</b>, board reports, earnings recaps, and peer benchmarking, including <b>EV/EBITDA valuation comparisons</b> and trailing-12-month peer returns.</li>
+<li data-l="cons ir ib">Project-manage client work and mentor junior analysts and interns, delivering client-ready drafts to team leads a day or more ahead of deadlines.</li>
 </ul>
+<details class="more">
+<summary>More from this role <span>7</span></summary>
+<ul>
+<li data-l="ss bs ir">Monitor client peer groups from <b>pre-market</b> for news and trading activity, and flag what matters to the team within one to two hours of release.</li>
+<li data-l="ir cons">Build IR engagement plans, quarterly reports, investor dossiers and follow-up memos that combine quantitative and qualitative analysis.</li>
+<li data-l="ir ib ss">Prepare earnings prep briefs covering the macro backdrop, key messages, peer developments, analyst focus and investor commentary.</li>
+<li data-l="ss cons bs">Write white paper research on market and sector topics for Alpha’s thought leadership.</li>
+<li data-l="cons ib">Research prospective clients and build new-business pitch materials.</li>
+<li data-l="ir">Apply <b>Reg FD and Reg G</b> in day-to-day disclosure and messaging work.</li>
+<li data-l="ir cons">Work alongside Alpha’s PR team to keep investor messaging consistent with each client’s broader corporate story.</li>
+</ul>
+</details>
 <blockquote class="quote">“The Associate title is an important designation within our IR practice and Nathan clearly earned it with consistent execution and a strong commitment to high-quality service on behalf of our clients.”<cite>Alpha IR Group, announcing the 2025 promotion</cite></blockquote>
 <div class="adds"><span class="k">ADDS</span><span>Advisory</span><span>Executive communication</span><span>Leadership</span></div>
 <div class="used"><b>Worked with:</b> Bloomberg · S&amp;P Capital IQ · Ipreo · Irwin · AI tools</div>
@@ -353,8 +433,27 @@ footer a{color:var(--dim)}
 <div class="full" aria-label="Capabilities by role"><div class="mx" id="mxFull"></div></div>
 </section>
 
+
+<section id="work" aria-labelledby="h-work">
+<h2 id="h-work"><span class="sn">2</span>Selected work</h2>
+<p class="lede2">Recent projects at Alpha, plus one of my own. Clients stay unnamed on purpose.</p>
+<div class="cases" id="cases">
+<article class="case br" data-l="ir bs cd ss"><div class="ck">OWNERSHIP · INDEX FLOWS</div><h3>Why the holders changed</h3><p>Tied a client’s quarter of institutional buying and selling to its move from the Russell 2000 to the Russell 1000 and Midcap indexes, using institution-level 13F data and fund-level holdings.</p></article>
+<article class="case br" data-l="cd ib cons bs"><div class="ck">PEER BENCHMARKING</div><h3>Leverage in a cyclical business</h3><p>Benchmarked how globally diversified industrial peers with commodity exposure talk about leverage and cyclicality, and compared each peer’s disclosed debt maturities, for a Mexico-based industrial conglomerate.</p></article>
+<article class="case br" data-l="ib cd ss bs"><div class="ck">VALUATION · PEER RETURNS</div><h3>Comps that hold up to scrutiny</h3><p>Fact-checked and rewrote peer stock performance, buy-side ownership trends and EV/EBITDA valuation slides for a media company’s post-earnings investor materials.</p></article>
+<article class="case br" data-l="ib cd ir" data-confirm><div class="ck">M&amp;A · SPECIAL SITUATIONS</div><h3>Messaging through a take-private</h3><p>Supported a client’s investor communications during a live take-private process with competing proposals and a special committee, keeping every line compliance-aware.</p></article>
+<article class="case br" data-l="ib ir cd ss"><div class="ck">GOING PUBLIC</div><h3>A fact sheet checked against the S-4</h3><p>Built the investor fact sheet for a company going public through a business combination, and audited every figure against its S-4 filing.</p></article>
+<article class="case br" data-l="ss bs ir"><div class="ck">EARNINGS READ-ACROSS</div><h3>What bellwethers say about the consumer</h3><p>Pulled consumer health and inventory read-across from CarMax, Nike, Costco and Home Depot earnings calls for a consumer discretionary client, about five bullets per company.</p></article>
+<article class="case br" data-l="ss bs cons"><div class="ck">SECTOR RESEARCH</div><h3>Fuel, freight and the state of the consumer</h3><p>A recurring research brief on how oil and shipping costs flow through company results, and where consumer sentiment and spending stand, sourced from company disclosures and business press and re-run each earnings season.</p></article>
+<article class="case br" data-l="bs ir cd"><div class="ck">OWNERSHIP FORENSICS</div><h3>Following a sponsor’s stake</h3><p>Traced a private equity holder’s position in a consumer company through SEC filings, including across a reverse stock split.</p></article>
+<article class="case br" data-l="cons ir"><div class="ck">PROCESS</div><h3>Rebuilding a board report pipeline</h3><p>Audited a client’s 20-slide quarterly board report, mapped every slide to its source files, documented where it broke, and turned the fix into a repeatable quarterly process.</p></article>
+<article class="case br" data-l="ir ss ib"><div class="ck">EARNINGS CALLS</div><h3>Scripts in the CEO’s voice</h3><p>Draft quarterly earnings call scripts from past transcripts, for each speaker’s voice, and the new press release, for the numbers.</p></article>
+<article class="case own" data-l="bs ss wm ib cd"><div class="ck">MY OWN PROJECT</div><h3>nathanskown.dev, a markets terminal</h3><p>I designed and directed an AI-built site with quote pages for <b data-k="tick">10,430</b> US tickers, 13F ownership for <b data-k="own">6,448</b> stocks, a screener built on SEC filings, and earnings and IPO trackers. The data refreshes on its own and passes automatic checks. <a href="/finance/">See it →</a></p></article>
+</div>
+</section>
+
 <section id="numbers" aria-labelledby="h-nums">
-<h2 id="h-nums"><span class="sn">2</span>By the numbers</h2>
+<h2 id="h-nums"><span class="sn">3</span>By the numbers</h2>
 <div class="nums" id="nums">
 <div class="n br"><div class="k">Public companies</div><div class="v vt" data-scr2>6–8</div><div class="d">Advised at once as a day-to-day IR advisor</div></div>
 <div class="n br"><div class="k">Promotions</div><div class="v vt" data-to="2">2</div><div class="d">In just over two years: Analyst to Senior Analyst to Associate</div></div>
@@ -364,7 +463,7 @@ footer a{color:var(--dim)}
 </section>
 
 <section id="bring" aria-labelledby="h-bring">
-<h2 id="h-bring"><span class="sn">3</span>What I’d bring to a team</h2>
+<h2 id="h-bring"><span class="sn">4</span>What I’d bring to a team</h2>
 <div class="bring">
 <div class="bc"><div class="no vt">01</div><h3>I know how investors judge a company.</h3><p>Three years of interviewing portfolio managers and analysts for perception studies, after a year and a half recommending managers to an investment committee.</p><div class="proof"><span class="iv"><i></i>Plante Moran</span><span class="br"><i></i>Alpha IR</span></div></div>
 <div class="bc"><div class="no vt">02</div><h3>I turn data into something an executive will read.</h3><p>Board reports, ownership analysis, peer benchmarking and earnings materials, built on a base of A/R analysis and SEC-filing research.</p><div class="proof"><span class="fd"><i></i>MSU</span><span class="co"><i></i>Horizon</span><span class="br"><i></i>Alpha IR</span></div></div>
@@ -373,7 +472,7 @@ footer a{color:var(--dim)}
 </section>
 
 <section id="toolkit" aria-labelledby="h-tools">
-<h2 id="h-tools"><span class="sn">4</span>Toolkit</h2>
+<h2 id="h-tools"><span class="sn">5</span>Toolkit</h2>
 <p class="lede2">Pick a seat to see what I used there. The colored bars under each tool show every seat it came from.</p>
 <div class="flt" role="group" aria-label="Filter tools by seat">
 <button type="button" class="fb" aria-pressed="true" data-f="">All</button>
@@ -386,7 +485,7 @@ footer a{color:var(--dim)}
 </section>
 
 <section id="edu" aria-labelledby="h-edu">
-<h2 id="h-edu"><span class="sn">5</span>Education and credentials</h2>
+<h2 id="h-edu"><span class="sn">6</span>Education and credentials</h2>
 <div class="edu">
 <div class="ec fd"><div class="t vt">MSU · 2021</div><h3>Michigan State University, Eli Broad College of Business</h3><p>B.A. in Finance, minor in Insurance and Risk Management. Broad Scholar Program research assistant.</p></div>
 <div class="ec br"><div class="t vt">CFA · Level II</div><h3>CFA Program</h3><p>Preparing for the Level II exam, May 2027.</p></div>
@@ -394,7 +493,7 @@ footer a{color:var(--dim)}
 </section>
 
 <section id="contact" aria-labelledby="h-me" style="margin-bottom:0">
-<h2 id="h-me"><span class="sn">6</span>Get in touch</h2>
+<h2 id="h-me"><span class="sn">7</span>Get in touch</h2>
 <div class="me">
 <p>If you’re hiring in finance and this looks like a fit, I’d be glad to talk.</p>
 <div class="btns"><a class="btn p" href="mailto:nskown@icloud.com">nskown@icloud.com</a><a class="btn s" href="https://www.linkedin.com/in/nathan-skown" rel="noopener">LinkedIn ↗</a></div>
@@ -554,6 +653,96 @@ footer a{color:var(--dim)}
       });
     });
   });
+})();
+</script>
+<script>
+/* hiring lenses: highlight what each kind of hiring manager looks for */
+(function () {
+  var L = [
+    { id: 'ir', name: 'In-house IR', sub: 'S&P 500 company', rows: [
+      ['Run the earnings process', 'Scripts, press releases, earnings decks and prep briefs every quarter for 6–8 companies at once.', 'Alpha IR'],
+      ['Know who owns the stock, and why', 'Ownership analysis, 13F tracking, and tying a quarter’s buying and selling to an index reconstitution.', 'Alpha IR'],
+      ['Bring the Street’s view to management', 'Perception studies built from interviews with portfolio managers and sell-side analysts, delivered to the C-suite.', 'Alpha IR'],
+      ['Targeting, access and events', 'Owned targeting from call list to follow-up, set up buy-side meetings and helped host investor days.', 'Alpha IR'],
+      ['Disclosure discipline', 'Reg FD and Reg G applied in day-to-day disclosure and messaging work.', 'Alpha IR']],
+      foot: 'Where I’d grow: going deep on one company’s story after running six to eight at a time.' },
+    { id: 'wm', name: 'Wealth management', sub: 'research and due diligence', rows: [
+      ['Manager due diligence', 'Equities, fixed income and alternatives, with recommendations presented to the Research Committee that places millions of dollars.', 'Plante Moran'],
+      ['Support advisors', 'Research on stocks, funds and portfolios, plus ad-hoc advisor requests.', 'Plante Moran'],
+      ['Explain markets to clients', 'Charts and tables for thought leadership published online and used in client meetings.', 'Plante Moran'],
+      ['Know the platforms', 'Morningstar Direct, Bloomberg, Callan PEP, Black Diamond and FRED.', 'Plante Moran'],
+      ['Sharper process', 'Built a tax swap analysis spreadsheet that speeds up asset class reviews.', 'Plante Moran']],
+      foot: 'Building now: <b>CFA Level II</b>, May 2027 exam.' },
+    { id: 'bs', name: 'Buy-side investing', sub: 'asset manager, hedge fund', rows: [
+      ['Allocator judgment', 'Sat on the allocator side, recommending which managers get capital.', 'Plante Moran'],
+      ['How PMs actually think', 'Interviewed portfolio managers on how they value companies and where a thesis has gaps.', 'Alpha IR'],
+      ['Ownership and flows', '13F and fund-level holdings, index-driven flows, and a sponsor’s stake traced through SEC filings.', 'Alpha IR'],
+      ['Read-across and idea flow', 'Consumer read-across from bellwether earnings calls, and sector research re-run each earnings season.', 'Alpha IR'],
+      ['Builds things on my own time', 'Directed an AI-built markets terminal with 13F ownership pages and a screener built on SEC filings.', 'nathanskown.dev']],
+      foot: 'Building now: <b>CFA Level II</b>, and my own stock-level work on this site.' },
+    { id: 'ss', name: 'Sell-side research', sub: 'equity research', rows: [
+      ['Fast, accurate earnings work', 'Concise read-across bullets from CarMax, Nike, Costco and Home Depot calls.', 'Alpha IR'],
+      ['Sector research', 'Fuel, freight and consumer-health research briefs, plus white papers on market and sector topics.', 'Alpha IR'],
+      ['Valuation comps', 'EV/EBITDA peer comparisons and trailing-12-month peer return work.', 'Alpha IR'],
+      ['Know what the buy-side asks', 'Regular conversations with portfolio managers and analysts through perception studies and introductory buy-side calls.', 'Alpha IR'],
+      ['Pre-market discipline', 'Peer news and trading activity checked from pre-market, with material items flagged within one to two hours.', 'Alpha IR']],
+      foot: 'Building now: <b>CFA Level II</b>. I’ve seen how companies tell their story and how investors grade it.' },
+    { id: 'ib', name: 'Investment banking', sub: 'coverage, capital markets', rows: [
+      ['Valuation and comps', 'EV/EBITDA peer valuation and peer return slides for client investor materials.', 'Alpha IR'],
+      ['Deal exposure', 'An investor fact sheet for a company going public through a business combination, audited against its S-4.', 'Alpha IR'],
+      ['Read filings closely', 'SEC filings and 10-Ks since college, and every client figure checked back to its source.', 'MSU · Alpha IR'],
+      ['Client-ready under deadline', 'Earnings materials for 6–8 public companies every quarter, delivered to team leads a day or more early.', 'Alpha IR'],
+      ['Working capital basics', 'Hit a $1 million aged-receivables target in three months on a liquidity project.', 'Horizon Global']],
+      foot: 'Building now: <b>CFA Level II</b>, which goes deep on valuation and financial reporting.' },
+    { id: 'cd', name: 'Corporate development', sub: 'M&A, strategy', rows: [
+      ['Peer and competitive benchmarking', 'Leverage, cyclicality and debt-maturity benchmarking across global industrial peers.', 'Alpha IR'],
+      ['How the market will react', 'Perception studies and ownership analysis show what investors reward and punish.', 'Alpha IR'],
+      ['Transactions up close', 'A business-combination fact sheet audited against the S-4.', 'Alpha IR'],
+      ['Diligence habits', 'Manager due diligence for a research committee, and a record of checking every number.', 'Plante Moran · Alpha IR'],
+      ['Speak to executives and boards', 'Board reports and C-suite readouts every quarter.', 'Alpha IR']],
+      foot: 'Building now: <b>CFA Level II</b> valuation, alongside transaction modeling.' },
+    { id: 'cons', name: 'Consulting', sub: 'strategy, advisory', rows: [
+      ['Many clients at once', 'Day-to-day contact for 6–8 public companies, each with its own plan and deadlines.', 'Alpha IR'],
+      ['Structured research and synthesis', 'Investor interviews turned into findings, and peer research turned into summary tables leadership can act on.', 'Alpha IR'],
+      ['Run the workstream', 'Weekly agendas and to-dos, delegating to and reviewing junior analysts, delivering ahead of deadlines.', 'Alpha IR'],
+      ['Fix the process', 'Mapped a 20-slide board report to its source files and turned the fix into a repeatable process. Earlier, built the guide that moved a finance department onto new software.', 'Alpha IR · Mercedes-Benz FS'],
+      ['Help win the work', 'Prospect research and new-business pitch materials.', 'Alpha IR']],
+      foot: 'Three seats in finance means I can talk to the CFO, the investor and the analyst in their own terms.' }
+  ];
+  var btns = document.getElementById('lensBtns'), panel = document.getElementById('lensPanel'), chip = document.getElementById('lchip');
+  btns.innerHTML = L.map(function (l) { return '<button type="button" class="lb" aria-pressed="false" data-id="' + l.id + '">' + l.name + '<small>' + l.sub + '</small></button>'; }).join('');
+  function set(id, scroll) {
+    var l = L.filter(function (x) { return x.id === id; })[0];
+    btns.querySelectorAll('.lb').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-id') === id ? 'true' : 'false'); });
+    document.body.classList.toggle('lensed', !!l);
+    document.querySelectorAll('[data-l]').forEach(function (el) {
+      var hit = !!l && el.getAttribute('data-l').split(' ').indexOf(id) > -1;
+      el.classList.toggle('lit', hit);
+      if (hit) { var d = el.closest('details'); if (d) d.open = true; }
+    });
+    try { var u = new URL(location.href); if (l) u.searchParams.set('for', id); else u.searchParams.delete('for'); history.replaceState(null, '', u); } catch (e) {}
+    if (!l) { panel.hidden = true; chip.hidden = true; return; }
+    var n = document.querySelectorAll('.lit').length;
+    panel.innerHTML = '<div class="lp-h"><span class="vt">For ' + l.name.toLowerCase() + '</span><span><a href="#path">' + n + ' matching items below ↓</a> · <a href="#" data-clear>Clear</a></span></div>' +
+      '<dl class="lp-g">' + l.rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + ' <span class="w">· ' + r[2] + '</span></dd>'; }).join('') + '</dl><p class="lp-f">' + l.foot + '</p>';
+    panel.hidden = false;
+    chip.hidden = false; chip.textContent = 'LENS: ' + l.name.toUpperCase() + ' ✕';
+    if (scroll) panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  btns.addEventListener('click', function (e) { var b = e.target.closest('.lb'); if (!b) return; set(b.getAttribute('aria-pressed') === 'true' ? '' : b.getAttribute('data-id'), true); });
+  panel.addEventListener('click', function (e) { if (e.target.closest('[data-clear]')) { e.preventDefault(); set(''); } });
+  chip.addEventListener('click', function () { set(''); });
+  try { var f = new URL(location.href).searchParams.get('for'); if (f) set(f); } catch (e) {}
+
+  /* review draft: count CONFIRM items */
+  var c = document.querySelectorAll('[data-confirm]').length;
+  document.getElementById('draftN').textContent = c;
+
+  /* live site counts in the side-project card */
+  fetch('/data/site.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (d) {
+    var m = d.markets || {}, v = { tick: m.tickersSearchable, own: m.ownershipFiles };
+    document.querySelectorAll('.case [data-k]').forEach(function (el) { var x = v[el.getAttribute('data-k')]; if (x) el.textContent = x.toLocaleString('en-US'); });
+  }).catch(function () {});
 })();
 </script>
 </body>
