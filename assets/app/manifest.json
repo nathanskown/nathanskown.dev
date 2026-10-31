@@ -1,0 +1,15 @@
+{
+  "name": "NSKN Terminal",
+  "short_name": "NSKN",
+  "description": "Markets, sports and music terminal by Nathan Skown.",
+  "start_url": "/?src=app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020402",
+  "theme_color": "#020402",
+  "icons": [
+    { "src": "/assets/app/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/app/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
