@@ -155,11 +155,6 @@ text-shadow:0 0 6px var(--glow);overflow-x:hidden;-webkit-font-smoothing:antiali
 .nk-kvs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;margin:0;padding:7px 10px 12px;font-size:13px}
 .nk-kvs dt{color:var(--dim);letter-spacing:.08em}
 .nk-kvs dd{margin:0;text-align:right;color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nk-rig-in{display:flex;align-items:center;gap:14px;padding:10px 10px 12px}
-.nk-rig-ic{flex:0 0 auto;color:var(--g);filter:drop-shadow(0 0 5px var(--glow))}
-.nk-rig-t{display:flex;flex-direction:column;gap:2px;min-width:0}
-.nk-rig-n{color:var(--hi);font-size:14px;letter-spacing:.04em}
-.nk-rig-c{color:var(--dim);font-size:13px;letter-spacing:.12em;text-transform:uppercase}
 
 /* footer */
 .nk-tape{display:flex;align-items:stretch;height:32px;background:#000;border-bottom:1px solid var(--line);overflow:hidden}
