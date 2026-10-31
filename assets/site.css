@@ -346,6 +346,19 @@ a.nk-fkey{display:inline-flex;align-items:center}
 @media (prefers-reduced-motion:reduce){.nk-nav-about.is-new .nk-start{animation:none}}
 @media (max-width:760px){.nk-nav-about{flex-wrap:nowrap;margin:0;padding:0 15px;border:0;border-right:1px solid var(--hi);background:rgba(255,255,255,.08)}.nk-nav-sub{display:none}.nk-start{margin-left:6px}.nk-newhere{margin:12px 0 0}}
 
+/* career: second featured nav row, in the Career page's blue */
+.nk-nav-career{--cv:#8fb0ff;flex-wrap:wrap;row-gap:0;margin:0 8px 8px;width:auto;padding:6px 8px 8px;border:1px solid var(--cv);color:#dfe5ff;background:rgba(143,176,255,.07);text-shadow:0 0 6px rgba(143,176,255,.35)}
+.nk-nav-career:hover{background:rgba(143,176,255,.16);color:#fff}
+.nk-nav-career .nk-num{color:#dfe5ff}
+.nk-cv{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.12em;color:#000;background:var(--cv);padding:0 5px;text-shadow:none}
+.nk-nav-career .nk-nav-sub{color:#8e9ac0}
+.nk-cv-seats{flex:1 1 100%;display:flex;gap:3px;padding:5px 0 0 24px}
+.nk-cv-seats i{height:3px;flex:1;background:var(--s);box-shadow:0 0 6px var(--s);transform:scaleX(0);transform-origin:left;animation:nkSeat .7s cubic-bezier(.3,.9,.2,1) forwards}
+.nk-cv-seats i:nth-child(2){animation-delay:.25s}.nk-cv-seats i:nth-child(3){animation-delay:.5s}
+@keyframes nkSeat{to{transform:none}}
+@media (prefers-reduced-motion:reduce){.nk-cv-seats i{animation:none;transform:none}}
+@media (max-width:760px){.nk-nav-career{flex-wrap:nowrap;margin:0;padding:0 15px;border:0;border-right:1px solid var(--cv);background:rgba(143,176,255,.12)}.nk-nav-career .nk-nav-sub,.nk-cv-seats{display:none}.nk-cv{margin-left:6px}}
+
 /* Market Analysis leads the page: full width, bigger type, with what's inside shown as plain labels */
 .nk-sec-lead{flex:1 1 100%;min-height:236px;gap:11px;padding:18px 20px 16px;border-width:2px}
 .nk-sec-lead .nk-sec-t{font-size:68px;line-height:.82}
