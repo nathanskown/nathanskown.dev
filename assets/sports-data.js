@@ -153,6 +153,7 @@
           tv: (c.broadcasts || []).map(function (b) { return (b.media || {}).shortName || (b.names || []).join('/'); }).filter(Boolean).join(', '), href: gameHref(lg, e.id) };
       });
       var t = j.team || {};
+      if (!params) noteActive(lg, me, games);
       return { lg: lg, id: me, team: { id: me, abbr: t.abbreviation, name: t.displayName, loc: t.location, color: hex(t.color, '#12363B'), alt: hex(t.alternateColor, '#C8F7FC'),
         record: t.recordSummary || '', standing: t.standingSummary || '' }, season: j.season || {}, bye: j.byeWeek || null, games: games };
     });
@@ -503,11 +504,31 @@
     setFollows(on ? l.filter(function (f) { return !(f.lg === lg && String(f.id) === String(id)); }) : l.concat([{ lg: lg, id: String(id), name: name || '' }]));
     return !on;
   }
+  /* in season = a game played in the last 21 days, or one scheduled in the next 21 (live counts). Remembered per team in this browser
+     so the My teams bar can put off-season teams last without waiting on a schedule fetch. */
+  var AKEY = 'skown.sports.active.v1', WIN = 21 * 86400000;
+  function activeMap() { try { var m = JSON.parse(window.localStorage.getItem(AKEY) || '{}'); return m && typeof m === 'object' ? m : {}; } catch (e) { return {}; } }
+  function noteActive(lg, id, games) {
+    try {
+      var now = Date.now(), on = (games || []).some(function (g) { var t = Date.parse(g.start); return g.state === 'in' || (t && Math.abs(t - now) <= WIN); });
+      var m = activeMap(); m[lg + ':' + id] = on ? 1 : 0; window.localStorage.setItem(AKEY, JSON.stringify(m));
+    } catch (e) {}
+  }
+  /* 1 = in season, 0 = off-season; an unseen team falls back to its league's usual calendar (month 0-11) */
+  var SEASON = { nfl: [8, 1], ncaaf: [7, 0], mlb: [2, 9], nba: [9, 5], nhl: [9, 5], ncaab: [10, 3], ncaah: [9, 3] };
+  function inSeason(lg, id) {
+    var m = activeMap(), k = lg + ':' + id;
+    if (m[k] !== undefined) return m[k] ? 1 : 0;
+    var w = SEASON[lg]; if (!w) return 1;
+    var mo = new Date().getMonth();
+    return (w[0] <= w[1] ? mo >= w[0] && mo <= w[1] : mo >= w[0] || mo <= w[1]) ? 1 : 0;
+  }
   /* chips for the "My teams" bar: the visitor's own follows, or a prompt to follow some */
   function favChips(curLg, curId) {
     var l = follows();
     if (!l.length) return [{ label: '+ FOLLOW TEAMS', href: '/sports/#follow', cls: 't-chipl' }];
-    return l.map(function (f) {
+    var order = l.map(function (f, i) { return { f: f, i: i, on: inSeason(f.lg, f.id) }; }).sort(function (a, b) { return (b.on - a.on) || (a.i - b.i); });
+    return order.map(function (o) { return o.f; }).map(function (f) {
       var words = String(f.name || f.id).trim().split(/\s+/), nick = words.length > 1 && /^(red|blue|white|golden|maple|blue|trail|black|crimson|fighting|sun|tar)$/i.test(words[words.length - 2]) ? words.slice(-2).join(' ') : words[words.length - 1];
       var college = /^ncaa/.test(f.lg);
       return { label: (nick + (college ? ' ' + ({ ncaaf: 'FB', ncaab: 'BB', ncaah: 'HKY' }[f.lg] || '') : '')).toUpperCase(), href: teamHref(f.lg, f.id),
@@ -592,6 +613,6 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', crawl); else setTimeout(crawl, 0);
   }
 
-  window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
+  window.SD = { follows: follows, setFollows: setFollows, isFollowed: isFollowed, toggleFollow: toggleFollow, favChips: favChips, inSeason: inSeason, LEAGUES: LEAGUES, ORDER: ORDER, api: api, get: get, data: data, scores: scores, schedule: schedule, team: team, summary: summary,
     standingsLive: standingsLive, slimStandings: slimStandings, normEvent: normEvent, teamHref: teamHref, gameHref: gameHref, project: project, liveProb: liveProb, wpSeries: wpSeries, shareCard: shareCard, Phi: Phi, num: num, teamList: teamList, findTeams: findTeams };
 })();
