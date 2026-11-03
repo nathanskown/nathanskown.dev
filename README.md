@@ -8,7 +8,7 @@ Cloudflare Worker with static assets; every push to `main` deploys automatically
 | Path | What it is | Color |
 |---|---|---|
 | `index.html`, `assets/landing.js`, `assets/site.css` | Landing page: command line, section cards, live "Right Now" panel | green |
-| `finance/` | Market Analysis: dashboard, digest, headlines, quotes (any US ticker), 13F ownership, earnings, macro, IPOs | amber |
+| `finance/` | Market Analysis: dashboard, digest, headlines, quotes (any US ticker), 13F ownership, earnings, macro, screener | amber |
 | `sports/` | Scores, game center, team pages, playoff odds, simulator, injuries, track record | cyan |
 | `music/` | Guess the Track, Guess the Artist | purple |
 
@@ -37,7 +37,7 @@ don't follow anyone to another device:
 ## Live data
 
 - **Static data files** under `data/` are written by GitHub Actions and committed, which redeploys the site:
-  - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/IPOs/macro, monthly 13F check
+  - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/macro, monthly 13F check
   - `refresh-sports.yml`: hourly while games are on (9 AM to 1 AM Central) plus a daily run
   - `refresh-daily.yml`: picks missing upcoming daily-challenge days at random and uploads them privately to the Worker (never committed)
   - `tools/stamp_assets.py` (run by `build_pages.py`): adds `?v=<hash>` to CSS/JS links so the Worker can cache them for a year

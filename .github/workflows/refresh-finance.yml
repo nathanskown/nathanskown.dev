@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: "7 13-21 * * 1-5"   # market + headlines: hourly through the US trading day (UTC)
     - cron: "7 14,22 * * 0,6"   # headlines on weekends
-    - cron: "17 11 * * *"       # daily: quotes, earnings, IPOs, macro (6:17 AM CT in summer)
+    - cron: "17 11 * * *"       # daily: quotes, earnings, macro (6:17 AM CT in summer)
     - cron: "23 9 3 * *"        # monthly: check for new SEC 13F data sets
   push:
     branches: [main]

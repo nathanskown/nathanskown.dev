@@ -1,7 +1,7 @@
 """The three jobs. Each writes JSON files under data/finance/ that the pages read.
 
 market    (hourly in market hours): dashboard tiles, intraday charts, movers, sectors, yields, watchlist, headlines
-daily     (each morning): index members, per-ticker quote pages, earnings season, IPOs, macro
+daily     (each morning): index members, per-ticker quote pages, earnings season, macro
 quarterly (monthly check): 13F institutional ownership from the SEC's quarterly data sets
 """
 import statistics
@@ -897,7 +897,6 @@ def daily():
     mem = attempt("members (wikipedia)", build_members, default=None) or read("members.json", {}) or {}
     macro_ok = attempt("macro", macro)
     cal = attempt("earnings season", earnings, mem, default=[]) or []
-    attempt("ipos", ipos)
     attempt("quote pages", quotes, mem, cal)
     return macro_ok
 

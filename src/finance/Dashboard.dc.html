@@ -124,7 +124,6 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <a class="t-fkey" href="IR.dc.html">IR view</a>
 <a class="t-fkey" href="Earnings.dc.html">Earnings</a>
 <a class="t-fkey" href="Macro.dc.html">Macro</a>
-<a class="t-fkey" href="IPO.dc.html">IPOs</a>
 <a class="t-fkey" href="Screener.dc.html">Screener</a>
 <a class="t-fkey" href="Fed.dc.html">Fed</a>
 </nav>
@@ -430,7 +429,7 @@ var CZ = {
   tiles: ['spx', 'ixic', 'dji', 'rut', 'vix', 'tnx', 'dxy', 'wti', 'gold', 'btc'],
   watch: ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL'],
   home: [['dashboard', 'Dashboard', ''], ['digest', 'Digest', 'Digest.dc.html'], ['headlines', 'Headlines', 'News.dc.html'], ['quote', 'Quotes', 'Main.dc.html'],
-    ['ownership', 'Ownership', 'Ownership.dc.html'], ['earnings', 'Earnings', 'Earnings.dc.html'], ['macro', 'Macro', 'Macro.dc.html'], ['ipo', 'IPOs', 'IPO.dc.html']]
+    ['ownership', 'Ownership', 'Ownership.dc.html'], ['earnings', 'Earnings', 'Earnings.dc.html'], ['macro', 'Macro', 'Macro.dc.html']]
 };
 class Component extends DCLogic {
   pf(k, d) { var st = this.state || {}; return st.pf && st.pf[k] !== undefined ? st.pf[k] : PREFS.get('fin.' + k, d); }

@@ -26,7 +26,6 @@ def main():
     qidx = load(fin / "quotes/index.json", {}) or {}
     hl = load(fin / "headlines.json", {}) or {}
     earn = load(fin / "earnings.json", {}) or {}
-    ipo = load(fin / "ipo.json", {}) or {}
     own = [p for p in (fin / "ownership").glob("*.json") if p.stem.isupper() or p.stem[:1].isalpha()] if (fin / "ownership").exists() else []
     hist, seasons = {}, {}
     for p in (sp / "history").glob("*_*.json"):
@@ -63,7 +62,6 @@ def main():
             "ownershipFiles": len(own),
             "headlines": len(hl.get("items") or []),
             "earningsReported": (earn.get("score") or {}).get("n"),
-            "iposThisYear": (ipo.get("score") or {}).get("n") if isinstance(ipo.get("score"), dict) else None,
         },
         "sports": {
             "teamsRated": teams,

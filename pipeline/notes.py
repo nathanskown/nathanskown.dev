@@ -1,6 +1,6 @@
 """Monthly data notes: short, numbered findings computed from the site's own data files. No language model and no
 hand-typed numbers: every sentence is a template filled from data/finance (13F ownership, screener prices, earnings,
-macro, IPOs, index changes) and data/sports (the house model's graded picks).
+macro, index changes) and data/sports (the house model's graded picks).
 
     python -m pipeline.notes            # write the note for the month that just ended (first week of a month)
     python -m pipeline.notes --now      # write a month-to-date edition for the current month
@@ -175,7 +175,7 @@ def build(month, label, partial):
     members = load(FIN / "members.json", {}) or {}
     parts = [ownership_section(members), market_section(load(FIN / "screener.json", {}) or {}, members),
              earnings_section(load(FIN / "earnings.json", {}) or {}), macro_section(load(FIN / "macro.json", {}) or {}),
-             ipo_section(load(FIN / "ipo.json", {}) or {}), index_section(load(FIN / "index_changes.json", {}) or {}, month),
+             index_section(load(FIN / "index_changes.json", {}) or {}, month),
              sports_section(load(SPT / "track" / "summary.json", {}))]
     parts = [p for p in parts if p]
     lead = []

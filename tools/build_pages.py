@@ -41,7 +41,7 @@ GAME_PRESETS = {"football": "nfl", "baseball": "mlb", "basketball": "nba", "hock
 # section -> css, theme color, and pages: (route, source file, props, title)
 SECTIONS = {
     "finance": {
-        "desc": "Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and IPOs, refreshed through the trading day.",
+        "desc": "Market dashboard, headlines, quotes for any US ticker, 13F ownership, earnings, macro and a stock screener, refreshed through the trading day.",
         "css": "assets/finance.css",
         "theme": "#070402",
         "scripts": ["/assets/finance-ui.js", "/assets/glossary.js"],
@@ -56,14 +56,13 @@ SECTIONS = {
             ("notes", "Notes.dc.html", {}, "Data notes"),
             ("earnings", "Earnings.dc.html", {}, "Earnings dashboard"),
             ("macro", "Macro.dc.html", {}, "Macro monitor"),
-            ("ipo", "IPO.dc.html", {}, "IPO tracker"),
             ("screener", "Screener.dc.html", {}, "Stock screener"),
             ("fed", "Fed.dc.html", {}, "Fed Day Redline"),
         ],
         "routes": {
             "Dashboard.dc.html": "/finance/", "Digest.dc.html": "/finance/digest/", "News.dc.html": "/finance/headlines/", "Main.dc.html": "/finance/quote/",
             "Ownership.dc.html": "/finance/ownership/", "IR.dc.html": "/finance/ir/", "Calendar.dc.html": "/finance/index-calendar/", "Notes.dc.html": "/finance/notes/", "Earnings.dc.html": "/finance/earnings/",
-            "Macro.dc.html": "/finance/macro/", "IPO.dc.html": "/finance/ipo/", "Screener.dc.html": "/finance/screener/", "Fed.dc.html": "/finance/fed/",
+            "Macro.dc.html": "/finance/macro/", "Screener.dc.html": "/finance/screener/", "Fed.dc.html": "/finance/fed/",
         },
     },
     "sports": {
@@ -96,7 +95,6 @@ PAGE_DESC = {
     ("finance", "macro"): "The US economy in numbers from FRED: inflation, jobs, growth, rates, recession signals and the release calendar.",
     ("finance", "screener"): "Stock screener for the US market: filter by valuation, growth, margins, momentum and ownership, with every data gap shown.",
     ("finance", "fed"): "Every FOMC statement marked up against the one before it, a plain-English summary of what changed, and how stocks, Treasury yields and the dollar moved after each release.",
-    ("finance", "ipo"): "US IPO tracker: deals pricing soon, first-day and since-IPO returns, new filings and lockup expirations.",
     ("sports", ""): "Scores and schedules for the NFL, MLB, NBA, NHL, college sports, soccer, golf and tennis, with house win probabilities.",
     ("sports", "teams"): "Every team in the NFL, MLB, NBA, NHL and college sports, with records and house-model ratings.",
     ("sports", "simulator"): "Pick any two teams and see the house model's projected margin and win probability.",
