@@ -138,7 +138,7 @@
 
 <sc-if value="{{pp.has}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Player projections">
-<div class="t-ph"><h2>Player projections</h2><span class="dim">{{pp.sub}}</span></div>
+<div class="t-ph"><h2>Player projections</h2><span class="dim">{{pp.sub}}</span><button type="button" class="s-tab" onClick="{{pp.csv}}">Download CSV</button></div>
 <div class="t-pb">
 <div class="s-tabs" role="group" aria-label="Stat">
 <sc-for list="{{pp.tabs}}" as="b" hint-placeholder-count="4"><button type="button" class="{{b.cls}}" aria-pressed="{{b.on}}" onClick="{{b.pick}}">{{b.label}}</button></sc-for>
@@ -157,15 +157,22 @@
 </sc-if>
 <sc-if value="{{sg.has}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Shots on goal">
-<div class="t-ph"><h2>Shots on goal</h2><span class="dim">{{sg.sub}}</span></div>
+<div class="t-ph"><h2>Shots on goal</h2><span class="dim">{{sg.sub}}</span><button type="button" class="s-tab" onClick="{{sg.csv}}">Download CSV</button></div>
 <div class="t-pb">
 <sc-for list="{{sg.teams}}" as="t" hint-placeholder-count="2">
 <h3 style="margin: 14px 0 6px; font-size: 13px; letter-spacing: .08em">{{t.abbr}}</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th><th scope="col">Ceiling</th><th scope="col">Ice time</th></tr></thead>
-<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.l1}}</td><td>{{r.l2}}</td><td>{{r.l3}}</td><td>{{r.l4}}</td><td>{{r.l5}}</td><td>{{r.ceil}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th><th scope="col">Ceiling</th><th scope="col">Anytime goal</th><th scope="col">Ice time</th></tr></thead>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.l1}}</td><td>{{r.l2}}</td><td>{{r.l3}}</td><td>{{r.l4}}</td><td>{{r.l5}}</td><td>{{r.ceil}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
+<sc-if value="{{sg.hasG}}" hint-placeholder-val="{{false}}">
+<h3 style="margin: 16px 0 6px; font-size: 13px; letter-spacing: .08em">Goalie saves</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Goalie</th><th scope="col">Shots faced</th><th scope="col">Save %</th><th scope="col">Expected saves</th><th scope="col">20+</th><th scope="col">25+</th><th scope="col">30+</th><th scope="col">35+</th><th scope="col">Note</th></tr></thead>
+<tbody><sc-for list="{{sg.goalies}}" as="g" hint-placeholder-count="2"><tr><th scope="row" class="l">{{g.player}} <span class="dim">{{g.team}}</span></th><td>{{g.shots}}</td><td>{{g.sv}}</td><td style="color: var(--wh); font-weight: 600">{{g.mean}}</td><td>{{g.s20}}</td><td>{{g.s25}}</td><td>{{g.s30}}</td><td>{{g.s35}}</td><td class="dim">{{g.note}}</td></tr></sc-for></tbody>
+</table></div>
+</sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{sg.note}}</p>
 </div>
 </section>
@@ -470,6 +477,15 @@ class Component extends DCLogic {
       }
     }
 
+    var saveCsv = function (name, head, rows) {
+      try {
+        var q = function (v) { v = String(v === undefined || v === null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        var txt = [head].concat(rows).map(function (r) { return r.map(q).join(','); }).join('\n');
+        var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv' })); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      } catch (e) {}
+    };
+    pp.csv = function () { saveCsv('nfl-projections-' + gid + '.csv', ['player', 'team', 'stat', 'projection', 'median', 'p25', 'p75'],
+      ((X && X.props) || []).filter(function (r) { return r.espn === gid; }).map(function (r) { return [r.player, r.team, r.market, r.mean, r.median, r.p25, r.p75]; })); };
     var sg = { has: false }, NP = lg === 'nhl' ? S.nhlp : null;
     if (NP && !NP.err && NP.pmf) {
       var mineS = (NP.props || []).filter(function (r) { return r.espn === gid; });
@@ -480,11 +496,14 @@ class Component extends DCLogic {
         var steams = [A, H].map(function (t) {
           var rs = mineS.filter(function (r) { return r.team === t.abbr; }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, 10);
           return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = NP.pmf[r.band];
-            return { player: r.player, pos: r.pos, mean: r.mean.toFixed(2), l1: fmtP(tailP(pm, 1)), l2: fmtP(tailP(pm, 2)), l3: fmtP(tailP(pm, 3)), l4: fmtP(tailP(pm, 4)), l5: fmtP(tailP(pm, 5)), ceil: ceilOf(pm), toi: r.toi.toFixed(0) + ' min' }; }) };
+            return { player: r.player, pos: r.pos, mean: r.mean.toFixed(2), l1: fmtP(tailP(pm, 1)), l2: fmtP(tailP(pm, 2)), l3: fmtP(tailP(pm, 3)), l4: fmtP(tailP(pm, 4)), l5: fmtP(tailP(pm, 5)), ceil: ceilOf(pm), pg: r.pg !== undefined ? fmtP(r.pg) : '—', toi: r.toi.toFixed(0) + ' min' }; }) };
         }).filter(function (t) { return t.rows.length; });
+        var gk = (NP.goalies || []).filter(function (r) { return r.espn === gid; }).map(function (r) { var pm = (NP.gpmf || [])[r.band] || [];
+          return { player: r.player, team: r.team, shots: r.shots.toFixed(1), sv: (r.sv * 100).toFixed(1) + '%', mean: r.mean.toFixed(1), s20: pm.length ? fmtP(tailP(pm, 20)) : '—', s25: pm.length ? fmtP(tailP(pm, 25)) : '—', s30: pm.length ? fmtP(tailP(pm, 30)) : '—', s35: pm.length ? fmtP(tailP(pm, 35)) : '—', note: r.note }; });
         var nb2 = NP.backtest || {}, lastY = Object.keys(nb2).sort().pop(), bb = lastY ? nb2[lastY] : null, l3 = bb ? bb.ladder[2] : null;
-        sg = { has: steams.length > 0, sub: mineS[0].locked ? 'Final pre-game numbers' : 'Updated ' + F.day(NP.updated), teams: steams,
-          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
+        sg = { csv: function () { saveCsv('nhl-shots-' + gid + '.csv', ['player', 'team', 'pos', 'expected_shots', 'expected_goals', 'anytime_goal_chance', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus', 'ice_time_min'],
+          mineS.map(function (r) { var pm = NP.pmf[r.band]; return [r.player, r.team, r.pos, r.mean, r.gx, r.pg, tailP(pm, 1).toFixed(3), tailP(pm, 2).toFixed(3), tailP(pm, 3).toFixed(3), tailP(pm, 4).toFixed(3), tailP(pm, 5).toFixed(3), r.toi]; })); }, goalies: gk, hasG: gk.length > 0, has: steams.length > 0, sub: mineS[0].locked ? 'Final pre-game numbers' : 'Updated ' + F.day(NP.updated), teams: steams,
+          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Anytime goal is expected shots times his own shooting percentage, turned into a chance the same way. Goalie rows assume the goalie who started the team\u2019s last game (the backup if it is the second game in two nights); starters are not confirmed until close to puck drop. Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
             + (bb ? ' Tested on ' + lastY + ' using only earlier seasons: ' + Math.round(l3.pred * 100) + '% of players were projected to take 3+ shots and ' + Math.round(l3.act * 100) + '% did.' : '') };
       }
     }

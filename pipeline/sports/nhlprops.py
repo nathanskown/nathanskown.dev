@@ -24,6 +24,8 @@ K = 10                          # shot counts above this are pooled ("10+")
 QS = [.08, .16, .25, .33, .42, .5, .58, .67, .75, .83, .9, .94, .97, .985, .995]   # band edges as quantiles of projected shots; finer at the top, where the stars are
 NBANDS = len(QS) + 1
 ESPN2NHL = {"TB": "TBL", "NJ": "NJD", "SJ": "SJS", "LA": "LAK", "UTAH": "UTA"}
+KG, HL_G, HL_S, KS = 250.0, 80.0, 60.0, 800.0   # shooting-pct pseudo-shots and half-life; goalie half-life and pseudo-shots
+KSAVE = 50                                            # save counts above this are pooled
 OUT_STATUS = {"Out", "Injured Reserve", "Doubtful", "Suspension"}
 
 
@@ -66,8 +68,14 @@ def collect_current(cur, budget=240):
 
 class State:
     def __init__(self):
-        self.P = collections.defaultdict(lambda: {"sog": 0.0, "min": 0.0, "toi": 0.0, "n": 0.0, "gp": 0, "team": None, "name": None, "pos": "F"})
+        self.P = collections.defaultdict(lambda: {"sog": 0.0, "min": 0.0, "toi": 0.0, "n": 0.0, "g": 0.0, "s": 0.0, "gp": 0, "team": None, "name": None, "pos": "F"})
         self.TA = collections.defaultdict(lambda: [0.0, 0.0])
+        self.SF = collections.defaultdict(lambda: [0.0, 0.0])
+        self.G = {}
+        self.lgs = [0.0, 0.0]; self.lsv = [0.0, 0.0]
+        self.lastgk = {}
+        self.lastdate = {}
+        self.fG, self.fS = 0.5 ** (1 / HL_G), 0.5 ** (1 / HL_S)
         self.lgp = {"F": [0.0, 0.0], "D": [0.0, 0.0]}
         self.lgt = {"F": [0.0, 0.0], "D": [0.0, 0.0]}
         self.tl = [0.0, 0.0]
@@ -85,7 +93,36 @@ class State:
         toi = (st["toi"] + KT * t0) / (st["n"] + KT)
         return rate * toi * of * (1.03 if home else 0.97), toi
 
-    def update(self, h, a, hs, as_):
+    def gmu(self, pid, mu):
+        """Expected goals = expected shots x his own shooting percentage (pulled toward the league's)."""
+        st = self.P[pid]
+        p0 = self.lgs[0] / self.lgs[1] if self.lgs[1] > 0 else 0.10
+        return mu * (st["g"] + KG * p0) / (st["s"] + KG)
+
+    def gk_mu(self, gid_, team, opp, home):
+        """Shots the goalie's team will face (the opponent's shots for x this team's shots allowed, relative to the league) and his save pct."""
+        sf_avg = self.tl[0] / self.tl[1] if self.tl[1] > 0 else 29.0
+        o, t = self.SF[opp], self.TA[team]
+        of = ((o[0] + 8 * sf_avg) / (o[1] + 8)) / sf_avg
+        df = ((t[0] + 8 * sf_avg) / (t[1] + 8)) / sf_avg
+        sh = sf_avg * of * df * (0.985 if home else 1.015)
+        sv0 = self.lsv[0] / self.lsv[1] if self.lsv[1] > 0 else 0.905
+        g = self.G.get(gid_, [0.0, 0.0, 0])
+        sv = (g[1] + KS * sv0) / (g[0] + KS)
+        return sh, sv, g[2]
+
+    def gk_update(self, team, gs):
+        for g in gs:
+            if g[3] <= 0 or g[4] is None:
+                continue
+            st = self.G.setdefault(g[0], [0.0, 0.0, 0])
+            st[0] = st[0] * self.fG + g[4]; st[1] = st[1] * self.fG + g[5]; st[2] += 1
+            self.lsv[0] += g[5]; self.lsv[1] += g[4]
+            if g[2] and g[3] > 1200:
+                self.lastgk.setdefault(team, collections.deque(maxlen=10)).append((g[0], g[1]))
+
+    def update(self, h, a, hs, as_, dt=None):
+        self.lastdate[h] = self.lastdate[a] = dt
         for sk, team, opp in ((hs, h, a), (as_, a, h)):
             ts = sum(x[4] for x in sk)
             seen = set()
@@ -98,11 +135,15 @@ class State:
                 st["min"] = st["min"] * self.fR + sec / 60.0
                 st["toi"] = st["toi"] * self.fT + sec / 60.0
                 st["n"] = st["n"] * self.fT + 1.0
+                st["g"] = st["g"] * self.fS + g_; st["s"] = st["s"] * self.fS + sog
+                self.lgs[0] += g_; self.lgs[1] += sog
                 st["gp"] += 1; st["team"] = team; st["name"] = name; st["pos"] = p
                 self.lgp[p][0] += sog; self.lgp[p][1] += sec / 60.0
                 self.lgt[p][0] += sec / 60.0; self.lgt[p][1] += 1
                 seen.add(pid)
             self.recent[team].append(seen)
+            sf = self.SF[team]
+            sf[0] = sf[0] * self.fR + ts; sf[1] = sf[1] * self.fR + 1
             ta = self.TA[opp]
             ta[0] = ta[0] * self.fR + ts; ta[1] = ta[1] * self.fR + 1
             self.tl[0] += ts; self.tl[1] += 1
@@ -118,6 +159,28 @@ def _tables(rows, years):
         c = np.bincount(a[k], minlength=K + 1) + 0.5
         pmf.append(c / c.sum())
     return edges, pmf
+
+
+def _goal_table(rows, years, nb=12):
+    """Chance of scoring at least once, by band of expected goals (expected shots x his shooting percentage)."""
+    g = np.array([r[5] for r in rows if r[0] in years]); f = np.array([r[6] for r in rows if r[0] in years], float)
+    e = np.quantile(g, np.linspace(0, 1, nb + 1)[1:-1])
+    rate = []
+    for b in range(nb):
+        k = (g >= (-np.inf if b == 0 else e[b - 1])) & (g < (np.inf if b == nb - 1 else e[b]))
+        rate.append(float(f[k].mean()))
+    return e, rate
+
+
+def _gk_tables(grows, years, nb=14):
+    mu = np.array([r[1] for r in grows if r[0] in years]); a = np.minimum(np.array([r[2] for r in grows if r[0] in years]), KSAVE).astype(int)
+    e = np.quantile(mu, np.linspace(0, 1, nb + 1)[1:-1])
+    pm = []
+    for b in range(nb):
+        k = (mu >= (-np.inf if b == 0 else e[b - 1])) & (mu < (np.inf if b == nb - 1 else e[b]))
+        c = np.bincount(a[k], minlength=KSAVE + 1) + 0.05
+        pm.append(c / c.sum())
+    return e, pm
 
 
 def _rps(p, a):
@@ -180,6 +243,30 @@ def _log_and_grade(cur, props, games, pmf):
     return out
 
 
+def _trend(games, cur):
+    """Per team: this season and the last 15 / 10 / 5 games, per game: goals for and against, shots for and against, shot
+    difference, each with its league rank (1 = best). From the same box scores; shots are shots on goal, all situations."""
+    per = collections.defaultdict(list)
+    for dt, y, gid, h, a, hs, as_ in sorted(g for g in games if g[1] == cur):
+        sh_h, sh_a = sum(x[4] for x in hs), sum(x[4] for x in as_)
+        go_h, go_a = sum(x[5] for x in hs), sum(x[5] for x in as_)
+        per[h].append((go_h, go_a, sh_h, sh_a)); per[a].append((go_a, go_h, sh_a, sh_h))
+    out = {}
+    for t, g in per.items():
+        out[t] = {}
+        for name, n in (("season", None), ("l15", 15), ("l10", 10), ("l5", 5)):
+            w = g if n is None else g[-n:]
+            m = np.mean(np.array(w, float), axis=0)
+            out[t][name] = {"gp": len(w), "gf": round(float(m[0]), 2), "ga": round(float(m[1]), 2), "sf": round(float(m[2]), 1), "sa": round(float(m[3]), 1), "sd": round(float(m[2] - m[3]), 1)}
+    for name in ("season", "l15", "l10", "l5"):
+        for k, rev in (("gf", True), ("ga", False), ("sf", True), ("sa", False), ("sd", True)):
+            order = sorted(out, key=lambda t: out[t][name][k], reverse=rev)
+            for i, t in enumerate(order):
+                out[t][name]["r" + k] = 1 + sum(1 for u in order if (out[u][name][k] > out[t][name][k] if rev else out[u][name][k] < out[t][name][k]))
+    write("model/nhl_trend.json", {"season": cur, "updated": now_iso(), "teams": out})
+    return len(out)
+
+
 def job_props():
     cur = (read("model/nhl.json") or {}).get("season")
     if not cur:
@@ -190,9 +277,19 @@ def job_props():
         d = (read(f"history/nhl_skaters_{y}.json") or {}).get("g") or {}
         games += [(v[0], y, gid, v[1], v[2], v[3], v[4]) for gid, v in d.items()]
     games.sort()
+    gl = {}
+    for y in range(cur - 3, cur + 1):
+        gl.update((read(f"history/nhl_goalies_{y}.json") or {}).get("g") or {})
     S = State()
-    rows = []
+    rows, grows = [], []
     for dt, y, gid, h, a, hs, as_ in games:
+        if gid in gl:
+            for team, opp, home, gs in ((h, a, 1, gl[gid][3]), (a, h, 0, gl[gid][4])):
+                st_ = [g for g in gs if g[2] and g[3] > 1200 and g[4] is not None]
+                if st_:
+                    sh, sv, gp_ = S.gk_mu(st_[0][0], team, opp, home)
+                    if gp_ >= 3:
+                        grows.append((y, sh * sv, st_[0][5]))
         for sk, opp, home in ((hs, a, 1), (as_, h, 0)):
             for pid, name, pos, sec, sog, g_, a_ in sk:
                 if sec <= 0:
@@ -201,8 +298,10 @@ def job_props():
                 if st["gp"] < 5:
                     continue
                 mu, toi = S.mu(pid, "D" if pos == "D" else "F", opp, home)
-                rows.append((y, mu, sog, "D" if pos == "D" else "F", toi))
-        S.update(h, a, hs, as_)
+                rows.append((y, mu, sog, "D" if pos == "D" else "F", toi, S.gmu(pid, mu), 1 if g_ >= 1 else 0))
+        S.update(h, a, hs, as_, dt)
+        if gid in gl:
+            S.gk_update(h, gl[gid][3]); S.gk_update(a, gl[gid][4])
     years = {y for y in range(cur - 3, cur)}
     edges, pmf = _tables(rows, years | {cur})
     band = lambda m: int(np.searchsorted(edges, m, side="right"))
@@ -223,6 +322,31 @@ def job_props():
             back[str(ty)] = s
     # this season so far, scored with the tables above (which already include it, so this is the in-sample view; the backtest is the fair test)
     live = _score([(pmf[band(r[1])], r[2]) for r in rows if r[0] == cur])
+    # anytime goal and goalie saves: same walk-forward standard
+    gedges, grate = _goal_table(rows, years | {cur})
+    gband = lambda m: int(np.searchsorted(gedges, m, side="right"))
+    kedges, kpmf = _gk_tables(grows, years | {cur})
+    kband = lambda m: int(np.searchsorted(kedges, m, side="right"))
+    back_g, back_k = {}, {}
+    for ty in (cur - 2, cur - 1):
+        yrs = {y for y in range(cur - 3, cur + 1) if y < ty}
+        if yrs and any(r[0] == ty for r in rows):
+            e2, r2 = _goal_table(rows, yrs)
+            te = [r for r in rows if r[0] == ty]
+            pr = np.array([r2[int(np.searchsorted(e2, r[5], side="right"))] for r in te]); yv = np.array([r[6] for r in te], float)
+            lg_ = float(np.mean([r[6] for r in rows if r[0] in yrs]))
+            back_g[str(ty)] = {"n": len(te), "brier": round(float(np.mean((pr - yv) ** 2)), 5), "leagueBrier": round(float(np.mean((lg_ - yv) ** 2)), 5),
+                               "calib": [{"lo": lo, "hi": hi, "n": int(((pr >= lo) & (pr < hi)).sum()), "pred": round(float(pr[(pr >= lo) & (pr < hi)].mean()), 3), "act": round(float(yv[(pr >= lo) & (pr < hi)].mean()), 3)}
+                                         for lo, hi in ((0, .1), (.1, .2), (.2, .3), (.3, 1)) if ((pr >= lo) & (pr < hi)).sum() > 50]}
+        gr = [r for r in grows if r[0] == ty]
+        if yrs and len(gr) > 200 and sum(1 for r in grows if r[0] in yrs) > 500:
+            e3, p3 = _gk_tables(grows, yrs)
+            items = [(p3[int(np.searchsorted(e3, r[1], side="right"))], r[2]) for r in gr]
+            sc = collections.Counter(min(r[2], KSAVE) for r in grows if r[0] in yrs)
+            lgp_ = np.array([sc.get(i, 0) + 0.05 for i in range(KSAVE + 1)], float); lgp_ /= lgp_.sum()
+            lad = [{"k": k, "pred": round(float(np.mean([np.cumsum(p[::-1])[::-1][k] for p, a in items])), 3), "act": round(float(np.mean([a >= k for p, a in items])), 3)} for k in (20, 25, 30, 35)]
+            rp = lambda pm_, a: float(np.sum((np.cumsum(pm_) - (np.arange(KSAVE + 1) >= min(a, KSAVE))) ** 2))
+            back_k[str(ty)] = {"n": len(items), "rps": round(float(np.mean([rp(p, a) for p, a in items])), 3), "baselineRps": round(float(np.mean([rp(lgp_, a) for p, a in items])), 3), "ladder": lad}
     # upcoming games
     ev = (read("model/_games_nhl.json") or {}).get("events", {})
     teams = {t["id"]: t["abbr"] for t in ((read("teams.json") or {}).get("leagues") or {}).get("nhl", [])}
@@ -254,7 +378,40 @@ def job_props():
                 if toi < 8.0:
                     continue
                 props.append({"pid": pid, "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
-                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"]})
+                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"],
+                              "pg": round(grate[gband(S.gmu(pid, mu))], 3), "gx": round(float(S.gmu(pid, mu)), 2)})
+    _trend(games, cur)
+    goalies = []
+    out_g = {teams.get(t, t): {key(r["name"]) for r in rs if r.get("status") in OUT_STATUS and r.get("pos") == "G"} for t, rs in inj.items()}
+    for eid, e in sorted(ev.items(), key=lambda kv: kv[1]["d"]):
+        if e.get("done") or not (now16 <= e["d"] <= horizon):
+            continue
+        ha, aa = teams.get(e["h"]), teams.get(e["a"])
+        if not ha or not aa:
+            continue
+        day = _et_day(e["d"])
+        for team_e, opp_e, home in ((ha, aa, 1), (aa, ha, 0)):
+            team, opp = ESPN2NHL.get(team_e, team_e), ESPN2NHL.get(opp_e, opp_e)
+            q = list(S.lastgk.get(team) or [])
+            if not q:
+                continue
+            q = [x for x in q if not ((norm(x[1].replace(".", ". ").split()[-1]), norm(x[1].replace(".", ". ").split()[0])[:1]) in out_g.get(team_e, set()))]
+            if not q:
+                continue
+            pick, note = q[-1], "started the last game"
+            yday = (datetime.fromisoformat(day) - timedelta(days=1)).date().isoformat()
+            if S.lastdate.get(team) == yday:
+                others = collections.Counter(x[0] for x in q if x[0] != pick[0])
+                if others:
+                    pid2 = others.most_common(1)[0][0]
+                    pick = next(x for x in q if x[0] == pid2); note = "second game in two nights: backup likely"
+                else:
+                    note = "second game in two nights"
+            sh, sv, gp_ = S.gk_mu(pick[0], team, opp, bool(home))
+            if gp_ < 3:
+                continue
+            goalies.append({"pid": pick[0], "player": pick[1], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "shots": round(float(sh), 1), "sv": round(float(sv), 3),
+                            "mean": round(float(sh * sv), 1), "band": kband(sh * sv), "note": note, "start": e["d"]})
     livelog = _log_and_grade(cur, props, games, pmf)
     # keep numbers of games that have started for four days so their pages still show them
     prev = read("props/nhl.json") or {}
@@ -263,5 +420,6 @@ def job_props():
     props += [dict(r, locked=True) for r in prev.get("props") or [] if r["espn"] not in fresh and since <= (ev.get(r["espn"]) or {}).get("d", "") <= now16]
     props.sort(key=lambda r: (r["espn"], -r["mean"]))
     write("props/nhl.json", {"season": cur, "updated": now_iso(), "props": props, "pmf": [[round(float(x), 4) for x in p] for p in pmf], "kmax": K,
-                             "live": live, "liveLog": livelog, "backtest": back, "source": "NHL box scores (api-web.nhle.com)"})
+                             "live": live, "liveLog": livelog, "backtest": back, "goalies": goalies, "gpmf": [[round(float(x), 4) for x in p] for p in kpmf],
+                             "backtestGoals": back_g, "backtestSaves": back_k, "source": "NHL box scores (api-web.nhle.com)"})
     return {"added": added, "rows": len(rows), "props": len(props), "back": back, "live": live}

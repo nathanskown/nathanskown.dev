@@ -117,7 +117,7 @@
 <sc-if value="{{B.msg}}" hint-placeholder-val="{{false}}"><div class="s-empty">{{B.msg}}</div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 8px">
 <sc-for list="{{B.games}}" as="g" hint-placeholder-count="6">
-<div class="{{g.cls}}">
+<div class="{{g.cls}}" onClick="{{g.go}}">
 <sc-if value="{{g.title}}" hint-placeholder-val="{{false}}"><div class="hi" style="font-size: 13px; margin-bottom: 4px">{{g.title}}</div></sc-if>
 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
 <div class="s-line" style="min-height: 32px"><a class="s-team" href="{{r.href}}" style="{{r.style}}"><span class="s-tc" style="{{r.tc}}" aria-hidden="true"></span><sc-if value="{{r.logo}}" hint-placeholder-val="{{true}}"><img class="s-logo" src="{{r.logo}}" alt=""></sc-if><sc-if value="{{r.rank}}" hint-placeholder-val="{{false}}"><span class="s-rank">{{r.rank}}</span></sc-if><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.name}}</span><span class="dim" style="font-size:13px">{{r.rec}}</span></a><span class="s-sc" style="{{r.scoreStyle}}">{{r.score}}</span></div>
@@ -242,7 +242,7 @@ class Component extends DCLogic {
           results.push({ name: t.name, lg: SD.LEAGUES[k].short, add: function () { var f = { lg: k, id: t.id, name: t.name }; self.saveFollows(S.follows.concat([f])); self.loadFollow(f); } });
       }); });
     }
-    var mine = S.follows.map(function (f) {
+    var mine = S.follows.map(function (f, i) { return { f: f, i: i, on: SD.inSeason(f.lg, f.id) }; }).sort(function (a, b) { return (b.on - a.on) || (a.i - b.i); }).map(function (o) { return o.f; }).map(function (f) {
       var t = info[f.lg + ':' + f.id] || {}, s = S.fsched[f.lg + ':' + f.id], last = null, next = null;
       if (s) { s.games.forEach(function (g) { if (g.done) last = g; else if (!next && g.state !== 'post') next = g; }); }
       var opp = function (g) { return (g.home || g.neutral ? 'vs ' : 'at ') + (g.opp.abbr || g.opp.short || 'TBD'); };
@@ -278,7 +278,7 @@ class Component extends DCLogic {
     });
 
     // scoreboards
-    var all = S.lg === 'all', CAP = 4, liveN = 0;
+    var all = S.lg === 'all', liveN = 0;
     var stStyle = function (st) { return st === 'in' ? 'color: var(--live); font-weight: 600; font-size:13px' : 'color: var(--dim); font-size:13px'; };
     var pill = function (st) { return 's-pill ' + (st === 'in' ? 'live' : st === 'pre' ? 'pre' : 'final'); };
     var cardCls = function (st, fol) { return 'sb' + (st === 'in' ? ' is-live' : st === 'post' ? ' is-final' : '') + (fol ? ' is-fol' : ''); };
@@ -316,7 +316,7 @@ class Component extends DCLogic {
             status: e.state === 'pre' && e.start ? 'Starts ' + new Date(e.start).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }) : e.detail, stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state), href: '', note: '', live: e.state === 'in', st: e.state, start: e.start });
         });
       } else if (L.kind === 'tennis') {
-        b.events.forEach(function (e) { e.matches.slice(0, all ? 4 : 24).forEach(function (m) {
+        b.events.forEach(function (e) { e.matches.forEach(function (m) {
           cards.push({ title: '', rows: m.players.map(function (p) { return { name: p.name, rec: '', href: '#', style: p.winner ? 'color: var(--wh)' : '', score: p.sets, scoreStyle: 'color: var(--hi); font-size: 18px', tc: 'display: none' }; }),
             status: m.state === 'pre' ? F.time(m.start) + ' ' + window.TZL : m.detail, stStyle: stStyle(m.state), pill: pill(m.state), cls: cardCls(m.state), href: '', note: e.name + ' · ' + m.round, live: m.state === 'in', st: m.state, start: m.start });
         }); });
@@ -338,7 +338,7 @@ class Component extends DCLogic {
           };
           cards.push({ title: '', rows: [row(e.away), row(e.home)],
             status: pre ? (e.tbd ? 'Time TBD' : F.time(e.start) + ' ' + window.TZL) : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
-            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol), href: e.href, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
+            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol) + (e.href ? ' is-go' : ''), href: e.href, go: function (ev) { if (!e.href || (ev && ev.target && ev.target.closest && ev.target.closest('a, button'))) return; location.href = e.href; }, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
             live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });
       }
@@ -346,8 +346,7 @@ class Component extends DCLogic {
       var nLive = cards.filter(function (c) { return c.live; }).length; liveN += nLive;
       B.sub = [nLive ? nLive + ' live' : '', cards.length ? cards.length + (L.kind === 'golf' ? (cards.length === 1 ? ' event' : ' events') : (L.kind === 'tennis' ? (cards.length === 1 ? ' match' : ' matches') : (cards.length === 1 ? ' game' : ' games'))) : '', b.week ? 'Week ' + b.week : ''].filter(Boolean).join(' · ');
       if (!cards.length) B.msg = 'No ' + L.label + ' ' + (L.kind === 'golf' ? 'events' : 'games') + ' ' + (day === 0 ? 'on the current slate.' : (day < 0 ? 'yesterday.' : 'tomorrow.'));
-      B.games = all ? cards.slice(0, CAP) : cards;
-      if (all && cards.length > CAP) { B.more = true; B.moreLabel = 'All ' + cards.length + ' ' + L.short + ' →'; }
+      B.games = cards;
       if (all && !cards.length) return;  // keep the all-sports view short
       boards.push(B);
     });
