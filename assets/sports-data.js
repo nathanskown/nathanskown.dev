@@ -508,7 +508,7 @@
     focusScrollers();
     try { new MutationObserver(focusScrollers).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   }
-  if (document.body) watchScrollers(); else document.addEventListener('DOMContentLoaded', watchScrollers);
+  if (typeof document !== 'undefined') { if (document.body) watchScrollers(); else document.addEventListener('DOMContentLoaded', watchScrollers); }
   window.DC_SUGGEST = function (q) {
     return teamList().then(function (list) {
       return findTeams(list, q, 12).map(function (h) { return { value: h.t.name + ' (' + LEAGUES[h.lg].short + ')', label: LEAGUES[h.lg].label + (h.t.group ? ' · ' + h.t.group : '') }; });
