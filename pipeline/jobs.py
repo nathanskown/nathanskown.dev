@@ -1371,7 +1371,8 @@ def screener():
         if not has_fund and not idx:
             continue  # ETFs, funds and trusts carry no company financials in the SEC data
         px = pf["px"]
-        mcap = px * so / 1e6 if so and px else None
+        so_all = (own or {}).get("soTotal") or so  # market cap counts every share class
+        mcap = px * so_all / 1e6 if so_all and px else None
         pos = lambda x: x if (x is not None and x > 0) else None  # noqa: E731
         pct = lambda a, b: r(a / b * 100, 1) if (a is not None and b not in (None, 0)) else None  # noqa: E731
         fcf = (f.get("ocf") - f.get("capex")) if (f.get("ocf") is not None and f.get("capex") is not None) else None
@@ -1379,7 +1380,7 @@ def screener():
         tl = (own or {}).get("tiles") or {}
         out = {"sym": sym, "name": (mem.get("names", {}).get(sym) or row[cols.index("name")] or "")[:40], "exch": row[cols.index("exch")] or "",
                "sector": mem.get("sectors", {}).get(sym) or "", "idx": idx, **pf,
-               "mcap": r(mcap, 0), "rev": r(f["rev"] / 1e6, 0) if f.get("rev") is not None else None,
+               "sh": r(so, 0) if so else None, "mcap": r(mcap, 0), "rev": r(f["rev"] / 1e6, 0) if f.get("rev") is not None else None,
                "revG": pct(f.get("rev") - rev0, abs(rev0)) if f.get("rev") is not None and rev0 else None,
                "qRevG": pct(qr - qr0, abs(qr0)) if qr is not None and qr0 else None,
                "gm": (lambda v: v if v is not None and -100 <= v <= 100 else None)(pct(f.get("gp"), f.get("rev")) if f.get("rev") and f.get("rev") > 0 else None),

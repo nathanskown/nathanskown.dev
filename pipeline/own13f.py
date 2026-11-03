@@ -199,6 +199,78 @@ def _shares_history(cik, skip_cover=False):
     return sorted(by_end.items())
 
 
+
+# Shares outstanding the standard SEC tag misses: fall back to (1) the screener's SEC "frames" share count, then
+# (2) the cover page of the latest 10-Q/10-K, summed over share classes. Funds, ETFs and foreign issuers have none.
+COVER_FILL_MAX = 450     # cover-page lookups per build (each is one filing download, paced to SEC's limit)
+COVER_FILL_MIN_HOLDERS = 60
+
+
+def _screener_shares():
+    j = read("screener.json", None) or {}
+    d = j.get("d") or {}
+    syms = d.get("sym") or []
+    direct = d.get("sh") or []
+    out = {}
+    for k, sym in enumerate(syms):
+        if k < len(direct) and direct[k]:
+            out[sym] = float(direct[k])
+        else:  # older screener file without a share column: market cap ($M) / price
+            mc, px = (d.get("mcap") or [None] * len(syms))[k], (d.get("px") or [None] * len(syms))[k]
+            if mc and px and px > 0:
+                out[sym] = mc * 1e6 / px
+    return out, j.get("asOf")
+
+
+def _cover_counts(cik):
+    """(as-of date, largest class, all classes together) from the latest filing's cover page."""
+    sub = sec.submissions(cik)
+    cov = sec.cover_shares(cik, sec.recent_filings(sub))
+    classes = {k: v for k, v in cov["classes"].items() if v}
+    if not classes:
+        raise RuntimeError("no cover-page share counts found")
+    named = {k: v for k, v in classes.items() if k}  # per-class values; "" is the company-wide total, when given
+    total = classes.get("") or sum(named.values())
+    largest = max(named.values()) if named else classes[""]
+    return cov["asOf"], largest, total
+
+
+def fill_missing_shares(hist, ciks, held_by_sym, in_index, errs):
+    """Adds a one-point share history for companies the standard tag missed. Returns (source, total) maps by symbol."""
+    src, total = {}, {}
+    scr, scr_asof = _screener_shares()
+    for s in ciks:
+        if hist.get(s):
+            continue
+        if s in scr:
+            hist[s] = [(scr_asof or date.today().isoformat(), scr[s])]
+            src[s] = "sec-frames"
+    todo = [s for s in ciks if not hist.get(s) and (s in in_index or held_by_sym.get(s, 0) >= COVER_FILL_MIN_HOLDERS)]
+    todo.sort(key=lambda s: (s not in in_index, -held_by_sym.get(s, 0)))
+    todo = todo[:COVER_FILL_MAX]
+
+    def one(s):
+        try:
+            return s, _cover_counts(ciks[s])
+        except Exception as e:  # noqa: BLE001
+            errs["cover: " + str(e)[:50]] += 1
+            return s, None
+    with ThreadPoolExecutor(4) as ex:
+        results = list(ex.map(one, todo))
+    ok = 0
+    for s, res in results:
+        if not res:
+            continue
+        asof, largest, tot = res
+        hist[s] = [(asof, largest)]
+        src[s] = "cover-page"
+        if tot and abs(tot - largest) > 0.005 * largest:
+            total[s] = tot
+        ok += 1
+    record("13F shares filled from cover page", True, n=ok, note=f"{len(todo)} tried; {sum(1 for v in src.values() if v == 'sec-frames')} filled from SEC frames")
+    return src, total
+
+
 def _at(hist, day):
     best = None
     for end, val in hist:
@@ -402,6 +474,10 @@ def build(max_sets=9, force=False):
                 hist[s] = h2
                 swapped.append(s)
     record("13F share count swapped to all-class", True, n=len(swapped), note=str(swapped[:20]))
+    members_now = read("members.json", {}) or {}
+    in_index = set(members_now.get("sp500", [])) | set(members_now.get("sp400", [])) | set(members_now.get("sp600", []))
+    held_by_sym = {s: held.get(best[s], 0) for s in best}
+    so_src, so_total = fill_missing_shares(hist, ciks, held_by_sym, in_index, errs)
     record("13F shares outstanding", True, n=sum(1 for h in hist.values() if h),
            note=f"{len(ciks)} companies queried, {len(retry)} retried; errors: {dict(errs.most_common(4))}")
 
@@ -526,6 +602,8 @@ def build(max_sets=9, force=False):
                 read_txt += f" Index funds hold {passive / so * 100:.1f}% of shares outstanding."
             out = {"sym": sym, "name": q.get("name") or (tick.get(sym) or (None, issuers.get(cu) or sym))[1], "cusip": cu,
                    "issuer13f": issuers.get(cu), "period": L, "prior": P, "updated": now_iso(), "so": so, "price": px,
+                   "soSrc": so_src.get(sym), "soTotal": so_total.get(sym),
+                   "soNote": None if so else ("No SEC share count: a fund, ETF or foreign issuer" if sym not in ciks else "Share count not reported in a standard SEC tag"),
                    "tiles": {"inst": inst, "instChg": r(inst - inst0, 1) if inst is not None and inst0 is not None else None,
                              "holders": hold, "holdersChg": hold - hold0, "net": net, "new": len(new), "closed": len(closed),
                              "top10": r(sum(sh for _, sh in top) / so * 100, 1) if so else None,

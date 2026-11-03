@@ -177,7 +177,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
 <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{ticker}}</span>
 <span style="font-size: 18px; font-weight: 600; color: #FFD89D">{{d.name}}</span>
-<span style="color: #C99442; font-size: 13.5px">{{d.so}} shares outstanding at quarter end</span>
+<span style="color: #C99442; font-size: 13.5px">{{d.soLine}}</span>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
 <span style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 0; background: #0E0A05; border: 1px solid #3D2C13; font-size: 13px">{{periodLabel}}</span>
@@ -405,7 +405,7 @@ class Component extends DCLogic {
     var period = new Date(D.period + 'T12:00:00Z');
     var due = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 3, 0) + 45 * 86400000);
     var nxt = new Date(Date.UTC(period.getUTCFullYear(), period.getUTCMonth() + 4, 0) + 45 * 86400000);
-    base.d = { name: D.name, so: F.big(D.so), px: D.price ? F.usd(D.price, 2) : '—',
+    base.d = { name: D.name, soLine: D.so ? F.big(D.so) + ' shares outstanding' + (D.soSrc === 'cover-page' ? ' (latest filing cover page)' : ' at quarter end') : (D.soNote || 'Shares outstanding unavailable') + '; ownership % not shown', px: D.price ? F.usd(D.price, 2) : '—',
       pxLabel: D.price ? (D.livePrice ? 'Value at the latest price of ' : 'Value at the latest close of ') + F.usd(D.price, 2) : 'Value: price unavailable', read: D.read, tiles: tiles, trend: trend, mix: mix, top: top,
       buyers: D.buyers.map(mv), sellers: D.sellers.map(mv) };
     base.periodLabel = 'Holdings as of ' + period.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) + ' (' + quarter(D.period) + ')';
