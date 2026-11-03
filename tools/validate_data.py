@@ -151,6 +151,20 @@ def evolution(d, c):
         c.ok(all(finite(r.get("launch")) and finite(r.get("current")) for r in v.get("seasons") or []), f"{lg} season series has gaps")
 
 
+def fed(d, c):
+    ms = d.get("meetings")
+    c.ok(isinstance(ms, list) and len(ms) >= 2, "fed file has no meetings")
+    dates = [m.get("date") for m in ms or []]
+    c.ok(dates == sorted(dates), "fed meetings are out of order")
+    for m in ms or []:
+        c.ok(len(m.get("paras") or []) >= 2, f"fed {m.get('date')} statement is too short")
+        r = (m.get("decision") or {}).get("range")
+        c.ok(r is None or (len(r) == 2 and 0 <= r[0] <= r[1] <= 15), f"fed {m.get('date')} rate range {r}")
+        if m.get("ops"):
+            new = "".join(t for g, t in m["ops"] if g != "-")
+            c.ok(len(new) > 200, f"fed {m.get('date')} redline is empty")
+
+
 def injuries(d, c):
     c.ok(isinstance(d.get("teams"), dict), "injury file has no teams")
 
@@ -168,6 +182,8 @@ def rule_for(rel):
         return earnings
     if rel == "finance/digest.json":
         return digest
+    if rel == "finance/fed.json":
+        return fed
     if rel == "sports/model/evolution.json":
         return evolution
     if rel.startswith("sports/model/") and not Path(rel).name.startswith("_") and rel.count("/") == 2 and rel not in ("sports/model/tuned.json", "sports/model/milestones.json"):

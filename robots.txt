@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /data/
 
 Sitemap: https://nathanskown.dev/sitemap.xml

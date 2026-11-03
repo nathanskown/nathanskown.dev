@@ -18,7 +18,7 @@
 
   const REMOVE =
     "<p><b>Want something removed?</b> If you are an artist, label or rights holder and would like a song or artist " +
-    "taken out, use the <a href='/#contact'>contact page</a> and it will be removed promptly.</p>";
+    "taken out, open an issue on <a href='https://github.com/nathanskown/nathanskown.dev/issues'>GitHub</a> and it will be removed promptly.</p>";
 
   const AUDIO =
     "<p><b>Audio.</b> Song previews are 30-second clips streamed directly from Deezer's servers. " +

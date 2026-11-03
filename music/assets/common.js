@@ -277,8 +277,14 @@
     name_not_allowed: "Please pick a different name.",
     bad_name: "Names need 2 to 16 letters or numbers.",
     wrong_day: "The day changed while you were playing (a new daily starts at midnight US Central). Play today's daily to post.",
-    too_many: "Too many posts from this connection today. Try again tomorrow.",
-    origin_not_allowed: "This address isn't allowed to post scores."
+    too_many: "Too many plays from this connection today. Try again tomorrow.",
+    origin_not_allowed: "This address isn't allowed to post scores.",
+    daily_unavailable: "Today's daily challenge isn't ready yet. Try again in a few minutes.",
+    session_expired: "That round has expired. Start the daily again.",
+    name_taken: "That name already belongs to another player. Pick a different one.",
+    already_posted: "This round's score is already posted.",
+    not_finished: "Finish all five before posting.",
+    clip_unavailable: "That clip couldn't be loaded. Try again."
   };
   MX.lb = {
     base: () => String((window.MUSIC_CONFIG || {}).LB_URL || "/api/music").replace(/\/+$/, ""),
@@ -293,9 +299,28 @@
       if (!r.ok) throw Object.assign(new Error(j.error || "http " + r.status), { code: j.error || "http" });
       return j;
     },
-    post: (game, name, score, max) => MX.lb.call("/score", {
+    /* A name belongs to the browser that first posted under it: this random secret never leaves the page except to
+       prove ownership, and the server stores only a hash of it. */
+    secret() {
+      if (MX.lb._secret) return MX.lb._secret;
+      const ok = v => /^[0-9a-f]{32}$/.test(v || "");
+      let s = "";
+      try { s = localStorage.getItem("nskn.music.secret") || ""; } catch (e) {}
+      if (!ok(s)) {
+        s = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, "0")).join("");
+        try { localStorage.setItem("nskn.music.secret", s); } catch (e) { /* storage blocked: lasts for this page only */ }
+      }
+      return (MX.lb._secret = s);
+    },
+    /* The daily is played against the server: it checks every guess and counts the score, so the posted score is
+       the one it counted. Only the session id and a name go up when posting. */
+    post: (sid, name) => MX.lb.call("/score", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ game, name, score, max, date: MX.todayKey() })
+      body: JSON.stringify({ sid, name, secret: MX.lb.secret() })
+    }),
+    daily: body => MX.lb.call("/daily", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify(body)
     }),
     board: (game, scope) => MX.lb.call("/board?game=" + encodeURIComponent(game) + "&scope=" + encodeURIComponent(scope)),
     table(entries, withDate, mine) {

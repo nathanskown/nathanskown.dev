@@ -5,6 +5,10 @@ compared with the market. Optional: with no ODDS_API_KEY secret this job does no
                                "a": ESPN away id, "sp": consensus home spread, "p": no-vig home win
                                probability, "ml": [home price, away price], "bk": books used, "t": seen}}}
 
+When the key is out of credits (HTTP 401 OUT_OF_USAGE_CREDITS) the job raises QuotaExhausted without touching
+the stored files; /status then shows the odds feed as FAILING with the time of the last good refresh, and
+track/summary.json carries `marketAsOf` so nothing downstream treats frozen lines as current.
+
 A line is refreshed every run until the game starts, then frozen, so each game keeps the last line
 seen before kickoff. The free plan allows 500 credits a month; one call here costs one credit per
 market per region, and calls are made at most once a day (the daily job), only for sports in season.
@@ -24,6 +28,26 @@ SPORT = {"nfl": "americanfootball_nfl", "ncaaf": "americanfootball_ncaaf", "nba"
          "ncaab": "basketball_ncaab", "nhl": "icehockey_nhl"}
 MARKETS = "h2h,spreads"            # 2 credits per sport per call; 5 sports = 10 credits a day = ~300 a month
 KEEP_DAYS = 21
+MIN_HOURS = 20
+
+
+class QuotaExhausted(RuntimeError):
+    """The key has no credits left (HTTP 401 OUT_OF_USAGE_CREDITS, or 429). Carries the status fields that
+    /status shows, so the outage is flagged instead of the stored lines silently going stale."""
+
+    def __init__(self, msg):
+        super().__init__(msg)
+        self.status = {"quota": True, "asOf": last_good()}
+
+
+def last_good():
+    """Newest `updated` stamp across the stored odds files: when the lines on file were last refreshed."""
+    best = None
+    for lg in SPORT:
+        u = (read(f"odds/{lg}.json") or {}).get("updated")
+        if u and (best is None or u > best):
+            best = u
+    return best
 
 
 def _scrub(msg, key):
@@ -36,6 +60,8 @@ def _call(path, key, params=None):
         r = SESSION.get(BASE + path, params=p, headers={"User-Agent": UA}, timeout=30)
     except Exception as e:
         raise RuntimeError(_scrub(f"Odds API request failed: {e}", key)) from None
+    if r.status_code == 429 or (r.status_code == 401 and "OUT_OF_USAGE_CREDITS" in r.text):
+        raise QuotaExhausted(f"Odds API out of credits (HTTP {r.status_code}); stored lines are frozen as of {last_good() or 'never'}")
     if r.status_code != 200:
         raise RuntimeError(f"Odds API HTTP {r.status_code}: {_scrub(r.text[:160], key)}")
     return r.json(), r.headers
@@ -97,6 +123,9 @@ def job_odds():
     if not key:
         return {"skipped": "no ODDS_API_KEY secret set"}
     now = datetime.now(timezone.utc)
+    lg_ok = last_good()
+    if lg_ok and now - datetime.fromisoformat(lg_ok) < timedelta(hours=MIN_HOURS):
+        return {"skipped": f"lines refreshed {lg_ok}; at most one paid call per sport every {MIN_HOURS} h"}   # re-runs and manual dispatches must not burn credits
     active, hdr = _call("/sports", key)
     live = {s["key"] for s in active if s.get("active")}
     out, remaining = {}, None
@@ -130,6 +159,12 @@ def job_odds():
         games = {k: v for k, v in games.items() if v["c"] >= cutoff}
         write(f"odds/{lg}.json", {"updated": now_iso(), "games": games})
         out[lg] = {"events": len(data), "stored": len(games), "updated": seen, "unmatched": miss}
+        try:
+            if remaining is not None and float(remaining) < 2:      # not enough for another sport: stop cleanly
+                out["creditsLow"] = True
+                break
+        except ValueError:
+            pass
         time.sleep(0.5)
     out["creditsRemaining"] = remaining
     return out

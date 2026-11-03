@@ -29,7 +29,7 @@ from . import net as netmod
 from . import src_sec as sec
 from .net import CONFIG, attempt, get, now_iso, post_json, r, read, record, write
 
-VERSION = 13          # bump when this logic changes so the next push rebuilds ownership
+VERSION = 14          # bump when this logic changes so the next push rebuilds ownership
 MIN_HOLDERS = 30     # a security needs this many 13F holders to get a page
 FIGI_KEY = os.environ.get("OPENFIGI_KEY", "").strip()
 
@@ -60,21 +60,39 @@ def _download(links, folder):
 
 
 def _submissions(paths):
-    frames, names = [], {}
+    """Which filings count for each manager and quarter.
+
+    An original 13F-HR is the baseline. A 13F-HR/A amendment is one of two kinds, named on its cover page:
+      RESTATEMENT   replaces everything filed before it for that quarter
+      NEW HOLDINGS  adds positions the earlier filing left out, so it is counted together with the baseline
+    Ignoring amendments (as earlier versions did) can make a manager look like it added or dropped a huge position
+    when its restated or supplemental filing is simply missing from the quarter it belongs to. An amendment whose
+    kind is not stated is skipped, since guessing wrong would swing positions either way."""
+    frames, names, kinds = [], {}, {}
     for path in paths:
         with zipfile.ZipFile(path) as zf:
             s = _tsv(zf, "SUBMISSION.TSV", ["ACCESSION_NUMBER", "SUBMISSIONTYPE", "PERIODOFREPORT", "FILING_DATE", "CIK"])
-            s = s[s["SUBMISSIONTYPE"].str.upper() == "13F-HR"].copy()
+            s = s[s["SUBMISSIONTYPE"].str.upper().isin(["13F-HR", "13F-HR/A"])].copy()
+            s["amend"] = s["SUBMISSIONTYPE"].str.upper().str.endswith("/A")
             s["period"] = pd.to_datetime(s["PERIODOFREPORT"], format="%d-%b-%Y", errors="coerce").dt.strftime("%Y-%m-%d")
             s["filed"] = pd.to_datetime(s["FILING_DATE"], format="%d-%b-%Y", errors="coerce").dt.strftime("%Y-%m-%d")
             s["cik"] = pd.to_numeric(s["CIK"], errors="coerce")
-            frames.append(s.dropna(subset=["period", "filed", "cik"])[["ACCESSION_NUMBER", "cik", "period", "filed"]])
-            c = _tsv(zf, "COVERPAGE.TSV", ["ACCESSION_NUMBER", "FILINGMANAGER_NAME"])
+            frames.append(s.dropna(subset=["period", "filed", "cik"])[["ACCESSION_NUMBER", "cik", "period", "filed", "amend"]])
+            c = _tsv(zf, "COVERPAGE.TSV", ["ACCESSION_NUMBER", "FILINGMANAGER_NAME", "AMENDMENTTYPE"])
             names.update(zip(c["ACCESSION_NUMBER"], c["FILINGMANAGER_NAME"]))
+            if "AMENDMENTTYPE" in c.columns:
+                kinds.update(zip(c["ACCESSION_NUMBER"], c["AMENDMENTTYPE"]))
     subs = pd.concat(frames, ignore_index=True).drop_duplicates("ACCESSION_NUMBER")
     subs["cik"] = subs["cik"].astype("int64")
-    # the latest filing for each manager and quarter wins (restatements replace originals)
-    win = subs.sort_values("filed").drop_duplicates(["cik", "period"], keep="last")
+    kind = subs["ACCESSION_NUMBER"].map(kinds).fillna("").astype(str).str.upper()
+    subs["restate"] = ~subs["amend"] | kind.str.startswith("RESTATEMENT")
+    supplement = subs["amend"] & kind.str.startswith("NEW HOLDINGS")
+    subs = subs[subs["restate"] | supplement].sort_values(["cik", "period", "filed", "ACCESSION_NUMBER"])
+    subs["ord"] = subs.groupby(["cik", "period"]).cumcount()
+    # the baseline is the latest original or restatement; everything after it is a supplement to count with it
+    base = subs[subs["restate"]].groupby(["cik", "period"])["ord"].max().rename("base")
+    subs = subs.join(base, on=["cik", "period"])
+    win = subs[subs["base"].notna() & (subs["ord"] >= subs["base"])].drop(columns=["ord", "base", "amend", "restate"])
     mgr = {}
     for acc, cik in zip(win["ACCESSION_NUMBER"], win["cik"]):
         if names.get(acc):

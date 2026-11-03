@@ -140,8 +140,10 @@ def update_picks(lg, now=None):
         if g["off"]:
             picks.pop(eid, None)
             continue
-        if pk and "hs" in pk:
-            continue                                      # already graded
+        if pk and "hs" in pk:                             # already graded; ESPN sometimes corrects a final score
+            if g["done"] and g.get("hs") is not None and g.get("as") is not None and (pk["hs"], pk["as"]) != (g["hs"], g["as"]):
+                pk.update({"hs": g["hs"], "as": g["as"]})
+            continue
         start = _parse(g["d"])
         if not g["done"] and start > now:                 # not started: save or refresh
             pr = project(model, g["h"], g["a"], g["n"], g["d"])
@@ -178,6 +180,8 @@ def _graded_rows(picks):
 def summarize(now=None):
     now = now or datetime.now(timezone.utc)
     out = {"updated": now_iso(), "leagues": {}, "excluded": ["mlb"]}
+    stamps = [(read(f"odds/{lg}.json") or {}).get("updated") for lg in LEAGUES]
+    out["marketAsOf"] = max((x for x in stamps if x), default=None)     # when the market lines on file were last refreshed
     every = []
     for lg in LEAGUES:
         store = read(f"track/_picks_{lg}.json") or {}

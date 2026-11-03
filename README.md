@@ -32,13 +32,16 @@ don't follow anyone to another device:
 - Music: pool filters (genre families and eras, multi-select) and recently played songs and artists, which
   random rounds skip. Rounds and daily challenges are spread across genres with `music/assets/variety.js`.
   The daily challenge rolls over at midnight US Central for everyone so the leaderboard is one shared day.
+  It is scored on the Worker (`worker/music.js`, a Durable Object): answers and the schedule never reach the browser.
 
 ## Live data
 
 - **Static data files** under `data/` are written by GitHub Actions and committed, which redeploys the site:
   - `refresh-finance.yml`: market data hourly in trading hours, daily quotes/earnings/IPOs/macro, monthly 13F check
   - `refresh-sports.yml`: hourly while games are on (9 AM to 1 AM Central) plus a daily run
-  - `refresh-daily.yml`: tops up the music daily-challenge schedule weekly
+  - `refresh-daily.yml`: picks missing upcoming daily-challenge days at random and uploads them privately to the Worker (never committed)
+  - `tools/stamp_assets.py` (run by `build_pages.py`): adds `?v=<hash>` to CSS/JS links so the Worker can cache them for a year
+  - `stamp-updated.yml`: writes `data/lastupdated.json` after each site change (shown as LAST UPDATED on the homepage)
   - `refresh-artists.yml`: rebuilds the music catalog (manual, and once whenever the builder or genre mapping changes)
   - `history-sports.yml`: one-off sports history
 - **On-demand APIs** run in the Worker (`worker/`, config in `wrangler.jsonc`):
@@ -54,8 +57,24 @@ don't follow anyone to another device:
 | `OPENFIGI_KEY` | Optional: faster CUSIP-to-ticker matching in the 13F build |
 | `CFBD_KEY`, `ODDS_API_KEY` | Optional sports sources |
 | `LASTFM_API_KEY` | Music catalog builder |
+| `MUSIC_ADMIN_TOKEN` | Daily challenge: same value as the Worker secret of that name (`wrangler secret put MUSIC_ADMIN_TOKEN`), 24+ random characters |
 
 ## Editing what's tracked
 
 `data/finance/config.json` holds the core watch list (quote pages built nightly), news feeds and index
 fund managers. Any other ticker is fetched on demand, so it doesn't need to be listed there.
+
+## Domains (www.nathanskown.dev)
+
+The Worker redirects `www.` and plain `http://` to `https://nathanskown.dev` (301, path and query kept), but a hostname only
+reaches the Worker once Cloudflare has DNS and a certificate for it. One-time setup in the Cloudflare dashboard:
+
+1. Workers & Pages > `nathanskown-dev` > Settings > Domains & Routes > Add > Custom Domain > `www.nathanskown.dev`.
+   Cloudflare creates the proxied DNS record and issues the certificate (about a minute). This needs `nathanskown.dev` to be a zone in the
+   same account and no existing `www` DNS record; if one exists, delete it first.
+2. SSL/TLS > Edge Certificates > turn on "Always Use HTTPS" (belt and braces for plain http).
+3. Check: `curl -sI https://www.nathanskown.dev/about/` shows `301` and `location: https://nathanskown.dev/about/`.
+
+`run_worker_first` in `wrangler.jsonc` makes page requests run the Worker (needed so the redirect also applies to
+real pages); `/assets`, `/data`, `/music/assets` and the favicon still skip it. Worker invocations are counted against the plan
+(100,000 a day on the free plan).

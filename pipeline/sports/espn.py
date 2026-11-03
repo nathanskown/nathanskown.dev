@@ -135,11 +135,41 @@ def standings(lg, season=None):
             "groups": groups}
 
 
+FULL_SEASON_GP = {"ncaab": 27, "ncaah": 30, "ncaaf": 11}
+
+
+def _blank_if_prior_season(lg, s):
+    """Before a college season starts ESPN keeps serving last season's final table under the new year's label.
+    Show 0-0 records instead of last year's (and mark the file) so a team page never reports a stale 25-7."""
+    if lg not in FULL_SEASON_GP:
+        return s
+    try:
+        pre = season_info(lg)["type"] == 1
+    except Exception:
+        pre = False
+    gps = [t.get("gp") or 0 for g in s["groups"] for t in g["teams"]]
+    if not (pre or (gps and max(gps) >= FULL_SEASON_GP[lg] and sum(1 for x in gps if x) > 0.8 * len(gps) and pre is not False)):
+        return s
+    if pre and gps and max(gps) == 0:
+        return s
+    for g in s["groups"]:
+        for t in g["teams"]:
+            for k in ("w", "l", "t", "otl", "gp"):
+                if k in t:
+                    t[k] = 0
+            for k in ("overall", "home", "road", "conf"):
+                if k in t:
+                    t[k] = "0-0"
+            t["streak"] = ""
+    s["priorSeasonBlanked"] = True
+    return s
+
+
 def job_standings():
     out = {}
     for lg in TEAM_LEAGUES:
         try:
-            s = standings(lg)
+            s = _blank_if_prior_season(lg, standings(lg))
             write(f"standings/{lg}.json", s)
             out[lg] = sum(len(g["teams"]) for g in s["groups"])
         except Exception as e:      # college hockey/basketball can be empty before the season starts
@@ -285,14 +315,17 @@ def leaders(lg, team_ids):
         tries = [(year, 2)]
     tries.append((year - 1, 2))             # preseason / no games yet -> last season, labelled as such
     cache, out, used = {}, {}, None
-    probe = team_ids[0]
     for y, t in tries:
-        try:
-            if _team_leaders(lg, y, t, probe, cache):
-                used = (y, t)
-                break
-        except Exception:
-            continue
+        # probe several teams: one team with no games yet (or a bad response) must not push the whole league to last season
+        for probe in team_ids[:8]:
+            try:
+                if _team_leaders(lg, y, t, probe, cache):
+                    used = (y, t)
+                    break
+            except Exception:
+                continue
+        if used:
+            break
     if not used:
         raise RuntimeError("no leaders available")
     for tid in team_ids:

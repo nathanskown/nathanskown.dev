@@ -40,8 +40,34 @@ def ds(d):
 # MARKET
 # =====================================================================================
 
+# Tiles whose "previous close" from the intraday chart can be a session too old (overseas markets, futures, crypto).
+# For these the baseline is rebuilt from daily bars so every page measures the day against the same close.
+DAILY_BASE = {"wti", "gold", "btc", "ftse", "dax", "sx5e", "n225", "hsi", "tsx", "eurusd", "usdjpy", "gbpusd"}
+
+
+def _daily_prev(sym, meta):
+    """Last completed session's close: the daily bar before the one for the market's current session."""
+    d = mk.chart(sym, "1mo", "1d")
+    ts, cl = d["t"], d["c"]
+    if len(cl) < 2:
+        return None
+    off = (meta or {}).get("gmtoffset") or 0
+    rmt = (meta or {}).get("regularMarketTime")
+    if rmt is None:
+        return None
+    same = (ts[-1] + off) // 86400 == (rmt + off) // 86400
+    return cl[-2] if same else cl[-1]
+
+
 def _tile(tid, sym, name, unit, dec):
     ch = mk.chart(sym, "1d", "5m")
+    if tid in DAILY_BASE:
+        try:
+            pv = _daily_prev(sym, ch["meta"])
+            if pv:
+                ch["meta"] = {**ch["meta"], "chartPreviousClose": pv, "previousClose": pv}
+        except Exception:
+            pass   # keep the intraday baseline if daily bars are unavailable
     q = mk.quote_from_chart(ch)
     step = max(1, len(ch["c"]) // 80)
     return {"id": tid, "sym": sym, "name": name, "unit": unit, "dec": dec, **q,
@@ -67,8 +93,16 @@ def build_members():
     if not out["sp500"]:
         raise RuntimeError("S&P 500 list empty")
     old = read("members.json", {}) or {}
+    asof, fresh = dict(old.get("russellAsOf") or {}), {}
     for key in ("r1000", "r2000"):  # Russell lists from iShares; keep yesterday's list if today's download fails
-        out[key] = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None) or old.get(key, [])
+        got = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None)
+        out[key] = got or old.get(key, [])
+        fresh[key] = bool(got)
+        if got:
+            asof[key] = mk.RUSSELL_ASOF.get(key) or today().isoformat()
+    # the pages and /status read these: a stale or empty list is shown as such, never silently dropped
+    out["russellAsOf"] = asof
+    out["russellFresh"] = fresh
     log_index_changes(old, out)
     write("members.json", out)
     return out
@@ -305,9 +339,9 @@ def quote_page(sym, info, mem, spx_daily, cal):
     news = attempt(f"news {sym}", mi.feed, f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={sym}&region=US&lang=en-US", default=[]) or []
     idx = [{"name": "S&P 500", "member": sym in mem.get("sp500", [])}, {"name": "S&P MidCap 400", "member": sym in mem.get("sp400", [])},
            {"name": "S&P SmallCap 600", "member": sym in mem.get("sp600", [])}]
-    if mem.get("r1000") or mem.get("r2000"):
-        idx += [{"name": "Russell 1000", "member": sym in mem.get("r1000", [])},
-                {"name": "Russell 2000", "member": sym in mem.get("r2000", [])}]
+    # an empty list means "membership unavailable" (member: None), not "not a member"
+    idx += [{"name": "Russell 1000", "member": (sym in mem["r1000"]) if mem.get("r1000") else None},
+            {"name": "Russell 2000", "member": (sym in mem["r2000"]) if mem.get("r2000") else None}]
     eight_k = [{"date": f["filingDate"], "items": f.get("items"), "url": sec.filing_url(cik, f["accessionNumber"], f["primaryDocument"])}
                for f in filings if f["form"] == "8-K"][:6]
     return {"sym": sym, "name": q["name"] or title, "exch": q["exch"], "sector": mem.get("sectors", {}).get(sym) or (sub or {}).get("sicDescription"),
@@ -1382,3 +1416,9 @@ def notes():
     from . import notes as _notes
     n = _notes.main()
     record("data notes", True, note=(n or {}).get("month") or "no note due")
+
+
+def fed():
+    """Fed Day Redline: FOMC statements, their word-level changes and the market reaction (pipeline/fed.py)."""
+    from . import fed as _fed
+    return _fed.job_fed()

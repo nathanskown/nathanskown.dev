@@ -87,13 +87,13 @@
   }
   var css = document.createElement('style');
   css.textContent =
-    '.gl-btn{position:fixed;right:14px;bottom:46px;z-index:61;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid currentColor;background:rgba(0,0,0,.88);color:var(--hi,#fff);font:600 12.5px "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5)}' +
+    '.gl-btn{position:fixed;right:14px;bottom:46px;z-index:61;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border:1px solid currentColor;background:rgba(0,0,0,.88);color:var(--hi,#fff);font:600 13px "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5)}' +
     '.gl-btn span{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--a,#fff);color:#000;text-shadow:none}' +
     '.gl-btn:hover{background:#000;border-color:var(--a,#fff)}' +
     '.gl-btn:focus-visible,.gl-x:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
     '.gl-panel{position:fixed;right:14px;bottom:94px;z-index:62;width:min(440px,calc(100vw - 28px));max-height:min(62vh,560px);overflow:auto;background:#050505;border:1px solid var(--a,#888);box-shadow:0 18px 50px rgba(0,0,0,.7);font:13px/1.55 "IBM Plex Mono",ui-monospace,monospace;color:var(--hi,#eee);text-shadow:none}' +
     '.gl-h{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#0d0d0d;border-bottom:1px solid var(--line,#333)}' +
-    '.gl-h b{color:var(--a,#fff);letter-spacing:.08em}.gl-n{color:var(--dim,#aaa);font-size:12px;margin-left:6px}' +
+    '.gl-h b{color:var(--a,#fff);letter-spacing:.08em}.gl-n{color:var(--dim,#aaa);font-size:13px;margin-left:6px}' +
     '.gl-x{min-width:40px;min-height:36px;border:0;background:transparent;color:var(--hi,#fff);cursor:pointer;font:inherit}' +
     '.gl-l{margin:0;padding:6px 12px 12px}.gl-i{padding:8px 0;border-bottom:1px solid var(--line,#222)}.gl-i dt{color:var(--wh,#fff);font-weight:600}.gl-i dd{margin:2px 0 0;color:var(--dim,#bbb)}' +
     '.gl-none{color:var(--dim,#aaa)}' +

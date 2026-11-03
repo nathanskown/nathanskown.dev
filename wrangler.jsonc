@@ -6,9 +6,18 @@
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Files that match an asset are normally served without running the Worker, which would let
+    // https://www.nathanskown.dev/ (and http://) answer with the page instead of redirecting. Run the Worker first for
+    // pages and APIs (so it can redirect), but keep the heavy static folders on the free, Worker-less path.
+    "run_worker_first": ["/*", "!/assets/*", "!/data/*", "!/music/assets/*", "!/favicon.svg"]
   },
+  // www.nathanskown.dev needs a Custom Domain on this Worker (Cloudflare dashboard, see README "Domains") so that DNS
+  // and the certificate exist; once it does, the Worker below redirects it to the main domain.
   "observability": { "enabled": true },
+  // Branch preview builds run `wrangler preview`, which refuses to run without this block. Previews do not get their own
+  // Durable Object namespace, so the music leaderboard is not isolated there; production is unaffected.
+  "previews": {},
   // Music leaderboard storage. The migration creates the SQLite-backed Durable Object on the next deploy.
   "durable_objects": {
     "bindings": [{ "name": "MUSIC_BOARD", "class_name": "MusicBoard" }]
