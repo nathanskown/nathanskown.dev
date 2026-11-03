@@ -16,7 +16,7 @@
 <meta name="theme-color" content="#020308">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#020308;--panel:#060a18;--line:#1b2440;--line2:#2a3762;
@@ -26,7 +26,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:radial-gradient(1200px 560px at 50% -200px,rgba(143,176,255,.16),transparent 70%),var(--bg);color:var(--hi);font:15px/1.65 'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;-webkit-font-smoothing:antialiased}
+body{margin:0;background:radial-gradient(1200px 560px at 50% -200px,rgba(143,176,255,.16),transparent 70%),var(--bg);color:var(--hi);font:16px/1.65 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--ac)}
 a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(143,176,255,.3)}
 ::selection{background:var(--ac);color:#000}
@@ -193,13 +193,6 @@ td.cur .cell{outline:1px solid rgba(255,255,255,.25);outline-offset:2px}
 footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--mute);font-size:13px}
 footer a{color:var(--dim)}
 
-/* draft banner + CONFIRM tags (review only: delete before launch) */
-.draft{position:relative;z-index:11;padding:7px 14px;background:#2a1a00;border-bottom:1px solid #ffa45c;color:#ffd9b0;font-size:13px}
-.draft b{color:#000;background:#ffa45c;padding:0 6px;margin-right:6px}
-.draft i{font-style:normal;color:#ffa45c;font-weight:600}
-[data-confirm]{outline:1px dashed rgba(255,164,92,.55);outline-offset:4px}
-li[data-confirm]::after,.case[data-confirm] .ck::after{content:"CONFIRM";margin-left:8px;font-size:10.5px;font-weight:600;letter-spacing:.12em;color:#000;background:#ffa45c;padding:0 5px;vertical-align:2px}
-
 /* lens picker */
 .lenses{display:flex;flex-wrap:wrap;gap:8px}
 .lb{font:inherit;font-size:13px;letter-spacing:.08em;padding:9px 14px;min-height:44px;background:#03050d;color:var(--hi);border:1px solid var(--line2);cursor:pointer;text-align:left}
@@ -247,6 +240,14 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 .case p b{color:#fff;font-weight:500}
 .case.own{--c:#8dff9c;border-color:rgba(141,255,156,.35)}
 
+/* terminal font for chrome: headings, labels, tags, controls */
+.bar,.kick,h2,.by,.seat,.cue,.st,.adds,.used,.sc-h,.mx,.yr,.ck,.lb,.fb,.tool,.lp-g dt,.lp-h a,.lchip,.big .d,.proof,.btn,footer,.lede2,.role{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace}
+.stop li{font-size:16px}
+.sub{margin:0 0 18px;padding-left:14px;border-left:1px dashed var(--line2)}
+.sub h4{margin:0;font-size:17px;color:#fff;font-weight:600}
+.sub .role{margin-bottom:10px}
+.sub ul{margin-bottom:0}
+
 /* ---------- phones and narrow tablets ---------- */
 @media (max-width:900px){
   .path{grid-template-columns:minmax(0,1fr);gap:0}
@@ -271,7 +272,6 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="draft" id="draft"><b>REVIEW DRAFT</b> <span id="draftN"></span> lines tagged <i>CONFIRM</i> come from typical job descriptions, not your records. Confirm or cut each one before this goes live.</div>
 <nav class="bar" aria-label="Page"><a href="/">← 1-NSKN</a><button type="button" class="lchip" id="lchip" hidden></button><span class="sp"></span><a class="opt" href="#lens">Your lens</a><a href="#path">Path</a><a class="opt" href="#work">Projects</a><a class="opt" href="#toolkit">Toolkit</a><a href="#contact">Contact</a><i class="prog" id="prog" aria-hidden="true"></i></nav>
 
 <main id="main">
@@ -308,69 +308,47 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <div class="path">
 
 <div class="scope" id="scope" aria-hidden="true">
-<div class="sc-h"><span>SEAT MAP</span><b id="nowLbl">2017 · MSU</b></div>
-<svg class="map" id="map" viewBox="0 0 420 232" focusable="false">
+<div class="sc-h"><span>SEAT MAP</span><b id="nowLbl">2017–19 · EARLY CAREER</b></div>
+<svg class="map" id="map" viewBox="0 0 420 160" focusable="false">
 <defs><linearGradient id="trailG" x1="0" x2="1"><stop offset="0" stop-color="#ffa45c"/><stop offset=".55" stop-color="#c6a6ff"/><stop offset="1" stop-color="#8fb0ff"/></linearGradient></defs>
 <line class="tbl" x1="40" y1="100" x2="380" y2="100"/>
-<path class="tr" data-seg="1" d="M210,196 C120,196 70,170 70,100"/>
-<path class="tr" data-seg="3" d="M70,100 C120,8 300,8 350,100"/>
-<path class="tr" data-seg="4" d="M350,100 C318,150 242,150 210,100"/>
-<circle class="nd fd" data-seat="fd" cx="210" cy="196" r="16"/>
+<path class="tr" data-seg="1" d="M70,100 C120,8 300,8 350,100"/>
+<path class="tr" data-seg="2" d="M350,100 C318,150 242,150 210,100"/>
 <circle class="nd co" data-seat="co" cx="70" cy="100" r="20"/>
 <circle class="nd iv" data-seat="iv" cx="350" cy="100" r="20"/>
 <circle class="nd br" data-seat="br" cx="210" cy="100" r="20"/>
 <text class="nl co" data-seat="co" x="70" y="140" text-anchor="middle">COMPANY</text>
 <text class="nl iv" data-seat="iv" x="350" y="140" text-anchor="middle">INVESTOR</text>
 <text class="nl br" data-seat="br" x="210" y="66" text-anchor="middle">IN BETWEEN</text>
-<text class="nl fd" data-seat="fd" x="246" y="200">FOUNDATION</text>
-<g class="dot" id="dot" style="transform:translate(210px,196px)"><circle r="6"/><circle class="ring" r="6"/></g>
+<g class="dot" id="dot" style="transform:translate(70px,100px)"><circle r="6"/><circle class="ring" r="6"/></g>
 </svg>
 <div class="mx" id="mxLive"></div>
 </div>
 
 <ol class="stops" id="stops">
 
-<li class="stop fd" data-seat="fd" data-lbl="2017 · MSU">
+<li class="stop co" data-seat="co" data-lbl="2017–19 · EARLY CAREER">
 <div class="yr vt">2017–19</div>
-<span class="st">Foundation · Research</span>
-<h3 class="org">Michigan State University, Broad Scholar Program</h3>
-<p class="role"><b>Professorial Assistant</b> · East Lansing, MI · Sep 2017 – May 2019</p>
-<ul>
-<li data-l="ib cd ss bs">Dissected SEC filings from financial institutions to find and summarize <b>loan loss allowance fraud</b> cases.</li>
-<li data-l="ss bs ib">Analyzed 10-K annual reports to study how oil and gas booms affected corporate earnings.</li>
-<li data-l="cons">Turned the research into organized spreadsheets a professor could read at a glance.</li>
-</ul>
-<div class="adds"><span class="k">ADDS</span><span>Financial statements</span><span>Research</span><span>Data</span></div>
-<div class="used"><b>Worked with:</b> SEC filings · 10-Ks · Excel</div>
-</li>
-
-<li class="stop co" data-seat="co" data-lbl="2018 · MERCEDES-BENZ FS">
-<div class="yr vt">2018</div>
-<span class="st">Company side</span>
-<h3 class="org">Mercedes-Benz Financial Services USA</h3>
-<p class="role"><b>Finance and Controlling Intern</b> · Farmington Hills, MI · May – Aug 2018</p>
-<ul>
-<li data-l="cons">Paired with another intern to become the go-to experts on <b>new corporate software</b> the department was adopting.</li>
-<li data-l="cons ir">Wrote a detailed guide and gave an in-depth presentation that helped the Finance and Controlling department switch over.</li>
-<li data-l="cd ib">Shadowed teams across departments and locations to learn auto finance end to end, from building the car to the final sale.</li>
-</ul>
-<div class="adds"><span class="k">ADDS</span><span>Corporate finance</span><span>Communication</span><span>Systems</span></div>
-<div class="used"><b>Worked with:</b> Tableau · MyForecast · Oracle SmartView · Excel · Access</div>
-</li>
-
-<li class="stop co" data-seat="co" data-lbl="2019 · HORIZON GLOBAL">
-<div class="yr vt">2019</div>
-<span class="st">Company side</span>
-<h3 class="org">Horizon Global</h3>
+<span class="st">Early career · Company side</span>
+<h3 class="org">Early career</h3>
+<p class="role">Two corporate finance internships and a research role, while earning a finance degree at Michigan State</p>
+<div class="sub">
+<h4>Horizon Global</h4>
 <p class="role"><b>Shared Services Finance Intern</b> · Plymouth, MI · May – Aug 2019</p>
-<div class="big" data-l="cd ib cons"><span class="v vt">$1M</span><span class="d">of aged receivables collected in three months on a liquidity project with the Accounts Receivable team. Target met.</span></div>
-<ul>
-<li data-l="cd cons ib">Built pivot tables and charts from A/R aging reports that focused collections and showed management where receivables were trending.</li>
-<li data-l="cd ib">Flagged pricing discrepancies on large checks from OE customers using VLOOKUPs and pivot tables.</li>
-<li data-l="cons">Coded customer complaints in the CRM to ease month-end reporting, and helped the Accounting team with month-end journal entries.</li>
-</ul>
-<div class="adds"><span class="k">ADDS</span><span>Working capital</span><span>Month-end close</span><span>Excel analysis</span></div>
-<div class="used"><b>Worked with:</b> Excel (pivot tables, VLOOKUP) · CRM</div>
+<div class="big" data-l="cons"><span class="v vt">$1M</span><span class="d">of aged receivables collected in three months on a liquidity project with the Accounts Receivable team. Target met.</span></div>
+</div>
+<div class="sub">
+<h4>Mercedes-Benz Financial Services USA</h4>
+<p class="role"><b>Finance and Controlling Intern</b> · Farmington Hills, MI · May – Aug 2018</p>
+<ul><li data-l="cons ir">Wrote the guide and presentation that moved the Finance and Controlling department onto new software.</li></ul>
+</div>
+<div class="sub">
+<h4>Michigan State University, Broad Scholar Program</h4>
+<p class="role"><b>Professorial Assistant</b> · East Lansing, MI · Sep 2017 – May 2019</p>
+<ul><li data-l="ss bs">Analyzed SEC filings and 10-Ks on loan loss allowance fraud and how oil and gas booms affected earnings.</li></ul>
+</div>
+<div class="adds"><span class="k">ADDS</span><span>Corporate finance</span><span>Financial statements</span><span>Excel analysis</span></div>
+<div class="used"><b>Worked with:</b> Excel · Tableau · Oracle SmartView · MyForecast · SEC filings</div>
 </li>
 
 <li class="stop iv" data-seat="iv" data-lbl="2021 · PLANTE MORAN">
@@ -380,15 +358,11 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <p class="role"><b>Investment Research Analyst</b> · Southfield, MI · Aug 2021 – Feb 2023</p>
 <p class="pre">Started as an <b>Investment Research Analyst Intern</b>, Jul – Aug 2020, and came back full time.</p>
 <ul>
-<li data-l="wm bs cd">Ran <b>manager due diligence</b> across equities, fixed income and alternatives through portfolio manager calls and outside research, then presented my recommendations to the Research Committee, which decides where millions of dollars are placed.</li>
-<li data-l="wm bs">Covered the full range of vehicles: <b>mutual funds, ETFs, separately managed accounts and alternative investments</b>, alongside individual stocks and bonds.</li>
-<li data-l="wm bs ss">Prepared and interpreted reports on how portfolios and strategies were built: <b>holdings, style, and risk and return statistics</b>, measured against benchmarks and peer groups in Callan PEP and Morningstar Direct.</li>
-<li data-l="wm bs">Kept in regular contact with money management firms as part of <b>ongoing monitoring</b> of the managers already on the platform, not just new ones.</li>
-<li data-l="wm cons">Researched individual stocks, funds and portfolios for financial advisors and handled their ad-hoc requests.</li>
-<li data-l="wm ss">Built charts and tables that explained market and economic ideas for thought leadership posted online and used in client meetings.</li>
-<li data-l="wm ss cons">Presented to committees on asset classes, investment vehicles, and <b>economic and capital market conditions</b>.</li>
+<li data-l="wm bs">Ran <b>manager due diligence</b> across equities, fixed income and alternatives through portfolio manager calls and outside research, then presented my recommendations to the Research Committee, which decides where millions of dollars are placed.</li>
+<li data-l="wm bs ss">Covered <b>mutual funds, ETFs, separately managed accounts and alternatives</b>, analyzing holdings, style and risk and return against benchmarks and peers in Callan PEP and Morningstar Direct.</li>
+<li data-l="wm bs cons">Monitored managers already on the platform through regular contact with their firms, and answered financial advisors’ research requests on stocks, funds and portfolios.</li>
+<li data-l="wm ss cons">Presented to committees on asset classes and <b>economic and market conditions</b>, and built charts for thought leadership used online and in client meetings.</li>
 <li data-l="wm bs cons">Built a <b>tax swap analysis spreadsheet</b> on Morningstar Direct data that saves time in asset class reviews.</li>
-<li data-l="wm bs">Used Bloomberg, Morningstar Direct, Callan PEP, Black Diamond and FRED every day for data gathering and visualization.</li>
 </ul>
 <div class="adds"><span class="k">ADDS</span><span>Investor perspective</span><span>Due diligence</span><span>Advisor support</span></div>
 <div class="used"><b>Worked with:</b> Bloomberg · Morningstar Direct · Callan PEP · Black Diamond · FRED</div>
@@ -412,17 +386,6 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <li data-l="ir ib cd bs">Build <b>ownership analyses</b>, board reports, earnings recaps and peer benchmarking.</li>
 <li data-l="cons ir ib">Project-manage client work and mentor junior analysts and interns, delivering client-ready drafts to team leads a day or more ahead of deadlines.</li>
 </ul>
-<details class="more">
-<summary>More from this role <span>6</span></summary>
-<ul>
-<li data-l="ss bs ir">Monitor client peer groups from <b>pre-market</b> for news and trading activity, and flag what matters to the team within one to two hours of release.</li>
-<li data-l="ir cons">Build IR engagement plans, quarterly reports, investor dossiers and follow-up memos that combine quantitative and qualitative analysis.</li>
-<li data-l="ss cons bs">Write white paper research on market and sector topics for Alpha’s thought leadership.</li>
-<li data-l="cons ib">Help build and deliver new-business pitch presentations.</li>
-<li data-l="ir">Apply <b>Reg FD and Reg G</b> in day-to-day disclosure and messaging work.</li>
-<li data-l="ir cons">Work alongside Alpha’s PR team to keep investor messaging consistent with each client’s broader corporate story.</li>
-</ul>
-</details>
 <blockquote class="quote">“The Associate title is an important designation within our IR practice and Nathan clearly earned it with consistent execution and a strong commitment to high-quality service on behalf of our clients.”<cite>Alpha IR Group, announcing the 2025 promotion</cite></blockquote>
 <div class="adds"><span class="k">ADDS</span><span>Advisory</span><span>Executive communication</span><span>Leadership</span></div>
 <div class="used"><b>Worked with:</b> Bloomberg · S&amp;P Capital IQ · Ipreo · Irwin · AI tools</div>
@@ -443,8 +406,8 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <h2 id="h-bring"><span class="sn">3</span>What I’d bring to a team</h2>
 <div class="bring">
 <div class="bc"><div class="no vt">01</div><h3>I know how investors judge a company.</h3><p>Three years of interviewing portfolio managers and analysts for perception studies, after a year and a half recommending managers to an investment committee.</p><div class="proof"><span class="iv"><i></i>Plante Moran</span><span class="br"><i></i>Alpha IR</span></div></div>
-<div class="bc"><div class="no vt">02</div><h3>I turn data into something an executive will read.</h3><p>Board reports, ownership analysis, peer benchmarking and earnings materials, built on a base of A/R analysis and SEC-filing research.</p><div class="proof"><span class="fd"><i></i>MSU</span><span class="co"><i></i>Horizon</span><span class="br"><i></i>Alpha IR</span></div></div>
-<div class="bc"><div class="no vt">03</div><h3>I own a process from start to finish.</h3><p>Running full-cycle IR programs and earnings prep against hard deadlines, delegating to and reviewing junior analysts along the way.</p><div class="proof"><span class="co"><i></i>Mercedes-Benz FS</span><span class="br"><i></i>Alpha IR</span></div></div>
+<div class="bc"><div class="no vt">02</div><h3>I turn data into something an executive will read.</h3><p>Board reports, ownership analysis, peer benchmarking and earnings materials, built on a base of A/R analysis and SEC-filing research.</p><div class="proof"><span class="co"><i></i>Early career</span><span class="br"><i></i>Alpha IR</span></div></div>
+<div class="bc"><div class="no vt">03</div><h3>I own a process from start to finish.</h3><p>Running full-cycle IR programs and earnings prep against hard deadlines, delegating to and reviewing junior analysts along the way.</p><div class="proof"><span class="br"><i></i>Alpha IR</span></div></div>
 </div>
 </section>
 
@@ -453,10 +416,9 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <p class="lede2">Pick a seat to see what I used there. The colored bars under each tool show every seat it came from.</p>
 <div class="flt" role="group" aria-label="Filter tools by seat">
 <button type="button" class="fb" aria-pressed="true" data-f="">All</button>
-<button type="button" class="fb co" aria-pressed="false" data-f="co">Company</button>
+<button type="button" class="fb co" aria-pressed="false" data-f="co">Early career</button>
 <button type="button" class="fb iv" aria-pressed="false" data-f="iv">Investor</button>
 <button type="button" class="fb br" aria-pressed="false" data-f="br">In between</button>
-<button type="button" class="fb fd" aria-pressed="false" data-f="fd">Foundation</button>
 </div>
 <div class="tools" id="tools"></div>
 </section>
@@ -472,7 +434,7 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <section id="contact" aria-labelledby="h-me" style="margin-bottom:0">
 <h2 id="h-me"><span class="sn">6</span>Get in touch</h2>
 <div class="me">
-<p>If you’re hiring in finance and this looks like a fit, I’d be glad to talk.</p>
+<p>Want to talk markets, the site, or anything on this page? I’d be glad to hear from you.</p>
 <div class="btns"><a class="btn p" href="mailto:nskown@icloud.com">nskown@icloud.com</a><a class="btn s" href="https://www.linkedin.com/in/nathan-skown" rel="noopener">LinkedIn ↗</a></div>
 </div>
 </section>
@@ -486,20 +448,18 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
   try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
   /* ---- data: capabilities by role (2 = core to the job, 1 = part of it) ---- */
-  var COLS = [
-    { k: 'MSU', seat: 'fd' }, { k: 'MBFS', seat: 'co' }, { k: 'HZN', seat: 'co' }, { k: 'PM', seat: 'iv' }, { k: 'ALPHA', seat: 'br' }
-  ];
+  var COLS = [ { k: 'EARLY', seat: 'co' }, { k: 'PLANTE', seat: 'iv' }, { k: 'ALPHA', seat: 'br' } ];
   var CAPS = [
-    ['Financial statements', [2, 0, 1, 1, 1]],
-    ['Corp. finance & accounting', [0, 2, 2, 0, 0]],
-    ['Research & due diligence', [2, 0, 0, 2, 2]],
-    ['Investor perspective', [0, 0, 0, 2, 2]],
-    ['Writing & exec comms', [0, 1, 0, 1, 2]],
-    ['Data, tools & visuals', [1, 1, 2, 2, 1]],
-    ['Client advisory', [0, 0, 0, 1, 2]],
-    ['Leading & mentoring', [0, 0, 0, 0, 2]]
+    ['Financial statements', [2, 1, 1]],
+    ['Corp. finance & accounting', [2, 0, 0]],
+    ['Research & due diligence', [2, 2, 2]],
+    ['Investor perspective', [0, 2, 2]],
+    ['Writing & exec comms', [1, 1, 2]],
+    ['Data, tools & visuals', [2, 2, 1]],
+    ['Client advisory', [0, 1, 2]],
+    ['Leading & mentoring', [0, 0, 2]]
   ];
-  var POS = [[210, 196], [70, 100], [70, 100], [350, 100], [210, 100]];
+  var POS = [[70, 100], [350, 100], [210, 100]];
 
   function buildMx(host) {
     var h = '<table><thead><tr><th>CAPABILITY</th>';
@@ -510,7 +470,7 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
       r[1].forEach(function (v, j) { h += '<td class="' + COLS[j].seat + '" data-c="' + j + '">' + (v ? '<i class="cell l' + v + '"></i>' : '') + '</td>'; });
       h += '</tr>';
     });
-    h += '</tbody></table><div class="mx-f"><span>Capabilities <b class="nCap">0/8</b></span><span>Seats <b class="nSeat">0/3</b></span></div>';
+    h += '</tbody></table>';
     h += '<p class="mx-n">My own read of each role. Solid: core to the job. Outline: part of it.</p>';
     host.innerHTML = h;
   }
@@ -527,12 +487,9 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
       var has = CAPS[i][1].some(function (v, j) { return v && j <= upto; });
       tr.classList.toggle('got', has); if (has) got++;
     });
-    var seats = {}; for (var j = 0; j <= upto; j++) if (COLS[j].seat !== 'fd') seats[COLS[j].seat] = 1;
-    host.querySelector('.nCap').textContent = got + '/8';
-    host.querySelector('.nSeat').textContent = Object.keys(seats).length + '/3';
   }
   var mxLive = $('mxLive'), mxFull = $('mxFull');
-  buildMx(mxLive); buildMx(mxFull); paintMx(mxFull, 4); paintMx(mxLive, -1);
+  buildMx(mxLive); buildMx(mxFull); paintMx(mxFull, 2); paintMx(mxLive, -1);
 
   /* ---- seat map trail ---- */
   var segs = {};
@@ -610,8 +567,8 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
   var TOOLS = [
     ['Bloomberg Terminal', 'iv br'], ['S&P Capital IQ', 'br'], ['Ipreo (S&P Capital Access)', 'br'], ['Irwin', 'br'],
     ['Morningstar Direct', 'iv'], ['Callan PEP', 'iv'], ['Black Diamond', 'iv'], ['FRED', 'iv'],
-    ['Excel: pivot tables, VLOOKUP', 'fd co iv'], ['Tableau', 'co'], ['Oracle SmartView', 'co'], ['MyForecast', 'co'], ['Microsoft Access', 'co'],
-    ['SEC filings and 10-Ks', 'fd'], ['AI tools: Claude, ChatGPT, Hatz', 'br']
+    ['Excel: pivot tables, VLOOKUP', 'co iv'], ['Tableau', 'co'], ['Oracle SmartView', 'co'], ['MyForecast', 'co'], ['Microsoft Access', 'co'],
+    ['SEC filings and 10-Ks', 'co'], ['AI tools: Claude, ChatGPT, Hatz', 'br']
   ];
   var tw = $('tools');
   tw.innerHTML = TOOLS.map(function (t) {
@@ -664,19 +621,6 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
       ['Know what the buy-side asks', 'Regular conversations with portfolio managers and analysts through perception studies and introductory buy-side calls.', 'Alpha IR'],
       ['Pre-market discipline', 'Peer news and trading activity checked from pre-market, with material items flagged within one to two hours.', 'Alpha IR']],
       foot: 'Building now: <b>CFA Level II</b>. I’ve seen how companies tell their story and how investors grade it.' },
-    { id: 'ib', name: 'Investment banking', sub: 'coverage, capital markets', rows: [
-      ['Capital markets lens', 'Know how the buy-side and sell-side evaluate companies, from perception studies and investor targeting.', 'Alpha IR'],
-      ['Polished materials', 'Earnings presentations, investor decks, fact sheets and press releases for public companies.', 'Alpha IR'],
-      ['Read filings closely', 'Dissected SEC filings and 10-Ks in college research on loan loss allowance fraud and oil and gas earnings.', 'MSU · Alpha IR'],
-      ['Client-ready under deadline', 'Earnings materials for 6–8 public companies every quarter, delivered to team leads a day or more early.', 'Alpha IR'],
-      ['Working capital basics', 'Hit a $1 million aged-receivables target in three months on a liquidity project.', 'Horizon Global']],
-      foot: 'Building now: <b>CFA Level II</b>, which goes deep on valuation and financial reporting.' },
-    { id: 'cd', name: 'Corporate development', sub: 'M&A, strategy', rows: [
-      ['Peer benchmarking', 'Peer benchmarking and ownership analysis for public company clients.', 'Alpha IR'],
-      ['How the market will react', 'Perception studies and ownership analysis show what investors reward and punish.', 'Alpha IR'],
-      ['Diligence habits', 'Manager due diligence for a research committee, and a record of checking every number.', 'Plante Moran · Alpha IR'],
-      ['Speak to executives and boards', 'Board reports and C-suite readouts every quarter.', 'Alpha IR']],
-      foot: 'Building now: <b>CFA Level II</b> valuation, alongside transaction modeling.' },
     { id: 'cons', name: 'Consulting', sub: 'strategy, advisory', rows: [
       ['Many clients at once', 'Day-to-day contact for 6–8 public companies, each with its own plan and deadlines.', 'Alpha IR'],
       ['Structured research and synthesis', 'Investor interviews turned into findings, and peer research turned into summary tables leadership can act on.', 'Alpha IR'],
@@ -709,10 +653,6 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
   panel.addEventListener('click', function (e) { if (e.target.closest('[data-clear]')) { e.preventDefault(); set(''); } });
   chip.addEventListener('click', function () { set(''); });
   try { var f = new URL(location.href).searchParams.get('for'); if (f) set(f); } catch (e) {}
-
-  /* review draft: count CONFIRM items */
-  var c = document.querySelectorAll('[data-confirm]').length;
-  document.getElementById('draftN').textContent = c; if (!c) document.getElementById('draft').hidden = true;
 
   /* live site counts in the side-project card */
   fetch('/data/site.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (d) {
