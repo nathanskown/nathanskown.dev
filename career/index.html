@@ -20,7 +20,7 @@
 <style>
 :root{
   --bg:#020308;--panel:#060a18;--line:#1b2440;--line2:#2a3762;
-  --wh:#f4f6ff;--hi:#dfe5ff;--dim:#8e9ac0;--mute:#56618a;
+  --wh:#f4f6ff;--hi:#dfe5ff;--dim:#8e9ac0;--mute:#7a86b0;
   --ac:#8fb0ff;                      /* page accent: Career */
   --fd:#b9c2cf;--co:#ffa45c;--iv:#c6a6ff;--br:#8fb0ff;  /* seats: foundation, company, investor, between */
 }
@@ -43,7 +43,7 @@ a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;b
 @media (max-width:640px){.bar .opt{display:none}}
 
 main{max-width:1180px;margin:0 auto;padding:0 18px 80px}
-section{margin:0 0 96px}
+section{margin:0 0 96px;scroll-margin-top:56px}
 .kick{display:flex;align-items:center;gap:8px;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
 .kick::before{content:"";width:18px;height:2px;background:var(--ac)}
 h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--wh);margin:0 0 18px;display:flex;align-items:center;gap:10px}
@@ -62,7 +62,7 @@ h2 .sn{color:#000;background:var(--ac);padding:1px 7px;font-weight:600}
 .seats{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
 .seat{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);color:var(--c);font-size:13px;letter-spacing:.12em;text-transform:uppercase;background:rgba(0,0,0,.5)}
 .seat i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
-.cue{position:relative;margin-top:40px;display:inline-flex;gap:10px;align-items:center;color:var(--dim);font-size:13px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;align-self:flex-start}
+.cue{position:relative;min-height:44px;margin-top:40px;display:inline-flex;gap:10px;align-items:center;color:var(--dim);font-size:13px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;align-self:flex-start}
 .cue i{display:inline-block;width:1px;height:28px;background:linear-gradient(var(--ac),transparent);animation:drip 1.8s ease-in-out infinite}
 @keyframes drip{0%{transform:scaleY(.2);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(1);transform-origin:bottom;opacity:0}}
 
@@ -269,6 +269,7 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
   .n{opacity:1;transform:none}
 }
 </style>
+<noscript><style>.stop{opacity:1}.hero .h1 span{visibility:visible}.full{display:none}</style></noscript>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
