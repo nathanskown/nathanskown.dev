@@ -22,7 +22,7 @@
   --bg:#020308;--panel:#060a18;--line:#1b2440;--line2:#2a3762;
   --wh:#f4f6ff;--hi:#dfe5ff;--dim:#8e9ac0;--mute:#7a86b0;
   --ac:#8fb0ff;                      /* page accent: Career */
-  --fd:#b9c2cf;--co:#ffa45c;--iv:#c6a6ff;--br:#8fb0ff;  /* seats: foundation, company, investor, between */
+  --fd:#b9c2cf;--co:#ffa45c;--iv:#c6a6ff;--br:#5fe3a1;  /* seats: foundation, company, investor, between */
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -131,13 +131,13 @@ td.cur .cell{outline:1px solid rgba(255,255,255,.25);outline-offset:2px}
 /* Alpha: title ladder */
 .ladder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end;max-width:560px;margin:4px 0 20px;height:132px}
 .rung{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
-.rung .b{height:0;background:linear-gradient(180deg,color-mix(in srgb,var(--br) 70%,#fff),color-mix(in srgb,var(--br) 25%,transparent));border-top:2px solid #fff;box-shadow:0 0 18px rgba(143,176,255,.35);transition:height .9s cubic-bezier(.3,.9,.2,1)}
+.rung .b{height:0;background:linear-gradient(180deg,color-mix(in srgb,var(--br) 70%,#fff),color-mix(in srgb,var(--br) 25%,transparent));border-top:2px solid #fff;box-shadow:0 0 18px rgba(95,227,161,.35);transition:height .9s cubic-bezier(.3,.9,.2,1)}
 .stop.on .rung:nth-child(1) .b,.stop.past .rung:nth-child(1) .b{height:34%}
 .stop.on .rung:nth-child(2) .b,.stop.past .rung:nth-child(2) .b{height:60%;transition-delay:.25s}
 .stop.on .rung:nth-child(3) .b,.stop.past .rung:nth-child(3) .b{height:88%;transition-delay:.5s}
 .rung .t{position:absolute;left:8px;right:4px;bottom:8px;color:#000;font-size:12.5px;font-weight:600;line-height:1.25}
 .rung .t small{display:block;font-weight:500;opacity:.75}
-.quote{margin:4px 0 16px;padding:12px 16px;border-left:3px solid var(--br);background:rgba(143,176,255,.06);max-width:62ch;font-size:14px;color:var(--hi)}
+.quote{margin:4px 0 16px;padding:12px 16px;border-left:3px solid var(--br);background:rgba(95,227,161,.06);max-width:62ch;font-size:14px;color:var(--hi)}
 .quote cite{display:block;margin-top:6px;font-style:normal;font-size:12.5px;color:var(--dim)}
 
 .full{display:none}
@@ -311,7 +311,7 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
 <div class="scope" id="scope" aria-hidden="true">
 <div class="sc-h"><span>SEAT MAP</span><b id="nowLbl">2017–19 · EARLY CAREER</b></div>
 <svg class="map" id="map" viewBox="0 0 420 160" focusable="false">
-<defs><linearGradient id="trailG" x1="0" x2="1"><stop offset="0" stop-color="#ffa45c"/><stop offset=".55" stop-color="#c6a6ff"/><stop offset="1" stop-color="#8fb0ff"/></linearGradient></defs>
+<defs><linearGradient id="trailG" x1="0" x2="1"><stop offset="0" stop-color="#ffa45c"/><stop offset=".55" stop-color="#c6a6ff"/><stop offset="1" stop-color="#5fe3a1"/></linearGradient></defs>
 <line class="tbl" x1="40" y1="100" x2="380" y2="100"/>
 <path class="tr" data-seg="1" d="M70,100 C120,8 300,8 350,100"/>
 <path class="tr" data-seg="2" d="M350,100 C318,150 242,150 210,100"/>
@@ -583,7 +583,7 @@ body.lensed .case.lit{border-color:var(--ac);box-shadow:0 0 24px rgba(143,176,25
     var s = t[1].split(' ');
     return '<span class="tool" data-s="' + t[1] + '">' + t[0].replace(/&/g, '&amp;') + '<span class="w" aria-hidden="true">' + s.map(function (x) { return '<i class="' + x + '"></i>'; }).join('') + '</span></span>';
   }).join('');
-  var COL = { co: '#ffa45c', iv: '#c6a6ff', br: '#8fb0ff', fd: '#b9c2cf' };
+  var COL = { co: '#ffa45c', iv: '#c6a6ff', br: '#5fe3a1', fd: '#b9c2cf' };
   document.querySelectorAll('.fb').forEach(function (b) {
     b.addEventListener('click', function () {
       var f = b.getAttribute('data-f');
