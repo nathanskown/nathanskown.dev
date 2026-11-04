@@ -125,6 +125,68 @@ def model(d, c):
         c.ok(abs(tot - 1) < 0.02, f"title odds add to {tot:.3f}, not 1")
 
 
+def _fresh(c, ts, label, max_days=7):
+    """The file's own timestamp must parse, not be in the future, and not be older than max_days."""
+    try:
+        t = datetime.fromisoformat(str(ts))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+    except ValueError:
+        c.ok(False, f"{label} timestamp {ts!r} is not a date")
+        return
+    age = (datetime.now(timezone.utc) - t).total_seconds() / 86400
+    c.ok(age > -1, f"{label} timestamp is in the future")
+    c.ok(age <= max_days, f"{label} is {age:.0f} days old")
+
+
+def nhl_trend(d, c):
+    """Per-team scoring and shot trends (season and last 15/10/5 games), read by the NHL team pages."""
+    teams = d.get("teams") or {}
+    c.ok(len(teams) >= 30, f"trend has {len(teams)} teams")
+    c.ok(finite(d.get("season")), "trend season missing")
+    _fresh(c, d.get("updated"), "trend")
+    bad, nowin = [], []
+    for t, wins in teams.items():
+        if not isinstance(wins, dict) or not isinstance(wins.get("season"), dict):
+            nowin.append(t)
+            continue
+        for w, vals in wins.items():
+            if not isinstance(vals, dict) or not all(finite(v) for v in vals.values()):
+                bad.append(f"{t}.{w}")
+            elif vals.get("gp", 0) < 0 or any(v < 0 for k, v in vals.items() if k in ("gf", "ga", "sf", "sa")):
+                bad.append(f"{t}.{w}")
+    c.ok(not nowin, f"{len(nowin)} teams without a season trend: {nowin[:4]}")
+    c.ok(not bad, f"{len(bad)} trend windows with non-numeric or negative values: {bad[:4]}")
+
+
+def totals(d, c):
+    """Over/under (game total) model for one league: its settings, upcoming game projections and backtest."""
+    c.ok(isinstance(d.get("lg"), str) and d["lg"], "totals file has no league")
+    c.ok(finite(d.get("season")), "totals season missing")
+    _fresh(c, d.get("updated"), "totals", max_days=14)
+    conf = d.get("conf") or {}
+    c.ok(bool(conf) and all(finite(v) for v in conf.values()), "totals settings are missing or non-numeric")
+    games = d.get("games")
+    c.ok(isinstance(games, dict), "totals games is not a table")  # an empty table is fine out of season
+    bad = [k for k, v in (games or {}).items() if not (isinstance(v, list) and v and all(finite(x) for x in v))]
+    c.ok(not bad, f"{len(bad)} games with non-numeric projections: {bad[:3]}")
+    b = d.get("backtest") or {}
+    c.ok(finite(b.get("games")) and b["games"] > 0, "totals backtest has no games")
+    c.ok(finite(b.get("mae")) and 0 < b["mae"] < 30, f"totals backtest error {b.get('mae')}")
+
+
+def tuning(d, c):
+    """Fitted adjustment settings (one league's, or a dict of leagues): whether adopted, size and significance of the gain."""
+    units = [d] if "adopt" in d else [v for v in d.values() if isinstance(v, dict)]
+    c.ok(bool(units), "tuning file has no results")
+    for u in units:
+        c.ok(isinstance(u.get("adopt"), bool), "tuning result has no adopt flag")
+        c.ok(finite(u.get("gain")) and finite(u.get("z")), "tuning gain or z is not numeric")
+        for k in ("beta", "gamma", "w"):
+            c.ok(k not in u or finite(u[k]), f"tuning {k} is not numeric")
+        c.ok(isinstance(u.get("folds", []), list), "tuning folds is not a list")
+
+
 def standings(d, c):
     for g in d.get("groups") or []:
         for t in g.get("teams") or []:
@@ -169,6 +231,10 @@ def injuries(d, c):
     c.ok(isinstance(d.get("teams"), dict), "injury file has no teams")
 
 
+RATING_MODELS = {f"sports/model/{lg}.json" for lg in ("nfl", "nba", "nhl", "mlb", "ncaab", "ncaaf", "ncaah")}  # add a new league's model here
+TUNING_FILES = {f"sports/model/{n}.json" for n in ("ctx", "elo", "qb", "ret", "cfbret")}
+
+
 def rule_for(rel):
     if rel == "finance/dashboard.json":
         return dashboard
@@ -186,7 +252,13 @@ def rule_for(rel):
         return fed
     if rel == "sports/model/evolution.json":
         return evolution
-    if rel.startswith("sports/model/") and not Path(rel).name.startswith("_") and rel.count("/") == 2 and rel not in ("sports/model/tuned.json", "sports/model/milestones.json"):
+    if rel == "sports/model/nhl_trend.json":
+        return nhl_trend
+    if rel.startswith("sports/model/totals_"):
+        return totals
+    if rel in TUNING_FILES:
+        return tuning
+    if rel in RATING_MODELS:  # only real rating models get the rating checks; helper files get their own rule or none
         return model
     if rel.startswith("sports/standings/"):
         return standings
