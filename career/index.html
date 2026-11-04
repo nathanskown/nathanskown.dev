@@ -102,14 +102,19 @@ td.cur .cell{outline:1px solid rgba(255,255,255,.25);outline-offset:2px}
 .mx-n{margin:6px 0 0;font-size:12px;color:var(--mute);line-height:1.45}
 
 .stops{list-style:none;margin:0;padding:0}
-.stop{position:relative;min-height:82vh;padding:26px 0 40px 26px;border-left:1px solid var(--line);opacity:.32;transition:opacity .6s}
+.stop{position:relative;min-height:82vh;padding:26px 0 40px 26px;border-left:1px solid var(--line)}
 .stop:last-child{min-height:0}
-.stop.on,.stop.past{opacity:1}
-.stop.past{opacity:.72}
+/* stops not yet reached are dimmed child by child, not as a whole, so the seat label (.st) is never faded below AA contrast */
+.stop>*,.stop::before{opacity:.32;transition:opacity .6s}
+.stop>.st{opacity:1}
+.stop.on>*,.stop.on::before{opacity:1}
+.stop.past>*,.stop.past::before{opacity:.72}
+.stop.on>.st,.stop.past>.st{opacity:1}
 .stop::before{content:"";position:absolute;left:-7px;top:34px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--c);transition:.5s}
 .stop.on::before{background:var(--c);box-shadow:0 0 14px var(--c)}
 .yr{font-size:clamp(54px,6vw,84px);line-height:.85;color:var(--c);text-shadow:0 0 22px color-mix(in srgb,var(--c) 40%,transparent)}
-.st{display:inline-block;margin:10px 0 4px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:#000;background:var(--c);padding:1px 7px;font-weight:600}
+.st{display:inline-block;margin:10px 0 4px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:#000;background:var(--c);padding:1px 7px;font-weight:600;transition:background .5s,color .5s}
+.stop:not(.on):not(.past)>.st{color:var(--c);background:transparent;box-shadow:inset 0 0 0 1px var(--c)} /* outlined until its stop is reached */
 .org{margin:6px 0 2px;font-size:22px;line-height:1.25;color:#fff;font-weight:600}
 .role{margin:0 0 14px;color:var(--dim);font-size:14px}
 .role b{color:var(--hi);font-weight:500}
