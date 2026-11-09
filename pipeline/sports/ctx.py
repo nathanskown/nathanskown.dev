@@ -29,7 +29,7 @@ import numpy as np
 
 from .common import DATA, now_iso, read, write
 
-LEAGUES = ("nba", "nfl", "ncaaf")
+LEAGUES = ("nba", "nfl", "ncaaf", "nhl")
 VALUE = {"nba": {"a": -2.4 / 48, "b": 0.1, "c": 0.0, "d": 8.5 / 48, "hl_min": 6, "hl_val": 40, "shrink": 600.0, "min_em": 10.0,
                  "roster": 15, "carry": 0.6}}
 STATUS_W = {"Out": 1.0, "Injured Reserve": 1.0, "Suspension": 1.0, "Doubtful": 0.75, "Questionable": 0.4, "Day-To-Day": 0.25}
@@ -37,7 +37,8 @@ STATUS_W_NFL = dict(STATUS_W, Questionable=0.26, Doubtful=0.98)   # regulars 201
 # adopted when held-out log loss improves by GAIN and either z >= Z or (z >= Z_CONSISTENT and nearly every season improved)
 GATE = {"gain": 0.001, "z": 2.0, "z_consistent": 1.0, "share": 0.8}
 BETAS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
-BETAS_LG = {"ncaaf": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]}       # points per adjusted yard per dropback
+BETAS_LG = {"ncaaf": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0],       # points per adjusted yard per dropback
+            "nhl": [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]}   # share of the goalie edge (goals) taken at face value
 _cache = {}
 
 
@@ -160,6 +161,9 @@ def _edge(lg, year, d, h, a, projection=False):
     if lg == "ncaaf":
         from . import cfbqb
         return cfbqb.edge(year, h, a, projection)
+    if lg == "nhl":
+        from . import nhlgoalie
+        return nhlgoalie.edge(d, h, a, projection)
     if lg == "nfl":
         if "nfl_snap" not in _cache:
             from . import nflsnap
@@ -183,7 +187,7 @@ def season_edges(lg, year, rows, inv):
 
 def season_proj_edges(lg, year, rows, inv):
     """Projection-side edges where they differ from the result-side ones (else None)."""
-    if lg != "ncaaf":
+    if lg not in ("ncaaf", "nhl"):
         return None
     out = []
     for r in rows:
@@ -248,6 +252,12 @@ def upcoming(lg, beta, events, days=7):
         ab = {t["id"]: t.get("abbr", "") for t in ((read("teams.json") or {}).get("leagues") or {}).get(lg, [])}
         return cfbqb.upcoming(beta, events, ab, (now - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
                               (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M"))
+    if lg == "nhl":
+        from . import nhlgoalie
+        now = datetime.now(timezone.utc)
+        ab = {t["id"]: t.get("abbr", "") for t in ((read("teams.json") or {}).get("leagues") or {}).get(lg, [])}
+        return nhlgoalie.upcoming(beta, events, ab, (now - timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
+                                  (now + timedelta(days=days)).strftime("%Y-%m-%dT%H:%M"))
     if lg == "nfl":
         from . import nflsnap
         miss = nflsnap.team_missing(STATUS_W_NFL, _norm)
@@ -294,6 +304,9 @@ def job_fit():
         if lg == "nfl":
             from . import nflsnap
             ys = sorted({y for y, _, _ in nflsnap.edges()})
+        elif lg == "nhl":
+            from . import nhlgoalie
+            ys = nhlgoalie.years()
         else:
             ys = lab_years(lg)
         from . import model as M
