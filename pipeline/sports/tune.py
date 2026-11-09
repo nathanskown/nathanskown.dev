@@ -624,10 +624,17 @@ def tune(lg):
         from . import cbbret
         if cbbret.gamma():
             preset["ret"] = cbbret.gamma()
+    if lg == "ncaab":
+        from . import cbbconf
+        if cbbconf.param():
+            preset["cm"] = cbbconf.param()
     if lg == "ncaaf":
         from . import cfbret
         if cfbret.gamma():
             preset["rp"] = cfbret.gamma()
+        from . import cfbtalent
+        if cfbtalent.param():
+            preset["tal"] = cfbtalent.param()
     L = League(lg)
     covid = COVID.get(lg, set())
     usable = [y for y in L.years if (y - 1) in L.seasons and y not in covid][-WINDOW:]

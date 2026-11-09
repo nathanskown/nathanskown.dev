@@ -12,7 +12,8 @@ actual / projected from earlier seasons, by projection size, so they say how oft
 projection really cleared a number. Tested 2019-25 (each season from earlier data only).
 
 Game totals: offense and defense point ratings for every team (ridge, recency weighted, carried over between seasons)
-plus a wind adjustment for outdoor games. Tested 2019-25 against closing totals.
+plus a wind adjustment for outdoor games (measured wind for past games; Open-Meteo's kickoff forecast for upcoming
+ones, weather.py). Tested 2019-25 against closing totals.
 
   data/sports/props/nfl.json"""
 import collections
@@ -514,6 +515,11 @@ def job_props():
                                  "espn": g.get("espn"), "kick": f"{g['gameday']} {g['gametime']} ET",
                                  "without": missing[:4] if (mk in ("rec_yds", "receptions") and boost[0] > 1.02) or (mk == "rush_yds" and boost[1] > 1.02) or (mk == "pass_yds" and boost[2] > 1.02) else []})
     rows.sort(key=lambda r: (r["market"], -r["median"]))
+    from . import weather
+    fw = weather.nfl_wind()                 # forecast wind for upcoming outdoor games (games.csv fills it only after)
+    for r in games:
+        if r["home_score"] in ("", None) and r.get("wind") in ("", None) and fw.get(r.get("espn")) is not None:
+            r["wind"], r["windForecast"] = str(fw[r["espn"]]), True
     up_tot, thist = _totals(games, cur)
     totals = []
     for g in up:
@@ -523,7 +529,7 @@ def job_props():
         ev = cache.get(g.get("espn") or "", {})
         totals.append(dict(t, away=ALIAS.get(g["away_team"], g["away_team"]), home=ALIAS.get(g["home_team"], g["home_team"]),
                            awayId=AB2ID.get(g["away_team"]), homeId=AB2ID.get(g["home_team"]), espn=g.get("espn"),
-                           start=ev.get("d"), kick=f"{g['gameday']} {g['gametime']} ET", wind=g.get("wind") or None, roof=g.get("roof"),
+                           start=ev.get("d"), kick=f"{g['gameday']} {g['gametime']} ET", wind=g.get("wind") or None, windForecast=bool(g.get("windForecast")), roof=g.get("roof"),
                            awayPts=t["away"], homePts=t["home"]))
     live = _log_and_grade(cur, week, rows, seasons[cur])
     from . import kalshi

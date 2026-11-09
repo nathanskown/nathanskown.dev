@@ -438,7 +438,7 @@ class Component extends DCLogic {
       var LBL = { rec_yds: 'Rec yards', receptions: 'Receptions', rush_yds: 'Rush yards', pass_yds: 'Pass yards' };
       var mine = (X.props || []).filter(function (r) { return r.espn === gid; });
       var T0 = (X.totals || []).filter(function (t) { return t.espn === gid; })[0];
-      if (T0) tot = { has: true, v: T0.total.toFixed(1), s: (T0.away || '') + ' ' + T0.awayPts.toFixed(1) + ', ' + (T0.home || '') + ' ' + T0.homePts.toFixed(1) + ' · points' + (T0.roof === 'dome' || T0.roof === 'closed' ? ' · roof' : (T0.wind ? ' · wind ' + T0.wind + ' mph' : '')) };
+      if (T0) tot = { has: true, v: T0.total.toFixed(1), s: (T0.away || '') + ' ' + T0.awayPts.toFixed(1) + ', ' + (T0.home || '') + ' ' + T0.homePts.toFixed(1) + ' · points' + (T0.roof === 'dome' || T0.roof === 'closed' ? ' · roof' : (T0.wind ? ' · ' + (T0.windForecast ? 'forecast wind ' : 'wind ') + T0.wind + ' mph' : '')) };
       if (mine.length) {
         var mks = Object.keys(LBL).filter(function (k) { return mine.some(function (r) { return r.market === k; }); });
         var mk = mks.indexOf(S.pm) >= 0 ? S.pm : (mks.indexOf('rec_yds') >= 0 ? 'rec_yds' : mks[0]);
