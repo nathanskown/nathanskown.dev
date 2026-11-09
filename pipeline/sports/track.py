@@ -131,6 +131,8 @@ def update_picks(lg, now=None):
     picks = store["picks"]
     from . import blend
     mkt = blend.market(lg, model)
+    close = blend.closing(lg, model)
+    tots = (read(f"model/totals_{lg}.json") or {}).get("games", {})
     stamp = now.replace(microsecond=0).isoformat()
     added = graded = 0
     for eid, g in cache["events"].items():
@@ -154,14 +156,32 @@ def update_picks(lg, now=None):
                 added += 1
             picks[eid] = {"d": g["d"], "h": g["h"], "a": g["a"], "n": int(g["n"]), "m": round(pr[0], 2), "p": round(pr[1], 4),
                           "s": (pk or {}).get("s", stamp)}
-            mk = mkt.get(f"{g['d'][:16]}|{g['h']}|{g['a']}")
-            if mk is not None:
-                picks[eid]["mk"] = round(mk, 2)      # watched, never used in the forecast; internal file, not published
+            mk = blend.lookup(mkt, g["h"], g["a"], g["d"])
+            if mk is not None:                       # watched, never used in the forecast; internal file, not published
+                picks[eid]["mk"], picks[eid]["mp"] = round(mk[0], 2), round(mk[1], 4)
+            t = tots.get(f"{g['d'][:16]}|{g['h']}|{g['a']}")
+            if t:
+                picks[eid]["t"] = round(float(t[0]), 1)  # house projected total (totals.py), logged so totals can be graded too
         elif pk and g["done"] and g.get("hs") is not None and g.get("as") is not None:
             pk.update({"hs": g["hs"], "as": g["as"], "d": g["d"]})
             graded += 1
+    lined = closed = 0
+    for eid, pk in picks.items():                     # graded games: fill in market numbers the live pass missed
+        if "hs" not in pk:
+            continue
+        if pk.get("mp") is None:                      # odds file keeps the last line seen before kickoff for 21 days
+            mk = blend.lookup(mkt, pk["h"], pk["a"], pk["d"])
+            if mk is not None:
+                pk["mk"], pk["mp"] = round(mk[0], 2), round(mk[1], 4)
+                lined += 1
+        if pk.get("cp") is None and eid in close:     # ESPN closing line, once the daily box-score pass has the game
+            ck, cp, ct = close[eid]
+            pk["ck"], pk["cp"] = round(ck, 2), round(cp, 4)
+            if ct is not None:
+                pk["ct"] = float(ct)
+            closed += 1
     write(f"track/_picks_{lg}.json", store)
-    return {"added": added, "graded": graded, "total": len(picks)}
+    return {"added": added, "graded": graded, "total": len(picks), "lineFilled": lined, "closeFilled": closed}
 
 
 def _graded_rows(picks):
@@ -172,9 +192,43 @@ def _graded_rows(picks):
         res = _result(pk["hs"], pk["as"])
         rows.append({"id": eid, "d": pk["d"], "h": pk["h"], "a": pk["a"], "hs": pk["hs"], "as": pk["as"], "n": pk.get("n", 0),
                      "p": pk["p"], "m": pk["m"], "res": res, "err": (pk["hs"] - pk["as"]) - pk["m"], "s": pk.get("s"),
-                     "mk": pk.get("mk")})
+                     "mk": pk.get("mk"), "mp": pk.get("mp"), "ck": pk.get("ck"), "cp": pk.get("cp"), "t": pk.get("t"), "ct": pk.get("ct")})
     rows.sort(key=lambda r: r["d"])
     return rows
+
+
+ATS_STEP = {"nhl": 0.5, "ncaah": 0.5}      # gap (goals or points) that counts as a real disagreement; 3 points otherwise
+
+
+def vs_market(rows, km, kp, sg, lg):
+    """House and market side by side on the same games, plus how the house did against the line where they differed:
+    `ats` counts games where the final margin landed on the house's side of the market number."""
+    mrows = [dict(r, p=r[kp] if r.get(kp) is not None else M.phi(r[km] / sg), err=(r["hs"] - r["as"]) - r[km]) for r in rows]
+    step = ATS_STEP.get(lg, 3.0)
+
+    def ats(sel):
+        dec = [r for r in sel if (r["hs"] - r["as"]) != r[km] and r["m"] != r[km]]
+        return {"n": len(dec), "hits": sum(1 for r in dec if (r["m"] > r[km]) == ((r["hs"] - r["as"]) > r[km]))}
+    return {"n": len(rows), "house": score(rows), "market": score(mrows),
+            "gapMean": round(sum(r[km] - r["m"] for r in rows) / len(rows), 2),
+            "gapAbs": round(sum(abs(r[km] - r["m"]) for r in rows) / len(rows), 2),
+            "ats": ats(rows), "atsBig": dict(ats([r for r in rows if abs(r[km] - r["m"]) >= step]), gap=step),
+            "pickDiffer": (lambda d: {"n": len(d), "houseRight": sum(1 for r in d if (r["p"] >= 0.5) == (r["res"] == 1.0))})(
+                [r for r, q in zip(rows, mrows) if r["res"] != 0.5 and (r["p"] >= 0.5) != (q["p"] >= 0.5)])}
+
+
+def totals_score(rows):
+    """House projected totals against final totals, and against the closing total where ESPN has one."""
+    act = lambda r: r["hs"] + r["as"]
+    out = {"n": len(rows), "mae": round(sum(abs(act(r) - r["t"]) for r in rows) / len(rows), 2),
+           "bias": round(sum(act(r) - r["t"] for r in rows) / len(rows), 2)}
+    cl = [r for r in rows if r.get("ct") is not None]
+    if cl:
+        dec = [r for r in cl if act(r) != r["ct"] and r["t"] != r["ct"]]
+        out["close"] = {"n": len(cl), "houseMae": round(sum(abs(act(r) - r["t"]) for r in cl) / len(cl), 2),
+                        "closeMae": round(sum(abs(act(r) - r["ct"]) for r in cl) / len(cl), 2),
+                        "side": {"n": len(dec), "hits": sum(1 for r in dec if (r["t"] > r["ct"]) == (act(r) > r["ct"]))}}
+    return out
 
 
 def summarize(now=None):
@@ -196,13 +250,16 @@ def summarize(now=None):
                  "recent": [{k: r[k] for k in ("id", "d", "h", "a", "hs", "as", "p", "m", "n")} for r in rows[-RECENT:][::-1]],
                  "firstLogged": min((p.get("s") for p in picks.values() if p.get("s")), default=None),
                  "stats": score(rows)}
+        sg = (read(f"model/{lg}.json") or {}).get("sigma") or 13.0
         both = [r for r in rows if r["mk"] is not None]       # graded games that also have a market number
         if both:
-            sg = (read(f"model/{lg}.json") or {}).get("sigma") or 13.0
-            entry["watch"] = {"n": len(both), "house": score(both),
-                              "market": score([dict(r, p=M.phi(r["mk"] / sg), err=(r["hs"] - r["as"]) - r["mk"]) for r in both]),
-                              "gapMean": round(sum(r["mk"] - r["m"] for r in both) / len(both), 2),
-                              "gapAbs": round(sum(abs(r["mk"] - r["m"]) for r in both) / len(both), 2)}
+            entry["watch"] = vs_market(both, "mk", "mp", sg, lg)
+        closed = [r for r in rows if r["ck"] is not None]     # graded games with ESPN's closing line
+        if closed:
+            entry["close"] = vs_market(closed, "ck", "cp", sg, lg)
+        tl = [r for r in rows if r["t"] is not None]
+        if tl:
+            entry["totals"] = totals_score(tl)
         out["leagues"][lg] = entry
     out["all"] = score(every)
     write("track/summary.json", out)

@@ -345,10 +345,11 @@ def _current(lg):
 
 
 def job_collect_current():
-    """Box scores for the current season's finished games (new ones only), so player values stay current."""
+    """Box scores for the current season's finished games (new ones only), so player values stay current. The same rows
+    carry ESPN's closing line, which track.py uses to grade picks against the close (NHL is collected for that alone)."""
     from . import lab
     out = {}
-    for lg in ("nba", "ncaaf", "ncaab"):
+    for lg in ("nba", "ncaaf", "ncaab", "nhl"):
         year = (read(f"model/{lg}.json") or {}).get("season")
         if not year:
             continue
