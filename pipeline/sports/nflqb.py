@@ -13,10 +13,12 @@ Feature, per game and side:
   edge    = BETA x (home shift - away shift)        added to the projected home margin
 
 Data: nflverse (github.com/nflverse/nflverse-data, CC-BY 4.0) player stats per week and nfldata games.csv,
-which lists the starting QB of every game, including the expected starter of upcoming ones.
+which lists the starting QB of every game, including the expected starter of upcoming ones. Upcoming starters are
+then checked against ESPN's injury report (see "the live edges" below).
 
   history/nfl_qb.json   {"through": last full season, "perf": {qb id: [[season, week, epa, dropbacks]]}, "names": {qb id: name}}
   model/qb.json         the fit: beta, the grid winner, held-out gain
+  history/nfl_qb_status.json  each team's QB injury statuses as they change (to know who was out for a past game)
   model/nfl.json        qbEdges {"start|home|away": points}, qbInfo {same key: {"h": [name, shift], "a": [name, shift]}}"""
 import collections
 import csv
@@ -111,11 +113,11 @@ def qb_rating(perf, qid, season, week):
     return (e + MU * PN) / (n + PN)
 
 
-def shifts(perf, games):
+def shifts(perf, games, recent=None):
     """Walk one season's games (dicts with gameday, week, home_team, away_team, home_qb_id, away_qb_id) in date order.
     Yields (game, home shift, away shift, home rating, away rating) in points per game; a side with no starter listed
     or no earlier game this season shifts by 0."""
-    recent = collections.defaultdict(list)
+    recent = collections.defaultdict(list) if recent is None else recent
     out = []
     for g in sorted(games, key=lambda x: (x["gameday"], x["home_team"])):
         wk, season, sh = int(g["week"]), int(g["season"]), []
@@ -125,9 +127,9 @@ def shifts(perf, games):
                 sh.append((0.0, None))
                 continue
             rt = qb_rating(perf, q, season, wk)
-            hist = recent[t][-NH:]
+            hist = recent.get(t, [])[-NH:]
             sh.append(((rt - float(np.mean(hist))) * DB if hist else 0.0, rt))
-            recent[t].append(rt)
+            recent.setdefault(t, []).append(rt)
         out.append((g, sh[0][0], sh[1][0], sh[0][1], sh[1][1]))
     return out
 
@@ -250,12 +252,103 @@ def job_fit():
 
 
 # ---------------------------------------------------------------- the live edges
+# Who starts next. nfldata's games.csv carries last week's starter forward until someone edits it, so a starter
+# coming back from injury (or a new one going down) was missed until kickoff: on Oct 25, 2026 it still listed Tampa
+# Bay's backup the day Baker Mayfield returned. The expected starter now also reads ESPN's injury report, with these
+# rules, checked on 2018-25 (3,998 starts; nflverse injury reports and weekly rosters):
+#   - the listed starter is Out, Doubtful or on injured reserve: the QB he replaced, if healthy, else the team's most
+#     recent other healthy starter, else an unknown backup rated at replacement level (right 140 of 165 times);
+#   - the QB he replaced was out for the last game and is not out now: he is likely back (played 71% of the time,
+#     45% when listed Questionable);
+#   - the listed starter is Questionable: he starts 60% of the time (59% in those seasons).
+# That named the right starter (or an unknown backup when one started) 93% of the time against 89% for last week's
+# starter, catching 179 of 422 QB changes. The shift used is the chance-weighted mix of the possible starters.
+OUT = {"Out", "Injured Reserve", "Doubtful", "Suspension"}
+RETURN_W, RETURN_W_Q, Q_PLAYS = 0.71, 0.45, 0.6
+BACKUP = "backup"
+
+
+def _nm(s):
+    import re
+    s = re.sub(r"\b(jr|sr|ii|iii|iv|v)\b\.?", "", (s or "").lower())
+    return re.sub(r"[^a-z]", "", s)
+
+
+def _status_log(inj, stamp):
+    """Keep a log of each team's QB injury statuses as they change (history/nfl_qb_status.json), so the status a QB had
+    at an earlier game can be looked up. Returns {team id: [[time, {name: status}], ...]}."""
+    have = read("history/nfl_qb_status.json") or {"teams": {}}
+    log = have["teams"]
+    for t, rows in (inj or {}).items():
+        now = {_nm(r.get("name")): r.get("status") for r in rows if r.get("pos") == "QB" and r.get("status")}
+        hist = log.setdefault(t, [])
+        if not hist or hist[-1][1] != now:
+            hist.append([stamp, now])
+        del hist[:-60]
+    for t in log:
+        if t not in (inj or {}) and log[t] and log[t][-1][1]:
+            log[t].append([stamp, {}])                   # team no longer lists any QB
+    if inj:
+        have["updated"] = stamp
+        write("history/nfl_qb_status.json", have)
+    return log
+
+
+def _status_at(log, t, when):
+    """{name: status} for team t as of time `when` (ISO), or None when the log does not reach back that far."""
+    hist = log.get(t) or []
+    if not hist or hist[0][0] > when:
+        return None
+    cur = {}
+    for ts, st in hist:
+        if ts > when:
+            break
+        cur = st
+    return cur
+
+
+def expected(team, starts, listed, status, then, names):
+    """Chance of each QB starting a team's next game: {qb id or BACKUP: chance}.
+    starts: [(gameday, qb id)] this season so far; listed: games.csv's expected starter (or ""); status: {name: ESPN
+    status} now; then: {name: status} at the team's last game (None when unknown); names: {qb id: name}."""
+    st = lambda q: status.get(_nm(names.get(q, ""))) if q and q != BACKUP else None
+    out = lambda q: st(q) in OUT
+    if not starts:
+        return {listed: 1.0} if listed else {}
+    L = starts[-1][1]
+    k = 0
+    for _, q in reversed(starts):
+        if q != L:
+            break
+        k += 1
+    P = starts[-k - 1][1] if len(starts) > k else None
+
+    def alt(x):
+        if P and P != x and not out(P):
+            return P
+        for _, q in reversed(starts):
+            if q != x and not out(q):
+                return q
+        return BACKUP
+    X = listed if listed and listed != L else L          # an edited games.csv entry is someone's news: start there
+    if out(X):
+        return {alt(X): 1.0}
+    if X == L and P and then is not None and then.get(_nm(names.get(P, ""))) in OUT and not out(P):
+        w = RETURN_W_Q if st(P) == "Questionable" else RETURN_W
+        return {P: w, L: 1 - w}
+    if st(X) == "Questionable":
+        return {X: Q_PLAYS, alt(X): 1 - Q_PLAYS}
+    return {X: 1.0}
+
+
 def apply():
-    """Write qbEdges / qbInfo into model/nfl.json for games that have not been played."""
+    """Write qbEdges / qbInfo into model/nfl.json for each team's next game."""
     fit = read("model/qb.json") or {}
     model = read("model/nfl.json")
     if not model or not model.get("teams"):
         return None
+    inj = (read("injuries/nfl.json") or {}).get("teams") or {}
+    log = _status_log(inj, now_iso())
     for k in ("qbEdges", "qbInfo", "qbBeta"):
         model.pop(k, None)
     base = (model.get("basis") or "").replace(MARK, "")
@@ -269,32 +362,57 @@ def apply():
         write("model/nfl.json", model)
         return {"adopt": False, "reason": "no QB history"}
     rows = [r for r in _csv(GAMES_URL) if r["season"] == str(cur) and r["game_type"] == "REG"]
+    played = [r for r in rows if r["home_score"] not in ("", None)]
+    recent = {}
+    shifts(perf, played, recent)
+    starts = collections.defaultdict(list)
+    for g in sorted(played, key=lambda x: (x["gameday"], x.get("gametime") or "")):
+        for side in ("home", "away"):
+            if g[side + "_qb_id"]:
+                starts[g[side + "_team"]].append((g["gameday"], g[side + "_qb_id"]))
     cache = (read("model/_games_nfl.json") or {}).get("events", {})
     upcoming = collections.defaultdict(list)
     for g in cache.values():
         if not g.get("done") and not g.get("off"):
             upcoming[(g["h"], g["a"])].append(g)
+    nxt = {}
+    for g in sorted((r for r in rows if r["home_score"] in ("", None)), key=lambda x: x["gameday"]):
+        for side in ("home", "away"):
+            nxt.setdefault(g[side + "_team"], g)
+
+    def side(t, g, listed):
+        S = starts.get(t, [])
+        then = _status_at(log, AB2ID.get(t), S[-1][0] + "T17:00") if S else None
+        now = {_nm(r.get("name")): r.get("status") for r in inj.get(AB2ID.get(t), []) if r.get("pos") == "QB"}
+        dist = expected(t, S, listed, now, then, names)
+        hist = (recent.get(t) or [])[-NH:]
+        if not dist or not hist:
+            return None
+        u = float(np.mean(hist))
+        rt = lambda q: MU if q == BACKUP else qb_rating(perf, q, cur, int(g["week"]))
+        sh = sum(w * (rt(q) - u) * DB for q, w in dist.items())
+        top = max(dist, key=dist.get)
+        nm = "a backup" if top == BACKUP else names.get(top, "")
+        return [nm, round(sh, 1)] + ([round(dist[top], 2)] if dist[top] < 1 else [])
     beta, edges, info = fit["beta"], {}, {}
-    for g, hs, as_, rh, ra in shifts(perf, rows):
-        if g["home_score"] not in ("", None):
+    for g in rows:
+        if g["home_score"] not in ("", None) or nxt.get(g["home_team"]) is not g or nxt.get(g["away_team"]) is not g:
             continue
         key = (AB2ID.get(g["home_team"]), AB2ID.get(g["away_team"]))
-        cands = upcoming.get(key) or []
-        if not cands or not g["home_qb_id"] or not g["away_qb_id"]:
-            continue
-        gd = g["gameday"]
-        near = [c for c in cands if abs((_day(c["d"]) - _day(gd))) <= 1]
+        near = [c for c in upcoming.get(key) or [] if abs((_day(c["d"]) - _day(g["gameday"]))) <= 1]
         if not near:
             continue
-        start = near[0]["d"][:16]
-        e = max(-CAP, min(CAP, beta * (hs - as_)))
-        edges[f"{start}|{key[0]}|{key[1]}"] = round(e, 2)
-        info[f"{start}|{key[0]}|{key[1]}"] = {"h": [names.get(g["home_qb_id"], ""), round(hs, 1)], "a": [names.get(g["away_qb_id"], ""), round(as_, 1)]}
+        hs, as_ = side(g["home_team"], g, g["home_qb_id"]), side(g["away_team"], g, g["away_qb_id"])
+        if not hs or not as_:
+            continue
+        k = f"{near[0]['d'][:16]}|{key[0]}|{key[1]}"
+        edges[k] = round(max(-CAP, min(CAP, beta * (hs[1] - as_[1]))), 2)
+        info[k] = {"h": hs, "a": as_}
     if edges:
         model["qbEdges"], model["qbInfo"], model["qbBeta"] = edges, info, beta
         model["basis"] = base + MARK
     write("model/nfl.json", model)
-    return {"edges": len(edges), "beta": beta}
+    return {"edges": len(edges), "beta": beta, "changes": {k: v for k, v in info.items() if len(v["h"]) > 2 or len(v["a"]) > 2 or abs(v["h"][1]) >= 1 or abs(v["a"][1]) >= 1}}
 
 
 MARK = " Each game's projection also moves with the starting quarterback's recent play against the team's usual starter."
