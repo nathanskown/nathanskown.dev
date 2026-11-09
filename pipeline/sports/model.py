@@ -91,6 +91,10 @@ def get_params(lg):
         from . import cfbret
         if cfbret.gamma():
             P["rp"] = cfbret.gamma()
+    if lg == "ncaaf" and not P.get("tal"):
+        from . import cfbtalent
+        if cfbtalent.param():
+            P["tal"] = cfbtalent.param()
     return P
 
 
@@ -228,6 +232,12 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
         for t in members:
             if t in f:
                 out[t] = out.get(t, 0.0) + P["rp"] * f[t]
+    if P.get("tal") and lg == "ncaaf":
+        from . import cfbtalent
+        f = cfbtalent.feature(year)         # roster talent: 247Sports composite, standardised within the season
+        for t in members:
+            if t in f:
+                out[t] = out.get(t, 0.0) + P["tal"] * f[t]
     return out
 
 

@@ -284,6 +284,12 @@ def prior_for(L, y, p):
         for t, i in L.ix.items():
             if i != L.pool and t in f:
                 pr[i] += p["rp"] * f[t]
+    if p.get("tal") and L.lg == "ncaaf":
+        from . import cfbtalent
+        f = cfbtalent.feature(y)             # roster talent composite (cfbtalent.py)
+        for t, i in L.ix.items():
+            if i != L.pool and t in f:
+                pr[i] += p["tal"] * f[t]
     return pr
 
 
