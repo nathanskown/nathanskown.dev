@@ -278,6 +278,9 @@ def prior_for(L, y, p):
         for t, i in L.ix.items():
             if i != L.pool and t in f:
                 pr[i] += p["ret"] * f[t]
+    if p.get("cm") and L.lg == "ncaab":
+        from . import cbbconf
+        pr += np.where(seen, p["cm"] * cbbconf.tune_feature(L, y, R1, seen), 0.0)   # conference strength (cbbconf.py)
     if p.get("rp") and L.lg == "ncaaf":
         from . import cfbret
         f = cfbret.feature(y)                # returning production (cfbret.py)

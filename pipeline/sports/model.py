@@ -87,6 +87,10 @@ def get_params(lg):
         from . import cbbret
         if cbbret.gamma():
             P["ret"] = cbbret.gamma()
+    if lg == "ncaab" and not P.get("cm"):
+        from . import cbbconf
+        if cbbconf.param():
+            P["cm"] = cbbconf.param()
     if lg == "ncaaf" and not P.get("rp"):
         from . import cfbret
         if cfbret.gamma():
@@ -226,6 +230,12 @@ def season_prior(lg, year, P, members, hfa_fn, norm_id):
         for t in members:
             if t in f:
                 out[t] = out.get(t, 0.0) + P["ret"] * f[t]
+    if P.get("cm") and lg == "ncaab":
+        from . import cbbconf
+        f = cbbconf.live_feature(R1, members, _standings_map(lg))   # conference strength: mean of last season's ratings
+        for t in members:
+            if t in f and t in seen:
+                out[t] = out.get(t, 0.0) + P["cm"] * f[t]
     if P.get("rp") and lg == "ncaaf":
         from . import cfbret
         f = cfbret.feature(year)            # returning production: share of last season's production still on the roster
