@@ -371,18 +371,11 @@ a.nk-fkey{display:inline-flex;align-items:center}
 .nk-sec-go{font-weight:600}
 @media (max-width:760px){.nk-sec-lead{min-height:210px}.nk-sec-lead .nk-sec-t{font-size:54px}}
 
-/* Quiet "work in progress" note at the bottom of the home sidebar. Uses --dim (about 9:1 on the page background). */
-.nk-wip{margin-top:auto;padding:10px 12px 2px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;line-height:1.4;font-weight:400;letter-spacing:0;text-shadow:none}
-.nk-wip h2{margin:0 0 4px;font:inherit;color:var(--dim)}
-.nk-wip ul{margin:0;padding:0;list-style:none}
-.nk-wip a{display:block;padding:2px 0;color:var(--dim);text-decoration:none;overflow-wrap:anywhere}
-.nk-wip a:hover{color:var(--hi)}
+/* One quiet link at the bottom of the home sidebar. Uses --dim (about 9:1 on the page background). */
+a.nk-wip{margin-top:auto;display:block;padding:10px 12px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;line-height:1.4;font-weight:400;letter-spacing:0;text-shadow:none;text-decoration:none}
+a.nk-wip:hover{color:var(--hi)}
 @media (max-width:760px){
-/* The sidebar is a horizontal scroller here, so the note sits under it as a wrapping row instead of a second menu. */
-.nk-wip{margin-top:0;padding:2px 12px 6px;font-size:13px}
-.nk-wip h2{margin:0}
-.nk-wip ul{display:flex;flex-wrap:wrap;column-gap:12px}
-.nk-wip a{display:inline-flex;align-items:center;min-height:44px;padding:0}
+a.nk-wip{margin-top:0;display:flex;align-items:center;min-height:44px;padding:0 12px;font-size:13px}
 }
 
 /* Work-in-progress pages. Same terminal chrome as the rest of the site; not linked from the top nav. */
