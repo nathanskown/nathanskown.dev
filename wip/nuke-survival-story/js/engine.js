@@ -76,6 +76,7 @@
     var fx = function (name) { if (opts.onFx) opts.onFx(name); };
     var KEY = story.meta.saveKey;
     var EKEY = KEY + ':endings';
+    var TYPEKEY = KEY + ':endtypes';
     var random = opts.random || Math.random;
     var DL = story.clock.deadline;
     var DL_EARLY = parseTime(DL.earliest || DL.at), DL_LATE = parseTime(DL.latest || DL.at);
@@ -97,17 +98,47 @@
     function del(key) { try { store.removeItem(key); } catch (e) { /* ignore */ } }
     function endingsFound() { var e = load(EKEY); return Array.isArray(e) ? e : []; }
     function persist() { if (S) save(KEY, S); }
+    function resolveType(en) {
+      if (!en) return '';
+      return (en.type && typeof en.type === 'object') ? T(en.type) : en.type;
+    }
+    function rememberType(id, type) {
+      var types = load(TYPEKEY) || {};
+      var rank = { bad: 0, mixed: 1, good: 2 };
+      if (!types[id] || (rank[type] || 0) > (rank[types[id]] || 0)) { types[id] = type; save(TYPEKEY, types); }
+    }
+    function typeName(id) {
+      var en = story.endings[id];
+      if (S && S.ended === id) return resolveType(en);
+      var saved = (load(TYPEKEY) || {})[id];
+      if (saved) return saved;
+      return typeof en.type === 'string' ? en.type : resolveType(en);
+    }
+    function isYes(line) { return /^(y|yes|yeah|yep|ok|okay|sure|do it)$/.test(line); }
+    function isNo(line) { return /^(n|no|nope|nah|not yet)$/.test(line); }
 
     // ---- output
     function say(text, kind) {
       if (!text) return;
       String(text).split(/\n{2,}/).forEach(function (p) { if (p.trim()) out(p.trim(), kind || 'text'); });
     }
+    // The generator cough and the line after it keep the original gaps around an
+    // 8:10 fallout (115 minutes before, 80 minutes after) and slide with the real time.
+    function falloutOffset(delta) {
+      var t = S.deadline + delta;
+      if (delta < 0 && t <= S.time) t = Math.min(S.time + 15, S.deadline - 15);
+      if (t >= S.deadline && delta < 0) t = S.deadline - 15;
+      return fmtTime(t);
+    }
     function fill(s) {
       return s.replace(/\{(\w+)\}/g, function (all, name) {
         if (name === 'time') return fmtTime(S.time);
         if (name === 'eta') return etaText();
+        if (name === 'fallout') return fmtTime(S.deadline);
+        if (name === 'falloutBefore') return falloutOffset(-115);
+        if (name === 'falloutAfter') return fmtTime(S.deadline + 80);
         if (name === 'party') return String(partySize());
+        if (name === 'wedAt' && !(S.vars && S.vars.wedAt)) return '1:45 PM';
         if (S.vars && Object.prototype.hasOwnProperty.call(S.vars, name)) return String(S.vars[name]);
         return all;
       });
@@ -213,7 +244,10 @@
       arr(e.flag).forEach(function (f) { S.flags[f] = true; });
       arr(e.unflag).forEach(function (f) { delete S.flags[f]; });
       if (e.add) Object.keys(e.add).forEach(function (k) { S.vars[k] = (S.vars[k] || 0) + e.add[k]; });
-      if (e.set) Object.keys(e.set).forEach(function (k) { S.vars[k] = e.set[k]; });
+      if (e.set) Object.keys(e.set).forEach(function (k) {
+        var v = e.set[k];
+        S.vars[k] = typeof v === 'string' ? fill(v) : v;
+      });
       arr(e.join).forEach(function (id) { if (S.party.indexOf(id) < 0) S.party.push(id); S.where[id] = 'party'; });
       if (e.dismiss) { S.party.forEach(function (id) { S.where[id] = S.room; }); S.party = []; }
       arr(e.part).forEach(function (id) { var i = S.party.indexOf(id); if (i >= 0) S.party.splice(i, 1); S.where[id] = S.room; });
@@ -280,9 +314,11 @@
       var after = arr(story.afterword).filter(function (a) { return test(a['if']); }).map(function (a) { return T(a.text); }).filter(Boolean);
       if (after.length) { out('AFTERWARD', 'afterword-title'); after.forEach(function (t) { out(t, 'afterword'); }); }
       var found = endingsFound();
+      var type = resolveType(en);
       if (found.indexOf(id) < 0) { found.push(id); save(EKEY, found); }
+      rememberType(id, type);
       var total = Object.keys(story.endings).length;
-      out('ENDING: ' + en.title + ' (' + (story.text.endingTypes[en.type] || en.type) + '). You have found ' + found.length + ' of ' + total + ' endings.', 'note');
+      out('ENDING: ' + en.title + ' (' + (story.text.endingTypes[type] || type) + '). You have found ' + found.length + ' of ' + total + ' endings.', 'note');
       say(T(story.text.afterEnding), 'dim');
     }
 
@@ -428,9 +464,13 @@
       }
       var it = story.items[id];
       if (it.take === false || !test(it.takeIf)) return say(T(it.noTake) || "You can't take that.");
+      var list = S.roomItems[S.room];
+      if (S.inv.indexOf(id) >= 0) {
+        list.splice(list.indexOf(id), 1);
+        return say('You already have that.');
+      }
       advance(1);
       if (halt) return;
-      var list = S.roomItems[S.room];
       list.splice(list.indexOf(id), 1);
       S.inv.push(id);
       say(T(it.takeText) || 'Taken: ' + it.name + '.');
@@ -508,7 +548,8 @@
       out('Endings found: ' + found.filter(function (k) { return story.endings[k]; }).length + ' of ' + keys.length, 'title');
       keys.forEach(function (k) {
         var en = story.endings[k];
-        out(found.indexOf(k) >= 0 ? '  ✓ ' + en.title + ' (' + (story.text.endingTypes[en.type] || en.type) + ')' : '  · ???', found.indexOf(k) >= 0 ? 'text' : 'dim');
+        var type = typeName(k);
+        out(found.indexOf(k) >= 0 ? '  ✓ ' + en.title + ' (' + (story.text.endingTypes[type] || type) + ')' : '  · ???', found.indexOf(k) >= 0 ? 'text' : 'dim');
       });
     }
 
@@ -551,6 +592,9 @@
       var x = convo.choices[n - 1], pid = convo.pid;
       convo = null;
       if (x.c.once) S.once[x.key] = 1;
+      // `pre` runs before the clock moves, so a flag can suppress an event the choice would otherwise cross.
+      if (x.c.pre) run(x.c.pre);
+      if (halt) return;
       advance(x.c.time != null ? x.c.time : story.clock.talkMinutes);
       if (halt) return;
       run(x.c.effects);
@@ -559,7 +603,14 @@
     }
 
     // ---- top level
-    function newGame() {
+    function resetLog() { if (opts.onNewGame) opts.onNewGame(); }
+    function newGame(keepLog) {
+      if (!keepLog) {
+        resetLog();
+        out(story.meta.title, 'banner');
+        if (story.meta.subtitle) out(story.meta.subtitle, 'dim');
+        if (story.meta.warning) say(story.meta.warning, 'dim');
+      }
       S = newState();
       convo = null;
       if (story.text.askName) { mode = 'name'; say(T(story.text.askName), 'note'); return; }
@@ -586,11 +637,13 @@
     }
     function start() {
       halt = false;
+      var saved = load(KEY);
+      var canContinue = saved && saved.v === story.meta.version && story.rooms[saved.room] && !saved.ended;
+      if (!canContinue) resetLog();
       out(story.meta.title, 'banner');
       if (story.meta.subtitle) out(story.meta.subtitle, 'dim');
       if (story.meta.warning) say(story.meta.warning, 'dim');
-      var saved = load(KEY);
-      if (saved && saved.v === story.meta.version && story.rooms[saved.room] && !saved.ended) {
+      if (canContinue) {
         pendingSave = saved;
         mode = 'menu';
         out('Saved game found: ' + fmtTime(saved.time) + ', ' + story.rooms[saved.room].name + '.', 'note');
@@ -599,7 +652,7 @@
         return;
       }
       if (saved && saved.v !== story.meta.version) say(T(story.text.saveOutdated), 'dim');
-      newGame();
+      newGame(true);
     }
     function exec(l) {
       var m;
@@ -611,7 +664,14 @@
       if ((m = /^(?:go|walk|run|head|travel|enter|climb|bike|cycle|ride|return|back)(?: to| into| toward| towards| back to)? (.+)$/.exec(l))) return go(m[1]);
       if ((m = /^(?:take|get|grab|pick up|pickup|collect|carry) (.+)$/.exec(l))) return take(m[1]);
       if ((m = /^pick (.+) up$/.exec(l))) return take(m[1]);
-      if ((m = /^(?:drop|put down|leave) (.+)$/.exec(l))) return drop(m[1]);
+      if ((m = /^(?:drop|put down) (.+)$/.exec(l))) return drop(m[1]);
+      if ((m = /^leave (.+)$/.exec(l))) {
+        var here = room();
+        var leavingHere = pick(m[1], [{ id: 1, names: [here.name].concat(here.aliases || []) }]);
+        if (leavingHere) { if (findExit('out')) return go('out'); return say(T(story.text.exitHint)); }
+        if (findExit(m[1])) return go(m[1]);
+        return drop(m[1]);
+      }
       if (/^(i|inv|inventory|items|bag|pockets)$/.test(l)) return inventory();
       if ((m = /^(?:talk|talk to|talk with|speak|speak to|speak with|ask|chat|chat with|greet|hello|hi)(?: (.+))?$/.exec(l))) return startTalk(m[1]);
       if ((m = /^(?:give|show|hand|offer|bring) (.+?) to (.+)$/.exec(l))) return useCmd(m[1], m[2]);
@@ -643,19 +703,31 @@
         return;
       }
       if (mode === 'ask') {
-        var a = pendingAsk; pendingAsk = null; mode = 'play';
-        if (!a) return;
-        S.prev = snapshot();
-        if (/^(y|yes|yeah|yep|ok|okay|sure|do it)$/.test(line)) run(a.yes);
-        else say(T(a.no) || 'Not yet.');
-        persist();
+        if (!line) return;
+        if (isYes(line) || isNo(line)) {
+          var a = pendingAsk; pendingAsk = null; mode = 'play';
+          if (!a) return;
+          S.prev = snapshot();
+          if (isYes(line)) run(a.yes); else say(T(a.no) || 'Not yet.');
+          persist();
+          return;
+        }
+        // Anything else is a command. Keep the question unless it moves them on.
+        var held = pendingAsk, roomAtAsk = S.room;
+        pendingAsk = null;
+        mode = 'play';
+        playLine(line);
+        if (held && mode === 'play' && !halt && !S.ended && S.room === roomAtAsk && !convo) {
+          pendingAsk = held;
+          mode = 'ask';
+          out('(yes / no)', 'dim');
+        }
         return;
       }
       if (mode === 'confirm') {
         if (/^(y|yes)$/.test(line)) { del(KEY); newGame(); return; }
-        mode = S.ended ? 'ended' : 'play';
-        out('Okay, carrying on.', 'dim');
-        return;
+        if (isNo(line)) { mode = 'play'; out('Okay, carrying on.', 'dim'); return; }
+        mode = 'play';
       }
       if (mode === 'ended') {
         if (/^(restart|play|play again|new|again|start over)$/.test(line)) { del(KEY); newGame(); return; }
@@ -664,6 +736,9 @@
         say(T(story.text.afterEnding), 'dim');
         return;
       }
+      playLine(line);
+    }
+    function playLine(line) {
       if (!line) return;
       if (line === 'quit' || line === 'q') return exitGame();
       if (convo) {
@@ -709,7 +784,8 @@
         vars: JSON.parse(JSON.stringify(S.vars)),
         name: S.vars.name || '',
         endingTitle: S.ended ? story.endings[S.ended].title : null,
-        endingType: S.ended ? story.endings[S.ended].type : null,
+        endingType: S.ended ? resolveType(story.endings[S.ended]) : null,
+        fallout: fmtTime(S.deadline),
         endingsFound: endingsFound().length,
         endingsTotal: Object.keys(story.endings).length,
         sheltered: partySize()

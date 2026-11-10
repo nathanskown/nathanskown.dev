@@ -18,12 +18,44 @@
   var history = [], hIndex = 0;
   var roomOrder = Object.keys(STORY.rooms);
   var staticTimer = null, lastTicker = '';
+  var TRANSCRIPT_KEY = 'please-hold-v1:transcript';
+  var TRANSCRIPT_MAX = 200 * 1024;
   var transcript = [];
   var DIR_SHORT = { north: 'N', south: 'S', east: 'E', west: 'W', northeast: 'NE', northwest: 'NW', southeast: 'SE', southwest: 'SW', up: 'UP', down: 'DOWN', 'in': 'IN', out: 'OUT' };
 
+  function loadTranscript() {
+    try {
+      var raw = localStorage.getItem(TRANSCRIPT_KEY);
+      var saved = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(saved)) transcript = saved;
+    } catch (e) { transcript = []; }
+  }
+  function saveTranscript() {
+    try {
+      var text = JSON.stringify(transcript);
+      while (text.length > TRANSCRIPT_MAX && transcript.length > 1) {
+        transcript.shift();
+        text = JSON.stringify(transcript);
+      }
+      localStorage.setItem(TRANSCRIPT_KEY, text);
+    } catch (e) { /* private mode or full */ }
+  }
+  function clearTranscript() {
+    transcript = [];
+    try { localStorage.removeItem(TRANSCRIPT_KEY); } catch (e) { /* ignore */ }
+  }
+  loadTranscript();
+
   // ------------------------------------------------------------------ feed
+  // Old dialogue buttons stay in the scrollback. They stop working as soon as
+  // the player sends a new command, so a leftover "2" can't answer a later menu.
+  function retireChoices() {
+    var old = out.querySelectorAll('button.ln-choice:not([disabled])');
+    for (var i = 0; i < old.length; i++) old[i].disabled = true;
+  }
   function print(text, kind) {
     transcript.push(kind === 'choice' ? '   ' + text : text);
+    saveTranscript();
     var el;
     if (kind === 'choice') {
       el = document.createElement('button');
@@ -49,7 +81,8 @@
   var game = PleaseHoldEngine.createGame(STORY, {
     print: print,
     onExit: function () { refresh(); },
-    onFx: function (name) { effect(name); }
+    onFx: function (name) { effect(name); },
+    onNewGame: clearTranscript
   });
 
   // ------------------------------------------------------------------ effects
@@ -143,7 +176,7 @@
     if (!v.playing) { setHeader('PLEASE HOLD', 'LAB · WIP'); scenes.show('title', null, v); return; }
     if (Date.now() < detonationUntil && !v.ended) { setHeader('12:12 PM · SOUTHEAST', 'DETONATION'); scenes.show('detonation', null, v); return; }
     if (v.ended) {
-      setHeader('ENDING · ' + STORY.endings[v.ended].title.toUpperCase(), (STORY.text.endingTypes[STORY.endings[v.ended].type] || '').toUpperCase());
+      setHeader('ENDING · ' + STORY.endings[v.ended].title.toUpperCase(), (STORY.text.endingTypes[v.endingType] || '').toUpperCase());
       scenes.show('end:' + v.ended, v.ended, v); return;
     }
     if (v.talkingWith) {
@@ -256,6 +289,7 @@
   }
 
   function submit(value) {
+    if (String(value).trim()) retireChoices();
     var echo = print(promptEl.textContent + ' ' + value, 'echo');
     if (String(value).trim()) { history.push(value); if (history.length > 100) history.shift(); }
     hIndex = history.length;

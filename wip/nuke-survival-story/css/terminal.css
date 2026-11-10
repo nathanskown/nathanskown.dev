@@ -149,6 +149,8 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
   border: 1px solid var(--line); background: transparent; cursor: pointer;
 }
 .ln-choice:hover, .ln-choice:focus-visible { background: var(--band); border-color: var(--dim); outline: none; }
+.ln-choice:disabled { color: var(--mute); border-color: transparent; cursor: default; pointer-events: none; }
+.ln-choice:disabled:hover, .ln-choice:disabled:focus-visible { background: transparent; border-color: transparent; }
 .ln-note { color: var(--g); }
 .ln-dim { color: var(--dim); }
 .ln-ending-title { font-family: var(--display); color: var(--amber); font-size: 34px; line-height: 1; letter-spacing: .14em; text-transform: uppercase; margin: 1.2em 0 .6em; padding-top: .6em; border-top: 1px solid var(--amber); text-shadow: 0 0 12px rgba(255,184,77,.4); }
@@ -237,7 +239,7 @@ body.playing .prompt { color: var(--amber); }
   .top .crumb { display: none; }
   .clock { font-size: 20px; }
   .fkeys button { padding: 7px 10px; font-size: 12px; }
-  .art-wrap { height: 150px; }
+  .art-wrap { height: auto; aspect-ratio: 8 / 3; max-height: 46vh; }
   #sceneIdx { display: none; }
   #sceneTitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .ln-banner { font-size: 32px; }

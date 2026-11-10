@@ -30,8 +30,30 @@
 
   // ------------------------------------------------------------ drawing kit
   function kit(ctx) {
+    var cssScale = 1;
+    var chipCursor = null;
+    // Small labels are drawn in a 640-wide space. On a phone that space is squeezed
+    // to a few hundred CSS pixels, so an 8px label becomes unreadable. Grow those
+    // labels until they are about 12px on screen, then shrink a line that would
+    // run off the canvas.
+    function fitSize(requested, sample, maxW) {
+      var size = requested;
+      if (requested < 16 && cssScale > 0) {
+        var onScreen = requested * cssScale;
+        if (onScreen < 12) size = Math.min(22, requested * (12 / onScreen));
+      }
+      if (sample && maxW > 8) {
+        ctx.font = size + 'px ' + FONT_MONO;
+        while (size > requested && ctx.measureText(sample).width > maxW) {
+          size -= 0.5;
+          ctx.font = size + 'px ' + FONT_MONO;
+        }
+      }
+      return size;
+    }
     var g = {
       ctx: ctx, C: C,
+      setScale: function (s) { cssScale = s || 1; chipCursor = null; },
       glow: function (on, color) { ctx.shadowBlur = on ? 8 : 0; ctx.shadowColor = color || C.g; },
       line: function (x1, y1, x2, y2, c, w, dash) {
         ctx.beginPath(); ctx.setLineDash(dash || []); ctx.strokeStyle = c || C.g; ctx.lineWidth = w || 1;
@@ -54,8 +76,14 @@
       arc: function (x, y, r, a0, a1, c, lw) { ctx.beginPath(); ctx.arc(x, y, r, a0, a1); ctx.strokeStyle = c || C.g; ctx.lineWidth = lw || 1; ctx.stroke(); },
       text: function (s, x, y, o) {
         o = o || {};
-        ctx.font = (o.bold ? '600 ' : '') + (o.size || 10) + 'px ' + (o.vt ? FONT_VT : FONT_MONO);
-        ctx.fillStyle = o.color || C.g; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'alphabetic';
+        var size = o.size || 10;
+        var align = o.align || 'left';
+        if (!o.vt && !o.exact) {
+          var room = o.max || (align === 'right' ? x - 8 : align === 'center' ? Math.min(x, W - x) * 2 - 8 : W - 8 - x);
+          size = fitSize(size, String(s), room);
+        }
+        ctx.font = (o.bold ? '600 ' : '') + size + 'px ' + (o.vt ? FONT_VT : FONT_MONO);
+        ctx.fillStyle = o.color || C.g; ctx.textAlign = align; ctx.textBaseline = o.base || 'alphabetic';
         ctx.globalAlpha = o.alpha == null ? 1 : o.alpha;
         if (o.glow) g.glow(true, o.color);
         ctx.fillText(s, x, y); g.glow(false); ctx.globalAlpha = 1;
@@ -66,10 +94,12 @@
         g.fill(x, y, w, h, C.panel, 1);
         g.rect(x, y, w, h, c);
         if (title) {
-          ctx.font = '9px ' + FONT_MONO;
+          var tSize = fitSize(9, title, Math.max(40, w - 26));
+          ctx.font = tSize + 'px ' + FONT_MONO;
           var tw = ctx.measureText(title).width + 10;
-          g.fill(x + 8, y - 5, tw, 10, C.bg);
-          g.text(title, x + 13, y + 3, { size: 9, color: C.dim });
+          var th = Math.max(10, tSize + 2);
+          g.fill(x + 8, y - th / 2, tw, th, C.bg);
+          g.text(title, x + 13, y + 3, { size: tSize, color: C.dim, exact: true });
         }
       },
       gauge: function (x, y, w, label, frac, valText, color) {
@@ -79,11 +109,21 @@
         g.fill(x + 1, y + 5, Math.max(0, (w - 1) * clamp(frac, 0, 1)), 6, color || C.g, 0.85);
       },
       chip: function (x, y, label, on, color) {
-        ctx.font = '9px ' + FONT_MONO;
-        var w = ctx.measureText(label).width + 14;
-        g.rect(x, y, w, 14, on ? (color || C.g) : C.line);
-        g.circle(x + 6, y + 7, 2, null, on ? (color || C.g) : C.mute);
-        g.text(label, x + 11, y + 10.5, { size: 9, color: on ? (color || C.g) : C.dim });
+        var size = fitSize(9, label, 300);
+        ctx.font = size + 'px ' + FONT_MONO;
+        var w = Math.ceil(ctx.measureText(label).width + size + 8);
+        var h = Math.max(14, Math.ceil(size + 6));
+        if (!chipCursor || Math.abs(chipCursor.base - y) > 1) chipCursor = { base: y, x: x, y: y, h: h, start: x };
+        if (chipCursor.x + w > W - 8 && chipCursor.x > chipCursor.start + 1) {
+          chipCursor.y += chipCursor.h + 4;
+          chipCursor.x = chipCursor.start;
+        }
+        var dx = chipCursor.x, dy = Math.min(chipCursor.y, H - h - 2);
+        g.rect(dx, dy, w, h, on ? (color || C.g) : C.line);
+        g.circle(dx + size * 0.55, dy + h / 2, Math.max(2, size * 0.22), null, on ? (color || C.g) : C.mute);
+        g.text(label, dx + size, dy + h * 0.72, { size: size, color: on ? (color || C.g) : C.dim, exact: true });
+        chipCursor.x += w + 6;
+        chipCursor.h = Math.max(chipCursor.h, h);
         return w;
       },
       big: function (s, x, y, size, color, align) { g.text(s, x, y, { vt: true, size: size, color: color || C.g, align: align || 'left', glow: true }); },
@@ -96,14 +136,18 @@
         }
       },
       wrap: function (s, x, y, maxW, lh, o) {
-        o = o || {}; ctx.font = (o.size || 10) + 'px ' + FONT_MONO;
+        o = o || {};
+        var size = fitSize(o.size || 10, null, 0);
+        var drawn = { size: size, color: o.color, align: o.align, exact: true, vt: o.vt };
+        ctx.font = size + 'px ' + FONT_MONO;
+        var step = Math.max(lh, size + 3);
         var words = String(s).split(' '), line = '', yy = y;
         words.forEach(function (w) {
           var test = line ? line + ' ' + w : w;
-          if (ctx.measureText(test).width > maxW && line) { g.text(line, x, yy, o); line = w; yy += lh; }
+          if (ctx.measureText(test).width > maxW && line) { g.text(line, x, yy, drawn); line = w; yy += step; }
           else line = test;
         });
-        if (line) g.text(line, x, yy, o);
+        if (line) g.text(line, x, yy, drawn);
         return yy;
       }
     };
@@ -187,7 +231,7 @@
       g.text(dead ? 'NO SIGNAL' : 'ON HOLD', 26, 36, { size: 10, color: dead ? C.red : C.amber });
       g.big((hh ? hh + ':' : '') + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss, 302, 42, 26, dead ? C.mute : C.g, 'right');
       waveform(g, 24, 60, 280, 70, t, 26, dead);
-      g.text(dead ? 'carrier lost 6:00 PM' : '♪ saxophone, key of regret', 26, 152, { size: 9, color: C.dim });
+      g.text(dead ? 'carrier lost 6:00 PM' : '♪ saxophone, key of regret', 26, 152, { size: 9, color: C.dim, max: 276 });
       // the east window
       g.pane(326, 14, 300, 150, 'EAST WINDOW');
       var wx = 340, wy = 28, ww = 272, wh = 124;
@@ -479,7 +523,7 @@
     church: function (g, t, v) {
       g.text("ST. BRENDAN'S · ORDER OF SERVICE", 14, 18, { size: 9, color: C.dim });
       g.pane(14, 30, 400, 100, 'TODAY');
-      timeline(g, 40, 92, 350, hm('12:50 PM'), hm('2:00 PM'), v.time, [['1:00 PM', 'GUESTS'], ['1:15 PM', 'WALK'], ['1:22 PM', 'VOWS'], ['1:45 PM', 'DOWNSTAIRS']]);
+      timeline(g, 40, 92, 350, hm('12:50 PM'), hm('2:00 PM'), v.time, [['1:00 PM', 'GUESTS'], ['1:15 PM', 'CEREMONY'], ['1:45 PM', 'DOWNSTAIRS']]);
       // rings
       g.glow(true); g.circle(120, 180, 26, C.g, null, 2); g.circle(152, 180, 26, C.amber, null, 2); g.glow(false);
       g.text('MADY & RYAN', 136, 226, { size: 10, color: C.g, align: 'center' });
@@ -706,7 +750,7 @@
       g.text('HEADWINDS', 440 + Math.round(Math.sin(t * .3)) * 2, 70, { size: 12, color: C.g });
       var haze = clamp((t - 4) / 20, 0, .6);
       g.fill(14, 14, 612, 212, C.dim, haze * .35);
-      g.text('8:10 PM', 610, 216, { size: 11, color: C.dim, align: 'right' });
+      g.text(v.fallout || '', 610, 216, { size: 11, color: C.dim, align: 'right' });
     }
   };
   function stamp(g, t, a, b) {
@@ -838,7 +882,9 @@
     function draw() {
       size();
       var t = reduce ? 4 : now() - started;
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
       var s = Math.min(canvas.width / W, canvas.height / H), ox = (canvas.width - W * s) / 2, oy = (canvas.height - H * s) / 2;
+      g.setScale(s / dpr);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.setTransform(s, 0, 0, s, ox, oy);
