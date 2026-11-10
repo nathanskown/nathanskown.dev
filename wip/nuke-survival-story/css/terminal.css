@@ -96,7 +96,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 /* ---- ticker */
 .ticker { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); font-size: 12.5px; letter-spacing: .04em; overflow: hidden; }
 .tick-label { background: var(--amber); color: #120c00; font-weight: 600; padding: 5px 10px; white-space: nowrap; }
-.tick-track { flex: 1; overflow: hidden; position: relative; }
+.tick-track { flex: 1; min-width: 0; overflow: hidden; position: relative; }
 .tick-run { display: inline-block; white-space: nowrap; padding: 5px 0; color: var(--fg); animation: tick 70s linear infinite; }
 .tick-run span { padding: 0 18px; border-right: 1px solid var(--line); }
 .tick-run .dn { color: var(--red); }
@@ -219,7 +219,11 @@ body.playing .prompt { color: var(--amber); }
 
 @media (prefers-reduced-motion: reduce) {
   .app, .tick-run, .ln, .live i, .map .here, .scene.static .art { animation: none !important; }
-  .tick-run { white-space: normal; }
+  .ticker { height: 28px; overflow: hidden; }
+  .tick-run {
+    display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+  }
   .flash.go, .flash.soft { animation: none; }
 }
 body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static .art { animation: none; }
@@ -252,8 +256,14 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
     flex: 0 1 auto; max-height: 84px; overflow: auto; scrollbar-width: thin;
     padding: 6px 8px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.3;
   }
-  .scene-readout.more { box-shadow: inset 0 -10px 0 rgba(255, 184, 77, .45); }
-  .ro-row { display: flex; flex-wrap: wrap; gap: 0 .4em; min-width: 0; }
+  /* A short amber wash and a 2px edge, only while more rows sit below. Not a solid band over the last line. */
+  .scene-readout.more {
+    background-image: linear-gradient(to bottom, transparent calc(100% - 7px), rgba(255, 184, 77, .28));
+    box-shadow: inset 0 -2px 0 rgba(255, 184, 77, .95);
+  }
+  .scene-readout:focus-visible { outline: 1px solid var(--amber); outline-offset: -2px; }
+  .ro-row { display: flex; flex-wrap: wrap; column-gap: .4em; min-width: 0; }
+  .ro-row.solo { grid-column: 1 / -1; }
   .ro-row .k { color: var(--dim); }
   .ro-row .v { color: var(--fg); }
   .ro-chip { display: flex; align-items: center; gap: 6px; min-width: 0; }
