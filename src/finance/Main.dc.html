@@ -144,7 +144,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size:13px">{{rc.t}}</a></sc-for>
 </nav>
 </sc-if>
-<nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
+<nav aria-label="Tracked tickers" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
+<sc-if value="{{pickerTag}}" hint-placeholder-val="{{ false }}"><span style="flex: none; color: #A87933; font-size:13px; letter-spacing: .12em; margin-right: 4px">{{pickerTag}}</span></sc-if>
 <sc-for list="{{picker}}" as="pk" hint-placeholder-count="12">
 <a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size:13px; white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
 </sc-for>
@@ -450,6 +451,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 class Component extends DCLogic {
   componentDidMount() {
     var self = this;
+    DC.load('/data/finance/dashboard.json').then(function (d) { self.setState({ dash: d }); }).catch(function () {});
     DC.load('/data/finance/quotes/index.json').then(function (j) { return j; }, function () { return { tickers: [] }; }).then(function (j) {
       var st = self.state || {};
       var sym = String(st.sym || st.ticker || st.s || '').toUpperCase().trim().replace(/^([A-Z]{1,6})[./]([A-Z]{1,2})$/, '$1-$2') || (j.tickers[0] && j.tickers[0].sym);
@@ -565,8 +567,12 @@ class Component extends DCLogic {
     var st = this.state || {};
     var Q = st.q, idx = st.index || { tickers: [] };
     var cur = st.range || PREFS.get('fin.range', '1Y');   // last range picked in this browser
+    // the hourly prices (dashboard.json) beat the nightly list; either way, moves from an earlier session say so
+    var core = (st.dash || {}).core || {}, useCore = Object.keys(core).length > 0;
+    var pickerTag = F.sess(useCore ? (st.dash || {}).coreTime : F.priorSession(idx.updated));
     var picker = idx.tickers.map(function (t) {
-      return { t: t.sym, href: 'Main.dc.html?sym=' + t.sym, chg: F.pct(t.pct, 1), color: (t.pct || 0) >= 0 ? UP : DN, cls: t.sym === st.sym ? 'hi' : '' };
+      var p = (useCore && core[t.sym] ? core[t.sym] : t).pct;
+      return { t: t.sym, href: 'Main.dc.html?sym=' + t.sym, chg: F.pct(p, 1), color: (p || 0) >= 0 ? UP : DN, cls: t.sym === st.sym ? 'hi' : '' };
     });
     var why = { unknown: ' is not a ticker the SEC or Yahoo Finance recognizes.', price: ': no price data came back from Yahoo Finance.', error: ': the data service did not respond. Try again in a minute.' };
     // recently viewed tickers, remembered in this browser
@@ -574,7 +580,7 @@ class Component extends DCLogic {
     if (Q && Q.sym && rec[0] !== Q.sym) rec = PREFS.set('fin.recent', [Q.sym].concat(rec.filter(function (x) { return x !== Q.sym; })).slice(0, 10));
     var recent = rec.map(function (t) { return { t: t, href: 'Main.dc.html?sym=' + encodeURIComponent(t), cls: t === st.sym ? 'hi' : '' }; });
     var A = st.about && st.aboutFor === (Q && Q.sym) ? st.about : null;
-    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' · Stock quote' : 'Quote'), picker: picker, liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q, hasAbout: !!A, aboutText: A ? A.text : '', aboutKind: A ? A.kind : '', aboutUrl: A ? A.url : '',
+    var base = { recent: recent, hasRecent: recent.length > 1, secHead: (st.sym ? st.sym + ' · Stock quote' : 'Quote'), picker: picker, pickerTag: idx.tickers.length && pickerTag ? 'MOVES: ' + pickerTag : '', liveTag: F.updated(Q ? Q.updated : idx.updated), missing: !!st.notTracked || !!st.err || !!st.loading, ready: !!Q, hasAbout: !!A, aboutText: A ? A.text : '', aboutKind: A ? A.kind : '', aboutUrl: A ? A.url : '',
       missingText: st.loading ? 'Loading ' + st.loading + '…' : (st.err ? 'Quote data is not available yet.' : (st.notTracked ? st.notTracked + (why[st.notFoundWhy] || ' was not found.') : '')),
       missingNote: st.loading ? 'Pulling prices from Yahoo Finance and filings from SEC EDGAR. The first look at a ticker takes a few seconds; repeat visits are cached.' :
         'Type any US-listed ticker or company name in the bar above. The quick picks across the top are the core watch list.' };

@@ -458,7 +458,8 @@ class Component extends DCLogic {
     var handFresh = !!(HAND && D.date && HAND.date === D.date);
     // today's hand-written edition wins; otherwise the page writes its own from the latest numbers (rules, no AI)
     var usingAuto = !handFresh && !!AUTOSTORY && !!D.date;
-    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : HAND);
+    // an old hand-written edition never shows while today's digest is loading; it appears (labeled with its date) only if the digest can't load
+    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : (st.err && HAND ? HAND : null));
     var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
     var edDateLabel = '';
     if (ED && ED.date) { try { edDateLabel = new Date(ED.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {} }
@@ -494,7 +495,7 @@ class Component extends DCLogic {
       });
     });
     var br = D.breadth;
-    var stale = !usingAuto && ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the data below is current.' : '';
+    var stale = !usingAuto && ED && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the data below is current.' : '';
     return {
       hasEd: !!ED, noEd: !ED,
       edHeadline: ED ? ED.headline : '', edLede: ED ? ED.lede : '', edStale: stale,
@@ -519,7 +520,7 @@ class Component extends DCLogic {
       }),
       autoTone: (D.auto || {}).tone || '',
       lvlReads: (D.auto || {}).levels || [],
-      today: (D.reportingToday || []).map(function (e) { return { t: e.sym, n: e.name, when: e.when || '—', est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
+      today: (D.reportingToday || []).map(function (e) { var done = e.status === 'pending' || F.reportPassed(e.date || D.date, e.when); return { t: e.sym, n: e.name, when: done ? 'Reported · results pending' : (e.when || '—'), est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
       noToday: !!D.updated && !(D.reportingToday || []).length,
       done: (D.reported || []).map(function (e) {
         return { t: e.sym, n: e.name, eps: money(e.eps), est: money(e.est), color: col(e.surprisePct),
@@ -529,7 +530,8 @@ class Component extends DCLogic {
       news: (D.news || []).map(function (h) {
         return { time: tm(h.published), src: h.source, tick: (h.tickers || []).length ? ' · ' + h.tickers.join(', ') : '', h: h.title, link: h.link };
       }),
-      watch: D.watch || [],
+      // a before-the-open report or a release whose time has passed is no longer something to watch
+      watch: (D.watch || []).filter(function (w) { return !((w.t === 'BMO' || w.t === 'AMC') && F.reportPassed(D.date, w.t)); }),
       breadth: br ? br.adv + ' up · ' + br.dec + ' down (of ' + br.n + ')' : '',
       breadthBar: br ? 'height: 6px; background: #4ade80; width: ' + (100 * br.adv / Math.max(1, br.adv + br.dec)).toFixed(1) + '%;' : '',
       levels: (D.levels || []).map(function (l) {

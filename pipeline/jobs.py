@@ -8,6 +8,7 @@ import statistics
 import time
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from . import src_market as mk
 from . import src_misc as mi
@@ -34,6 +35,30 @@ def today():
 
 def ds(d):
     return d.isoformat()
+
+
+# ---- New York market clock: "today" for stocks is the NYSE session, whatever the server's zone
+NY = ZoneInfo("America/New_York")
+
+
+def ny_now():
+    return datetime.now(NY)
+
+
+def report_passed(e, now=None):
+    """True once a company's report time has passed on the New York clock: before-the-open reports (and reports with
+    no time given, mostly banks and industrials that report early) at the 9:30 open, after-the-close reports by 5:30 PM."""
+    now = now or ny_now()
+    d, today_ = e.get("date") or "", now.date().isoformat()
+    if d != today_:
+        return d < today_
+    return now.hour * 60 + now.minute >= (17 * 60 + 30 if (e.get("when") or "").upper() == "AMC" else 9 * 60 + 30)
+
+
+def session_day(tiles):
+    """The New York date of the US stock session the index tiles describe (the S&P 500's last trade)."""
+    t = (tiles.get("spx") or {}).get("time")
+    return datetime.fromtimestamp(t, NY).date() if t else None
 
 
 # =====================================================================================
@@ -226,11 +251,16 @@ def market():
         ch = attempt(f"watch {s}", mk.chart, s, "1d", "5m")
         if ch:
             q = mk.quote_from_chart(ch)
-            watch.append({"sym": s, "name": q["name"] or s, "price": q["price"], "pct": q["pct"], "inUniverse": s in UNIVERSE})
+            watch.append({"sym": s, "name": q["name"] or s, "price": q["price"], "pct": q["pct"], "time": q["time"], "inUniverse": s in UNIVERSE})
+    # hourly prices for the core list, so the quote-page strip isn't stuck on the nightly file; stamped with the
+    # S&P 500's last trade time, which says which session these moves belong to
+    core = attempt("core list batch quotes (spark)", mk.spark, list(UNIVERSE), default={}) or {}
+    spx_tile = next((t for t in tiles if t["id"] == "spx"), {})
     heads = attempt("headlines", headlines, default=[]) or [h for h in (read("headlines.json", {}) or {}).get("items", []) if mi.is_english(h.get("title", "")) and not mi.is_junk(h.get("title", ""), h.get("source", ""))]
     asof = max([t.get("time") or 0 for t in tiles] or [0])
     write("dashboard.json", {"updated": now_iso(), "asOf": asof, "tiles": tiles, "sectors": sectors, "movers": movers,
-                             "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8]})
+                             "breadth": breadth, "curve": curve, "watch": watch, "headlines": heads[:8],
+                             "core": {k: {"price": v["price"], "pct": v["pct"]} for k, v in core.items()}, "coreTime": spx_tile.get("time") if core else None})
     attempt("prediction-market odds", odds)
     attempt("earnings season (same-day results)", earnings, mem, True)
     attempt("market digest", digest)
@@ -482,8 +512,12 @@ def earnings(mem, live=False):
         key = f"{x['sym']}:{x['date']}"
         recent_out.append({**x, "sector": sect.get(x["sym"]), "move": allmv.get(key), "moveLive": key in live_moves,
                            "beat": x["eps"] >= x["est"], "surprisePct": r((x["eps"] - x["est"]) / abs(x["est"]) * 100, 1) if x["est"] else None})
-    upcoming = sorted([x for x in rows if ds(d0) <= x["date"] <= ds(d0 + timedelta(days=14))],
+    now_ny = ny_now()
+    upcoming = sorted([x for x in rows if ds(d0) <= x["date"] <= ds(d0 + timedelta(days=14)) and x["eps"] is None and not report_passed(x, now_ny)],
                       key=lambda x: (x["date"], -(x["mcap"] or 0)))
+    # reported (the time has passed) but no EPS from Nasdaq yet: shown as "reported, results pending", never as upcoming
+    pending = sorted([{**x, "sector": sect.get(x["sym"])} for x in rows if x["eps"] is None and report_passed(x, now_ny)
+                      and x["date"] >= ds(now_ny.date() - timedelta(days=3))], key=lambda x: (x["date"], x["mcap"] or 0), reverse=True)[:12]
     # trim the upcoming table to the biggest names per day
     per_day = defaultdict(list)
     for x in upcoming:
@@ -501,7 +535,7 @@ def earnings(mem, live=False):
                      "medGrowth": r(statistics.median(growth), 1) if growth else None,
                      "moveBeat": r(statistics.mean(mv_b), 2) if mv_b else None, "moveMiss": r(statistics.mean(mv_m), 2) if mv_m else None},
            "sectors": sorted([{"name": s, "beat": b, "n": n} for s, (b, n) in by_sec.items()], key=lambda z: (-z["n"], z["name"])),
-           "recent": recent_out, "upcoming": [x for v in per_day.values() for x in v], "themes": themes}
+           "recent": recent_out, "upcoming": [x for v in per_day.values() for x in v], "pending": pending, "themes": themes}
     write("earnings.json", out)
     return all_cal
 
@@ -968,6 +1002,19 @@ _IND_WHY = {
 }
 
 
+_PAST = ((r"\bare outrunning\b", "outran"), (r"\bare beating\b", "beat"), (r"\bis beating\b", "beat"), (r"\bare leading\b", "led"),
+         (r"\bvalue lags\b", "value lagged"), (r"\bare moving together\b", "moved together"), (r"\blead while\b", "led while"),
+         (r"\boutperform\b", "outperformed"), (r"\bleads\b", "led"), (r"\blags\b", "lagged"))
+
+
+def _past_tense(text, dl):
+    """Turn the story's present-tense market sentences into past tense for a prior session (before the open)."""
+    import re as _re
+    for a, b in _PAST:
+        text = _re.sub(a, b, text)
+    return text.replace(" today", f" on {dl}") if dl else text
+
+
 def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn):
     import re as _re
     pct = lambda k: (tiles.get(k) or {}).get("pct")  # noqa: E731
@@ -980,22 +1027,33 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
     spx, ixic, dji, rut = pct("spx"), pct("ixic"), pct("dji"), pct("rut")
     vx = tiles.get("vix") or {}
     br = dash.get("breadth") or {}
+    sess = session_day(tiles)
+    past = bool(sess and sess < ny_now().date())   # the index numbers are an earlier session's (before the open, weekends, holidays)
+    dl = sess.strftime("%A") if sess else ""
+    pt = (lambda t: _past_tense(t, dl)) if past else (lambda t: t)  # noqa: E731
     # ---- headline + lede ----
     d = spx if spx is not None else (es or {}).get("pct")
     word = "little changed" if d is None or abs(d) < 0.15 else ("rise" if d > 0 else "fall") if abs(d) >= 0.6 else ("edge higher" if d > 0 else "edge lower")
     lead_sec = f", led by {secs[-1]['name']}" if secs and secs[-1].get("pct", 0) >= 0.8 and d and d > 0 else (f", with {secs[0]['name']} the weak spot" if secs and secs[0].get("pct", 0) <= -0.8 else "")
-    headline = ("Stocks " + word if word != "little changed" else "Stocks little changed") + lead_sec
+    if past:
+        word = {"rise": "rose", "fall": "fell", "edge higher": "edged higher", "edge lower": "edged lower"}.get(word, "were little changed")
+        headline = f"Stocks {word} {dl}" + lead_sec
+    else:
+        headline = ("Stocks " + word if word != "little changed" else "Stocks little changed") + lead_sec
     if rut is not None and spx is not None and rut - spx >= 0.9:
-        headline += "; small caps surge"
+        headline += "; small caps surged" if past else "; small caps surge"
     elif rut is not None and spx is not None and spx - rut >= 0.9:
-        headline += "; small caps lag"
+        headline += "; small caps lagged" if past else "; small caps lag"
     bits = []
     if spx is not None:
-        bits.append(f"The S&P 500 is {f1(spx)}, the Nasdaq {f1(ixic)}, the Dow {f1(dji)} and the Russell 2000 {f1(rut)}." if None not in (ixic, dji, rut) else f"The S&P 500 is {f1(spx)}.")
+        if past:
+            bits.append(f"On {dl} the S&P 500 closed {f1(spx)}, the Nasdaq {f1(ixic)}, the Dow {f1(dji)} and the Russell 2000 {f1(rut)}." if None not in (ixic, dji, rut) else f"On {dl} the S&P 500 closed {f1(spx)}.")
+        else:
+            bits.append(f"The S&P 500 is {f1(spx)}, the Nasdaq {f1(ixic)}, the Dow {f1(dji)} and the Russell 2000 {f1(rut)}." if None not in (ixic, dji, rut) else f"The S&P 500 is {f1(spx)}.")
     if br.get("n"):
-        bits.append(f"{br['adv']} of {br['n']} S&P 500 stocks are up.")
-    if es and es.get("pct") is not None:
-        bits.append(f"Futures point {'higher' if es['pct'] > 0.15 else 'lower' if es['pct'] < -0.15 else 'flat'} ({es['pct']:+.2f}%).")
+        bits.append(f"{br['adv']} of {br['n']} S&P 500 stocks finished higher." if past else f"{br['adv']} of {br['n']} S&P 500 stocks are up.")
+    if past and es and es.get("pct") is not None:   # futures only matter until the session starts
+        bits.append(f"S&P futures are {'up' if es['pct'] > 0.15 else 'down' if es['pct'] < -0.15 else 'flat'}" + (f" {abs(es['pct']):.2f}%" if abs(es["pct"]) > 0.15 else "") + " ahead of today's session.")
     lede = " ".join(bits)
     # ---- what's moving ----
     pts = []
@@ -1010,7 +1068,7 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
             read = "The Nasdaq is beating the Dow: growth and AI names are leading while value lags."
         else:
             read = "The major indexes are moving together, so there is no strong rotation signal."
-        pts.append({"lead": "Index read: " + f"S&P {f1(spx)}, Nasdaq {f1(ixic)}, Dow {f1(dji)}, Russell 2000 {f1(rut)}.", "body": read})
+        pts.append({"lead": (f"{dl}'s index read: " if past else "Index read: ") + f"S&P {f1(spx)}, Nasdaq {f1(ixic)}, Dow {f1(dji)}, Russell 2000 {f1(rut)}.", "body": pt(read)})
     if secs:
         dfn = [s["pct"] for s in secs if s["name"] in _DEFENSIVE]
         cyc = [s["pct"] for s in secs if s["name"] not in _DEFENSIVE]
@@ -1019,7 +1077,7 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
             tilt = (("Defensive and rate-sensitive sectors lead while small caps outperform, which fits easing yields more than a flight to safety." if (None not in (rut, spx) and rut - spx >= 0.7) else
                      "Defensive sectors (health care, utilities, staples, real estate) are beating cyclicals, a risk-off tilt.") if gap >= 0.6 else
                     "Cyclical sectors are beating defensives, a risk-on tilt." if gap <= -0.6 else "Defensives and cyclicals are moving together, so no clear risk-on or risk-off signal.")
-            pts.append({"lead": f"Sectors: {secs[-1]['name']} leads ({f1(secs[-1]['pct'])}), {secs[0]['name']} lags ({f1(secs[0]['pct'])}).", "body": tilt})
+            pts.append({"lead": pt(f"Sectors: {secs[-1]['name']} leads ({f1(secs[-1]['pct'])}), {secs[0]['name']} lags ({f1(secs[0]['pct'])})."), "body": pt(tilt)})
     mv = (dash.get("movers") or {})
     named = []
     for side in ("gainers", "losers"):
@@ -1048,7 +1106,7 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
         body = " ".join(parts)
         for t in shared:
             body += f" Roundup: \"{t[:120]}\"."
-        pts.append({"lead": "Biggest S&P 500 movers.", "body": body})
+        pts.append({"lead": f"Biggest S&P 500 movers on {dl}." if past else "Biggest S&P 500 movers.", "body": body})
     macro_bits, rate_read = [], ""
     if tn and tn.get("chg") is not None:
         bp = tn["chg"] * 100
@@ -1063,7 +1121,7 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
     if vx.get("price") is not None:
         macro_bits.append(f"the VIX is {vx['price']:.1f} ({f1(vx.get('pct') or 0)})")
     if macro_bits:
-        pts.append({"lead": "Rates, commodities and volatility: " + "; ".join(macro_bits) + ".", "body": rate_read or "No large cross-asset move is driving stocks today."})
+        pts.append({"lead": "Rates, commodities and volatility: " + "; ".join(macro_bits) + ".", "body": rate_read or ("No large cross-asset move stands out." if past else "No large cross-asset move is driving stocks today.")})
     big = [e for e in rec if e.get("move") is not None and abs(e["move"]) >= 3]
     if big:
         pts.append({"lead": "Recent earnings reactions.", "body": " ".join(f"{e['sym']} {f1(e['move'])} ({'beat' if (e.get('surprisePct') or 0) >= 0 else 'missed'} by {abs(e.get('surprisePct') or 0):.1f}%)." for e in big[:5])})
@@ -1127,12 +1185,12 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
     # ---- anything wild ----
     wild = []
     if br.get("n") and br["adv"] / br["n"] >= 0.8:
-        wild.append({"tag": "BREADTH", "h": f"{br['adv']} of {br['n']} S&P 500 stocks are rising", "body": "That is unusually broad participation. Moves with this many stocks up tend to reflect macro news (rates, oil, policy) more than individual company stories."})
+        wild.append({"tag": "BREADTH", "h": f"{br['adv']} of {br['n']} S&P 500 stocks " + (f"rose on {dl}" if past else "are rising"), "body": "That is unusually broad participation. Moves with this many stocks up tend to reflect macro news (rates, oil, policy) more than individual company stories."})
     elif br.get("n") and br["adv"] / br["n"] <= 0.2:
-        wild.append({"tag": "BREADTH", "h": f"Only {br['adv']} of {br['n']} S&P 500 stocks are rising", "body": "That is a very one-sided tape. Selling this broad is usually driven by macro fear, not stock-specific news."})
+        wild.append({"tag": "BREADTH", "h": f"Only {br['adv']} of {br['n']} S&P 500 stocks " + (f"rose on {dl}" if past else "are rising"), "body": "That is a very one-sided tape. Selling this broad is usually driven by macro fear, not stock-specific news."})
     top_mv = max([m for side in ("gainers", "losers") for m in (mv.get(side) or [])], key=lambda m: abs(m.get("pct") or 0), default=None)
     if top_mv and abs(top_mv["pct"]) >= 8:
-        wild.append({"tag": "MOVER", "h": f"{top_mv['name']} ({top_mv['sym']}) is {f1(top_mv['pct'])}", "body": f"The largest one-day move in the S&P 500 today, in {top_mv.get('sector') or 'its sector'}. Moves this size for a large company usually come from earnings, guidance or a deal."})
+        wild.append({"tag": "MOVER", "h": f"{top_mv['name']} ({top_mv['sym']}) " + (f"closed {dl} {f1(top_mv['pct'])}" if past else f"is {f1(top_mv['pct'])}"), "body": ("The largest one-day move in the S&P 500 on " + dl if past else "The largest one-day move in the S&P 500 today") + f", in {top_mv.get('sector') or 'its sector'}. Moves this size for a large company usually come from earnings, guidance or a deal."})
     if None not in (rut, ixic) and abs(rut - ixic) >= 1.5:
         wild.append({"tag": "SPREAD", "h": f"A {abs(rut - ixic):.1f}-point gap between the Russell 2000 ({f1(rut)}) and the Nasdaq ({f1(ixic)})", "body": "Big gaps between index groups mark rotation days, when money moves between styles instead of in or out of stocks."})
     if tn and tn.get("price") is not None:
@@ -1149,7 +1207,8 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
     wild = wild[:4]
     srcs = [{"t": f"{h['source']}: {h['title'][:100]}", "u": h["link"]} for h in sorted([h for h in pool_rel if h.get("type") == "Publication" and h.get("source") != "Yahoo Finance"],
                                                                                             key=lambda h: h["published"], reverse=True)[:5]]
-    return {"headline": headline, "lede": lede, "market": {"title": "What is moving the market", "points": pts},
+    return {"headline": headline, "lede": lede, "session": sess.isoformat() if sess else None, "past": past,
+            "market": {"title": f"What moved the market {dl}" if past else "What is moving the market", "points": pts},
             "data": {"bottom": bottom, "rows": rows}, "earnings": earn, "watch": watch, "wild": wild, "sources": srcs}
 
 
@@ -1195,12 +1254,18 @@ def digest():
     cal_today = [c for c in cal if c["date"] == day]
     cal_week = [c for c in cal if day < c["date"] <= end]
     # earnings today, split by timing, plus reports that already landed in the last two days
-    ups = [e for e in earn.get("upcoming", []) if e.get("date") == day]
+    now_ny = ny_now()
+    nyday = now_ny.date().isoformat()
+    todays = [e for e in earn.get("upcoming", []) + earn.get("pending", []) if e.get("date") == nyday and e.get("eps") is None]
+    todays.sort(key=lambda e: -(e.get("mcap") or 0))
+    ups = [e for e in todays if not report_passed(e, now_ny)]   # still to report today
     rec = [e for e in earn.get("recent", []) if e.get("date") >= (ct.date() - timedelta(days=2)).isoformat()]
     ups.sort(key=lambda e: -(e.get("mcap") or 0))
+    # releases whose time has passed are news, not something to watch
+    cal_ahead = [c for c in cal_today if not c.get("at") or c["at"] > datetime.now(timezone.utc).isoformat()]
     rec.sort(key=lambda e: -(e.get("mcap") or 0))
     keep = ("sym", "name", "date", "when", "mcap", "est", "eps", "surprisePct", "move", "beat", "sector")
-    trim = lambda e: {k: e.get(k) for k in keep}  # noqa: E731
+    trim = lambda e: {**{k: e.get(k) for k in keep}, **({"status": "pending"} if e.get("eps") is None and report_passed(e, now_ny) else {})}  # noqa: E731
     # headlines from the last 24 hours, notable first
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
     spam = ("lost money", "who lost", "class action", "securities fraud", "law firm", "attorney", "investigation on behalf", "investors who", "lawsuit",
@@ -1218,14 +1283,21 @@ def digest():
     if fomc:
         days = (date.fromisoformat(fomc) - ct.date()).days
         watch.append({"t": date.fromisoformat(fomc).strftime("%b %-d"), "e": "Next FOMC decision" + (" is today" if days == 0 else f" in {days} days"), "why": f"Fed funds target now {macro_.get('target', ['—'])[0]}–{macro_.get('target', ['', '—'])[-1]}%" if macro_.get("target") else ""})
-    for c in cal_today[:4]:
+    for c in cal_ahead[:4]:
         watch.append({"t": "Today", "e": c["name"], "why": "Scheduled release"})
     for e in ups[:3]:
         watch.append({"t": e.get("when") or "Today", "e": f"{e['sym']} reports", "why": f"EPS estimate {e['est']}" if e.get("est") is not None else "Earnings"})
     # headline summary: plain statements generated from the numbers, no editorial
     top = []
+    sess = session_day(tiles)
+    started = bool(sess and sess.isoformat() >= nyday)   # today's session has traded (open or closed for the day)
+    past_day = sess.strftime("%A") if sess and not started else ""
     es = next((f for f in futures if f["sym"] == "ES=F"), None)
-    if es and es["pct"] is not None:
+    spx_t = tiles.get("spx") or {}
+    if started and spx_t.get("pct") is not None:
+        top.append({"lead": f"The S&P 500 is {'up' if spx_t['pct'] >= 0 else 'down'} {abs(spx_t['pct']):.2f}%.",
+                    "rest": "Nasdaq " + (f"{(tiles.get('ixic') or {}).get('pct'):+.2f}%" if (tiles.get("ixic") or {}).get("pct") is not None else "n/a") + "."})
+    elif es and es["pct"] is not None:
         top.append({"lead": f"S&P futures are {'up' if es['pct'] >= 0 else 'down'} {abs(es['pct']):.2f}%.",
                     "rest": "Nasdaq 100 futures " + next((f"{f['pct']:+.2f}%" for f in futures if f["sym"] == "NQ=F" and f["pct"] is not None), "n/a") + "."})
     tn = tiles.get("tnx")
@@ -1290,7 +1362,7 @@ def digest():
             txt = f"{'Beat' if beat else 'Missed'} by {abs(sp):.1f}%; the stock barely moved ({mv:+.1f}%)."
         auto_earn[e["sym"]] = txt
     tone_bits = []
-    if es and es["pct"] is not None:
+    if es and es["pct"] is not None and not started:
         p = es["pct"]
         tone_bits.append("S&P futures are " + ("sharply lower" if p <= -1 else "lower" if p <= -0.3 else "sharply higher" if p >= 1 else "higher" if p >= 0.3 else "little changed") + f" ({p:+.2f}%)")
     vx = tiles.get("vix")
@@ -1300,10 +1372,10 @@ def digest():
         tone_bits.append(f"the 10-year yield is {tn['price']:.2f}% ({tn['chg'] * 100:+.0f} bp)")
     br2 = dash.get("breadth")
     if br2 and br2.get("n"):
-        tone_bits.append(f"{br2['adv']} of {br2['n']} S&P 500 stocks are up")
+        tone_bits.append(f"{br2['adv']} of {br2['n']} S&P 500 stocks " + (f"rose on {past_day}" if past_day else "are up"))
     secs = sorted(dash.get("sectors", []), key=lambda x: x.get("pct") or 0)
     if len(secs) >= 2:
-        tone_bits.append(f"{secs[-1]['name']} leads ({secs[-1]['pct']:+.1f}%) and {secs[0]['name']} lags ({secs[0]['pct']:+.1f}%)")
+        tone_bits.append(f"{secs[-1]['name']} {'led' if past_day else 'leads'} ({secs[-1]['pct']:+.1f}%) and {secs[0]['name']} {'lagged' if past_day else 'lags'} ({secs[0]['pct']:+.1f}%)")
     lvl_reads = []
     for l in levels:
         v50, v200 = l.get("vs50"), l.get("vs200")
@@ -1313,10 +1385,10 @@ def digest():
                  else "below the 50-day but above the 200-day: pullback inside an uptrend" if v200 > 0 else "above the 50-day but below the 200-day: bouncing in a downtrend")
         lvl_reads.append({"n": l["n"], "read": f"{trend}; {abs(l['offHigh']):.1f}% below its 52-week high."})
     auto = {"tone": ("; ".join(tone_bits)[0].upper() + "; ".join(tone_bits)[1:] + ".") if tone_bits else "", "reads": reads, "earnings": auto_earn, "levels": lvl_reads}
-    auto["story"] = attempt("auto story", _auto_story, day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn, default=None)
+    auto["story"] = attempt("auto story", _auto_story, day, tiles, dash, futures, levels, macro_, ups, rec, cal_ahead, heads, od, reads, auto_earn, es, tn, default=None)
     write("digest.json", {"auto": auto, "updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
                           "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
-                          "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
+                          "reportingToday": [trim(e) for e in todays[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
                           "breadth": dash.get("breadth"), "odds": od.get("groups", [])})
 
 

@@ -443,7 +443,7 @@ class Component extends DCLogic {
       if (have[sym]) return;
       fetch('/api/quote?part=price&sym=' + encodeURIComponent(sym)).then(function (r) { return r.json(); }).then(function (j) {
         if (!j.quote) return;
-        var o = Object.assign({}, (self.state || {}).wq || {}); o[sym] = { sym: sym, name: j.quote.name, price: j.quote.price, pct: j.quote.pct }; self.setState({ wq: o });
+        var o = Object.assign({}, (self.state || {}).wq || {}); o[sym] = { sym: sym, name: j.quote.name, price: j.quote.price, pct: j.quote.pct, time: j.quote.time }; self.setState({ wq: o });
       }).catch(function () {});
     });
   }
@@ -473,7 +473,8 @@ class Component extends DCLogic {
           d.tiles = (d.tiles || []).map(function (t) { return byId[t.id] || t; }).concat(j.tiles.filter(function (t) { return !(d.tiles || []).some(function (x) { return x.id === t.id; }); }));
           d.asOf = j.asOf || d.asOf;
           if (j.sectors && j.sectors.length) d.sectors = j.sectors;
-          if (j.watch && j.watch.length) d.watch = j.watch.map(function (w) { w.name = nm[w.sym] || w.name; return w; });
+          // the live watch rows carry no trade time: they belong to the same session as the S&P 500 tile
+          if (j.watch && j.watch.length) d.watch = j.watch.map(function (w) { w.name = nm[w.sym] || w.name; w.time = w.time || (byId.spx || {}).time; return w; });
         } else {
           if (!j.movers || !j.movers.gainers.length) return;
           d.movers = j.movers; d.breadth = j.breadth;
@@ -589,7 +590,7 @@ class Component extends DCLogic {
       return { t: t + ' Treasury', v: F.n(C.now[k], 2) + '%', chg: d === null ? '—' : (d >= 0 ? '▲ +' : '▼ −') + Math.abs(d) + ' bp', chgCls: d === null ? 'dim' : (d > 0 ? 'dn' : 'up') };
     });
     var days = {};
-    (E.upcoming || []).forEach(function (x) { (days[x.date] = days[x.date] || []).push(x); });
+    (E.upcoming || []).forEach(function (x) { if (!F.reportPassed(x.date, x.when)) (days[x.date] = days[x.date] || []).push(x); });
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
     var earnDays = Object.keys(days).sort().slice(0, 5).map(function (d) {
       var items = days[d].slice(0, 4).map(function (x) { return { t: x.sym, href: 'Main.dc.html?sym=' + x.sym, when: x.when, eps: x.est === null || x.est === undefined ? '—' : F.usd(x.est, 2) }; });
@@ -598,12 +599,14 @@ class Component extends DCLogic {
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
     });
-    var wlist = this.pf('watch', CZ.watch), qi = {};
-    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
-    (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
+    // freshest first: live quote, then the hourly file (with its trade time), then the nightly list (the prior session's close)
+    var wlist = this.pf('watch', CZ.watch), qi = {}, nightly = F.priorSession((st.qidx || {}).updated);
+    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = Object.assign({ time: nightly }, t); });
+    Object.keys(D.core || {}).forEach(function (s) { qi[s] = Object.assign({ sym: s, name: (qi[s] || {}).name }, D.core[s], { time: D.coreTime }); });
+    (D.watch || []).forEach(function (w) { qi[w.sym] = Object.assign({ time: D.coreTime }, w); });
     var watch = wlist.map(function (sym) {
-      var w = (st.wq || {})[sym] || qi[sym] || { sym: sym, name: 'Loading…' };
-      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+      var w = (st.wq || {})[sym] || qi[sym] || { sym: sym, name: 'Loading…' }, tag = w.price === undefined ? '' : F.sess(w.time);
+      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct) + (tag ? ' · ' + tag : ''), color: (w.pct || 0) >= 0 ? UP : DN };
     });
     // panel order, visibility and the Customize controls
     var pp = this.pf('panels', null) || {}, order = (pp.order || []).filter(function (id) { return CZ.panels.some(function (x) { return x[0] === id; }); });

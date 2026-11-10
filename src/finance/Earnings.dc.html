@@ -375,10 +375,12 @@ class Component extends DCLogic {
     var sectorTabs = [{ id: 'all', label: 'All sectors' }].concat(secs.map(function (k) { return { id: k, label: k }; })).map(function (t) {
       return { label: t.label, pressed: t.id === sec ? 'true' : 'false', cls: 't-tab' + (t.id === sec ? ' is-on' : ''), pick: function () { self.setState({ sec: t.id }); } };
     });
-    var upAll = (E.upcoming || []).filter(function (u) { return (!ernWatch || wl.indexOf(u.sym) >= 0) && (sec === 'all' || (u.sector || 'Other') === sec); });
+    var pendAll = (E.pending || []).concat((E.upcoming || []).filter(function (u) { return F.reportPassed(u.date, u.when); }));
+    var upAll = pendAll.concat((E.upcoming || []).filter(function (u) { return !F.reportPassed(u.date, u.when); })).filter(function (u) { return (!ernWatch || wl.indexOf(u.sym) >= 0) && (sec === 'all' || (u.sector || 'Other') === sec); });
+    var nPend = upAll.filter(function (u) { return pendAll.indexOf(u) >= 0; }).length;
     var upcoming = upAll.map(function (u) {
-      var today = u.date === todayIso;
-      return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
+      var today = u.date === todayIso, done = pendAll.indexOf(u) >= 0;
+      return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: done ? 'Reported · results pending' : u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
         nEst: u.nEst ? String(u.nEst) : '—', mcap: F.money(u.mcap, 0), rowStyle: 'text-align: right;' + (today ? ' background: #261C0C;' : '') };
     });
     var subtitle = st.err ? 'Earnings data is not available yet. The first daily refresh fills it in.' : (E.updated ? (P.reported || 0) + ' of ' + (P.total || 500) + ' S&P 500 companies have reported ' + (season.label || '') + ' results. ' + (S.n ? F.n(S.beatPct, 0) + '% beat the consensus EPS estimate, by ' + F.pct(S.avgSurprise, 1) + ' on average.' : 'The season is just getting started.') : 'Loading the season…');
@@ -390,7 +392,7 @@ class Component extends DCLogic {
       p1Open: st.p1 !== false, p2Open: st.p2 !== false, p1Str: st.p1 !== false ? 'true' : 'false', p2Str: st.p2 !== false ? 'true' : 'false',
       p1Btn: st.p1 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾', p2Btn: st.p2 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾',
       toggle1: function () { self.setState({ p1: st.p1 === false }); }, toggle2: function () { self.setState({ p2: st.p2 === false }); },
-      sectorTabs: sectorTabs, noUpcoming: !!E.updated && !upcoming.length, upCount: upAll.length + ' scheduled · largest S&P 500 reporters, next two weeks',
+      sectorTabs: sectorTabs, noUpcoming: !!E.updated && !upcoming.length, upCount: (upAll.length - nPend) + ' scheduled · largest S&P 500 reporters, next two weeks' + (nPend ? ' · ' + nPend + ' reported, results pending' : ''),
       filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
       ernWatchOn: ernWatch ? 'true' : 'false', ernWatchCls: 't-tab' + (ernWatch ? ' is-on' : ''),
       ernWatchToggle: function () { PREFS.set('fin.ernWatch', !ernWatch); self.setState({ ernWatch: !ernWatch }); }

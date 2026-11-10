@@ -439,7 +439,13 @@
     }
     j('/data/finance/dashboard.json?v=' + v5).then(function (d) {
       var by = {}; (d.tiles || []).forEach(function (t) { by[t.id] = t; });
-      mk = '<dt class="nk-now-h">MARKETS</dt>' + TILES.map(function (x) {
+      // before today's New York session (and on weekends) these are the prior session's moves: say so
+      var sp0 = by.spx, sess = '';
+      if (sp0 && sp0.time) {
+        var nyd = function (d) { return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }, td = new Date(sp0.time * 1000);
+        if (nyd(td) !== nyd(new Date())) sess = td.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }).toUpperCase() + ' CLOSE';
+      }
+      mk = '<dt class="nk-now-h">MARKETS' + (sess ? ' · ' + sess : '') + '</dt>' + TILES.map(function (x) {
         var t = by[x[0]]; if (!t || t.price == null) return '';
         var up = (t.pct || 0) >= 0;
         var px = x[0] === 'tnx' ? t.price.toFixed(2) + '%' : t.price.toLocaleString('en-US', { minimumFractionDigits: x[2], maximumFractionDigits: x[2] });
@@ -450,7 +456,7 @@
       if (spx && spx.price != null) {
         L.spx = spx.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + ((spx.pct || 0) >= 0 ? '▲' : '▼') + Math.abs(spx.pct || 0).toFixed(2) + '%';
         var cm = document.getElementById('cardMkt');
-        if (cm) cm.innerHTML = 'S&amp;P 500 <b>' + esc(L.spx) + '</b> · UPDATED HOURLY';
+        if (cm) cm.innerHTML = 'S&amp;P 500 <b>' + esc(L.spx) + '</b> · ' + (sess ? esc(sess) : 'UPDATED HOURLY');
       }
       var NAMES = { spx: 'S&P 500', ixic: 'NASDAQ', dji: 'DOW', rut: 'RUSSELL', vix: 'VIX', tnx: 'US 10Y', dxy: 'DXY', wti: 'WTI', gold: 'GOLD', btc: 'BTC',
         ftse: 'FTSE', dax: 'DAX', sx5e: 'STOXX 50', n225: 'NIKKEI', hsi: 'HANG SENG', tsx: 'TSX', eurusd: 'EUR/USD', usdjpy: 'USD/JPY', gbpusd: 'GBP/USD' };

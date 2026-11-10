@@ -113,6 +113,17 @@ def fmt(dt):
     return ny(dt).strftime("%a %b %d %I:%M %p ET") if dt else "no time"
 
 
+def report_time(x):
+    """When a company's report counts as done (New York): 9:30 AM for before-the-open or untimed, 5:30 PM for after-the-close.
+    Same rule as pipeline/jobs.py report_passed and F.reportPassed in assets/dc-runtime.js."""
+    try:
+        d = date.fromisoformat(x.get("date") or "")
+    except ValueError:
+        return None
+    t = time(17, 30) if (x.get("when") or "").upper() == "AMC" else OPEN
+    return datetime.combine(d, t, NY)
+
+
 def age_min(clock, dt):
     return (clock.utc - dt).total_seconds() / 60 if dt else None
 
@@ -192,6 +203,8 @@ def check_dashboard(clock, d, r):
     if lag:
         r.stale(page, "index tiles show an earlier session's move as today's: " + "; ".join(lag),
                 "show the prior session as 'prior close' until today's first trade arrives")
+    elif clock.state in ("pre", "closed") and tiles.get("spx") and "' CLOSE'" in Loader(False).text("assets/landing.js"):
+        r.ok(page, f"index moves are the {clock.session} session's; the homepage labels them with that session's close")
     elif clock.state == "pre" and tiles.get("spx"):
         r.warn(page, f"before the open, the S&P tile's {tiles['spx'].get('pct', 0):+.2f}% is the prior session's "
                      f"({clock.session}) move; the page must label it as the prior close, not today",
@@ -215,21 +228,30 @@ def check_quotes(clock, q, d, r):
     if upd and ny(upd).date() < prev_trading_day(clock.today) and clock.is_trading_day:
         r.stale(page, f"nightly quotes file is from {fmt(upd)}, more than one session old",
                 "check the daily refresh-finance run")
-    session_started = clock.state in ("open", "post")
-    if session_started and upd and upd < clock.open_at:
-        top = sorted(q.get("tickers") or [], key=lambda t: -abs(t.get("pct") or 0))[:3]
-        ex = ", ".join(f"{t['sym']} {t.get('pct', 0):+.2f}%" for t in top)
-        r.warn(page, f"tracked-tickers strip reads quotes/index.json from {fmt(upd)}: those are {clock.session if clock.state != 'open' else prev_trading_day(clock.today)}'s moves "
-                     f"(e.g. {ex}); OK only if the page labels them 'prior close'",
-               "feed the strip from live quotes, or label it 'prior close'")
-    # dashboard watchlist copies the same nightly numbers
-    idx = {t["sym"]: (t.get("price"), t.get("pct")) for t in q.get("tickers") or [] if "sym" in t}
-    watch = (d or {}).get("watch") or []
-    same = [w["sym"] for w in watch if idx.get(w.get("sym")) == (w.get("price"), w.get("pct"))]
-    if session_started and watch and len(same) == len(watch) and upd and upd < clock.open_at:
-        r.stale(page, f"dashboard watchlist ({', '.join(same)}) shows the nightly prior-session prices and moves while the market "
-                      f"is {'open' if clock.state == 'open' else 'closed for the day'}; first paint reads as today's",
-                "load live watchlist prices first, or label first paint 'prior close'")
+    d = d or {}
+    dupd = parse_ts(d.get("updated"))
+    refreshed_in_session = clock.state in ("open", "post") and dupd and dupd >= clock.open_at + timedelta(minutes=15)
+    # quote-page strip: hourly prices from dashboard.json "core", stamped with the session they belong to
+    core, ctime = d.get("core") or {}, parse_ts(d.get("coreTime"))
+    if not core:
+        r.warn(page, "dashboard.json has no hourly core-list prices; the quote-page strip falls back to the nightly file "
+                     "(labeled with its session)", "check the 'core list batch quotes' step of the market job")
+    elif refreshed_in_session and ctime and ny(ctime).date() < clock.today:
+        r.stale(page, f"core-list prices refreshed {fmt(dupd)} still carry the {ny(ctime).date()} session",
+                "check the market job's S&P 500 tile and spark quotes")
+    else:
+        r.ok(page, f"quote strip has hourly prices for {len(core)} tickers from the {ny(ctime).date() if ctime else '?'} session")
+    # dashboard watchlist rows carry their own trade time
+    watch = d.get("watch") or []
+    untimed = [w.get("sym") for w in watch if not w.get("time")]
+    old = [w.get("sym") for w in watch if w.get("time") and ny(parse_ts(w["time"])).date() < clock.today]
+    if untimed:
+        r.stale(page, f"watchlist rows without a trade time ({', '.join(untimed)}): the page can't tell visitors which session they are from",
+                "write each watch row's trade time in the market job")
+    elif refreshed_in_session and old:
+        r.stale(page, f"watchlist refreshed {fmt(dupd)} during today's session still shows an earlier session for {', '.join(old)}")
+    elif watch:
+        r.ok(page, "watchlist rows carry trade times (earlier sessions are labeled on the page)")
 
 
 def check_digest(clock, g, ed, d, src, r):
@@ -245,7 +267,8 @@ def check_digest(clock, g, ed, d, src, r):
     if clock.is_trading_day and clock.ny.time() >= time(8, 0) and gdate and gdate < clock.today.isoformat():
         r.stale(page, f"Digest is dated {gdate}; today is {clock.today}", "check the digest job in refresh-finance")
 
-    if clock.state in ("open", "post") and clock.minutes_since_open() > 75:
+    written_after_open = upd and clock.state in ("open", "post") and upd >= clock.open_at
+    if written_after_open:
         m = PREMARKET.findall(words)
         if m:
             r.stale(page, f"auto story uses pre-market wording after the open: {', '.join(sorted(set(x.lower() for x in m)))} "
@@ -256,7 +279,7 @@ def check_digest(clock, g, ed, d, src, r):
     spx = next((t for t in (d or {}).get("tiles") or [] if t.get("id") == "spx"), None)
     if spx and gdate and re.search(r"S&P 500 is [+-−]?\d", story.get("lede", "")):
         tdate = ny(parse_ts(spx.get("time"))).date().isoformat() if spx.get("time") else None
-        if tdate and tdate < gdate:
+        if tdate and tdate < gdate and story.get("session") != tdate:
             r.stale(page, f"Digest dated {gdate} says \"{story.get('headline', '')}\" and \"The S&P 500 is {spx.get('pct', 0):+.1f}%\": "
                           f"that is {tdate}'s session, written up as today's",
                     "before the open, write the prior session in past tense ('Monday: stocks rose') and lead with futures")
@@ -275,7 +298,7 @@ def check_digest(clock, g, ed, d, src, r):
             r.ok(page, f"hand-written edition is from {ed['date']} and is not used as a fallback")
 
     # Today's watch items that already happened
-    if clock.state in ("open", "post") and gdate == clock.today.isoformat():
+    if written_after_open and gdate == clock.today.isoformat():
         done = [w.get("e") for w in g.get("watch") or [] if w.get("t") == "BMO"]
         if done:
             r.stale(page, f"'What to watch' still lists before-the-open reports after the open: {'; '.join(done)}",
@@ -289,10 +312,15 @@ def check_earnings(clock, e, g, r):
     today = clock.today.isoformat()
     t = clock.ny.time()
     past, bmo, amc = [], [], []
-    rows = [("Upcoming", x) for x in e.get("upcoming") or []] + [("Digest 'reporting today'", x) for x in (g or {}).get("reportingToday") or []]
-    for where, x in rows:
+    eu, gu = parse_ts(e.get("updated")), parse_ts((g or {}).get("updated"))
+    rows = [("Upcoming", x, eu) for x in e.get("upcoming") or []] + \
+           [("Digest 'reporting today'", x, gu) for x in (g or {}).get("reportingToday") or [] if x.get("status") != "pending"]
+    for where, x, written in rows:
         if x.get("eps") is not None:
             continue
+        rt = report_time(x)
+        if rt and written and written < rt:
+            continue   # written before the report time; the pages move it to "reported, results pending" by the clock
         lab = f"{x.get('sym')} ({x.get('date')} {x.get('when') or '?'}) in {where}"
         if x.get("date") and x["date"] < today:
             past.append(lab)

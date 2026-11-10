@@ -63,7 +63,34 @@
       var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
       return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' hr ago' : Math.round(m / 1440) + ' d ago';
     },
-    updated: function (iso) { return iso ? 'UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; }
+    updated: function (iso) { return iso ? 'UPDATED ' + F.day(iso).toUpperCase() + ' ' + F.time(iso) + ' ' + window.TZL : 'LOADING…'; },
+    /* ---- New York market clock: "today" for stocks is the NYSE session ---- */
+    nyDate: function (d) { return (d || new Date()).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); },
+    nyMins: function () { var p = {}; new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; }); return +p.hour * 60 + +p.minute; },
+    /* '' when a trade time (epoch seconds) is from today's New York session, else a label like 'MON CLOSE':
+       numbers from an earlier session must never read as today's */
+    sess: function (ts) {
+      if (!ts) return '';
+      var d = new Date(ts * 1000);
+      if (F.nyDate(d) === F.nyDate()) return '';
+      return d.toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' }).toUpperCase() + ' CLOSE';
+    },
+    /* the session a nightly (pre-market) file describes: the last weekday before the day it was written, as epoch seconds */
+    priorSession: function (iso) {
+      if (!iso) return null;
+      var d = new Date(iso), p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+      var day = new Date(Date.UTC(+p.year, +p.month - 1, +p.day, 17));   // noon-ish in New York
+      if (+p.hour < 16) { do { day = new Date(day.getTime() - 86400000); } while (day.getUTCDay() === 0 || day.getUTCDay() === 6); }
+      return Math.floor(day.getTime() / 1000);
+    },
+    /* true once an earnings report's time has passed on the New York clock: before-the-open (and untimed) at 9:30,
+       after-the-close by 5:30 PM. Such a company is "reported, results pending", never upcoming. */
+    reportPassed: function (date, when) {
+      var today = F.nyDate();
+      if (date !== today) return date < today;
+      return F.nyMins() >= (String(when || '').toUpperCase() === 'AMC' ? 17 * 60 + 30 : 9 * 60 + 30);
+    }
   };
 
   /* ---- firm names: SEC data is ALL CAPS and a plain title-case pass gets "Llp", "Hrt" and "Of" wrong ---- */
