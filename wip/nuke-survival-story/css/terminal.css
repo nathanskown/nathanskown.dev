@@ -220,9 +220,12 @@ body.playing .prompt { color: var(--amber); }
 @media (prefers-reduced-motion: reduce) {
   .app, .tick-run, .ln, .live i, .map .here, .scene.static .art { animation: none !important; }
   .ticker { height: 28px; overflow: hidden; }
+  .tick-track { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  .tick-track::-webkit-scrollbar { display: none; }
+  .tick-track:focus-visible { outline: 1px solid var(--amber); outline-offset: -2px; }
   .tick-run {
-    display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 100%;
+    display: block; white-space: nowrap; width: max-content; max-width: none;
+    overflow: visible; text-overflow: clip; transition: none;
   }
   .flash.go, .flash.soft { animation: none; }
 }

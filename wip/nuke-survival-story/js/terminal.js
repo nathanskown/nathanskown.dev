@@ -27,6 +27,8 @@
   var history = [], hIndex = 0;
   var roomOrder = Object.keys(STORY.rooms);
   var staticTimer = null, lastTicker = '';
+  var tickItems = [], tickIndex = 0, tickTimer = 0, tickPaused = false;
+  var readoutKey = '', resetReadoutScroll = false;
   var TRANSCRIPT_KEY = 'please-hold-v1:transcript';
   var TRANSCRIPT_MAX = 200 * 1024;
   var transcript = [];
@@ -122,6 +124,7 @@
       clearTimeout(staticTimer);
       staticOn = true;
       sceneEl.classList.toggle('static', flashesOn && !reduceMotion);
+      noteScene('static');
       scenes.show('static');
       staticTimer = setTimeout(function () { staticOn = false; sceneEl.classList.remove('static'); refresh(); }, 1100);
     }
@@ -130,6 +133,23 @@
   // ------------------------------------------------------------------ panels
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
+  function tickHtml(t) {
+    return '<span>' + esc(t).replace(/▼/g, '<b class="dn">▼</b>').replace(/▲/g, '<b class="up">▲</b>') + '</span>';
+  }
+  // One headline, swapped in place. No slide, fade, or flash. Arrows move immediately.
+  function showTick(i) {
+    if (!tickItems.length) return;
+    tickIndex = ((i % tickItems.length) + tickItems.length) % tickItems.length;
+    var el = $('tick');
+    el.innerHTML = tickHtml(tickItems[tickIndex]);
+    if (el.parentNode) el.parentNode.scrollLeft = 0;
+  }
+  function armTick() {
+    clearInterval(tickTimer);
+    tickTimer = 0;
+    if (!reduceMotion || tickPaused || tickItems.length < 2) return;
+    tickTimer = setInterval(function () { showTick(tickIndex + 1); }, 5000);
+  }
   function renderTicker(v) {
     var items;
     if (v.playing) {
@@ -140,11 +160,25 @@
     var key = items.join('|');
     if (key === lastTicker) return;
     lastTicker = key;
-    var html = items.map(function (t) {
-      return '<span>' + esc(t).replace(/▼/g, '<b class="dn">▼</b>').replace(/▲/g, '<b class="up">▲</b>') + '</span>';
-    }).join('');
-    // Doubled so the scroll can loop. Reduced motion shows one static line instead.
-    $('tick').innerHTML = reduceMotion ? html : html + html;
+    tickItems = items;
+    var el = $('tick');
+    var ticker = el.closest('.ticker');
+    var track = el.parentNode;
+    if (reduceMotion) {
+      ticker.removeAttribute('aria-hidden');
+      track.tabIndex = 0;
+      track.setAttribute('aria-label', 'News headlines. Left and right arrows change the headline.');
+      showTick(0);
+      armTick();
+    } else {
+      ticker.setAttribute('aria-hidden', 'true');
+      track.removeAttribute('tabindex');
+      track.removeAttribute('aria-label');
+      clearInterval(tickTimer);
+      tickTimer = 0;
+      var html = items.map(tickHtml).join('');
+      el.innerHTML = html + html; // doubled so the scroll can loop
+    }
   }
 
   function renderStatus(v) {
@@ -210,8 +244,13 @@
       el.addEventListener('scroll', function () { markReadout(el); }, { passive: true });
     }
     if (items === undefined && scenes.readout) items = scenes.readout();
-    if (!items || !items.length) { el.hidden = true; el.className = 'scene-readout'; el.innerHTML = ''; return; }
-    var top = el.scrollTop;
+    if (!items || !items.length) {
+      el.hidden = true; el.className = 'scene-readout'; el.innerHTML = '';
+      el.scrollTop = 0; resetReadoutScroll = false; return;
+    }
+    // Keep the place while a live value ticks. A new room or scene starts at the top.
+    var top = resetReadoutScroll ? 0 : el.scrollTop;
+    resetReadoutScroll = false;
     el.hidden = false;
     el.className = 'scene-readout show';
     el.innerHTML = items.map(function (it) {
@@ -224,8 +263,21 @@
     markReadout(el);
   }
   function setHeader(title, idx) { $('sceneTitle').textContent = title; $('sceneIdx').textContent = idx; }
+  function sceneKey(v) {
+    if (!v || !v.playing) return 'title';
+    if (Date.now() < detonationUntil && !v.ended) return 'detonation';
+    if (v.ended) return 'end:' + v.ended;
+    if (v.talkingWith) return 'person:' + v.talkingWith;
+    return 'room:' + v.room;
+  }
+  function noteScene(key) {
+    if (key === readoutKey) return;
+    readoutKey = key;
+    resetReadoutScroll = true;
+  }
   function renderScene(v) {
     if (staticOn) return;
+    noteScene(sceneKey(v));
     sceneEl.classList.toggle('ending', !!(v.playing && v.ended));
     sceneEl.classList.toggle('person', !!(v.playing && v.talkingWith));
     if (!v.playing) { setHeader('PLEASE HOLD', 'LAB · WIP'); scenes.show('title', null, v); return; }
@@ -412,6 +464,20 @@
     submit(b.dataset.cmd);
   });
   document.querySelector('.side-close').addEventListener('click', function () { closeSide(); });
+  var tickTrack = document.querySelector('.tick-track');
+  function pauseTicks() { tickPaused = true; clearInterval(tickTimer); tickTimer = 0; }
+  function resumeTicks() { tickPaused = false; armTick(); }
+  tickTrack.addEventListener('keydown', function (e) {
+    if (!reduceMotion) return;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    pauseTicks();
+    showTick(tickIndex + (e.key === 'ArrowRight' ? 1 : -1));
+  });
+  // Pause only while the ticker has keyboard focus. A hover pause sticks on a phone
+  // after the first tap, and then the later headlines never come around.
+  tickTrack.addEventListener('focus', function () { if (reduceMotion) pauseTicks(); });
+  tickTrack.addEventListener('blur', function () { if (reduceMotion) resumeTicks(); });
   document.addEventListener('keydown', function (e) {
     if (!sideIsDrawer() || !document.body.classList.contains('show-side')) return;
     if (e.key === 'Escape') { e.preventDefault(); closeSide(); return; }
