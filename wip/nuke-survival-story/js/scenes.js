@@ -59,7 +59,6 @@
         phone = cssScale > 0 && cssScale < 0.8;
         phoneLabels = [];
         chipCursor = null;
-        g.boxes = [];
       },
       glow: function (on, color) { ctx.shadowBlur = on ? 8 : 0; ctx.shadowColor = color || C.g; },
       line: function (x1, y1, x2, y2, c, w, dash) {
@@ -85,7 +84,7 @@
         o = o || {};
         var label = String(s).replace(/\s+/g, ' ').trim();
         if (phone && label) {
-          if (phoneLabels.indexOf(label) < 0) phoneLabels.push(label);
+          phoneLabels.push({ t: label, x: x || 0, y: y || 0 });
           return;
         }
         var size = o.size || 10;
@@ -122,7 +121,7 @@
       },
       chip: function (x, y, label, on, color) {
         if (phone) {
-          if (phoneLabels.indexOf(label) < 0) phoneLabels.push(label);
+          phoneLabels.push({ t: label, x: x, y: y, chip: true, on: !!on });
           return 0;
         }
         var size = fitSize(9, label, 300);
@@ -153,6 +152,7 @@
       },
       wrap: function (s, x, y, maxW, lh, o) {
         o = o || {};
+        if (phone) { g.text(s, x, y, o); return y + (lh || 16); }
         var size = fitSize(o.size || 10, null, 0);
         var drawn = { size: size, color: o.color, align: o.align, exact: true, vt: o.vt };
         ctx.font = size + 'px ' + FONT_MONO;
@@ -166,56 +166,23 @@
         if (line) g.text(line, x, yy, drawn);
         return yy;
       },
-      // Phone: the picture stays, and every label is set in a strip that wraps
-      // in real screen pixels so the lines can't land on each other.
-      flushPhone: function (dpr) {
-        g.boxes = [];
-        if (!phone || !phoneLabels.length) return;
-        var cssW = ctx.canvas.width / dpr, cssH = ctx.canvas.height / dpr;
-        var fontPx = 13, lineH = 18, pad = 8, gap = 12;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.font = fontPx + 'px ' + FONT_MONO;
-        var cols = cssW >= 340 ? 2 : 1;
-        var colW = (cssW - pad * 2 - gap * (cols - 1)) / cols;
-        function wrap(label) {
-          var words = String(label).split(' '), line = '', out = [];
-          words.forEach(function (w) {
-            var test = line ? line + ' ' + w : w;
-            if (ctx.measureText(test).width > colW && line) { out.push(line); line = w; }
-            else line = test;
-          });
-          if (line) out.push(line);
-          return out;
+      // A short token under or beside a label (3 MPH, 28, EMPTY), not another heading.
+      readout: function () {
+        if (!phone) return null;
+        function isValue(t) {
+          return /^[\d:.+\-]+(\s*(AM|PM|MPH|GAL|s|CASES))?$/i.test(t) || /^(EMPTY|LATE|CLOSED|OK|SHORT|NONE)$/i.test(t);
         }
-        var blocks = phoneLabels.map(wrap);
-        // column-major: each column is a run of blocks, so a label stays in one column
-        var per = Math.ceil(blocks.length / cols);
-        var colLines = [];
-        for (var c = 0; c < cols; c++) {
-          var chunk = blocks.slice(c * per, (c + 1) * per);
-          var flat = [];
-          chunk.forEach(function (b) { flat = flat.concat(b); });
-          colLines.push(flat);
-        }
-        var tallest = colLines.reduce(function (m, col) { return Math.max(m, col.length); }, 0);
-        var barH = Math.min(cssH - 24, tallest * lineH + pad * 2);
-        var y0 = cssH - barH;
-        ctx.fillStyle = C.bg;
-        ctx.fillRect(0, y0, cssW, barH);
-        ctx.fillStyle = C.line;
-        ctx.fillRect(0, y0, cssW, 1);
-        ctx.fillStyle = C.g;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        colLines.forEach(function (col, c) {
-          var x = pad + c * (colW + gap);
-          col.forEach(function (line, i) {
-            var y = y0 + pad + i * lineH;
-            if (y + fontPx > cssH - 2) return;
-            ctx.fillText(line, x, y);
-            g.boxes.push({ t: line, x: x, y: y, w: Math.min(colW, ctx.measureText(line).width), h: fontPx });
-          });
+        var items = [];
+        phoneLabels.forEach(function (lab) {
+          var prev = items[items.length - 1];
+          if (prev && !prev.chip && !lab.chip && !prev.value) {
+            var beside = Math.abs(lab.y - prev.y) <= 10 && lab.x > prev.x + 16;
+            var under = Math.abs(lab.x - prev.x) < 40 && lab.y > prev.y && lab.y - prev.y <= 38 && isValue(lab.t);
+            if (beside || under) { prev.value = lab.t; return; }
+          }
+          items.push({ label: lab.t, value: '', chip: !!lab.chip, on: !!lab.on, x: lab.x, y: lab.y });
         });
+        return items;
       }
     };
     return g;
@@ -296,7 +263,7 @@
       var held = (v.time - hm('11:22 AM')) * 60 + Math.floor(t);
       var hh = Math.floor(held / 3600), mm = Math.floor(held / 60) % 60, ss = held % 60;
       g.text(dead ? 'NO SIGNAL' : 'ON HOLD', 26, 36, { size: 10, color: dead ? C.red : C.amber });
-      g.big((hh ? hh + ':' : '') + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss, 302, 42, 26, dead ? C.mute : C.g, 'right');
+      g.big((hh ? hh + ':' : '') + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss, 302, 42, 26, dead ? C.dim : C.g, 'right');
       waveform(g, 24, 60, 280, 70, t, 26, dead);
       g.text(dead ? 'carrier lost 6:00 PM' : '♪ saxophone, key of regret', 26, 152, { size: 9, color: C.dim, max: 276 });
       // the east window
@@ -612,7 +579,7 @@
         var x = 14 + i * 154, open = !s[1] || v.time < hm(s[1]);
         g.rect(x, 30, 144, 130, C.dim);
         g.fill(x + 10, 40, 124, 22, C.panel); g.rect(x + 10, 40, 124, 22, open ? C.g : C.mute);
-        g.text(s[0], x + 72, 55, { size: 10, color: open ? C.g : C.mute, align: 'center' });
+        g.text(s[0], x + 72, 55, { size: 10, color: open ? C.g : C.dim, align: 'center' });
         g.rect(x + 50, 90, 44, 70, C.dim);
         var lit = open && (s[0] !== 'CONEY' || Math.floor(t * 1.5) % 6 !== 0);
         g.glow(lit, lit ? C.g : C.red); g.circle(x + 22, 120, 6, null, open ? C.g : C.red); g.glow(false);
@@ -834,7 +801,7 @@
     waveform(g, 120, 140, 400, 40, t, 12, false);
     g.text('NOVI, MI · ONE AFTERNOON · TYPE “PLAY”', 320, 206, { size: 11, color: C.dim, align: 'center' });
   }
-  function detonation(g, t) {
+  function detonation(g, t, skipFlash) {
     var ctx = g.ctx;
     var gy = 190;
     g.line(0, gy, W, gy, C.dim);
@@ -853,11 +820,13 @@
     g.big(String(count) + ' s', 24, 76, 38, count >= 112 ? C.red : C.g);
     g.text(count >= 112 ? 'SHOCK ARRIVED · WINDOWS OUT' : 'COUNTING · SOUND HAS NOT ARRIVED', 24, 96, { size: 9, color: count >= 112 ? C.red : C.dim });
     g.text('DETROIT · ~25 MI ESE', fx, gy + 18, { size: 9, color: C.amber, align: 'center' });
-    if (t < .35) { ctx.globalAlpha = 1 - t / .35; ctx.fillStyle = '#f2fff3'; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.globalAlpha = 1; }
+    // The opening white-out is a flash. Reduced motion and FLASH OFF both skip it.
+    if (!skipFlash && t < .35) { ctx.globalAlpha = 1 - t / .35; ctx.fillStyle = '#f2fff3'; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.globalAlpha = 1; }
   }
-  function noise(g, t) {
-    var R = rng(Math.floor(t * 30) + 1);
-    for (var i = 0; i < 900; i++) g.fill(R() * W, R() * H, 2 + R() * 6, 1 + R() * 2, R() > .8 ? C.red : C.g, R() * .7);
+  function noise(g, t, still) {
+    var R = rng(still ? 7 : Math.floor(t * 30) + 1);
+    var n = still ? 180 : 900;
+    for (var i = 0; i < n; i++) g.fill(R() * W, R() * H, 2 + R() * 6, 1 + R() * 2, R() > .8 ? C.red : C.g, still ? .35 : R() * .7);
     g.big('SIGNAL LOST', 320, 132, 52, C.red, 'center');
   }
 
@@ -920,7 +889,7 @@
     if (img) g.ctx.drawImage(img, 29, 30, 120, 150);
     else silhouette(g, 29, 30, 120, 150, (p.portrait || {}).prop, t);
     g.text('FILE ' + (Math.abs(hash(pid)) % 9000 + 1000), 89, 200, { size: 9, color: C.dim, align: 'center' });
-    g.text(img ? 'PHOTO · DITHERED' : 'NO PHOTO ON FILE', 89, 214, { size: 8, color: C.mute, align: 'center' });
+    g.text(img ? 'PHOTO · DITHERED' : 'NO PHOTO ON FILE', 89, 214, { size: 8, color: C.dim, align: 'center' });
     g.pane(180, 14, 446, 212, 'DOSSIER');
     g.big(p.name.toUpperCase(), 196, 58, 34, C.g);
     var rows = [['AGE', d.age || '—'], ['ROLE', d.role || '—'], ['STATUS', d.status || '—'], ['LAST SEEN', v.roomName + ' · ' + v.clock]];
@@ -940,6 +909,7 @@
     var g = kit(ctx);
     var scene = { key: 'title' }, started = now(), raf = 0, view = {};
     var reduce = !!opts.reduceMotion;
+    var noFlash = !!opts.noFlash;
     function now() { return (window.performance ? performance.now() : Date.now()) / 1000; }
     function size() {
       var r = canvas.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -958,25 +928,28 @@
       ctx.lineCap = 'round';
       try {
         var k = scene.key;
+        var skipBright = reduce || noFlash;
         if (k === 'title') title(g, t);
-        else if (k === 'detonation') detonation(g, reduce ? 12 : t);
-        else if (k === 'static') noise(g, t);
+        else if (k === 'detonation') detonation(g, reduce ? 12 : t, skipBright);
+        else if (k === 'static') noise(g, t, skipBright);
         else if (k.indexOf('room:') === 0) (rooms[scene.id] || title)(g, t, view);
         else if (k.indexOf('end:') === 0) (endings[scene.id] || title)(g, t, view);
         else if (k.indexOf('person:') === 0) dossier(g, t, view, scene.id, story.people[scene.id]);
       } catch (e) { if (window.console) console.error('scene', scene.key, e); }
-      g.flushPhone(dpr);
-      if (typeof window !== 'undefined') window.__sceneBoxes = g.boxes || [];
     }
     function loop() { draw(); raf = reduce ? 0 : window.requestAnimationFrame(loop); }
     return {
       show: function (key, id, v) {
         view = v || view;
         if (key !== scene.key) { scene = { key: key, id: id }; started = now(); }
-        if (reduce || !raf) { if (raf) window.cancelAnimationFrame(raf); loop(); }
+        draw();
+        if (reduce) { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } return; }
+        if (!raf) raf = window.requestAnimationFrame(loop);
       },
       update: function (v) { view = v || view; if (reduce) draw(); },
       redraw: draw,
+      setNoFlash: function (v) { noFlash = !!v; },
+      readout: function () { return g.readout(); },
       has: function (kind, id) { return kind === 'room' ? !!rooms[id] : kind === 'ending' ? !!endings[id] : false; }
     };
   }
