@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
-<link rel="stylesheet" href="css/terminal.css?v=3295f903">
+<link rel="stylesheet" href="css/terminal.css?v=dbfa8a65">
 </head>
 <body>
   <div class="app" id="app">
@@ -37,6 +37,7 @@
       <span class="crumb">» <a href="/wip/">WIP</a> » <span id="crumb">PLEASE HOLD</span></span>
       <span class="grow"></span>
       <span class="live" id="live"><i></i><span id="liveText">IDLE</span></span>
+      <button type="button" id="flashToggle" class="flash-toggle" aria-pressed="true">FLASH ON</button>
       <span class="clock" id="clock">--:-- --</span>
     </header>
 
@@ -61,8 +62,8 @@
           <div class="art-wrap" id="artWrap"><canvas id="sceneCanvas" aria-hidden="true"></canvas></div>
         </div>
 
-        <div class="panel feed" id="screen" aria-live="polite" aria-label="Story">
-          <div class="out" id="out"></div>
+        <div class="panel feed" id="screen">
+          <div class="out" id="out" aria-live="polite" aria-relevant="additions" aria-label="Story"></div>
           <div class="chips" id="chips" aria-label="Quick actions"></div>
           <form class="cmd" id="cmd" autocomplete="off">
             <label class="prompt" id="prompt" for="input">guest@nskn:~$</label>
@@ -92,10 +93,10 @@
   </div>
   <div class="flash" id="flash"></div>
 
-  <script src="js/engine.js?v=d4f3a1f1"></script>
-  <script src="js/story.js?v=b2f5577f"></script>
+  <script src="js/engine.js?v=65a523d5"></script>
+  <script src="js/story.js?v=f91d7373"></script>
   <script src="js/art.js?v=6663c6b6"></script>
-  <script src="js/scenes.js?v=ae129f15"></script>
-  <script src="js/terminal.js?v=2543c644"></script>
+  <script src="js/scenes.js?v=11b26f3b"></script>
+  <script src="js/terminal.js?v=cb5a8530"></script>
 </body>
 </html>

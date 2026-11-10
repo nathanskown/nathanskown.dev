@@ -7,7 +7,7 @@
   --hi: color-mix(in srgb, var(--g) 55%, #ffffff);
   --fg: color-mix(in srgb, var(--g) 88%, #000000);
   --dim: color-mix(in srgb, var(--g) 66%, #000000);
-  --mute: color-mix(in srgb, var(--g) 44%, #000000);
+  --mute: color-mix(in srgb, var(--g) 54%, #000000);
   --line: color-mix(in srgb, var(--g) 22%, #000000);
   --band: color-mix(in srgb, var(--g) 12%, #000000);
   --glow: color-mix(in srgb, var(--g) 38%, transparent);
@@ -69,6 +69,9 @@ body::after { background: radial-gradient(ellipse at center, transparent 62%, rg
 .top .crumb { color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .grow { flex: 1; }
 .live { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); white-space: nowrap; }
+.flash-toggle { border: 1px solid var(--line); color: var(--dim); padding: 4px 8px; letter-spacing: .06em; font-size: 11px; white-space: nowrap; }
+.flash-toggle[aria-pressed="false"] { color: var(--amber); border-color: var(--amber); }
+.flash-toggle:focus-visible { outline: 1px solid var(--hi); outline-offset: 2px; }
 .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--mute); display: block; }
 body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); animation: pulse 1.6s infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
@@ -194,8 +197,9 @@ body.playing .prompt { color: var(--amber); }
 .map { margin: 0; font-family: var(--art); font-size: 11.5px; line-height: 1.18; color: var(--mute); white-space: pre; }
 .map .node { color: var(--mute); }
 .map .seen { color: var(--fg); }
+.map button { font: inherit; line-height: inherit; letter-spacing: inherit; padding: 0; margin: 0; display: inline; vertical-align: baseline; color: inherit; }
 .map .near { color: var(--hi); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
-.map .near:hover { background: var(--band); }
+.map .near:hover, .map button.near:focus-visible { background: var(--band); outline: 1px solid var(--hi); outline-offset: 1px; }
 .map .here { background: var(--g); color: var(--bg); text-shadow: none; animation: pulse 1.6s infinite; }
 
 .list { list-style: none; margin: 0; padding: 8px 10px 10px; font-size: 12.5px; }
@@ -217,6 +221,7 @@ body.playing .prompt { color: var(--amber); }
   .tick-run { white-space: normal; }
   .flash.go, .flash.soft { animation: none; }
 }
+body.no-flash .flash.go, body.no-flash .flash.soft { animation: none; }
 
 /* ---- narrower screens: map/status/inventory become a drawer behind 3) MAP */
 @media (max-width: 960px) {
@@ -239,7 +244,7 @@ body.playing .prompt { color: var(--amber); }
   .top .crumb { display: none; }
   .clock { font-size: 20px; }
   .fkeys button { padding: 7px 10px; font-size: 12px; }
-  .art-wrap { height: auto; aspect-ratio: 8 / 3; max-height: 46vh; }
+  .art-wrap { height: 250px; aspect-ratio: auto; max-height: none; }
   #sceneIdx { display: none; }
   #sceneTitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .ln-banner { font-size: 32px; }
@@ -250,7 +255,7 @@ body.playing .prompt { color: var(--amber); }
 
 /* Phones and touch screens: every tap target at least 44px tall (site rule) */
 @media (max-width: 600px), (pointer: coarse) {
-  .chip, .fkeys button, .side-close { min-height: 44px; display: inline-flex; align-items: center; gap: .45em; }
+  .chip, .fkeys button, .side-close, .flash-toggle { min-height: 44px; display: inline-flex; align-items: center; gap: .45em; }
   .ln-choice { min-height: 44px; }
   .top .brand, .top .crumb a { display: inline-flex; align-items: center; min-height: 44px; }
 }

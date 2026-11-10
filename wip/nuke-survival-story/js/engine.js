@@ -126,8 +126,11 @@
     // 8:10 fallout (115 minutes before, 80 minutes after) and slide with the real time.
     function falloutOffset(delta) {
       var t = S.deadline + delta;
-      if (delta < 0 && t <= S.time) t = Math.min(S.time + 15, S.deadline - 15);
-      if (t >= S.deadline && delta < 0) t = S.deadline - 15;
+      // A time before fallout (the generator cough) can't be before the player sat down.
+      if (delta < 0) {
+        if (t < S.time) t = S.time;
+        if (t >= S.deadline) t = Math.max(S.time, S.deadline - 1);
+      }
       return fmtTime(t);
     }
     function fill(s) {
@@ -137,6 +140,7 @@
         if (name === 'fallout') return fmtTime(S.deadline);
         if (name === 'falloutBefore') return falloutOffset(-115);
         if (name === 'falloutAfter') return fmtTime(S.deadline + 80);
+        if (name === 'weddingTime') return fmtTime(Math.max(S.time, parseTime('1:15 PM')));
         if (name === 'party') return String(partySize());
         if (name === 'wedAt' && !(S.vars && S.vars.wedAt)) return '1:45 PM';
         if (S.vars && Object.prototype.hasOwnProperty.call(S.vars, name)) return String(S.vars[name]);
