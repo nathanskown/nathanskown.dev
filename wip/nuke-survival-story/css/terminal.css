@@ -90,6 +90,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 }
 .fkeys button b { color: var(--mute); font-weight: 400; }
 .fkeys button:hover, .fkeys button:focus-visible { background: var(--band); color: var(--hi); outline: none; }
+.fkeys button:hover b, .fkeys button:focus-visible b { color: var(--hi); }
 .fkeys button[data-panel] { display: none; }
 
 /* ---- ticker */
@@ -221,7 +222,7 @@ body.playing .prompt { color: var(--amber); }
   .tick-run { white-space: normal; }
   .flash.go, .flash.soft { animation: none; }
 }
-body.no-flash .flash.go, body.no-flash .flash.soft { animation: none; }
+body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static .art { animation: none; }
 
 /* ---- narrower screens: map/status/inventory become a drawer behind 3) MAP */
 @media (max-width: 960px) {
@@ -244,7 +245,22 @@ body.no-flash .flash.go, body.no-flash .flash.soft { animation: none; }
   .top .crumb { display: none; }
   .clock { font-size: 20px; }
   .fkeys button { padding: 7px 10px; font-size: 12px; }
-  .art-wrap { height: 250px; aspect-ratio: auto; max-height: none; }
+  .art-wrap { height: 230px; aspect-ratio: auto; max-height: none; display: flex; flex-direction: column; }
+  #sceneCanvas { flex: 1 1 auto; min-height: 148px; height: auto; }
+  .scene-readout.show {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px;
+    flex: 0 1 auto; max-height: 84px; overflow: auto; scrollbar-width: thin;
+    padding: 6px 8px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.3;
+  }
+  .scene-readout.more { box-shadow: inset 0 -10px 0 rgba(255, 184, 77, .45); }
+  .ro-row { display: flex; flex-wrap: wrap; gap: 0 .4em; min-width: 0; }
+  .ro-row .k { color: var(--dim); }
+  .ro-row .v { color: var(--fg); }
+  .ro-chip { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .ro-chip i { width: 8px; height: 8px; border-radius: 50%; flex: none; box-sizing: border-box; }
+  .ro-chip.off { color: var(--dim); }
+  .ro-chip.off i { border: 1px solid var(--dim); }
+  .ro-chip.on i { background: var(--g); }
   #sceneIdx { display: none; }
   #sceneTitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .ln-banner { font-size: 32px; }
