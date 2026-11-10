@@ -95,7 +95,10 @@ var STORY = {
       { at: "4:00 PM", if: { in: "interchange", notFlag: "haddads_moved" }, text: "Down on the shoulder, Mary shoulders a backpack, takes Jose's hand, and starts walking west." },
       { at: "4:30 PM", if: { any: [{ has: "radio" }, { in: ["garage", "diner", "civic"] }] }, text: "On the radio: fallout from strikes to the west is expected across southern Michigan this evening. Best estimate for Oakland County: {eta}. Get inside. Stay inside. Stay tuned." },
       { at: "5:30 PM", if: { flag: "truck_fueled", in: ["garage", "street"], without: "ray" }, text: "Jeff's pickup backs out of the garage. He rolls the window down, looks at you for a long second, and lifts two fingers off the wheel. Then he's gone." },
-      { at: "5:30 PM", if: { flag: "truck_fueled", without: "ray", notFlag: "ray_left" }, effects: { flag: "ray_left", move: { ray: null }, place: { item: "radio", room: "garage" } } },
+      { at: "5:30 PM", if: { flag: "truck_fueled", without: "ray", notFlag: "ray_left" }, effects: [
+        { flag: "ray_left", move: { ray: null } },
+        { if: { lacks: "radio" }, place: { item: "radio", room: "garage" } }
+      ] },
       { at: "6:00 PM", effects: { flag: "landline_dead" } },
       { at: "6:00 PM", if: { in: "kitchen" }, text: "The hold music stops. Then the line. Not a dial tone. Nothing." },
       { at: "6:45 PM", text: "The light is going orange. The sky to the west looks completely ordinary." },
@@ -218,7 +221,7 @@ var STORY = {
         "Glass all over the floor from the east windows, glittering like spilled sugar. The power is out. The fridge has gone quiet for the first time in the two years you've owned it, and the silence is so complete that you can hear the house tick as it settles. Your laptop is open on the table next to half a turkey sandwich and the Q3 deck you were supposed to send by five. The Tigers tickets are still on the counter, under your keys.",
         { if: { notFlag: "landline_dead" }, text: "The landline handset lies on the counter, off its cradle, still on hold. You can hear the saxophone from across the room." },
         { if: { flag: "landline_dead" }, text: "The landline handset lies on the counter. It's quiet now." },
-        { if: { flag: "bathtub_full" }, text: "Upstairs, the bathtub is full to the overflow drain, and every pot you own sits on the counter full of water." },
+        { if: { flag: "bathtub_full" }, text: "Down the hall, the bathtub is full to the overflow drain, and every pot you own sits on the counter full of water." },
         "The basement door is by the pantry. The front door hangs open. You don't remember opening it."
       ],
       short: [
@@ -242,7 +245,7 @@ var STORY = {
         ],
         "bathtub, tub, bath, bathroom": [
           { if: { flag: "bathtub_full" }, text: "Forty-some gallons, and it tastes faintly of pipes. It's the most valuable thing you own." },
-          { if: { notFlag: "bathtub_full" }, text: "Upstairs. It's empty. You could fill it while the water still runs." }
+          { if: { notFlag: "bathtub_full" }, text: "Down the hall. It's empty. You could fill it while the water still runs." }
         ],
         "phone, landline, handset, receiver, hold music, saxophone": [
           { if: { notFlag: "landline_dead" }, text: "A beige cordless the previous owners left behind. Still connected. Copper phone lines get their power from the phone company, not your house. You could listen, or hang up and try to call someone." },
@@ -258,10 +261,10 @@ var STORY = {
           say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill up bathtub", "fill pots", "fill water", "store water", "fill bathtub with water", "fill sink"],
           if: { notFlag: ["water_off", "bathtub_full"] },
           time: 10,
-          effects: { flag: "bathtub_full", text: "You run upstairs, jam the stopper in and open the tap all the way. Then the bathroom sink. Then you fill every pot in the kitchen. The pressure is already weaker than it should be. When it's done you stand there looking at forty-some gallons of water like it's a stack of gold bars, because it is." }
+          effects: { flag: "bathtub_full", text: "You go down the hall, jam the stopper in and open the tap all the way. Then the bathroom sink. Then you fill every pot in the kitchen. The pressure is already weaker than it should be. When it's done you stand there looking at forty-some gallons of water like it's a stack of gold bars, because it is." }
         },
         { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "bathtub_full" }, effects: { text: "It's full. Every pot, too." } },
-        { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "water_off" }, effects: { text: "You open the tap upstairs. A cough of air, a few brown drops. Too late." } },
+        { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "water_off" }, effects: { text: "You open the tap down the hall. A cough of air, a few brown drops. Too late." } },
         {
           say: ["answer call", "answer the call", "answer", "answer phone", "answer call waiting", "switch over", "click over", "flash", "press flash", "take call", "pick up"],
           if: { flag: "call_waiting", notFlag: ["talked_sister", "landline_dead"], before: "3:40 PM" },
@@ -323,7 +326,7 @@ var STORY = {
           say: ["drain water heater", "drain heater", "use water heater", "open water heater", "get water from water heater", "drain tank"],
           if: { flag: "knows_waterheater", notFlag: "heater_drained", has: "flashlight" },
           time: 20,
-          effects: { flag: "heater_drained", text: "Steven's way: you turn the gas valve to OFF, close the cold-water inlet, open the hot tap upstairs so it doesn't vacuum-lock, and crack the drain valve at the bottom. The first gallon is rusty. The rest runs clear into bins, buckets and the recycling tub. Forty gallons. You could kiss the thing." },
+          effects: { flag: "heater_drained", text: "Steven's way: you turn the gas valve to OFF, close the cold-water inlet, open a hot tap down the hall so it doesn't vacuum-lock, and crack the drain valve at the bottom. The first gallon is rusty. The rest runs clear into bins, buckets and the recycling tub. Forty gallons. You could kiss the thing." },
           fail: [
             { if: { flag: "heater_drained" }, text: "You already drained it." },
             { if: { notFlag: "knows_waterheater" }, text: "You don't know how to do that safely. Today seems like a bad day to learn by flooding the basement." },
@@ -381,7 +384,8 @@ var STORY = {
       text: [
         "Jeff keeps his garage the way he kept his station at the Wixom plant for thirty-one years: everything labeled, every tool hanging inside its own outline on the pegboard. A Tigers schedule magnet from three seasons ago is still on the beer fridge. Jeff says he'll take it down when they win something.",
         { if: { notFlag: "ray_left" }, text: "A silver pickup sits nose-out. On the workbench, a battery radio murmurs." },
-        { if: { flag: "ray_left" }, text: "The truck is gone. On the workbench, a note under the radio: WENT NORTH. KEEP THE RADIO. AM ONLY. — J." },
+        { if: { flag: "ray_left", lacks: "radio" }, text: "The truck is gone. On the workbench, a note under the radio: WENT NORTH. KEEP THE RADIO. AM ONLY. — J." },
+        { if: { flag: "ray_left", has: "radio" }, text: "The truck is gone. On the workbench, a note: WENT NORTH. KEEP THE RADIO. AM ONLY. — J." },
         { if: { flag: "truck_fueled", notFlag: "ray_left" }, text: "The truck's tailgate is down, half loaded: blankets, a cooler, two jugs of water, a coffee can of Jeff's late wife's seed packets." }
       ],
       short: "Jeff's garage. The pickup, the pegboard, the radio murmuring on the bench.",
@@ -537,7 +541,7 @@ var STORY = {
       aliases: ["church", "st brendans", "st. brendan's", "saint brendans", "wedding"],
       text: [
         { if: { notFlag: "wedding_over" }, text: "There's a wedding going on. White ribbons on the pews, a three-tier cake on a folding table in the entryway, maybe forty guests in good clothes. Some of them are crying for reasons that have nothing to do with weddings." },
-        { if: { flag: "wedding_over", notFlag: "witnessed" }, text: "The pews are empty. White ribbons, programs on the floor, a three-tier cake with one slice missing. Taped to the basement door, in the bride's handwriting: MARRIED 1:22 PM. SHELTERING DOWNSTAIRS. WE'RE FULL, WE'RE SORRY, GOD BLESS. M & R." },
+        { if: { flag: "wedding_over", notFlag: "witnessed" }, text: "The pews are empty. White ribbons, programs on the floor, a three-tier cake with one slice missing. Taped to the basement door, in the bride's handwriting: MARRIED 1:45 PM. SHELTERING DOWNSTAIRS. WE'RE FULL, WE'RE SORRY, GOD BLESS. M & R." },
         { if: { notFlag: ["witnessed", "wedding_over"] }, text: "The bride is standing in the aisle in her full dress, talking to the priest with the focus of someone defusing a bomb." },
         { if: { flag: "witnessed" }, text: "The newlyweds are leading their guests down to the church basement, two by two, like an ark." }
       ],
@@ -813,7 +817,7 @@ var STORY = {
             ]
           },
           news: {
-            text: "“Phones are out. Jeff's got a radio. Mady is getting married at St. Brendan's at one, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
+            text: "“Phones are out. Jeff's got a radio. Mady is getting married at St. Brendan's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
             choices: [
               { text: "Rob. I'm so sorry.", next: "sorry" },
               { text: "(Back.)", next: "start" }
@@ -1199,7 +1203,7 @@ var STORY = {
             menu: "start"
           },
           water: {
-            text: "“Your water heater. Forty or fifty gallons of clean water in every basement in this town, and nobody thinks of it. Turn off the gas first. Close the cold inlet. Open a hot tap upstairs so it doesn't vacuum-lock, then open the drain at the bottom. And bring a flashlight. That valve is always somewhere stupid. And fill your bathtub while you still can, if you still can.”",
+            text: "“Your water heater. Forty or fifty gallons of clean water in every basement in this town, and nobody thinks of it. Turn off the gas first. Close the cold inlet. Open a hot tap, up the stairs or down the hall, so it doesn't vacuum-lock, then open the drain at the bottom. And bring a flashlight. That valve is always somewhere stupid. And fill your bathtub while you still can, if you still can.”",
             effects: { flag: "knows_waterheater" },
             menu: "start"
           },
@@ -1248,15 +1252,19 @@ var STORY = {
             ]
           },
           witness: {
-            text: "“Great. Our best man was driving in from Corktown.” She takes a breath and lets it out. “Father Andrew starts at one-fifteen, with or without him. We need two witnesses to sign the license, and Father Andrew says the State of Michigan still exists until he hears otherwise. Will you sign?”",
+            text: [
+              "“Great. Our best man was driving in from Corktown.” She takes a breath and lets it out.",
+              { if: { before: "1:15 PM" }, text: "“Father Andrew starts at one-fifteen, with or without him. We need two witnesses to sign the license, and Father Andrew says the State of Michigan still exists until he hears otherwise. Will you sign?”" },
+              { if: { after: "1:15 PM" }, text: "“Father Andrew started at one-fifteen, with or without him. We need two witnesses to sign the license, and Father Andrew says the State of Michigan still exists until he hears otherwise. Will you sign?”" }
+            ],
             choices: [
-              { text: "I'll sign.", time: 20, next: "signed" },
+              { text: "I'll sign.", time: 20, pre: { flag: "witnessed" }, next: "signed" },
               { text: "I can't. I'm sorry.", effects: { text: "“Then go,” she says, not unkindly. “We're doing this.”" } }
             ]
           },
           signed: {
             text: "It takes twenty minutes. Ryan's hands shake through his vows. Mady's don't. Father Andrew pronounces them married, and the forty guests clap too long, because nobody wants to be the first to stop. You sign the license on the cake table with a pen from a bank that isn't there anymore. Afterward, Mady finds you. “There's water under the cake table. Six cases. We're not having a reception.” She puts a case in your arms, then another. “Take them somewhere they'll do some good. We're going downstairs.”",
-            effects: { add: { water: 2 }, flag: "witnessed" }
+            effects: { add: { water: 2 }, flag: "witnessed", set: { wedAt: "{time}" } }
           },
           why: {
             text: "“Because we booked it eleven months ago. Because my grandma's here, and she's ninety-one, and she drove herself. Because if this is the last thing we do, then it's the last thing we do, and I'm not spending it in a basement next to Ryan's cousin Charlie.” She looks back toward the altar. “We'll go downstairs after. Father Andrew says the church basement is solid. We're just doing this first.”",
@@ -1431,11 +1439,11 @@ var STORY = {
     },
 
     deshawn: {
-      name: "Ryan", aliases: ["ryan", "guard", "security", "security guard"],
+      name: "Derek", aliases: ["derek", "guard", "security", "security guard"],
       dossier: { age: "24", role: "Mall security", status: "Waiting for someone to tell him he's right." },
       portrait: { prop: "cap" },
       room: "mall",
-      here: "Ryan, mall security, stands by the directory looking like he's waiting for someone to tell him he's right.",
+      here: "Derek, mall security, stands by the directory looking like he's waiting for someone to tell him he's right.",
       desc: "Twenty-four. Mall security polo, radio with no one on the other end.",
       talk: {
         start: "start",
@@ -1444,7 +1452,7 @@ var STORY = {
             text: "“You work here? No? Okay.” He rubs his neck. “Management said center court. Then management went home.”",
             choices: [
               { text: "This atrium is all glass. Everyone needs to move somewhere solid.", if: { notFlag: "warned_mall" }, next: "warn" },
-              { text: "Good luck, Ryan." }
+              { text: "Good luck, Derek." }
             ]
           },
           warn: {
@@ -1602,7 +1610,7 @@ var STORY = {
   //  HINTS — the first one whose `if` is true is shown.
   // ==========================================================================
   hints: [
-    { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The water is still running. For now." },
+    { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The front door is open. Jeff's garage is across the court, and his radio is on." },
     { if: { notFlag: "knows_get_inside", before: "1:00 PM" }, text: "Jeff's radio might know what's going on. His garage is north of your house, across the court." },
     { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "There's a wedding at St. Brendan's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
     { if: { flag: "truck_fueled", notFlag: "ray_left", without: "ray", before: "5:30 PM", after: "4:15 PM" }, text: "Jeff leaves for the cabin at 5:30, with you or without you." },
@@ -1662,12 +1670,12 @@ var STORY = {
     { if: { not: { ending: "shelter_in_place" }, flag: "dana_convinced" }, text: "THE GYM · Moved to the band room. Coach Connor closed the door himself." },
     { if: { notFlag: "dana_convinced", not: { ending: "shelter_in_place" } }, text: "THE GYM · Two hundred people stayed under the skylights." },
 
-    { text: "OFFICER IAN · Directed traffic at Ten Mile and Novi Road until the last car was through, then went home." },
-    { if: { flag: "warned_mall" }, text: "THE MALL · A thousand people moved into the service corridors because Ryan, the security guard, told them to." },
+    { text: "OFFICER IAN · Directed traffic at Ten Mile and Taft until the last car was through, then went home." },
+    { if: { flag: "warned_mall" }, text: "THE MALL · A thousand people moved into the service corridors because Derek, the security guard, told them to." },
     { if: { notFlag: "warned_mall" }, text: "THE MALL · A thousand people sat under the glass atrium. Nobody told them not to." },
 
-    { if: { flag: "witnessed" }, text: "MADY AND RYAN · Married at 1:22 PM. Your signature is on the license." },
-    { if: { notFlag: "witnessed" }, text: "MADY AND RYAN · Married at 1:22 PM, with a stranger's signature on the license, and went downstairs." }
+    { if: { flag: "witnessed" }, text: "MADY AND RYAN · Married at {wedAt}. Your signature is on the license." },
+    { if: { notFlag: "witnessed" }, text: "MADY AND RYAN · Married at 1:45 PM, with a stranger's signature on the license, and went downstairs." }
   ],
 
   // ==========================================================================
@@ -1688,7 +1696,7 @@ var STORY = {
         { if: { with: "ray" }, text: "Jeff keeps the radio by his ear, turned down low, and every hour he passes on the news in a voice that makes the bad parts sound survivable." },
         { if: { with: "brenda" }, text: "Rob takes one look at Connor's clipboard and quietly starts a second one. By morning there's a sign-up sheet for the latrine buckets, and nobody argues with it." },
         { if: { with: "kyle" }, text: "Brendan organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
-        { if: { flag: "warned_mall" }, text: "On day three, a man finds his way down the stairs from the mall, two miles away. He says a security guard named Ryan got a thousand people into the service corridors. He wants whoever told Ryan to know." },
+        { if: { flag: "warned_mall" }, text: "On day three, a man finds his way down the stairs from the mall, two miles away. He says a security guard named Derek got a thousand people into the service corridors. He wants whoever told Derek to know." },
         { if: { flag: "witnessed" }, text: "You think about Mady and Ryan in the church basement, married four hours before the world ended, and you hope Cousin Charlie is behaving." },
         "On day fourteen, Lieutenant Hunter knocks on the steel door with a borrowed Geiger counter and a face you'll remember for the rest of your life. He says the readings are down. He says, carefully, that outside isn't safe, but it's survivable.",
         "Before anyone goes up the stairs, the band plays: An Evening of American Classics, a month early, missing the whole trumpet section, the tuba played by a freshman who has had eleven lessons. It's the worst performance in the history of Novi High School. Nobody in that room has ever heard anything better."
@@ -1697,7 +1705,18 @@ var STORY = {
 
     home_base: {
       title: "Home Base",
-      type: "good",
+      // A full tub and a closed door keep you alive. The good version is the one where you also helped someone.
+      type: { if: { any: [
+        { not: { alone: true } },
+        { flag: "witnessed" },
+        { flag: "warned_mall" },
+        { flag: "dale_has_insulin" },
+        { flag: "dana_convinced" },
+        { flag: "truck_fueled" },
+        { flag: "school_water" },
+        { flag: "school_sheeting" },
+        { flag: "school_food" }
+      ] }, text: "good", else: "mixed" },
       text: [
         "You close the basement door at {time} and stuff a towel along the bottom of it, because that's what you'd do for smoke, and it seems right.",
         { if: { flag: "basement_window_sealed" }, text: "The window well is a gray square of plastic and tape, with the Christmas bins stacked beneath it. Steven would approve. You hope." },
@@ -1711,7 +1730,8 @@ var STORY = {
         { if: { with: "kyle" }, text: "Brendan tries to finish the deck on his phone until the battery dies. Then he cries for a long time. Then he's better. He's still a little like this, years later, but he's better." },
         { if: { alone: true }, text: "It's very quiet. You talk to yourself, and then to the furnace, and by day four the furnace is a good listener." },
         { if: { alone: true, before: "1:00 PM" }, text: "You were the first person on Cedar Hollow Court underground. On day fifteen you'll learn what happened to the people who weren't, and you'll spend a long time thinking about the doors you didn't knock on." },
-        "On day fifteen, you open the door. The court is gray with a fine dust, like the inside of a vacuum bag. On Rob's porch, weighed down by a rock, his clipboard has every name on the court with a check mark beside it.",
+        { if: { without: "brenda" }, text: "On day fifteen, you open the door. The court is gray with a fine dust, like the inside of a vacuum bag. On Rob's porch, weighed down by a rock, his clipboard has every name on the court with a check mark beside it except Diane's, which still has the question mark he crossed out." },
+        { if: { with: "brenda" }, text: "On day fifteen, you open the door. The court is gray with a fine dust, like the inside of a vacuum bag. Rob still has the clipboard. Every name on the court has a check mark beside it except Diane's." },
         "Upstairs, the landline is dead. Somewhere, presumably, you are still on hold."
       ]
     },
@@ -1722,7 +1742,7 @@ var STORY = {
       text: [
         { if: { flag: "route_back", before: "5:00 PM" }, text: "The back roads are empty in a way that feels like a secret. Taft to Pontiac Trail, through Walled Lake and Commerce, past lakes with docks and pontoon boats tied up as if it were any Thursday. Jeff drives exactly the speed limit. North of Flint the traffic thins to nothing, and for a few minutes the radio plays an old Motown song from a station somewhere that's still on the air, and nobody in the truck says anything." },
         { if: { flag: "route_back", before: "5:00 PM" }, text: "You reach the cabin at 11:40 PM. Jeff backs the truck into the shed by feel. The root cellar smells like dirt and potatoes and thirty summers. When the fallout reaches Otsego County two days later, lighter than it was downstate, you're already underground, and Jeff is teaching you how to play euchre with a deck that's missing the nine of hearts." },
-        { if: { flag: "route_back", after: "5:00 PM" }, text: "The back roads are empty, but you left late. You're past Holly when the light goes orange and then gray. At 8:10, Jeff's wipers start smearing a fine grit across the windshield. “Windows up. Vents off,” he says, very calmly. He pulls into the first farm with a light on, and a stranger named Sean lets four people he's never met into his basement without asking a single question. You make it to the cabin six days later. You never really thank Sean enough. You try." },
+        { if: { flag: "route_back", after: "5:00 PM" }, text: "The back roads are empty, but you left late. You're past Holly when the light goes orange and then gray. At {fallout}, Jeff's wipers start smearing a fine grit across the windshield. “Windows up. Vents off,” he says, very calmly. He pulls into the first farm with a light on, and a stranger named Sean lets four people he's never met into his basement without asking a single question. You make it to the cabin six days later. You never really thank Sean enough. You try." },
         { if: { flag: "route_m5" }, text: "M-5 doesn't move. In four hours you go seven miles. When the grit starts on the windshield you're in Commerce Township, and Jeff, very calmly, says “Windows up. Vents off,” and gets out to look for any building with a basement. You spend the first two weeks in a church basement in Walled Lake with ninety strangers and one bathroom. Jeff's truck is still on M-5 when you come up. The keys are still in it. So is the coffee can of seeds." },
         { if: { with: "haddads" }, text: "Mary and Jose ride in the back the whole way. In the spring, Mary finally gets through to her sister in Grand Rapids, by ham radio, with Jeff holding the microphone for her because her hands are shaking." },
         { if: { with: "ruth" }, text: "Steven tells Jeff he's driving too slowly the entire way, and Jeff loves him for it." },
@@ -1764,10 +1784,10 @@ var STORY = {
       type: "bad",
       text: [
         "You sit down. Brendan looks so relieved that it almost makes it worth it.",
-        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Brendan's generator coughs at 6:15, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
-        "At 8:10, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Brendan.",
+        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Brendan's generator coughs at {falloutBefore}, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
+        "At {fallout}, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Brendan.",
         "Nobody from Regional ever sees the deck.",
-        "It is, Brendan says at 9:30 PM, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
+        "It is, Brendan says at {falloutAfter}, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
       ]
     }
   }
