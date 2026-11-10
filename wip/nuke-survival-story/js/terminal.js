@@ -9,7 +9,10 @@
   var $ = function (id) { return document.getElementById(id); };
   var screen = $('screen'), out = $('out'), form = $('cmd'), input = $('input'), promptEl = $('prompt');
   var sceneEl = $('scene');
-  var scenes = PleaseHoldScenes.Renderer($('sceneCanvas'), STORY, { reduceMotion: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches });
+  var scenes = PleaseHoldScenes.Renderer($('sceneCanvas'), STORY, {
+    reduceMotion: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    onReadout: function (items) { renderReadout(items); }
+  });
   var detonationUntil = 0, staticOn = false;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var flashesOn = !reduceMotion;
@@ -140,7 +143,8 @@
     var html = items.map(function (t) {
       return '<span>' + esc(t).replace(/▼/g, '<b class="dn">▼</b>').replace(/▲/g, '<b class="up">▲</b>') + '</span>';
     }).join('');
-    $('tick').innerHTML = html + html; // doubled for a seamless loop
+    // Doubled so the scroll can loop. Reduced motion shows one static line instead.
+    $('tick').innerHTML = reduceMotion ? html : html + html;
   }
 
   function renderStatus(v) {
@@ -190,18 +194,34 @@
     party.innerHTML = v.party.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') || '<li class="empty">alone</li>';
   }
 
-  function renderReadout() {
+  function markReadout(el) {
+    var overflow = el.scrollHeight > el.clientHeight + 2;
+    var notAtEnd = el.scrollTop + el.clientHeight < el.scrollHeight - 2;
+    el.classList.toggle('more', overflow && notAtEnd);
+    // A scrolling strip has to be a keyboard stop, or the rows below the fold are mouse-only.
+    if (overflow) el.tabIndex = 0;
+    else el.removeAttribute('tabindex');
+  }
+  function renderReadout(items) {
     var el = $('sceneReadout');
-    if (!el || !scenes.readout) return;
-    var items = scenes.readout();
+    if (!el) return;
+    if (!el._roScroll) {
+      el._roScroll = true;
+      el.addEventListener('scroll', function () { markReadout(el); }, { passive: true });
+    }
+    if (items === undefined && scenes.readout) items = scenes.readout();
     if (!items || !items.length) { el.hidden = true; el.className = 'scene-readout'; el.innerHTML = ''; return; }
+    var top = el.scrollTop;
     el.hidden = false;
     el.className = 'scene-readout show';
     el.innerHTML = items.map(function (it) {
       if (it.chip) return '<div class="ro-chip ' + (it.on ? 'on' : 'off') + '"><i></i>' + esc(it.label) + '</div>';
-      return '<div class="ro-row"><span class="k">' + esc(it.label) + '</span>' + (it.value ? '<span class="v">' + esc(it.value) + '</span>' : '') + '</div>';
+      var solo = !it.value;
+      return '<div class="ro-row' + (solo ? ' solo' : '') + '"><span class="k">' + esc(it.label) + '</span>' +
+        (it.value ? '<span class="v">' + esc(it.value) + '</span>' : '') + '</div>';
     }).join('');
-    if (el.scrollHeight > el.clientHeight + 2) el.classList.add('more');
+    el.scrollTop = top;
+    markReadout(el);
   }
   function setHeader(title, idx) { $('sceneTitle').textContent = title; $('sceneIdx').textContent = idx; }
   function renderScene(v) {
