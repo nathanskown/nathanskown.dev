@@ -12,6 +12,12 @@
   var scenes = PleaseHoldScenes.Renderer($('sceneCanvas'), STORY, { reduceMotion: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches });
   var detonationUntil = 0, staticOn = false;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var flashesOn = !reduceMotion;
+  try {
+    var savedFlashes = localStorage.getItem('please-hold-v1:flashes');
+    if (savedFlashes === 'off') flashesOn = false;
+    if (savedFlashes === 'on') flashesOn = true;
+  } catch (e) { /* private mode */ }
 
   var SHELL_PROMPT = 'guest@nskn:~$';
   var GAME_PROMPT = '>';
@@ -86,14 +92,26 @@
   });
 
   // ------------------------------------------------------------------ effects
+  function setFlashes(on, persist) {
+    flashesOn = !!on;
+    document.body.classList.toggle('no-flash', !flashesOn);
+    if (persist) { try { localStorage.setItem('please-hold-v1:flashes', flashesOn ? 'on' : 'off'); } catch (e) { /* ignore */ } }
+    var b = $('flashToggle');
+    if (b) {
+      b.textContent = flashesOn ? 'FLASH ON' : 'FLASH OFF';
+      b.setAttribute('aria-pressed', flashesOn ? 'true' : 'false');
+    }
+  }
   function effect(name) {
     if (name === 'flash') {
       var f = $('flash');
       var v0 = game.view();
       var opening = !v0.playing || v0.time <= 12 * 60 + 20;
       f.className = 'flash';
-      void f.offsetWidth;
-      if (!reduceMotion) f.className = 'flash ' + (opening ? 'go' : 'soft');
+      if (flashesOn && !reduceMotion) {
+        void f.offsetWidth;
+        f.className = 'flash ' + (opening ? 'go' : 'soft');
+      }
       if (opening) { detonationUntil = Date.now() + 9000; setTimeout(refresh, 9100); }
     }
     if (name === 'static') {
@@ -153,8 +171,11 @@
       if (v.playing && id === v.room) cls = 'here';
       else if (v.playing && near[id] && !v.talking && !v.ended) cls = 'near';
       else if (v.playing && v.visited.indexOf(id) >= 0) cls = 'seen';
-      var attrs = cls === 'near' ? ' data-go="' + esc(near[id]) + '" title="Go ' + esc(near[id]) + '"' : '';
-      return '<span class="' + cls + '"' + attrs + '>' + m + '</span>';
+      if (cls === 'near') {
+        var place = m.replace(/^\[|\]$/g, '');
+        return '<button type="button" class="' + cls + '" data-go="' + esc(near[id]) + '" aria-label="Go ' + esc(near[id]) + ' to ' + esc(place) + '">' + m + '</button>';
+      }
+      return '<span class="' + cls + '">' + m + '</span>';
     });
     $('map').innerHTML = html;
   }
@@ -255,6 +276,7 @@
        '  play     start PLEASE HOLD, a text adventure (about 30 to 60 minutes)',
        '  about    what this page is',
        '  clear    clear the screen',
+       '  flashes  turn the bright flashes on or off',
        '  feedback copy your playthrough to send to whoever shared this with you',
        '  help     this list'].forEach(function (l) { print(l, 'shell'); });
     },
@@ -271,6 +293,13 @@
     if (low === 'log' || low === 'transcript' || low === 'feedback') {
       copyText(transcript.join('\n'), 'Your playthrough was');
       if (low === 'feedback') print('Paste it into a text or email to whoever sent you this link, and add anything you want them to know: what confused you, what you liked, where you got stuck.', 'dim');
+      return;
+    }
+    if (/^flashes( on| off)?$/.test(low)) {
+      if (low === 'flashes off') setFlashes(false, true);
+      else if (low === 'flashes on') setFlashes(true, true);
+      else setFlashes(!flashesOn, true);
+      print('Bright flashes are ' + (flashesOn ? 'on' : 'off') + '.', 'note');
       return;
     }
     if (low === 'share') {
@@ -314,13 +343,29 @@
     if (!String(window.getSelection && window.getSelection())) input.focus();
   });
 
+  function syncSide() {
+    var narrow = window.matchMedia('(max-width: 960px)').matches;
+    $('side').inert = narrow && !document.body.classList.contains('show-side');
+  }
   $('fkeys').addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.panel) { document.body.classList.toggle('show-side'); return; }
+    if (b.dataset.panel) {
+      document.body.classList.toggle('show-side');
+      syncSide();
+      if (document.body.classList.contains('show-side')) document.querySelector('.side-close').focus();
+      return;
+    }
     submit(b.dataset.cmd);
   });
-  document.querySelector('.side-close').addEventListener('click', function () { document.body.classList.remove('show-side'); });
+  document.querySelector('.side-close').addEventListener('click', function () {
+    document.body.classList.remove('show-side');
+    syncSide();
+  });
+  window.addEventListener('resize', syncSide);
+  syncSide();
+  setFlashes(flashesOn);
+  $('flashToggle').addEventListener('click', function () { setFlashes(!flashesOn, true); });
   $('map').addEventListener('click', function (e) {
     var n = e.target.closest('[data-go]');
     if (!n) return;

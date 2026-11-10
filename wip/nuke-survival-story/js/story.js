@@ -54,7 +54,7 @@ var STORY = {
   meta: {
     title: "PLEASE HOLD",
     subtitle: "Novi, Michigan. One afternoon.",
-    warning: "Content note: nuclear war, injury, death. This story is serious, with some dark humor.",
+    warning: "Content note: nuclear war, injury, death, and bright flashes. This story is serious, with some dark humor. (Type “flashes” to turn the flashes off.)",
     version: 3,                 // bump this if a change would break old saves
     saveKey: "please-hold-v1"
   },
@@ -141,7 +141,7 @@ var STORY = {
 
   help: [
     "COMMANDS",
-    "look (l): describe where you are.  examine X (x X): look closely at something.\ngo north (n, s, e, w, ne, nw, se, sw, up, down, in, out). You can also type a place: “go garage”.\ntake X, drop X, inventory (i)\ntalk to X, then answer with numbers.\nuse X, use X on Y, give X to Y\nwait (or wait 30): let time pass.  time: check the clock.\nhint, endings, restart, quit\nfeedback: copy your whole playthrough to send to whoever shared this with you.\nshare: copy your ending.",
+    "look (l): describe where you are.  examine X (x X): look closely at something.\ngo north (n, s, e, w, ne, nw, se, sw, up, down, in, out). You can also type a place: “go garage”.\ntake X, drop X, inventory (i)\ntalk to X, then answer with numbers.\nuse X, use X on Y, give X to Y\nwait (or wait 30): let time pass.  time: check the clock.\nhint, endings, restart, quit\nfeedback: copy your whole playthrough to send to whoever shared this with you.\nshare: copy your ending.\nflashes: turn the bright flashes on or off.",
     "Every move costs time. Some things only work before a certain hour."
   ],
 
@@ -542,7 +542,8 @@ var STORY = {
       text: [
         { if: { notFlag: "wedding_over" }, text: "There's a wedding going on. White ribbons on the pews, a three-tier cake on a folding table in the entryway, maybe forty guests in good clothes. Some of them are crying for reasons that have nothing to do with weddings." },
         { if: { flag: "wedding_over", notFlag: "witnessed" }, text: "The pews are empty. White ribbons, programs on the floor, a three-tier cake with one slice missing. Taped to the basement door, in the bride's handwriting: MARRIED 1:45 PM. SHELTERING DOWNSTAIRS. WE'RE FULL, WE'RE SORRY, GOD BLESS. M & R." },
-        { if: { notFlag: ["witnessed", "wedding_over"] }, text: "The bride is standing in the aisle in her full dress, talking to the priest with the focus of someone defusing a bomb." },
+        { if: { notFlag: ["witnessed", "wedding_over"], before: "1:15 PM" }, text: "The bride is standing in the aisle in her full dress, talking to the priest with the focus of someone defusing a bomb." },
+        { if: { notFlag: ["witnessed", "wedding_over"], after: "1:15 PM" }, text: "The ceremony has started. Mady is at the altar, and Father Andrew is speaking. The guests are quieter than a church usually is." },
         { if: { flag: "witnessed" }, text: "The newlyweds are leading their guests down to the church basement, two by two, like an ark." }
       ],
       short: "St. Brendan's. The wedding, the cake, the guests in good clothes.",
@@ -703,7 +704,7 @@ var STORY = {
       exits: { west: { to: "mall", time: 12, label: "the mall" } },
       scenery: {
         "pond, retention pond": "A heron stands in it, completely unbothered.",
-        "cord, extension cord, generator": "Brendan's. You know it's Brendan's. He has the same model in his garage. He showed everyone photos."
+        "cord, extension cord, generator": "Colin's. You know it's Colin's. He has the same model in his garage. He showed everyone photos."
       }
     },
 
@@ -992,7 +993,7 @@ var STORY = {
             ],
             choices: [
               { text: "Go down the ladder.", if: { party: ["<=", 3] }, effects: [
-                { if: { with: "ruth" }, text: "Steven takes his hand off your arm. “Not in that man's tin can, dear. I'll walk back to Willow Glen. Somebody there will need me.” He's already going.", part: "ruth", move: { ruth: "retirement" }, flag: "ruth_refused" },
+                { if: { with: "ruth" }, text: "Steven looks down the ladder. “Forty-four rules,” he says. “I'll want a pen.” He goes first, one step at a time." },
                 { ending: "bunker" }
               ] },
               { text: "Go down without the others.", if: { party: [">", 3] }, effects: { flag: "left_people", dismiss: true, ending: "bunker" } },
@@ -1264,7 +1265,7 @@ var STORY = {
           },
           signed: {
             text: "It takes twenty minutes. Ryan's hands shake through his vows. Mady's don't. Father Andrew pronounces them married, and the forty guests clap too long, because nobody wants to be the first to stop. You sign the license on the cake table with a pen from a bank that isn't there anymore. Afterward, Mady finds you. “There's water under the cake table. Six cases. We're not having a reception.” She puts a case in your arms, then another. “Take them somewhere they'll do some good. We're going downstairs.”",
-            effects: { add: { water: 2 }, flag: "witnessed", set: { wedAt: "{time}" } }
+            effects: { add: { water: 2 }, flag: "witnessed", set: { wedAt: "{weddingTime}" } }
           },
           why: {
             text: "“Because we booked it eleven months ago. Because my grandma's here, and she's ninety-one, and she drove herself. Because if this is the last thing we do, then it's the last thing we do, and I'm not spending it in a basement next to Ryan's cousin Charlie.” She looks back toward the altar. “We'll go downstairs after. Father Andrew says the church basement is solid. We're just doing this first.”",
@@ -1293,15 +1294,18 @@ var STORY = {
               { text: "Plastic sheeting and duct tape. ($25)", if: { var: ["cash", ">=", 25], lacks: "sheeting" }, effects: { add: { cash: -25 }, give: "sheeting", text: "Chris rings it up by hand. “Six-mil. Don't let anybody tell you it stops radiation. It stops dust, and dust is the problem.”" }, next: "start" },
               { text: "A siphon pump. ($15)", if: { var: ["cash", ">=", 15], lacks: "siphon" }, effects: { add: { cash: -15 }, give: "siphon", text: "“Newer cars have screens in the filler neck,” Chris says. “Find something old.”" }, next: "start" },
               { text: "A battery radio. ($30)", if: { var: ["cash", ">=", 30], lacks: "radio" }, effects: { add: { cash: -30 }, give: "radio", text: "“Last one. Batteries included, which is the only reason anybody's buying it.”" }, next: "start" },
-              { text: "I don't have enough cash.", if: { var: ["cash", "<", 15] }, once: true, next: "iou" },
+              { text: "I don't have enough cash.", if: { var: ["cash", "<", 15], notFlag: "chris_iou", any: [{ lacks: "sheeting" }, { lacks: "siphon" }] }, next: "iou" },
               { text: "Can I return this?", once: true, next: "returns" },
               { text: "That's all." }
             ]
           },
           iou: {
-            text: "“Then I can't help you.” He looks at you over his glasses for a long second. Then he tears a strip off his paper roll, writes {name} and IOU. “Cedar Hollow? Rob's subdivision? God help you.” He slides what you need across the counter. “Pay me when the banks remember who you are.”",
-            effects: { if: { lacks: "sheeting" }, give: "sheeting", else: { give: "siphon" } },
-            menu: "start"
+            text: "“Then I can't help you.” He looks at you over his glasses for a long second. Then he tears a strip off his paper roll, writes {name} and IOU. “Cedar Hollow? Rob's subdivision? God help you. One thing. Pay me when the banks remember who you are.”",
+            choices: [
+              { text: "Plastic sheeting and duct tape.", if: { lacks: "sheeting" }, effects: { give: "sheeting", flag: "chris_iou", text: "Chris slides the roll across. “Six-mil. Don't let anybody tell you it stops radiation. It stops dust, and dust is the problem.”" }, next: "start" },
+              { text: "A siphon pump.", if: { lacks: "siphon" }, effects: { give: "siphon", flag: "chris_iou", text: "“Newer cars have screens in the filler neck,” Chris says. “Find something old.”" }, next: "start" },
+              { text: "Never mind." }
+            ]
           },
           returns: {
             text: "“No.” He doesn't even look at it.",
@@ -1510,7 +1514,7 @@ var STORY = {
     },
 
     kyle: {
-      name: "Brendan", aliases: ["brendan", "boss", "manager"],
+      name: "Colin", aliases: ["colin", "boss", "manager"],
       dossier: { age: "30s", role: "Your manager", status: "Q3 deck due 5:00 PM. Still." },
       portrait: { prop: "laptop" },
       room: "office",
@@ -1523,10 +1527,10 @@ var STORY = {
         ],
         nodes: {
           start: {
-            text: "Up on three, in Conference Room B: “There you are, {name}.” Brendan, your manager, is in a quarter-zip, his laptop plugged into an orange extension cord that runs down three flights of stairs to a generator. “Regional still wants the Q3 review. I know. I know. But when this is over, they're going to look at who showed up.”",
-            again: "Brendan doesn't look up from the laptop. “Slide twelve. Whenever you're ready.”",
+            text: "Up on three, in Conference Room B: “There you are, {name}.” Colin, your manager, is in a quarter-zip, his laptop plugged into an orange extension cord that runs down three flights of stairs to a generator. “Regional still wants the Q3 review. I know. I know. But when this is over, they're going to look at who showed up.”",
+            again: "Colin doesn't look up from the laptop. “Slide twelve. Whenever you're ready.”",
             choices: [
-              { text: "Brendan. They bombed Detroit.", next: "detroit" },
+              { text: "Colin. They bombed Detroit.", next: "detroit" },
               { text: "Come with me. You can't stay up here in a glass building.", next: "come" },
               { text: "Fine. Let's finish the deck.", next: "deck" },
               { text: "I'm leaving." }
@@ -1538,7 +1542,7 @@ var STORY = {
           },
           come: {
             text: [
-              { if: { flag: "knows_shelter_basics" }, text: "You tell him, as plainly as Steven told you: the glass, the dust, two weeks, the middle of something solid. You tell him nobody from Regional is coming. Brendan looks at the laptop for a long moment. Then he closes it, unplugs it, winds the orange cord around his arm out of habit, and follows you down the stairs." },
+              { if: { flag: "knows_shelter_basics" }, text: "You tell him, as plainly as Steven told you: the glass, the dust, two weeks, the middle of something solid. You tell him nobody from Regional is coming. Colin looks at the laptop for a long moment. Then he closes it, unplugs it, winds the orange cord around his arm out of habit, and follows you down the stairs." },
               { if: { notFlag: "knows_shelter_basics" }, text: "“After the deck,” he says. He means it. He's going to be up here when it gets dark. You don't know enough to argue with him, not in a way that would work." }
             ],
             effects: { if: { flag: "knows_shelter_basics" }, join: "kyle" }
@@ -1547,7 +1551,7 @@ var STORY = {
             effects: { ending: "business_as_usual" }
           },
           walking: {
-            text: "Brendan walks beside you, still holding his laptop like a hymnal. “I could have finished slide twelve,” he says. Then: “Thanks.”",
+            text: "Colin walks beside you, still holding his laptop like a hymnal. “I could have finished slide twelve,” he says. Then: “Thanks.”",
             choices: [{ text: "Keep walking." }]
           }
         }
@@ -1635,7 +1639,7 @@ var STORY = {
   //  sheltering with you, counting you. `ending: "id"` checks which ending.
   // ==========================================================================
   afterword: [
-    { if: { not: { ending: ["up_north", "business_as_usual", "locked_out"] } }, text: "SHELTERED WITH YOU: {party}, counting you." },
+    { if: { not: { ending: ["up_north", "business_as_usual", "locked_out", "shelter_in_place"] } }, text: "SHELTERED WITH YOU: {party}, counting you." },
     { if: { ending: "up_north" }, text: "IN JEFF'S TRUCK: {party}, counting you." },
 
     { if: { flag: "talked_sister" }, text: "YOUR SISTER IN ARIZONA · Talked to you for four minutes on a landline at 3:05. Worked a double shift that night, and the next." },
@@ -1663,8 +1667,8 @@ var STORY = {
     { if: { not: { ending: "locked_out" }, flag: "dale_has_insulin" }, text: "ADAM · In his bunker, with his insulin in the fridge." },
     { if: { not: { ending: "locked_out" }, notFlag: "dale_has_insulin" }, text: "ADAM · Sat on his hatch all night without his insulin." },
 
-    { if: { with: "kyle" }, text: "BRENDAN · With you." },
-    { if: { without: "kyle", not: { ending: "business_as_usual" } }, text: "BRENDAN · Stayed in Conference Room B and finished slide 12." },
+    { if: { with: "kyle" }, text: "COLIN · With you." },
+    { if: { without: "kyle", not: { ending: "business_as_usual" } }, text: "COLIN · Stayed in Conference Room B and finished slide 12." },
 
     { if: { ending: "shelter_in_place" }, text: "THE GYM · All 206 people, safe in the band room." },
     { if: { not: { ending: "shelter_in_place" }, flag: "dana_convinced" }, text: "THE GYM · Moved to the band room. Coach Connor closed the door himself." },
@@ -1689,13 +1693,13 @@ var STORY = {
       text: [
         "Coach Connor looks at you, then at the door, then back at you. You close it. The closer hisses. The latch clicks. It's {time}.",
         "There are two hundred and six people in a room built for sixty kids and their instruments. It smells like valve oil and fear, and by the third day, like everything else.",
-        { if: { with: "ruth" }, text: "Steven runs it. Not officially. Connor keeps the clipboard, but by the first night it's Steven who has assigned the latrine buckets to the corner behind the tuba lockers, set the water ration at a cup an hour for kids and two cups a day for everyone else, and started a schedule of who sleeps when. He does it with the calm of a man who drew this floor plan sixty years ago, because he did." },
+        { if: { with: "ruth" }, text: "Steven runs it. Not officially. Connor keeps the clipboard, but by the first night it's Steven who has assigned the latrine buckets to the corner behind the tuba lockers, set the water ration at a cup an hour for kids and two cups a day for everyone else, and started a schedule of who sleeps when. He does it with the calm of a man who inspected this room fifty-five years ago, because he did." },
         { if: { without: "ruth" }, text: "Connor runs it with the whistle and the clipboard and a voice that gets hoarse on the second day and gone on the fourth. Somebody finds a whiteboard marker. Somebody else starts a schedule." },
         { if: { flag: "school_food" }, text: "Greta's coneys get split into thirds and handed to the youngest kids first. A six-year-old says it's the best thing he's ever eaten. Nobody corrects him." },
         { if: { with: "haddads" }, text: "Jose teaches the elementary kids a card game with rules he makes up as he goes. Mary, who turns out to be an ER nurse, rebandages forty people by flashlight." },
         { if: { with: "ray" }, text: "Jeff keeps the radio by his ear, turned down low, and every hour he passes on the news in a voice that makes the bad parts sound survivable." },
         { if: { with: "brenda" }, text: "Rob takes one look at Connor's clipboard and quietly starts a second one. By morning there's a sign-up sheet for the latrine buckets, and nobody argues with it." },
-        { if: { with: "kyle" }, text: "Brendan organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
+        { if: { with: "kyle" }, text: "Colin organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
         { if: { flag: "warned_mall" }, text: "On day three, a man finds his way down the stairs from the mall, two miles away. He says a security guard named Derek got a thousand people into the service corridors. He wants whoever told Derek to know." },
         { if: { flag: "witnessed" }, text: "You think about Mady and Ryan in the church basement, married four hours before the world ended, and you hope Cousin Charlie is behaving." },
         "On day fourteen, Lieutenant Hunter knocks on the steel door with a borrowed Geiger counter and a face you'll remember for the rest of your life. He says the readings are down. He says, carefully, that outside isn't safe, but it's survivable.",
@@ -1727,7 +1731,7 @@ var STORY = {
         { if: { with: "haddads" }, text: "Jose falls asleep on the treadmill every night. Mary doesn't seem to sleep at all. On the fourth day she tells you about Jose's father, all of it, in a flat voice, and then she says thank you, and she means for the basement." },
         { if: { with: "ruth" }, text: "Steven organizes the pantry by expiration date and makes everyone drink water on a schedule. He finishes the crossword. He starts on the back of the cereal box." },
         { if: { with: "brenda" }, text: "Rob reorganizes your pantry and never once mentions Covenant 14. On day nine he says Diane's name out loud for the first time, and then he says it a lot." },
-        { if: { with: "kyle" }, text: "Brendan tries to finish the deck on his phone until the battery dies. Then he cries for a long time. Then he's better. He's still a little like this, years later, but he's better." },
+        { if: { with: "kyle" }, text: "Colin tries to finish the deck on his phone until the battery dies. Then he cries for a long time. Then he's better. He's still a little like this, years later, but he's better." },
         { if: { alone: true }, text: "It's very quiet. You talk to yourself, and then to the furnace, and by day four the furnace is a good listener." },
         { if: { alone: true, before: "1:00 PM" }, text: "You were the first person on Cedar Hollow Court underground. On day fifteen you'll learn what happened to the people who weren't, and you'll spend a long time thinking about the doors you didn't knock on." },
         { if: { without: "brenda" }, text: "On day fifteen, you open the door. The court is gray with a fine dust, like the inside of a vacuum bag. On Rob's porch, weighed down by a rock, his clipboard has every name on the court with a check mark beside it except Diane's, which still has the question mark he crossed out." },
@@ -1770,7 +1774,8 @@ var STORY = {
       title: "Locked Out",
       type: "bad",
       text: [
-        "You put your shoulder into him. He's bigger than you, but he's looking at the people behind you, not at you, and he goes down hard on the lawn. The ladder. The hatch. The wheel lock turns so smoothly. Adam built it well.",
+        { if: { alone: false }, text: "You put your shoulder into him. He's bigger than you, but he's looking at the people behind you, not at you, and he goes down hard on the lawn. The ladder. The hatch. The wheel lock turns so smoothly. Adam built it well." },
+        { if: { alone: true }, text: "You put your shoulder into him. He's bigger than you, but there's nobody behind you, and he isn't looking at you at all. He goes down hard on the lawn. The ladder. The hatch. The wheel lock turns so smoothly. Adam built it well." },
         "His fists on the steel go on for a long time. Then they stop. Then, near dark, they start again, slower.",
         { if: { alone: false }, text: "Nobody who came down the ladder with you will look at you." },
         "You have a year of food. Filters. Seeds. A Geiger counter calibrated by a man you can still hear, if you're quiet enough, and you're always quiet enough.",
@@ -1783,11 +1788,11 @@ var STORY = {
       title: "Business as Usual",
       type: "bad",
       text: [
-        "You sit down. Brendan looks so relieved that it almost makes it worth it.",
-        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Brendan's generator coughs at {falloutBefore}, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
-        "At {fallout}, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Brendan.",
+        "You sit down. Colin looks so relieved that it almost makes it worth it.",
+        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Colin's generator coughs at {falloutBefore}, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
+        "At {fallout}, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Colin.",
         "Nobody from Regional ever sees the deck.",
-        "It is, Brendan says at {falloutAfter}, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
+        "It is, Colin says at {falloutAfter}, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
       ]
     }
   }

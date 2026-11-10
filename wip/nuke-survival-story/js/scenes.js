@@ -32,10 +32,11 @@
   function kit(ctx) {
     var cssScale = 1;
     var chipCursor = null;
-    // Small labels are drawn in a 640-wide space. On a phone that space is squeezed
-    // to a few hundred CSS pixels, so an 8px label becomes unreadable. Grow those
-    // labels until they are about 12px on screen, then shrink a line that would
-    // run off the canvas.
+    var phone = false;
+    var phoneLabels = [];
+    // On a desktop-sized canvas, small labels grow until they're about 12px on screen.
+    // On a phone the same growth puts 12px type on coordinates laid out for 8px type,
+    // so labels collide. Phone scenes keep the drawing and list the words underneath.
     function fitSize(requested, sample, maxW) {
       var size = requested;
       if (requested < 16 && cssScale > 0) {
@@ -53,7 +54,13 @@
     }
     var g = {
       ctx: ctx, C: C,
-      setScale: function (s) { cssScale = s || 1; chipCursor = null; },
+      setScale: function (s) {
+        cssScale = s || 1;
+        phone = cssScale > 0 && cssScale < 0.8;
+        phoneLabels = [];
+        chipCursor = null;
+        g.boxes = [];
+      },
       glow: function (on, color) { ctx.shadowBlur = on ? 8 : 0; ctx.shadowColor = color || C.g; },
       line: function (x1, y1, x2, y2, c, w, dash) {
         ctx.beginPath(); ctx.setLineDash(dash || []); ctx.strokeStyle = c || C.g; ctx.lineWidth = w || 1;
@@ -76,6 +83,11 @@
       arc: function (x, y, r, a0, a1, c, lw) { ctx.beginPath(); ctx.arc(x, y, r, a0, a1); ctx.strokeStyle = c || C.g; ctx.lineWidth = lw || 1; ctx.stroke(); },
       text: function (s, x, y, o) {
         o = o || {};
+        var label = String(s).replace(/\s+/g, ' ').trim();
+        if (phone && label) {
+          if (phoneLabels.indexOf(label) < 0) phoneLabels.push(label);
+          return;
+        }
         var size = o.size || 10;
         var align = o.align || 'left';
         if (!o.vt && !o.exact) {
@@ -109,6 +121,10 @@
         g.fill(x + 1, y + 5, Math.max(0, (w - 1) * clamp(frac, 0, 1)), 6, color || C.g, 0.85);
       },
       chip: function (x, y, label, on, color) {
+        if (phone) {
+          if (phoneLabels.indexOf(label) < 0) phoneLabels.push(label);
+          return 0;
+        }
         var size = fitSize(9, label, 300);
         ctx.font = size + 'px ' + FONT_MONO;
         var w = Math.ceil(ctx.measureText(label).width + size + 8);
@@ -149,6 +165,57 @@
         });
         if (line) g.text(line, x, yy, drawn);
         return yy;
+      },
+      // Phone: the picture stays, and every label is set in a strip that wraps
+      // in real screen pixels so the lines can't land on each other.
+      flushPhone: function (dpr) {
+        g.boxes = [];
+        if (!phone || !phoneLabels.length) return;
+        var cssW = ctx.canvas.width / dpr, cssH = ctx.canvas.height / dpr;
+        var fontPx = 13, lineH = 18, pad = 8, gap = 12;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.font = fontPx + 'px ' + FONT_MONO;
+        var cols = cssW >= 340 ? 2 : 1;
+        var colW = (cssW - pad * 2 - gap * (cols - 1)) / cols;
+        function wrap(label) {
+          var words = String(label).split(' '), line = '', out = [];
+          words.forEach(function (w) {
+            var test = line ? line + ' ' + w : w;
+            if (ctx.measureText(test).width > colW && line) { out.push(line); line = w; }
+            else line = test;
+          });
+          if (line) out.push(line);
+          return out;
+        }
+        var blocks = phoneLabels.map(wrap);
+        // column-major: each column is a run of blocks, so a label stays in one column
+        var per = Math.ceil(blocks.length / cols);
+        var colLines = [];
+        for (var c = 0; c < cols; c++) {
+          var chunk = blocks.slice(c * per, (c + 1) * per);
+          var flat = [];
+          chunk.forEach(function (b) { flat = flat.concat(b); });
+          colLines.push(flat);
+        }
+        var tallest = colLines.reduce(function (m, col) { return Math.max(m, col.length); }, 0);
+        var barH = Math.min(cssH - 24, tallest * lineH + pad * 2);
+        var y0 = cssH - barH;
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, y0, cssW, barH);
+        ctx.fillStyle = C.line;
+        ctx.fillRect(0, y0, cssW, 1);
+        ctx.fillStyle = C.g;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        colLines.forEach(function (col, c) {
+          var x = pad + c * (colW + gap);
+          col.forEach(function (line, i) {
+            var y = y0 + pad + i * lineH;
+            if (y + fontPx > cssH - 2) return;
+            ctx.fillText(line, x, y);
+            g.boxes.push({ t: line, x: x, y: y, w: Math.min(colW, ctx.measureText(line).width), h: fontPx });
+          });
+        });
       }
     };
     return g;
@@ -898,6 +965,8 @@
         else if (k.indexOf('end:') === 0) (endings[scene.id] || title)(g, t, view);
         else if (k.indexOf('person:') === 0) dossier(g, t, view, scene.id, story.people[scene.id]);
       } catch (e) { if (window.console) console.error('scene', scene.key, e); }
+      g.flushPhone(dpr);
+      if (typeof window !== 'undefined') window.__sceneBoxes = g.boxes || [];
     }
     function loop() { draw(); raf = reduce ? 0 : window.requestAnimationFrame(loop); }
     return {
