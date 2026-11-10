@@ -2,53 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nuke Survival Story · NSKN Terminal</title>
-<meta name="description" content="Coming soon.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://nathanskown.dev/wip/nuke-survival-story/">
+<meta name="theme-color" content="#020402">
+<title>Please Hold · NSKN Terminal</title>
+<meta name="description" content="Novi, Michigan. The afternoon the bombs fall. A text adventure: 20 places, 6 endings, one clock.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+<!-- Link previews (iMessage, Slack, social). og:image and og:url must be full https:// addresses. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NSKN Terminal">
-<meta property="og:title" content="Nuke Survival Story · NSKN Terminal">
-<meta property="og:description" content="Coming soon.">
+<meta property="og:title" content="PLEASE HOLD">
+<meta property="og:description" content="Novi, Michigan. The afternoon the bombs fall. A text adventure: 20 places, 6 endings, one clock.">
 <meta property="og:url" content="https://nathanskown.dev/wip/nuke-survival-story/">
-<meta property="og:image" content="https://nathanskown.dev/assets/og/home.png">
+<meta property="og:image" content="https://nathanskown.dev/wip/nuke-survival-story/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PLEASE HOLD in green block letters on a black terminal screen, with a news ticker reading DETROIT CONFIRMED 12:12.">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#020402">
+<meta name="twitter:title" content="PLEASE HOLD">
+<meta name="twitter:description" content="Novi, Michigan. The afternoon the bombs fall. A text adventure: 20 places, 6 endings, one clock.">
+<meta name="twitter:image" content="https://nathanskown.dev/wip/nuke-survival-story/img/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=6eb82176">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
+<link rel="stylesheet" href="css/terminal.css?v=83d46cf">
 </head>
-<body class="nk-crt-on">
-<div class="nk">
-<a class="nk-skiplink" href="#main">Skip to content</a>
-<header>
-<div class="nk-title">
-<a class="nk-brand" href="/">1-NSKN</a>
-<span class="nk-spacer"></span>
-<span class="nk-dim">WORK IN PROGRESS</span>
-</div>
-</header>
-<nav class="nk-top" aria-label="Site">
-<a href="/finance/">Markets</a>
-<a href="/sports/">Sports</a>
-<a href="/music/">Music</a>
-<a href="/about/">About</a>
-<a class="nk-top-end" href="/under-the-hood/">Under the hood</a>
-</nav>
-<main id="main" class="nk-wip-page" tabindex="-1">
-<h1>Nuke Survival Story</h1>
-<p class="nk-wip-lead">Coming soon</p>
-<p><a class="nk-wip-back" href="/wip/">Back to work in progress</a></p>
-</main>
-<footer>
-<div class="nk-status">
-<span><a href="/">Home</a> · <a href="/about/">About</a> · <a href="/under-the-hood/">Under the hood</a></span>
-<span>© 2026 NATHAN SKOWN</span>
-</div>
-</footer>
-</div>
+<body>
+  <div class="app" id="app">
+
+    <header class="top">
+      <a class="brand" href="/">1-NSKN</a>
+      <span class="crumb">» <a href="/wip/">WIP</a> » <span id="crumb">PLEASE HOLD</span></span>
+      <span class="grow"></span>
+      <span class="live" id="live"><i></i><span id="liveText">IDLE</span></span>
+      <span class="clock" id="clock">--:-- --</span>
+    </header>
+
+    <nav class="fkeys" id="fkeys" aria-label="Quick commands">
+      <button type="button" data-cmd="look"><b>1)</b> LOOK</button>
+      <button type="button" data-cmd="inventory"><b>2)</b> INV</button>
+      <button type="button" data-panel="side"><b>3)</b> MAP</button>
+      <button type="button" data-cmd="listen to radio"><b>4)</b> RADIO</button>
+      <button type="button" data-cmd="hint"><b>5)</b> HINT</button>
+      <button type="button" data-cmd="help"><b>6)</b> HELP</button>
+    </nav>
+
+    <div class="ticker" aria-hidden="true">
+      <span class="tick-label">NEWS · LIVE</span>
+      <div class="tick-track"><div class="tick-run" id="tick"></div></div>
+    </div>
+
+    <div class="grid">
+      <section class="main">
+        <div class="panel scene" id="scene">
+          <div class="panel-h"><span id="sceneTitle">PLEASE HOLD</span><span class="grow"></span><span id="sceneIdx">LAB · WIP</span></div>
+          <div class="art-wrap" id="artWrap"><canvas id="sceneCanvas" aria-hidden="true"></canvas></div>
+        </div>
+
+        <div class="panel feed" id="screen" aria-live="polite" aria-label="Story">
+          <div class="out" id="out"></div>
+          <div class="chips" id="chips" aria-label="Quick actions"></div>
+          <form class="cmd" id="cmd" autocomplete="off">
+            <label class="prompt" id="prompt" for="input">guest@nskn:~$</label>
+            <input id="input" name="input" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="send" aria-label="Command">
+          </form>
+        </div>
+      </section>
+
+      <aside class="side" id="side" aria-label="Status, map and inventory">
+        <button type="button" class="side-close" data-panel="side">CLOSE ✕</button>
+        <div class="panel">
+          <div class="panel-h">STATUS</div>
+          <dl class="status" id="status"></dl>
+        </div>
+        <div class="panel">
+          <div class="panel-h">MAP · NOVI, MI<span class="grow"></span><span class="legend">▮ YOU</span></div>
+          <div class="map-wrap"><pre class="map" id="map"></pre></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h">CARRYING</div>
+          <ul class="list" id="inv"></ul>
+          <div class="panel-h sub">WITH YOU</div>
+          <ul class="list" id="party"></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="flash" id="flash"></div>
+
+  <script src="js/engine.js?v=83d46cf"></script>
+  <script src="js/story.js?v=83d46cf"></script>
+  <script src="js/art.js?v=83d46cf"></script>
+  <script src="js/scenes.js?v=83d46cf"></script>
+  <script src="js/terminal.js?v=83d46cf"></script>
 </body>
 </html>
