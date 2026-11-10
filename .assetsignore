@@ -10,6 +10,8 @@ pipeline
 tools
 src
 README.md
+CLAUDE.md
+.claude
 **/__pycache__
 data/finance/cusip_map.json
 data/finance/earnings_cache.json
