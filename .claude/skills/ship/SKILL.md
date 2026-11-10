@@ -24,6 +24,9 @@ until the owner says yes to this specific change in this conversation.** An earl
 - **Numbers**: no hand-typed numbers in page markup or JS (editorial.json with a source link is the only exception).
 - **Words**: no investment advice, no betting tips, no mock/sample/placeholder data, delays labeled.
 - Generated files (`finance/**/index.html`, `sports/**/index.html`) must match their `src/` design. Rebuild if unsure.
+- **Freshness**: if the change touches `finance/`, `src/finance/`, `assets/landing.js`, `pipeline/` or a workflow,
+  run `python3 tools/check_freshness.py`. A new STALE line caused by the change blocks shipping; existing ones are
+  listed for the owner.
 
 ## 3. Preview
 1. Start the local server from Bash in the background (macOS privacy blocks the app's own launcher from reading

@@ -55,6 +55,28 @@ Terminal style everywhere, including one-off pages like About and Career:
 - Every data panel shows its source and when it was last updated. Labels stay true: market prices "delayed
   ~15 min", 13F "lags a quarter".
 
+## Data freshness (what "today" means)
+Stale numbers shown as current are the most common way this site is wrong. These rules hold on every page.
+- **Markets run on New York time.** "Today" is the current NYSE session. Before 9:30 AM ET, on weekends and on
+  holidays, every move on the site is the **prior session's**: label it as the prior close (e.g. "Mon close"),
+  never as today's, and never under today's date as if it were live.
+- **Every number shows its as-of time**: date and time in the visitor's zone, from the data itself (`updated`,
+  `asOf`, a quote's trade time), not a generic "updated hourly".
+- **Digest**: an edition appears only under the date it was written for. The hand-written edition
+  (`editorial.json`) shows only when its date matches today's digest; otherwise the auto story, or "loading" while
+  `digest.json` loads. Never paint an old edition first. No pre-market wording ("futures point", "before the open")
+  after 9:30 ET; before the open, describe the prior session in past tense and lead with futures.
+- **Earnings**: a company leaves "Upcoming" once its report time has passed (before-the-open names at 9:30 ET,
+  after-the-close names by about 5:30 PM ET), even if the EPS hasn't arrived yet: show "reported, results pending".
+- **Nightly files are prior-session numbers.** `data/finance/quotes/index.json` (written ~6 AM CT) may be used for
+  first paint only, labeled as the prior close, until live data replaces it. Same for the dashboard watchlist.
+- **After the close**, the homepage and dashboard (both read `data/finance/dashboard.json`) must show the closing
+  numbers, not an intraday snapshot.
+- **When a source fails**, keep the last good value with its real date. Never re-date old data, never guess.
+- **Check it**: run `python3 tools/check_freshness.py` (`/check-data`) after changing finance pages, `pipeline/` or
+  a workflow, and before every `/ship`. Anything STALE blocks shipping unless the owner says to go ahead.
+  The NYSE holiday list in that script covers 2026-2027; extend it each December.
+
 ## Must never appear
 On any page:
 - **Investment advice**: no buy/sell/hold calls, price targets or "you should". Market pages say "Not investment advice."
@@ -82,3 +104,4 @@ Under the Hood still says "no betting lines shown anywhere". Update that sentenc
 - `/new-page`: build a page that follows these rules.
 - `/ship`: preview on phone and desktop, then push live only after approval.
 - `/audit-data`: list every number on a page and where it comes from.
+- `/check-data`: flag stale data (yesterday's moves as today's, old Digest, already-reported earnings, homepage behind the close).
