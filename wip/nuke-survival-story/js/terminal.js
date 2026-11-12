@@ -492,6 +492,24 @@
   syncSide();
   setFlashes(flashesOn);
   $('flashToggle').addEventListener('click', function () { setFlashes(!flashesOn, true); });
+
+  // Phones: a HIDE SCENE / SHOW SCENE button (remembered), and the scene steps aside while you type.
+  var narrow = window.matchMedia('(max-width: 960px)');
+  function setSceneHidden(hidden, persist) {
+    document.body.classList.toggle('scene-hidden', hidden);
+    var b = $('sceneToggle');
+    b.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+    b.textContent = hidden ? 'SHOW SCENE' : 'HIDE SCENE';
+    if (persist) { try { localStorage.setItem('please-hold:scene-hidden', hidden ? '1' : '0'); } catch (e) { /* storage blocked */ } }
+    if (!hidden) scenes.redraw();
+  }
+  $('sceneToggle').addEventListener('click', function () { setSceneHidden(!document.body.classList.contains('scene-hidden'), true); });
+  try { if (localStorage.getItem('please-hold:scene-hidden') === '1') setSceneHidden(true, false); } catch (e) { /* storage blocked */ }
+  input.addEventListener('focus', function () { if (narrow.matches) document.body.classList.add('typing'); });
+  input.addEventListener('blur', function () {
+    document.body.classList.remove('typing');
+    if (!document.body.classList.contains('scene-hidden')) scenes.redraw();
+  });
   $('map').addEventListener('click', function (e) {
     var n = e.target.closest('[data-go]');
     if (!n) return;
@@ -537,6 +555,6 @@
   (function next() {
     if (i < boot.length) { print(boot[i++], 'boot'); setTimeout(next, reduceMotion ? 0 : 110); return; }
     print('Type “help” for commands, or “play” to start PLEASE HOLD.', 'shell');
-    input.focus();
+    if (window.innerWidth > 960) input.focus();
   })();
 })();

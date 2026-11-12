@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
-<link rel="stylesheet" href="css/terminal.css?v=7ad6bb30">
+<link rel="stylesheet" href="css/terminal.css?v=c565d50">
 </head>
 <body>
   <div class="app" id="app">
@@ -56,9 +56,11 @@
     </div>
 
     <div class="grid">
-      <section class="main">
+      <main class="main" id="main">
+        <h1 class="sr-only">Please Hold: a text adventure set in Novi, Michigan</h1>
+        <noscript><p class="noscript">PLEASE HOLD needs JavaScript to run. Turn JavaScript on and reload this page.</p></noscript>
         <div class="panel scene" id="scene">
-          <div class="panel-h"><span id="sceneTitle">PLEASE HOLD</span><span class="grow"></span><span id="sceneIdx">LAB · WIP</span></div>
+          <div class="panel-h"><span id="sceneTitle">PLEASE HOLD</span><span class="grow"></span><span id="sceneIdx">LAB · WIP</span><button type="button" id="sceneToggle" class="scene-toggle" aria-expanded="true" aria-controls="artWrap">HIDE SCENE</button></div>
           <div class="art-wrap" id="artWrap"><canvas id="sceneCanvas" aria-hidden="true"></canvas><div id="sceneReadout" class="scene-readout" hidden></div></div>
         </div>
 
@@ -70,7 +72,7 @@
             <input id="input" name="input" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="send" aria-label="Command">
           </form>
         </div>
-      </section>
+      </main>
 
       <aside class="side" id="side" aria-label="Status, map and inventory">
         <button type="button" class="side-close" data-panel="side">CLOSE ✕</button>
@@ -93,10 +95,10 @@
   </div>
   <div class="flash" id="flash"></div>
 
-  <script src="js/engine.js?v=65a523d5"></script>
-  <script src="js/story.js?v=f91d7373"></script>
-  <script src="js/art.js?v=6663c6b6"></script>
-  <script src="js/scenes.js?v=a42a17bf"></script>
-  <script src="js/terminal.js?v=862477c6"></script>
+  <script src="js/engine.js?v=c565d50"></script>
+  <script src="js/story.js?v=c565d50"></script>
+  <script src="js/art.js?v=c565d50"></script>
+  <script src="js/scenes.js?v=c565d50"></script>
+  <script src="js/terminal.js?v=c565d50"></script>
 </body>
 </html>

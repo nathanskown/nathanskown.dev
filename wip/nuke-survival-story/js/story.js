@@ -425,7 +425,7 @@ var STORY = {
       text: [
         "Ten Mile and Taft. You've sat at this light a thousand times on the way to work, drinking gas-station coffee and listening to sports radio argue about the Lions' offensive line. The light is dark now. A Novi police officer in a reflective vest stands in the middle of the intersection directing traffic by hand, and he's very good at it. Somehow that frightens you more than anything else today.",
         "Eastbound Ten Mile is nearly empty. Westbound is solid: cars, pickups, a SMART bus, all crawling away from Detroit at walking speed. People walk on the shoulder too, carrying kids, carrying nothing.",
-        "Cedar Hollow Court is back north. Taft Road runs up to Grand River and the shops to the northeast. The Civic Center and Novi High are east along Ten Mile. Willow Glen Senior Living is south. St. Brendan's church is west, toward Beck."
+        "Cedar Hollow Court is back north. Taft Road runs up to Grand River and the shops to the northeast. The Civic Center and Novi High are east along Ten Mile. Willow Glen Senior Living is south. St. Clare's church is west, toward Beck."
       ],
       short: "Ten Mile and Taft. Dark signals, the officer, the slow westbound river of cars.",
       exits: {
@@ -537,8 +537,8 @@ var STORY = {
     },
 
     church: {
-      name: "St. Brendan's",
-      aliases: ["church", "st brendans", "st. brendan's", "saint brendans", "wedding"],
+      name: "St. Clare's",
+      aliases: ["church", "st clares", "st. clare's", "st clare", "saint clares", "wedding"],
       text: [
         { if: { notFlag: "wedding_over" }, text: "There's a wedding going on. White ribbons on the pews, a three-tier cake on a folding table in the entryway, maybe forty guests in good clothes. Some of them are crying for reasons that have nothing to do with weddings." },
         { if: { flag: "wedding_over", notFlag: "witnessed" }, text: "The pews are empty. White ribbons, programs on the floor, a three-tier cake with one slice missing. Taped to the basement door, in the bride's handwriting: MARRIED 1:45 PM. SHELTERING DOWNSTAIRS. WE'RE FULL, WE'RE SORRY, GOD BLESS. M & R." },
@@ -546,7 +546,7 @@ var STORY = {
         { if: { notFlag: ["witnessed", "wedding_over"], after: "1:15 PM" }, text: "The ceremony has started. Mady is at the altar, and Father Andrew is speaking. The guests are quieter than a church usually is." },
         { if: { flag: "witnessed" }, text: "The newlyweds are leading their guests down to the church basement, two by two, like an ark." }
       ],
-      short: "St. Brendan's. The wedding, the cake, the guests in good clothes.",
+      short: "St. Clare's. The wedding, the cake, the guests in good clothes.",
       exits: { east: { to: "hub", time: 8, label: "Ten Mile and Taft" } },
       scenery: {
         "cake": "Three tiers, buttercream, sugar roses. Somebody has already cut a slice from the back and tried to hide it.",
@@ -704,7 +704,7 @@ var STORY = {
       exits: { west: { to: "mall", time: 12, label: "the mall" } },
       scenery: {
         "pond, retention pond": "A heron stands in it, completely unbothered.",
-        "cord, extension cord, generator": "Colin's. You know it's Colin's. He has the same model in his garage. He showed everyone photos."
+        "cord, extension cord, generator": "Brendan's. You know it's Brendan's. He has the same model in his garage. He showed everyone photos."
       }
     },
 
@@ -818,7 +818,7 @@ var STORY = {
             ]
           },
           news: {
-            text: "“Phones are out. Jeff's got a radio. Mady is getting married at St. Brendan's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
+            text: "“Phones are out. Jeff's got a radio. Mady is getting married at St. Clare's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
             choices: [
               { text: "Rob. I'm so sorry.", next: "sorry" },
               { text: "(Back.)", next: "start" }
@@ -1514,7 +1514,7 @@ var STORY = {
     },
 
     kyle: {
-      name: "Colin", aliases: ["colin", "boss", "manager"],
+      name: "Brendan", aliases: ["brendan", "boss", "manager"],
       dossier: { age: "30s", role: "Your manager", status: "Q3 deck due 5:00 PM. Still." },
       portrait: { prop: "laptop" },
       room: "office",
@@ -1527,10 +1527,10 @@ var STORY = {
         ],
         nodes: {
           start: {
-            text: "Up on three, in Conference Room B: “There you are, {name}.” Colin, your manager, is in a quarter-zip, his laptop plugged into an orange extension cord that runs down three flights of stairs to a generator. “Regional still wants the Q3 review. I know. I know. But when this is over, they're going to look at who showed up.”",
-            again: "Colin doesn't look up from the laptop. “Slide twelve. Whenever you're ready.”",
+            text: "Up on three, in Conference Room B: “There you are, {name}.” Brendan, your manager, is in a quarter-zip, his laptop plugged into an orange extension cord that runs down three flights of stairs to a generator. “Regional still wants the Q3 review. I know. I know. But when this is over, they're going to look at who showed up.”",
+            again: "Brendan doesn't look up from the laptop. “Slide twelve. Whenever you're ready.”",
             choices: [
-              { text: "Colin. They bombed Detroit.", next: "detroit" },
+              { text: "Brendan. They bombed Detroit.", next: "detroit" },
               { text: "Come with me. You can't stay up here in a glass building.", next: "come" },
               { text: "Fine. Let's finish the deck.", next: "deck" },
               { text: "I'm leaving." }
@@ -1542,7 +1542,7 @@ var STORY = {
           },
           come: {
             text: [
-              { if: { flag: "knows_shelter_basics" }, text: "You tell him, as plainly as Steven told you: the glass, the dust, two weeks, the middle of something solid. You tell him nobody from Regional is coming. Colin looks at the laptop for a long moment. Then he closes it, unplugs it, winds the orange cord around his arm out of habit, and follows you down the stairs." },
+              { if: { flag: "knows_shelter_basics" }, text: "You tell him, as plainly as Steven told you: the glass, the dust, two weeks, the middle of something solid. You tell him nobody from Regional is coming. Brendan looks at the laptop for a long moment. Then he closes it, unplugs it, winds the orange cord around his arm out of habit, and follows you down the stairs." },
               { if: { notFlag: "knows_shelter_basics" }, text: "“After the deck,” he says. He means it. He's going to be up here when it gets dark. You don't know enough to argue with him, not in a way that would work." }
             ],
             effects: { if: { flag: "knows_shelter_basics" }, join: "kyle" }
@@ -1551,7 +1551,7 @@ var STORY = {
             effects: { ending: "business_as_usual" }
           },
           walking: {
-            text: "Colin walks beside you, still holding his laptop like a hymnal. “I could have finished slide twelve,” he says. Then: “Thanks.”",
+            text: "Brendan walks beside you, still holding his laptop like a hymnal. “I could have finished slide twelve,” he says. Then: “Thanks.”",
             choices: [{ text: "Keep walking." }]
           }
         }
@@ -1616,7 +1616,7 @@ var STORY = {
   hints: [
     { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The front door is open. Jeff's garage is across the court, and his radio is on." },
     { if: { notFlag: "knows_get_inside", before: "1:00 PM" }, text: "Jeff's radio might know what's going on. His garage is north of your house, across the court." },
-    { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "There's a wedding at St. Brendan's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
+    { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "There's a wedding at St. Clare's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
     { if: { flag: "truck_fueled", notFlag: "ray_left", without: "ray", before: "5:30 PM", after: "4:15 PM" }, text: "Jeff leaves for the cabin at 5:30, with you or without you." },
     { if: { flag: "knows_dale_insulin", lacks: "insulin", notFlag: "dale_open", before: "4:30 PM" }, text: "Adam needs his insulin. The pharmacy on Grand River closes at 4:30." },
     { if: { after: "3:00 PM", before: "4:00 PM", notFlag: ["haddads_moved", "haddads_walked"] }, text: "Someone is stranded on the I-96 shoulder by the mall. If nobody stops by four, they start walking." },
@@ -1652,9 +1652,8 @@ var STORY = {
 
     { if: { with: "ruth", not: { ending: "shelter_in_place" } }, text: "STEVEN · With you." },
     { if: { with: "ruth", ending: "shelter_in_place" }, text: "STEVEN · Ran the band room. Officially, Coach Connor did." },
-    { if: { flag: "ruth_refused" }, text: "STEVEN · Walked back to Willow Glen alone and took charge of the hallway." },
-    { if: { without: "ruth", notFlag: "ruth_refused", visited: "retirement" }, text: "STEVEN · Sat on the floor of the Willow Glen hallway and finished yesterday's crossword." },
-    { if: { without: "ruth", notFlag: "ruth_refused", not: { visited: "retirement" } }, text: "STEVEN · You never met him. He knew exactly what to do, and nobody asked." },
+    { if: { without: "ruth", visited: "retirement" }, text: "STEVEN · Sat on the floor of the Willow Glen hallway and finished yesterday's crossword." },
+    { if: { without: "ruth", not: { visited: "retirement" } }, text: "STEVEN · You never met him. He knew exactly what to do, and nobody asked." },
 
     { if: { with: "haddads" }, text: "MARY AND JOSE · With you." },
     { if: { without: "haddads", visited: "interchange" }, text: "MARY AND JOSE · Last seen walking west on the I-96 shoulder." },
@@ -1667,8 +1666,8 @@ var STORY = {
     { if: { not: { ending: "locked_out" }, flag: "dale_has_insulin" }, text: "ADAM · In his bunker, with his insulin in the fridge." },
     { if: { not: { ending: "locked_out" }, notFlag: "dale_has_insulin" }, text: "ADAM · Sat on his hatch all night without his insulin." },
 
-    { if: { with: "kyle" }, text: "COLIN · With you." },
-    { if: { without: "kyle", not: { ending: "business_as_usual" } }, text: "COLIN · Stayed in Conference Room B and finished slide 12." },
+    { if: { with: "kyle" }, text: "BRENDAN · With you." },
+    { if: { without: "kyle", not: { ending: "business_as_usual" } }, text: "BRENDAN · Stayed in Conference Room B and finished slide 12." },
 
     { if: { ending: "shelter_in_place" }, text: "THE GYM · All 206 people, safe in the band room." },
     { if: { not: { ending: "shelter_in_place" }, flag: "dana_convinced" }, text: "THE GYM · Moved to the band room. Coach Connor closed the door himself." },
@@ -1699,7 +1698,7 @@ var STORY = {
         { if: { with: "haddads" }, text: "Jose teaches the elementary kids a card game with rules he makes up as he goes. Mary, who turns out to be an ER nurse, rebandages forty people by flashlight." },
         { if: { with: "ray" }, text: "Jeff keeps the radio by his ear, turned down low, and every hour he passes on the news in a voice that makes the bad parts sound survivable." },
         { if: { with: "brenda" }, text: "Rob takes one look at Connor's clipboard and quietly starts a second one. By morning there's a sign-up sheet for the latrine buckets, and nobody argues with it." },
-        { if: { with: "kyle" }, text: "Colin organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
+        { if: { with: "kyle" }, text: "Brendan organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
         { if: { flag: "warned_mall" }, text: "On day three, a man finds his way down the stairs from the mall, two miles away. He says a security guard named Derek got a thousand people into the service corridors. He wants whoever told Derek to know." },
         { if: { flag: "witnessed" }, text: "You think about Mady and Ryan in the church basement, married four hours before the world ended, and you hope Cousin Charlie is behaving." },
         "On day fourteen, Lieutenant Hunter knocks on the steel door with a borrowed Geiger counter and a face you'll remember for the rest of your life. He says the readings are down. He says, carefully, that outside isn't safe, but it's survivable.",
@@ -1731,7 +1730,7 @@ var STORY = {
         { if: { with: "haddads" }, text: "Jose falls asleep on the treadmill every night. Mary doesn't seem to sleep at all. On the fourth day she tells you about Jose's father, all of it, in a flat voice, and then she says thank you, and she means for the basement." },
         { if: { with: "ruth" }, text: "Steven organizes the pantry by expiration date and makes everyone drink water on a schedule. He finishes the crossword. He starts on the back of the cereal box." },
         { if: { with: "brenda" }, text: "Rob reorganizes your pantry and never once mentions Covenant 14. On day nine he says Diane's name out loud for the first time, and then he says it a lot." },
-        { if: { with: "kyle" }, text: "Colin tries to finish the deck on his phone until the battery dies. Then he cries for a long time. Then he's better. He's still a little like this, years later, but he's better." },
+        { if: { with: "kyle" }, text: "Brendan tries to finish the deck on his phone until the battery dies. Then he cries for a long time. Then he's better. He's still a little like this, years later, but he's better." },
         { if: { alone: true }, text: "It's very quiet. You talk to yourself, and then to the furnace, and by day four the furnace is a good listener." },
         { if: { alone: true, before: "1:00 PM" }, text: "You were the first person on Cedar Hollow Court underground. On day fifteen you'll learn what happened to the people who weren't, and you'll spend a long time thinking about the doors you didn't knock on." },
         { if: { without: "brenda" }, text: "On day fifteen, you open the door. The court is gray with a fine dust, like the inside of a vacuum bag. On Rob's porch, weighed down by a rock, his clipboard has every name on the court with a check mark beside it except Diane's, which still has the question mark he crossed out." },
@@ -1788,11 +1787,11 @@ var STORY = {
       title: "Business as Usual",
       type: "bad",
       text: [
-        "You sit down. Colin looks so relieved that it almost makes it worth it.",
-        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Colin's generator coughs at {falloutBefore}, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
-        "At {fallout}, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Colin.",
+        "You sit down. Brendan looks so relieved that it almost makes it worth it.",
+        "You fix slide twelve. You build the chart. You argue about whether to call the regional numbers “softness” or “headwinds.” Brendan's generator coughs at {falloutBefore}, and he goes down three flights to fuss with it, and comes back up, and says, “Okay. Where were we.”",
+        "At {fallout}, while you're nudging the chart legend two pixels to the left, the light through the windows of Conference Room B goes a little gray, as if a cloud had passed. You don't look up. Neither does Brendan.",
         "Nobody from Regional ever sees the deck.",
-        "It is, Colin says at {falloutAfter}, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
+        "It is, Brendan says at {falloutAfter}, with the generator still running and the fine gray dust settling on the glass walls of Kessler Office Park, the best work you've ever done."
       ]
     }
   }

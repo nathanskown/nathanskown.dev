@@ -631,8 +631,8 @@
     },
 
     church: function (g, t, v) {
-      g.fact("ST. BRENDAN'S · ORDER OF SERVICE");
-      g.text("ST. BRENDAN'S · ORDER OF SERVICE", 14, 18, { size: 9, color: C.dim });
+      g.fact("ST. CLARE\'S · ORDER OF SERVICE");
+      g.text("ST. CLARE\'S · ORDER OF SERVICE", 14, 18, { size: 9, color: C.dim });
       g.fact('TODAY');
       g.pane(14, 30, 400, 100, 'TODAY');
       // Guests gather at 1:00, the ceremony starts at 1:15, and the party goes downstairs at 1:45.
