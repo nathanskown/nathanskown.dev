@@ -1048,29 +1048,16 @@
     };
     if (P[prop]) P[prop]();
   }
-  function dossier(g, t, v, pid, p) {
+  // A square mugshot for the talk card. Name, role, and status are HTML beside it.
+  function portrait(g, pid, p) {
     var d = p.dossier || {};
-    g.fact(p.name.toUpperCase());
-    g.pane(14, 14, 150, 212, 'SUBJECT');
-    var img = p.photo ? ditherPhoto(p.photo) : null;
-    if (img) g.ctx.drawImage(img, 29, 30, 120, 150);
-    else silhouette(g, 29, 30, 120, 150, (p.portrait || {}).prop, t);
-    g.fact('FILE', String(Math.abs(hash(pid)) % 9000 + 1000));
-    g.fact(img ? 'PHOTO · DITHERED' : 'NO PHOTO ON FILE');
-    g.text('FILE ' + (Math.abs(hash(pid)) % 9000 + 1000), 89, 200, { size: 9, color: C.dim, align: 'center' });
-    g.text(img ? 'PHOTO · DITHERED' : 'NO PHOTO ON FILE', 89, 214, { size: 8, color: C.dim, align: 'center' });
-    g.pane(180, 14, 446, 212, 'DOSSIER');
-    g.big(p.name.toUpperCase(), 196, 58, 34, C.g);
-    var rows = [['AGE', d.age || '—'], ['ROLE', d.role || '—'], ['STATUS', d.status || '—'], ['LAST SEEN', v.roomName + ' · ' + v.clock]];
-    rows.forEach(function (r) { g.fact(r[0], r[1]); });
-    var y = 86;
-    rows.forEach(function (r) {
-      g.text(r[0], 196, y, { size: 9, color: C.dim });
-      y = g.wrap(r[1], 280, y, 330, 13, { size: 10, color: r[0] === 'STATUS' ? C.amber : C.g }) + 22;
-    });
-    if (Math.floor(t * 1.5) % 2) g.fill(196, 212, 8, 2, C.g);
+    var role = d.role || '';
+    g.fact(p.name.toUpperCase() + (role ? ' · ' + role : ''));
+    g.fact('STATUS', d.status || '—');
+    var photo = root.PleaseHoldPeople && root.PleaseHoldPeople.has(pid);
+    if (photo) { g.fill(0, 0, 160, 160, '#071207'); return; }
+    silhouette(g, 4, 4, 152, 152, (p.portrait || {}).prop);
   }
-  function hash(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
 
   // ------------------------------------------------------------ renderer
   function Renderer(canvas, story, opts) {
@@ -1093,7 +1080,9 @@
       size();
       var t = reduce ? 4 : now() - started;
       var dpr = Math.min(2, window.devicePixelRatio || 1);
-      var s = Math.min(canvas.width / W, canvas.height / H), ox = (canvas.width - W * s) / 2, oy = (canvas.height - H * s) / 2;
+      var person = scene.key.indexOf('person:') === 0;
+      var vw = person ? 160 : W, vh = person ? 160 : H;
+      var s = Math.min(canvas.width / vw, canvas.height / vh), ox = (canvas.width - vw * s) / 2, oy = (canvas.height - vh * s) / 2;
       g.setScale(s / dpr);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1107,7 +1096,7 @@
         else if (k === 'static') noise(g, t, skipBright);
         else if (k.indexOf('room:') === 0) (rooms[scene.id] || title)(g, t, view);
         else if (k.indexOf('end:') === 0) (endings[scene.id] || title)(g, t, view);
-        else if (k.indexOf('person:') === 0) dossier(g, t, view, scene.id, story.people[scene.id]);
+        else if (k.indexOf('person:') === 0) portrait(g, scene.id, story.people[scene.id] || { name: scene.id, dossier: {} });
       } catch (e) { if (window.console) console.error('scene', scene.key, e); }
       publish();
     }

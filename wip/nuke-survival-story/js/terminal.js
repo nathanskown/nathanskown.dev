@@ -360,22 +360,6 @@
     }
   }
 
-  function renderStatus(v) {
-    var el = $('status');
-    if (!v.playing) {
-      el.innerHTML = '<div class="big">NO SESSION <small>TYPE PLAY</small></div>' +
-        '<dt>STORY</dt><dd>PLEASE HOLD</dd><dt>SETTING</dt><dd>NOVI, MI</dd><dt>ENDINGS</dt><dd>6</dd>';
-      return;
-    }
-    var html = '<div class="big">' + esc(v.clock) + ' <small>THU · ET</small></div>';
-    STORY.hud.status.forEach(function (row) {
-      var val = game.resolve(row.value).replace(/\n\n/g, ' + ');
-      var tone = row.tone ? game.resolve(row.tone) : '';
-      html += '<dt>' + esc(row.label) + '</dt><dd class="' + esc(tone) + '">' + esc(val) + '</dd>';
-    });
-    el.innerHTML = html;
-  }
-
   function renderMap(v) {
     var labels = ART.mapLabels, byLabel = {};
     Object.keys(labels).forEach(function (id) { byLabel['[' + labels[id] + ']'] = id; });
@@ -403,6 +387,13 @@
     if (!v.playing) { inv.innerHTML = '<li class="empty">—</li>'; party.innerHTML = '<li class="empty">—</li>'; return; }
     var items = v.inventory.map(function (n) { return '<li>' + esc(n) + '</li>'; });
     (STORY.inventoryNotes || []).forEach(function (n) { var t = game.resolve(n); if (t) items.push('<li class="note">' + esc(t) + '</li>'); });
+    var cash = (v.vars && v.vars.cash) || 0;
+    var water = [];
+    if (v.flags && v.flags.bathtub_full) water.push('bathtub');
+    if (v.flags && v.flags.heater_drained) water.push('heater tank');
+    if (v.vars && v.vars.water > 0) water.push(v.vars.water + ' case' + (v.vars.water === 1 ? '' : 's'));
+    items.push('<li class="note">cash: $' + cash + '</li>');
+    items.push('<li class="note">stored water: ' + esc(water.join(', ') || 'none') + '</li>');
     inv.innerHTML = items.join('') || '<li class="empty">nothing</li>';
     party.innerHTML = v.party.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') || '<li class="empty">alone</li>';
   }
@@ -445,6 +436,19 @@
     el.scrollTop = top;
     markReadout(el);
   }
+  function showPersonPhoto(id) {
+    var img = $('personPhoto');
+    if (!img || !window.PleaseHoldPeople) return;
+    var p = id && STORY.people[id];
+    if (!p || !PleaseHoldPeople.has(id)) {
+      PleaseHoldPeople.clear(img);
+      $('sceneCanvas').style.visibility = '';
+      return;
+    }
+    var role = p.dossier && p.dossier.role ? ', ' + p.dossier.role : '';
+    PleaseHoldPeople.show(img, id, p.name + role);
+    $('sceneCanvas').style.visibility = 'hidden';
+  }
   function setHeader(title, idx) { $('sceneTitle').textContent = title; $('sceneIdx').textContent = idx; }
   function sceneKey(v) {
     if (!v || !v.playing) return 'title';
@@ -464,7 +468,8 @@
     noteScene(key);
     var artOn = sceneImages.show(PleaseHoldSceneArt.hookFor(v, key));
     $('artWrap').classList.toggle('has-art', !!artOn);
-    if (scenes.setForceReadout) scenes.setForceReadout(!!artOn);
+    if (scenes.setForceReadout) scenes.setForceReadout(!!artOn || !!(v && v.talkingWith));
+    showPersonPhoto(v && v.talkingWith);
     sceneEl.classList.toggle('ending', !!(v.playing && v.ended));
     sceneEl.classList.toggle('person', !!(v.playing && v.talkingWith));
     if (!v.playing) { setHeader('PLEASE HOLD', 'LAB · WIP'); scenes.show('title', null, v); return; }
@@ -549,7 +554,6 @@
     renderScene(v);
     renderReadout();
     renderTicker(v);
-    renderStatus(v);
     renderMap(v);
     renderInventory(v);
     renderChips(v);
@@ -653,19 +657,22 @@
   });
 
   var sideOpener = null;
-  function sideIsDrawer() { return window.matchMedia('(max-width: 960px)').matches; }
   function syncSide() {
-    $('side').inert = sideIsDrawer() && !document.body.classList.contains('show-side');
+    $('side').inert = !document.body.classList.contains('show-side');
   }
-  function openSide(opener) {
+  function openSide(opener, which) {
     sideOpener = opener || document.activeElement;
     document.body.classList.add('show-side');
     syncSide();
+    var target = which === 'map' ? $('map') : $('inv');
+    var panel = target && target.closest ? target.closest('.panel') : null;
+    if (panel && panel.scrollIntoView) panel.scrollIntoView();
     document.querySelector('.side-close').focus();
   }
   function closeSide() {
     if (!document.body.classList.contains('show-side')) return;
     document.body.classList.remove('show-side');
+    delete document.body.dataset.side;
     syncSide();
     if (sideOpener && sideOpener.focus) sideOpener.focus();
     sideOpener = null;
@@ -679,10 +686,12 @@
     var b = e.target.closest('button');
     if (!b) return;
     if (b.dataset.panel) {
-      if (document.body.classList.contains('show-side')) closeSide();
-      else openSide(b);
+      if (document.body.classList.contains('show-side') && document.body.dataset.side === b.dataset.panel) closeSide();
+      else { document.body.dataset.side = b.dataset.panel; openSide(b, b.dataset.panel); }
+      setMenu(false);
       return;
     }
+    setMenu(false);
     submit(b.dataset.cmd);
   });
   document.querySelector('.side-close').addEventListener('click', function () { closeSide(); });
@@ -700,8 +709,21 @@
   // after the first tap, and then the later headlines never come around.
   tickTrack.addEventListener('focus', function () { if (reduceMotion) pauseTicks(); });
   tickTrack.addEventListener('blur', function () { if (reduceMotion) resumeTicks(); });
+  function setMenu(open) {
+    document.body.classList.toggle('nav-open', !!open);
+    var b = $('menuToggle');
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  $('menuToggle').addEventListener('click', function () { setMenu(!document.body.classList.contains('nav-open')); });
   document.addEventListener('keydown', function (e) {
-    if (!sideIsDrawer() || !document.body.classList.contains('show-side')) return;
+    if (e.key !== 'Escape' || !document.body.classList.contains('nav-open')) return;
+    if (document.body.classList.contains('show-side')) return;
+    e.preventDefault();
+    setMenu(false);
+    $('menuToggle').focus();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!document.body.classList.contains('show-side')) return;
     if (e.key === 'Escape') { e.preventDefault(); closeSide(); return; }
     if (e.key !== 'Tab') return;
     var list = focusables($('side'));
