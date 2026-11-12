@@ -73,7 +73,7 @@
   var pageIndex = 0;
   var pager = $('pager');
 
-  function choiceAsChips() {
+  function phoneTalk() {
     return window.matchMedia('(max-width: 600px)').matches;
   }
   function hasMore() { return pageIndex < pages.length - 1; }
@@ -136,7 +136,7 @@
     return bits.map(function (t) { return { text: t, kind: block.kind, meta: block.meta }; });
   }
   function storyBlocks(blocks) {
-    return blocks.filter(function (b) { return !(b.kind === 'choice' && choiceAsChips()); });
+    return blocks.filter(function (b) { return !(b.kind === 'choice' && phoneTalk()); });
   }
   function fillOut(blocks) {
     out.innerHTML = '';
@@ -157,20 +157,28 @@
     return kept;
   }
   function setPager(on) { pager.hidden = !on; }
+  function renderTalkChoices(v) {
+    var box = $('talkChoices');
+    if (!box) return;
+    if (!v && typeof game !== 'undefined' && game && game.view) v = game.view();
+    var list = v && v.choices ? v.choices : [];
+    var show = phoneTalk() && v && v.talking && list.length;
+    box.innerHTML = '';
+    box.hidden = !show;
+    if (!show) return;
+    list.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'talk-choice';
+      b.appendChild(document.createTextNode(c.n + '. ' + c.text));
+      if (c.picked) markDiscussed(b);
+      b.addEventListener('click', function () { submit(String(c.n)); });
+      box.appendChild(b);
+    });
+  }
   function withChipReserve(blocks, fn) {
-    var box = $('chips');
-    var need = choiceAsChips() && blocks.some(function (b) { return b.kind === 'choice'; });
-    var stamp = need ? box.innerHTML : '';
-    if (need && !box.firstChild) {
-      var dummy = document.createElement('span');
-      dummy.className = 'chip';
-      dummy.setAttribute('aria-hidden', 'true');
-      dummy.textContent = '1';
-      box.appendChild(dummy);
-    }
-    var result = fn();
-    if (need && !stamp) box.innerHTML = '';
-    return result;
+    renderTalkChoices();
+    return fn();
   }
   function paginate(blocks) {
     var live = out.getAttribute('aria-live');
@@ -227,14 +235,19 @@
       $('pageMore').setAttribute('aria-label', 'Next page, ' + (pageIndex + 1) + ' of ' + pages.length);
       $('pageBack').setAttribute('aria-label', 'Previous page, ' + (pageIndex + 1) + ' of ' + pages.length);
     }
-    if (typeof game !== 'undefined' && game && game.view) renderChips(game.view());
+    if (typeof game !== 'undefined' && game && game.view) {
+      renderTalkChoices(game.view());
+      renderChips(game.view());
+    }
   }
+  var laying = false;
   function layoutPassage(blocks, index) {
     passage = blocks || [];
     pages = paginate(passage);
     pageIndex = Math.min(index || 0, Math.max(0, pages.length - 1));
     showPage();
-    if (out.clientHeight >= 24 && overflows()) {
+    var short = pages.length > 1 && out.clientHeight - out.scrollHeight > 40;
+    if (out.clientHeight >= 24 && (overflows() || short)) {
       var i = pageIndex;
       pages = paginate(passage);
       pageIndex = Math.min(i, Math.max(0, pages.length - 1));
@@ -243,8 +256,10 @@
   }
   function commitPassage(blocks) { layoutPassage(blocks, 0); }
   function relayoutPages() {
-    if (!passage.length) return;
+    if (!passage.length || laying) return;
+    laying = true;
     layoutPassage(passage, pageIndex);
+    laying = false;
   }
   function advancePage(step) {
     var next = pageIndex + step;
@@ -435,6 +450,21 @@
     }).join('');
     el.scrollTop = top;
     markReadout(el);
+    fitPersonCard();
+  }
+  function fitPersonCard() {
+    var scene = $('scene');
+    if (!scene.classList.contains('person') || window.innerWidth > 600) {
+      scene.classList.remove('card-tight');
+      return;
+    }
+    scene.classList.remove('card-tight');
+    var art = $('artWrap');
+    var prev = art.style.maxHeight;
+    art.style.maxHeight = 'none';
+    var full = art.scrollHeight;
+    art.style.maxHeight = prev;
+    if (full > 120) scene.classList.add('card-tight');
   }
   function showPersonPhoto(id) {
     var img = $('personPhoto');
@@ -501,13 +531,7 @@
     if (!v.playing) { box.appendChild(chip('CONTINUE', '1', 'alt')); box.appendChild(chip('START OVER', '2')); return; }
     if (v.asking) { box.appendChild(chip('YES', 'yes', 'alt')); box.appendChild(chip('NO', 'no')); return; }
     if (v.ended) { ['restart', 'endings', 'share'].forEach(function (c) { box.appendChild(chip(c.toUpperCase(), c, c === 'share' ? 'alt' : '')); }); return; }
-    if (v.talking && choiceAsChips() && v.choices && v.choices.length) {
-      box.classList.add('has-choices');
-      v.choices.forEach(function (c) { box.appendChild(chip(c.text, String(c.n), '', c.n + '.', c.picked)); });
-      syncChipHint();
-      return;
-    }
-    if (v.talking) return; // dialogue answers are buttons in the page
+    if (v.talking) return; // dialogue answers are the stacked list, or buttons in the page
     var picked = v.picked || {};
     v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label])); });
     v.people.forEach(function (p) { box.appendChild(chip(p.name, 'talk to ' + p.name, 'talk', 'TALK', p.picked)); });
@@ -552,6 +576,7 @@
     renderTicker(v);
     renderMap(v);
     renderInventory(v);
+    renderTalkChoices(v);
     renderChips(v);
   }
 
@@ -681,6 +706,7 @@
   $('fkeys').addEventListener('click', function (e) {
     var b = e.target.closest('button');
     if (!b) return;
+    if (b.id === 'sceneToggle') { setMenu(false); return; }
     if (b.dataset.panel) {
       if (document.body.classList.contains('show-side') && document.body.dataset.side === b.dataset.panel) closeSide();
       else { document.body.dataset.side = b.dataset.panel; openSide(b, b.dataset.panel); }
@@ -728,8 +754,17 @@
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
-  window.addEventListener('resize', syncSide);
+  function placeSceneToggle() {
+    var b = $('sceneToggle');
+    var keys = $('fkeys');
+    var head = document.querySelector('#scene .panel-h');
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      if (b.parentNode !== keys) keys.appendChild(b);
+    } else if (head && b.parentNode !== head) head.appendChild(b);
+  }
+  window.addEventListener('resize', function () { syncSide(); placeSceneToggle(); });
   syncSide();
+  placeSceneToggle();
   setFlashes(flashesOn);
   $('flashToggle').addEventListener('click', function () { setFlashes(!flashesOn, true); });
 
@@ -774,7 +809,7 @@
     // Its label and the saved hide/show choice stay as they were.
     if (!was && document.body.classList.contains('compact') && document.activeElement === $('sceneToggle')) input.focus();
     if (was !== document.body.classList.contains('compact')) relayoutPages();
-    requestAnimationFrame(syncChipHint);
+    requestAnimationFrame(function () { syncChipHint(); relayoutPages(); });
   }
   if (window.visualViewport) {
     var vv = window.visualViewport;
@@ -792,6 +827,7 @@
         root.style.removeProperty('--app-h');
       }
       syncCompact();
+      relayoutPages();
     };
     vv.addEventListener('resize', sizeApp);
     sizeApp();

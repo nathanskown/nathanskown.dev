@@ -359,7 +359,7 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
    and the chip row so the prompt and several lines of story stay on screen. */
 body.compact .scene-frame { display: none; }
 body.compact .chips { display: none; }
-body.compact .chips.has-choices { display: flex; }
+body.compact .talk-choices { max-height: 168px; overflow: auto; }
 body.compact .scene-readout.show,
 body.compact .art-wrap.has-art .scene-readout.show {
   max-height: 40px; padding-top: 3px; padding-bottom: 3px;
@@ -390,8 +390,7 @@ body.compact .chips.scrolled ~ .chips-hint { display: none; }
   body.scene-hidden .art-wrap { display: none; }
 }
 @media (max-width: 600px) {
-  .scene-toggle { min-height: 0; height: 22px; padding: 0 6px; }
-  .top .brand, .menu-toggle, .chip, .page-btn, .fkeys button, .ln-choice { min-width: 44px; min-height: 44px; }
+  .top .brand, .menu-toggle, .chip, .page-btn, .fkeys button, .ln-choice, .talk-choice { min-width: 44px; min-height: 44px; }
 }
 
 /* Talk: a short ID card, not a 16:9 scene panel. The facts sit beside the portrait. */
@@ -409,13 +408,28 @@ body.compact .chips.scrolled ~ .chips-hint { display: none; }
   padding: 0; border-top: 0; font-size: 13px; line-height: 1.35;
   background-image: none; box-shadow: none;
 }
+#scene.person .ro-row { display: flex; flex-wrap: wrap; column-gap: .45em; align-items: baseline; }
+#scene.person .ro-row .k { margin-right: .35em; }
 #scene.person .ro-row.solo { grid-column: 1 / -1; font-family: var(--display); font-size: 26px; letter-spacing: .04em; line-height: 1; }
-#scene.person .ro-row.solo .k { color: var(--hi); }
+#scene.person .ro-row.solo .k { color: var(--hi); margin-right: 0; }
 @media (max-width: 600px) {
   #scene.person .scene-frame { width: 64px; height: 64px; max-height: 64px; }
-  #scene.person .art-wrap { padding: 8px; gap: 10px; flex-direction: row; max-height: 88px; }
-  #scene.person .scene-readout.show { max-height: 72px; overflow: auto; }
+  #scene.person .art-wrap { padding: 8px; gap: 10px; flex-direction: row; max-height: 120px; align-items: center; }
+  #scene.person .scene-readout.show { max-height: none; overflow: visible; }
   #scene.person .ro-row.solo { font-size: 22px; }
+  #scene.person.card-tight .ro-row:not(.solo) { display: none; }
+}
+.talk-choices { display: none; flex: none; flex-direction: column; gap: 6px; padding: 0 12px 8px; }
+.talk-choices:not([hidden]) { display: flex; }
+.talk-choice {
+  display: flex; align-items: center; width: 100%; min-height: 44px; box-sizing: border-box;
+  text-align: left; white-space: normal; border: 1px solid var(--line); color: var(--hi);
+  padding: 8px 10px; background: transparent;
+}
+.talk-choice.picked { color: var(--picked); border-style: dashed; }
+.talk-choice:hover, .talk-choice:focus-visible { background: var(--band); border-color: var(--dim); outline: none; }
+@media (max-width: 600px) and (max-height: 720px) {
+  .talk-choices { max-height: 160px; overflow: auto; }
 }
 body.compact #scene.person .scene-frame { display: none; }
 body.compact #scene.person .art-wrap { max-height: none; min-height: 40px; padding: 4px 8px; }
