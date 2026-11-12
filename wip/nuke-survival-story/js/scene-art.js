@@ -94,8 +94,11 @@
     var visible = -1;
     var shown = '';
     var token = 0;
+    var fadeTimer = 0;
     function hideAll() {
       token++;
+      clearTimeout(fadeTimer);
+      fadeTimer = 0;
       shown = '';
       visible = -1;
       clearImg(imgs[0]);
@@ -105,7 +108,12 @@
       if (!listed(hook)) { hideAll(); return false; }
       if (hook === shown) return true;
       var my = ++token;
+      clearTimeout(fadeTimer);
+      fadeTimer = 0;
       shown = hook;
+      // A change that arrives mid-fade drops the picture that was on its way in.
+      // The settled picture stays until the new one is ready.
+      if (visible >= 0) clearImg(imgs[1 - visible]);
       // Load into the image that is not on screen, so a slow fade cannot
       // overwrite the picture the reader is already looking at.
       var slot = visible === 0 ? 1 : 0;
@@ -137,6 +145,8 @@
         function finish() {
           if (finished || my !== token) return;
           finished = true;
+          clearTimeout(fadeTimer);
+          fadeTimer = 0;
           place();
         }
         back.addEventListener('transitionend', function onEnd(e) {
@@ -144,7 +154,7 @@
           back.removeEventListener('transitionend', onEnd);
           finish();
         });
-        setTimeout(finish, 700);
+        fadeTimer = setTimeout(finish, 450);
       };
       back.onerror = function () {
         if (my !== token) return;

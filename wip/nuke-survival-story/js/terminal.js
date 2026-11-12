@@ -262,7 +262,7 @@
     var reset = resetReadoutScroll;
     resetReadoutScroll = false;
     var top = reset ? 0 : el.scrollTop;
-    if (reset && (document.body.classList.contains('typing') || document.body.classList.contains('scene-hidden'))) pendingStripReset = true;
+    if (reset && document.body.classList.contains('scene-hidden')) pendingStripReset = true;
     el.hidden = false;
     el.className = 'scene-readout show';
     el.innerHTML = items.map(function (it) {
@@ -427,9 +427,13 @@
     hIndex = history.length;
     dispatch(String(value));
     refresh();
+    // The story scroller shows the start of a long reply. The command line sits
+    // outside that scroller, so it stays on screen either way.
     var replyHeight = out.scrollHeight - echo.offsetTop;
-    if (replyHeight > screen.clientHeight - 60) screen.scrollTop = echo.offsetTop - 12;
-    else screen.scrollTop = screen.scrollHeight;
+    if (replyHeight > screen.clientHeight - 60) {
+      var delta = echo.getBoundingClientRect().top - screen.getBoundingClientRect().top;
+      screen.scrollTop += delta - 12;
+    } else screen.scrollTop = screen.scrollHeight;
     if (window.innerWidth > 960) input.focus();
   }
 
@@ -509,8 +513,8 @@
   setFlashes(flashesOn);
   $('flashToggle').addEventListener('click', function () { setFlashes(!flashesOn, true); });
 
-  // Phones: a HIDE SCENE / SHOW SCENE button (remembered), and the scene steps aside while you type.
-  var narrow = window.matchMedia('(max-width: 960px)');
+  // Phones: a HIDE SCENE / SHOW SCENE button (remembered). The picture stays while
+  // the keyboard is open; the app shrinks to the visible area instead.
   function setSceneHidden(hidden, persist) {
     document.body.classList.toggle('scene-hidden', hidden);
     var b = $('sceneToggle');
@@ -524,14 +528,11 @@
   }
   $('sceneToggle').addEventListener('click', function () { setSceneHidden(!document.body.classList.contains('scene-hidden'), true); });
   try { if (localStorage.getItem('please-hold:scene-hidden') === '1') setSceneHidden(true, false); } catch (e) { /* storage blocked */ }
-  input.addEventListener('focus', function () { if (narrow.matches) document.body.classList.add('typing'); });
   input.addEventListener('blur', function () {
-    document.body.classList.remove('typing');
     if (pendingStripReset && !document.body.classList.contains('scene-hidden')) {
       $('sceneReadout').scrollTop = 0;
       pendingStripReset = false;
     }
-    if (!document.body.classList.contains('scene-hidden')) scenes.redraw();
   });
   $('map').addEventListener('click', function (e) {
     var n = e.target.closest('[data-go]');
