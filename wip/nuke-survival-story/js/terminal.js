@@ -541,26 +541,37 @@
     submit(n.dataset.go);
   });
 
+  var root = document.documentElement;
+  // A short window, or the phone keyboard (via --app-h), drops the picture and the chips.
+  function syncCompact() {
+    var raw = getComputedStyle(root).getPropertyValue('--app-h').trim();
+    var fromVar = raw ? parseFloat(raw) : window.innerHeight;
+    var visible = window.visualViewport ? window.visualViewport.height : fromVar;
+    var h = Math.min(fromVar, visible, window.innerHeight);
+    document.body.classList.toggle('compact', h <= 520);
+  }
   if (window.visualViewport) {
     var vv = window.visualViewport;
     // Normally the layout fills the page with CSS (height: 100%), which already leaves room for
     // the phone's notch and home bar. Only while the on-screen keyboard is open do we shrink it
-    // to the visible area, so the input box stays above the keyboard.
-    var root = document.documentElement;
+    // to the visible area, so the input box stays above the keyboard. The picture stays in the
+    // layout until that visible height is short enough to need the compact mode.
     var sizeApp = function () {
       var keyboardOpen = vv.height < window.innerHeight - 80;
       if (keyboardOpen) {
         var padTop = parseFloat(getComputedStyle(root).paddingTop) || 0;
         root.style.setProperty('--app-h', Math.max(240, vv.height - padTop) + 'px');
         window.scrollTo(0, 0);
-        screen.scrollTop = screen.scrollHeight;
       } else {
         root.style.removeProperty('--app-h');
       }
+      syncCompact();
     };
     vv.addEventListener('resize', sizeApp);
     sizeApp();
-  }
+  } else syncCompact();
+  window.addEventListener('resize', syncCompact);
+  if (window.MutationObserver) new MutationObserver(syncCompact).observe(root, { attributes: true, attributeFilter: ['style'] });
 
   if (window.ResizeObserver) new ResizeObserver(function () { scenes.redraw(); }).observe($('artWrap'));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { scenes.redraw(); });

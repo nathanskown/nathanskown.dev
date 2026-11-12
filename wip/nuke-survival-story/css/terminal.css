@@ -41,6 +41,8 @@ body::after { background: radial-gradient(ellipse at center, transparent 62%, rg
 
 .app {
   height: var(--app-h, 100%);
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   max-width: 1400px;
@@ -201,7 +203,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 .ln-afterword { color: var(--fg); margin: 0 0 .35em; padding-left: 12px; border-left: 1px solid var(--line); font-size: .95em; }
 
 /* tappable shortcuts above the prompt */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: 0; padding: 0 16px 6px; flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: 0; padding: 0 16px 6px; flex: none; background: var(--panel); position: relative; z-index: 2; }
 .chips:empty { display: none; }
 .chip {
   font-size: 12px; letter-spacing: .04em; color: var(--fg);
@@ -217,7 +219,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 /* fallback box when the clipboard isn't available */
 .copybox { width: 100%; min-height: 120px; background: var(--panel); color: var(--fg); border: 1px solid var(--dim); font: 12px/1.5 var(--body); padding: 8px; margin: 0 0 .8em; }
 
-.cmd { display: flex; align-items: baseline; gap: .6em; flex: none; margin: 0; padding: 8px 16px 12px; border-top: 1px solid var(--line); }
+.cmd { display: flex; align-items: baseline; gap: .6em; flex: none; margin: 0; padding: 8px 16px 12px; border-top: 1px solid var(--line); background: var(--panel); position: relative; z-index: 2; }
 .prompt { color: var(--g); white-space: nowrap; }
 body.playing .prompt { color: var(--amber); }
 #input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--hi); font: inherit; font-size: 16px; caret-color: var(--g); padding: 0; }
@@ -317,10 +319,28 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   .ln-banner { font-size: 32px; }
   .ln-title { font-size: 21px; }
   .ln-ending-title { font-size: 27px; }
-  .feed-scroll { padding: 12px 12px 8px; }
-  .chips { padding: 0 12px 6px; }
+  .feed-scroll { padding: 12px 12px 10px; }
+  .chips {
+    flex-wrap: nowrap; overflow-x: auto; max-width: none;
+    padding: 4px 12px 6px; gap: 6px; scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; max-width: none; min-height: 44px; }
   .cmd { padding: 8px 12px 10px; }
+  .scene-frame { --scene-cap: min(156px, max(96px, calc(var(--app-h, 100dvh) - 560px))); }
 }
+/* Short window or the phone keyboard (--app-h around 500px): drop the picture
+   and the chip row so the prompt and several lines of story stay on screen. */
+body.compact .scene-frame { display: none; }
+body.compact .chips { display: none; }
+body.compact .scene-readout.show,
+body.compact .art-wrap.has-art .scene-readout.show {
+  max-height: 40px; padding-top: 3px; padding-bottom: 3px;
+}
+body.compact .panel-h { padding: 4px 8px; }
+body.compact .fkeys button,
+body.compact .scene-toggle,
+body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2px; }
 
 /* Phones and touch screens: every tap target at least 44px tall (site rule) */
 @media (max-width: 600px), (pointer: coarse) {
