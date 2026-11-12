@@ -44,6 +44,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
   position: relative;
 }
@@ -295,14 +296,18 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   body { font-size: 13.5px; }
   .app { padding-bottom: max(10px, env(safe-area-inset-bottom, 0px)); }
   .ticker { display: none; }
-  .top { height: 48px; max-height: 56px; padding: 0 2px; gap: 8px; font-size: 13px; }
+  .top {
+    height: 56px; max-height: 56px; padding: 0 2px; gap: 8px; font-size: 13px;
+    padding-left: max(2px, env(safe-area-inset-left, 0px));
+    padding-right: max(2px, env(safe-area-inset-right, 0px));
+  }
   .top .crumb, .top .live { display: none; }
-  .top .brand { min-height: 0; }
+  .top .brand { min-height: 44px; }
   .clock { font-size: 22px; }
-  .menu-toggle { display: inline-flex; align-items: center; height: 28px; min-height: 0; }
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; height: 44px; padding: 0 10px; }
   .fkeys {
     display: none;
-    position: absolute; z-index: 35; top: 48px; left: 0; right: 0;
+    position: absolute; z-index: 35; top: 56px; left: 0; right: 0;
     background: var(--bg); border-bottom: 1px solid var(--line); flex-wrap: wrap;
   }
   body.nav-open .fkeys { display: flex; }
@@ -344,21 +349,23 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   .chips::-webkit-scrollbar { display: none; }
   .chips.more ~ .chips-hint-right,
   .chips.scrolled ~ .chips-hint-left { display: block; }
-  .chip { flex: none; max-width: none; min-height: 44px; }
-  .cmd { padding: 8px 12px 10px; }
+  .chip, .page-btn, .fkeys button, .ln-choice, .menu-toggle { flex: none; min-width: 44px; min-height: 44px; }
+  .chip { max-width: none; }
+  #input { font-size: 16px; }
+  .cmd { padding: 8px 12px max(10px, env(safe-area-inset-bottom, 0px)); }
   .scene-frame { --scene-cap: min(156px, max(96px, calc(var(--app-h, 100dvh) - 560px))); }
 }
 /* Short window or the phone keyboard (--app-h around 500px): drop the picture
    and the chip row so the prompt and several lines of story stay on screen. */
 body.compact .scene-frame { display: none; }
 body.compact .chips { display: none; }
+body.compact .chips.has-choices { display: flex; }
 body.compact .scene-readout.show,
 body.compact .art-wrap.has-art .scene-readout.show {
   max-height: 40px; padding-top: 3px; padding-bottom: 3px;
 }
 body.compact .panel-h { padding: 4px 8px; }
-body.compact .fkeys button,
-body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2px; }
+body.compact .top .brand { min-height: 44px; }
 /* The picture is already hidden here, so the header control that hides it is too. */
 body.compact .scene-toggle,
 body.compact .chips.more ~ .chips-hint,
@@ -384,7 +391,7 @@ body.compact .chips.scrolled ~ .chips-hint { display: none; }
 }
 @media (max-width: 600px) {
   .scene-toggle { min-height: 0; height: 22px; padding: 0 6px; }
-  .top .brand { min-height: 0; }
+  .top .brand, .menu-toggle, .chip, .page-btn, .fkeys button, .ln-choice { min-width: 44px; min-height: 44px; }
 }
 
 /* Talk: a short ID card, not a 16:9 scene panel. The facts sit beside the portrait. */

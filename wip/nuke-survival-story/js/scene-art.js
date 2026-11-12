@@ -55,7 +55,7 @@
     end_up_north: 'At night he holds a lantern beside a pickup with its tailgate down. The driver leans from the cab, with pines and a crescent moon behind them.',
     end_bunker: 'He sits on a bunk while a man in a tactical vest reads from a blank sheet. Shelves of stores line the wall.',
     end_locked_out: 'He strains against the wheel of a heavy round vault door.',
-    end_business_as_usual: 'He sits at a table pointing at a bar chart on a laptop, across from a bald man. A map hangs on the wall behind them.'
+    end_business_as_usual: 'He points at a bar chart on a laptop while a man in a quarter-zip sits across the table. The cord runs to a power strip, and a dark map hangs on the wall.'
   };
 
   var failed = {};

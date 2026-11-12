@@ -74,7 +74,7 @@
   var pager = $('pager');
 
   function choiceAsChips() {
-    return window.matchMedia('(max-width: 600px)').matches && !document.body.classList.contains('compact');
+    return window.matchMedia('(max-width: 600px)').matches;
   }
   function hasMore() { return pageIndex < pages.length - 1; }
   function markDiscussed(el) {
@@ -495,13 +495,14 @@
   function renderChips(v) {
     var box = $('chips');
     box.innerHTML = '';
+    box.classList.remove('has-choices');
     if (!v || !game.isActive()) { box.appendChild(chip('PLAY', 'play', 'alt')); return; }
     if (v.mode === 'name') return;
     if (!v.playing) { box.appendChild(chip('CONTINUE', '1', 'alt')); box.appendChild(chip('START OVER', '2')); return; }
     if (v.asking) { box.appendChild(chip('YES', 'yes', 'alt')); box.appendChild(chip('NO', 'no')); return; }
     if (v.ended) { ['restart', 'endings', 'share'].forEach(function (c) { box.appendChild(chip(c.toUpperCase(), c, c === 'share' ? 'alt' : '')); }); return; }
-    var last = !pages.length || pageIndex >= pages.length - 1;
-    if (v.talking && choiceAsChips() && last && v.choices && v.choices.length) {
+    if (v.talking && choiceAsChips() && v.choices && v.choices.length) {
+      box.classList.add('has-choices');
       v.choices.forEach(function (c) { box.appendChild(chip(c.text, String(c.n), '', c.n + '.', c.picked)); });
       syncChipHint();
       return;
