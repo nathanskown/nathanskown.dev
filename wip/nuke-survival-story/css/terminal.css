@@ -41,6 +41,8 @@ body::after { background: radial-gradient(ellipse at center, transparent 62%, rg
 
 .app {
   height: var(--app-h, 100%);
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   max-width: 1400px;
@@ -120,8 +122,45 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 
 /* ---- scene */
 .scene { flex: none; }
-.art-wrap { padding: 0; overflow: hidden; height: 236px; }
-#sceneCanvas { display: block; width: 100%; height: 100%; }
+.art-wrap { padding: 0; overflow: hidden; }
+/* The picture is 16:9. On a short desktop window it stays 16:9 and narrows
+   so the command line below is still on screen. Phones use the full width. */
+.scene-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #030703;
+  overflow: hidden;
+  /* Shrink on a short window, including while the phone keyboard is up (--app-h), and stay 16:9. */
+  --scene-cap: max(140px, min(34dvh, calc(var(--app-h, 100dvh) - 520px)));
+  width: min(100%, calc(var(--scene-cap) * 16 / 9));
+  max-height: var(--scene-cap);
+  margin-inline: auto;
+}
+#sceneCanvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; z-index: 0; }
+.scene-image {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; z-index: 1; pointer-events: none;
+}
+.scene-image[hidden] { display: none; }
+.scene-image.is-shown { opacity: 1; z-index: 2; }
+/* Desktop keeps labels on the canvas. When a picture covers that canvas, the same strip used on phones sits under the picture so the live numbers stay readable. */
+.art-wrap.has-art .scene-readout.show {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px;
+  max-height: 72px; overflow: auto; scrollbar-width: thin;
+  padding: 6px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.3;
+}
+.art-wrap.has-art .ro-row { display: flex; flex-wrap: wrap; column-gap: .4em; min-width: 0; }
+.art-wrap.has-art .ro-row.solo { grid-column: 1 / -1; }
+.art-wrap.has-art .ro-row .k { color: var(--dim); }
+.art-wrap.has-art .ro-row .v { color: var(--fg); }
+.art-wrap.has-art .ro-chip { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.art-wrap.has-art .ro-chip i { width: 8px; height: 8px; border-radius: 50%; flex: none; box-sizing: border-box; }
+.art-wrap.has-art .ro-chip.off { color: var(--dim); }
+.art-wrap.has-art .ro-chip.off i { border: 1px solid var(--dim); }
+.art-wrap.has-art .ro-chip.on i { background: var(--g); }
+@media (prefers-reduced-motion: no-preference) {
+  .scene-image { transition: opacity .4s linear; }
+}
 .scene.person { border-color: var(--dim); }
 .art { margin: 0; font-family: var(--art); line-height: 1.12; color: var(--g); white-space: pre; font-size: 13px; }
 .scene.static .art { color: var(--red); animation: jitter .12s steps(2) 5; }
@@ -130,7 +169,8 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 .scene.ending .art { color: var(--amber); text-shadow: 0 0 2px var(--amber), 0 0 14px rgba(255,184,77,.35); }
 
 /* ---- feed */
-.feed { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 18px; cursor: text; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.feed { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.feed-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 8px; cursor: text; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .out { max-width: 78ch; }
 .ln { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 .8em; animation: in .2s ease-out both; }
 @keyframes in { from { opacity: 0; } to { opacity: 1; } }
@@ -163,7 +203,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 .ln-afterword { color: var(--fg); margin: 0 0 .35em; padding-left: 12px; border-left: 1px solid var(--line); font-size: .95em; }
 
 /* tappable shortcuts above the prompt */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: .6em 0 .2em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: 0; padding: 0 16px 6px; flex: none; background: var(--panel); position: relative; z-index: 2; }
 .chips:empty { display: none; }
 .chip {
   font-size: 12px; letter-spacing: .04em; color: var(--fg);
@@ -179,7 +219,7 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 /* fallback box when the clipboard isn't available */
 .copybox { width: 100%; min-height: 120px; background: var(--panel); color: var(--fg); border: 1px solid var(--dim); font: 12px/1.5 var(--body); padding: 8px; margin: 0 0 .8em; }
 
-.cmd { display: flex; align-items: baseline; gap: .6em; max-width: 78ch; margin-top: .4em; }
+.cmd { display: flex; align-items: baseline; gap: .6em; flex: none; margin: 0; padding: 8px 16px 12px; border-top: 1px solid var(--line); background: var(--panel); position: relative; z-index: 2; }
 .prompt { color: var(--g); white-space: nowrap; }
 body.playing .prompt { color: var(--amber); }
 #input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--hi); font: inherit; font-size: 16px; caret-color: var(--g); padding: 0; }
@@ -218,7 +258,7 @@ body.playing .prompt { color: var(--amber); }
 @keyframes flash-soft { 0% { opacity: 0; } 6% { opacity: .35; } 100% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .app, .tick-run, .ln, .live i, .map .here, .scene.static .art { animation: none !important; }
+  .app, .tick-run, .ln, .live i, .map .here, .scene.static .art, .scene-image { animation: none !important; transition: none !important; }
   .ticker { height: 28px; overflow: hidden; }
   .tick-track { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
   .tick-track::-webkit-scrollbar { display: none; }
@@ -252,9 +292,9 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   .top .crumb { display: none; }
   .clock { font-size: 20px; }
   .fkeys button { padding: 7px 10px; font-size: 12px; }
-  .art-wrap { height: 230px; aspect-ratio: auto; max-height: none; display: flex; flex-direction: column; }
-  #sceneCanvas { flex: 1 1 auto; min-height: 148px; height: auto; }
-  .scene-readout.show {
+  .art-wrap { height: auto; display: flex; flex-direction: column; }
+  #sceneCanvas { position: absolute; inset: 0; flex: none; min-height: 0; width: 100%; height: 100%; }
+  .scene-readout.show, .art-wrap.has-art .scene-readout.show {
     display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px;
     flex: 0 1 auto; max-height: 84px; overflow: auto; scrollbar-width: thin;
     padding: 6px 8px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.3;
@@ -279,8 +319,28 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   .ln-banner { font-size: 32px; }
   .ln-title { font-size: 21px; }
   .ln-ending-title { font-size: 27px; }
-  .feed { padding: 12px 12px 16px; }
+  .feed-scroll { padding: 12px 12px 10px; }
+  .chips {
+    flex-wrap: nowrap; overflow-x: auto; max-width: none;
+    padding: 4px 12px 6px; gap: 6px; scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; max-width: none; min-height: 44px; }
+  .cmd { padding: 8px 12px 10px; }
+  .scene-frame { --scene-cap: min(156px, max(96px, calc(var(--app-h, 100dvh) - 560px))); }
 }
+/* Short window or the phone keyboard (--app-h around 500px): drop the picture
+   and the chip row so the prompt and several lines of story stay on screen. */
+body.compact .scene-frame { display: none; }
+body.compact .chips { display: none; }
+body.compact .scene-readout.show,
+body.compact .art-wrap.has-art .scene-readout.show {
+  max-height: 40px; padding-top: 3px; padding-bottom: 3px;
+}
+body.compact .panel-h { padding: 4px 8px; }
+body.compact .fkeys button,
+body.compact .scene-toggle,
+body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2px; }
 
 /* Phones and touch screens: every tap target at least 44px tall (site rule) */
 @media (max-width: 600px), (pointer: coarse) {
@@ -298,5 +358,5 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
 .scene-toggle:focus-visible { outline: 1px solid var(--hi); outline-offset: 2px; }
 @media (max-width: 960px) {
   .scene-toggle { display: inline-flex; align-items: center; min-height: 44px; }
-  body.scene-hidden .art-wrap, body.typing .art-wrap { display: none; }
+  body.scene-hidden .art-wrap { display: none; }
 }
