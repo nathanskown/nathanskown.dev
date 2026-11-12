@@ -203,7 +203,12 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 .ln-afterword { color: var(--fg); margin: 0 0 .35em; padding-left: 12px; border-left: 1px solid var(--line); font-size: .95em; }
 
 /* tappable shortcuts above the prompt */
-.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: 0; padding: 0 16px 6px; flex: none; background: var(--panel); position: relative; z-index: 2; }
+.chips-wrap { position: relative; flex: none; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 78ch; margin: 0; padding: 0 16px 6px; background: var(--panel); position: relative; z-index: 2; }
+/* Sits over the row. It does not take taps, and it is not in the tab order or the screen reader. */
+.chips-hint { display: none; position: absolute; z-index: 3; top: 0; bottom: 0; width: 48px; pointer-events: none; }
+.chips-hint-right { right: 0; background: linear-gradient(to right, transparent, var(--panel) 78%); }
+.chips-hint-left { left: 0; background: linear-gradient(to left, transparent, var(--panel) 78%); }
 .chips:empty { display: none; }
 .chip {
   font-size: 12px; letter-spacing: .04em; color: var(--fg);
@@ -267,7 +272,7 @@ body.playing .prompt { color: var(--amber); }
     display: block; white-space: nowrap; width: max-content; max-width: none;
     overflow: visible; text-overflow: clip; transition: none;
   }
-  .flash.go, .flash.soft { animation: none; }
+  .flash.go, .flash.soft, .chips-hint { animation: none; transition: none; }
 }
 body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static .art { animation: none; }
 
@@ -323,8 +328,11 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
   .chips {
     flex-wrap: nowrap; overflow-x: auto; max-width: none;
     padding: 4px 12px 6px; gap: 6px; scrollbar-width: none;
+    scroll-padding-inline: 16px;
   }
   .chips::-webkit-scrollbar { display: none; }
+  .chips.more ~ .chips-hint-right,
+  .chips.scrolled ~ .chips-hint-left { display: block; }
   .chip { flex: none; max-width: none; min-height: 44px; }
   .cmd { padding: 8px 12px 10px; }
   .scene-frame { --scene-cap: min(156px, max(96px, calc(var(--app-h, 100dvh) - 560px))); }
@@ -339,8 +347,11 @@ body.compact .art-wrap.has-art .scene-readout.show {
 }
 body.compact .panel-h { padding: 4px 8px; }
 body.compact .fkeys button,
-body.compact .scene-toggle,
 body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2px; }
+/* The picture is already hidden here, so the header control that hides it is too. */
+body.compact .scene-toggle,
+body.compact .chips.more ~ .chips-hint,
+body.compact .chips.scrolled ~ .chips-hint { display: none; }
 
 /* Phones and touch screens: every tap target at least 44px tall (site rule) */
 @media (max-width: 600px), (pointer: coarse) {
@@ -353,7 +364,7 @@ body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .noscript { color: var(--amber); padding: 12px 16px; border: 1px solid var(--amber); margin: 0 0 12px; }
 
-/* Phones: let the reader hide the scene, and hide it while the keyboard is up */
+/* Phones: let the reader hide the scene. Compact mode hides this button while the picture is already gone. */
 .scene-toggle { display: none; border: 1px solid var(--line); color: var(--dim); padding: 4px 8px; letter-spacing: .06em; font-size: 11px; white-space: nowrap; font-family: var(--body); text-shadow: none; }
 .scene-toggle:focus-visible { outline: 1px solid var(--hi); outline-offset: 2px; }
 @media (max-width: 960px) {
