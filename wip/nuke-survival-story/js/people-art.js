@@ -11,7 +11,10 @@
 (function (root) {
   'use strict';
 
-  var available = [];
+  var available = [
+    'brenda', 'ray', 'dale', 'tran', 'phil', 'marsh', 'dana', 'ruth',
+    'jess', 'lou', 'osei', 'toula', 'trent', 'deshawn', 'haddads', 'kyle'
+  ];
 
   function has(id) { return !!id && available.indexOf(id) >= 0; }
 
@@ -24,6 +27,10 @@
 
   function show(img, id, alt) {
     if (!has(id)) { clear(img); return false; }
+    img.onerror = function () {
+      if ((img.getAttribute('src') || '').indexOf('/' + id + '.webp') < 0) return;
+      clear(img);
+    };
     img.alt = alt || '';
     img.sizes = '80px';
     img.srcset = 'img/people/' + id + '-192.webp 192w, img/people/' + id + '.webp 384w';

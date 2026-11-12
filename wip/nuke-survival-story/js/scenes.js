@@ -1054,8 +1054,7 @@
     var role = d.role || '';
     g.fact(p.name.toUpperCase() + (role ? ' · ' + role : ''));
     g.fact('STATUS', d.status || '—');
-    var photo = root.PleaseHoldPeople && root.PleaseHoldPeople.has(pid);
-    if (photo) { g.fill(0, 0, 160, 160, '#071207'); return; }
+    // The photo, when there is one, sits on top of this. A missing file leaves the silhouette.
     silhouette(g, 4, 4, 152, 152, (p.portrait || {}).prop);
   }
 

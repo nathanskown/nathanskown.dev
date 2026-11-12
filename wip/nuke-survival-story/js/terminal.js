@@ -440,14 +440,9 @@
     var img = $('personPhoto');
     if (!img || !window.PleaseHoldPeople) return;
     var p = id && STORY.people[id];
-    if (!p || !PleaseHoldPeople.has(id)) {
-      PleaseHoldPeople.clear(img);
-      $('sceneCanvas').style.visibility = '';
-      return;
-    }
+    if (!p || !PleaseHoldPeople.has(id)) { PleaseHoldPeople.clear(img); return; }
     var role = p.dossier && p.dossier.role ? ', ' + p.dossier.role : '';
     PleaseHoldPeople.show(img, id, p.name + role);
-    $('sceneCanvas').style.visibility = 'hidden';
   }
   function setHeader(title, idx) { $('sceneTitle').textContent = title; $('sceneIdx').textContent = idx; }
   function sceneKey(v) {
