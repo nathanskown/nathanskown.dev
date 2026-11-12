@@ -12,6 +12,7 @@
   --band: color-mix(in srgb, var(--g) 12%, #000000);
   --glow: color-mix(in srgb, var(--g) 38%, transparent);
   --panel: #030703;
+  --picked: #55995e; /* darker than body text, 5.9:1 on the panel */
   --body: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --display: VT323, ui-monospace, monospace;
   --art: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
@@ -170,8 +171,14 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 
 /* ---- feed */
 .feed { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.feed-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 8px; cursor: text; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-.out { max-width: 78ch; }
+.feed-scroll { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; padding: 14px 16px 8px; cursor: text; }
+.out { flex: 1; min-height: 0; overflow: hidden; max-width: 78ch; }
+.pager { flex: none; display: flex; align-items: center; gap: 8px; max-width: 78ch; padding-top: 6px; }
+.pager[hidden] { display: none; }
+.page-btn { border: 1px solid var(--line); color: var(--hi); padding: 4px 10px; min-height: 32px; letter-spacing: .06em; }
+.page-btn:hover, .page-btn:focus-visible { background: var(--band); border-color: var(--dim); outline: none; }
+.page-btn:disabled { visibility: hidden; }
+.page-count { flex: 1; text-align: center; color: var(--dim); letter-spacing: .08em; font-size: 12px; }
 .ln { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 .8em; animation: in .2s ease-out both; }
 @keyframes in { from { opacity: 0; } to { opacity: 1; } }
 
@@ -193,6 +200,8 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
   border: 1px solid var(--line); background: transparent; cursor: pointer;
 }
 .ln-choice:hover, .ln-choice:focus-visible { background: var(--band); border-color: var(--dim); outline: none; }
+.ln-choice.picked { color: var(--picked); border-style: dashed; }
+.ln-choice.picked:hover, .ln-choice.picked:focus-visible { color: var(--fg); border-style: dashed; }
 .ln-choice:disabled { color: var(--mute); border-color: transparent; cursor: default; pointer-events: none; }
 .ln-choice:disabled:hover, .ln-choice:disabled:focus-visible { background: transparent; border-color: transparent; }
 .ln-note { color: var(--g); }
@@ -215,6 +224,10 @@ body.playing .live i { background: var(--g); box-shadow: 0 0 8px var(--g); anima
 .chip.go b { color: var(--g); }
 .chip.talk b { color: var(--amber); }
 .chip.alt { border-color: var(--amber); color: var(--amber); }
+.chip.picked, .chip.picked b { color: var(--picked); }
+.chip.picked { border-style: dashed; }
+.chip.picked:hover, .chip.picked:focus-visible,
+.chip.picked:hover b, .chip.picked:focus-visible b { color: var(--fg); border-style: dashed; }
 
 /* fallback box when the clipboard isn't available */
 .copybox { width: 100%; min-height: 120px; background: var(--panel); color: var(--fg); border: 1px solid var(--dim); font: 12px/1.5 var(--body); padding: 8px; margin: 0 0 .8em; }
@@ -344,7 +357,7 @@ body.compact .top .brand { min-height: 32px; padding-top: 2px; padding-bottom: 2
 
 /* Phones and touch screens: every tap target at least 44px tall (site rule) */
 @media (max-width: 600px), (pointer: coarse) {
-  .chip, .fkeys button, .side-close, .flash-toggle { min-height: 44px; display: inline-flex; align-items: center; gap: .45em; }
+  .chip, .fkeys button, .side-close, .flash-toggle, .page-btn { min-height: 44px; display: inline-flex; align-items: center; gap: .45em; }
   .ln-choice { min-height: 44px; }
   .top .brand, .top .crumb a { display: inline-flex; align-items: center; min-height: 44px; }
 }

@@ -63,35 +63,206 @@
   loadTranscript();
 
   // ------------------------------------------------------------------ feed
-  // Old dialogue buttons stay in the scrollback. They stop working as soon as
-  // the player sends a new command, so a leftover "2" can't answer a later menu.
-  function retireChoices() {
-    var old = out.querySelectorAll('button.ln-choice:not([disabled])');
-    for (var i = 0; i < old.length; i++) old[i].disabled = true;
+  // One passage at a time. A passage is every line from a single command.
+  // If it is taller than the pane, it is split into pages. The next command
+  // replaces the passage instead of stacking under it.
+  var batch = null;
+  var booting = true;
+  var passage = [];
+  var pages = [];
+  var pageIndex = 0;
+  var pager = $('pager');
+
+  function choiceAsChips() {
+    return window.matchMedia('(max-width: 600px)').matches && !document.body.classList.contains('compact');
   }
-  function print(text, kind) {
-    transcript.push(kind === 'choice' ? '   ' + text : text);
-    saveTranscript();
+  function hasMore() { return pageIndex < pages.length - 1; }
+  function markDiscussed(el) {
+    el.classList.add('picked');
+    var note = document.createElement('span');
+    note.className = 'sr-only';
+    note.textContent = ' (already discussed)';
+    el.appendChild(note);
+  }
+  function renderBlock(block) {
     var el;
-    if (kind === 'choice') {
+    if (block.kind === 'choice') {
       el = document.createElement('button');
       el.type = 'button';
-      var n = /^(\d+)\./.exec(text);
+      el.className = 'ln ln-choice';
+      var n = /^(\d+)\./.exec(block.text);
       if (n) el.addEventListener('click', function () { submit(n[1]); });
-    } else {
-      el = document.createElement('div');
+      el.appendChild(document.createTextNode(block.text));
+      if (block.meta && block.meta.picked) markDiscussed(el);
+      return el;
     }
-    el.className = 'ln ln-' + (kind || 'text');
-    if (kind === 'boot') {
-      var parts = text.split('|');
+    if (block.kind === 'copy') {
+      el = document.createElement('textarea');
+      el.className = 'copybox';
+      el.value = block.text;
+      el.readOnly = true;
+      return el;
+    }
+    el = document.createElement('div');
+    el.className = 'ln ln-' + (block.kind || 'text');
+    if (block.kind === 'boot') {
+      var parts = String(block.text).split('|');
       el.innerHTML = '<span></span><span class="lead"></span><span class="ok"></span>';
       el.children[0].textContent = parts[0];
       el.children[2].textContent = parts[1] || 'OK';
     } else {
-      el.textContent = text;
+      el.textContent = block.text;
     }
-    out.appendChild(el);
     return el;
+  }
+  function splitSentences(text) {
+    var parts = [];
+    var re = /[^.!?]+[.!?]+["”']?(?:\s+|$)|[^.!?]+$/g;
+    var m;
+    while ((m = re.exec(text))) {
+      var s = m[0].trim();
+      if (s) parts.push(s);
+    }
+    return parts.length ? parts : [text];
+  }
+  function splitBlock(block) {
+    var bits = splitSentences(block.text);
+    if (bits.length < 2) {
+      var words = String(block.text).split(/\s+/);
+      if (words.length < 2) return [block];
+      var mid = Math.ceil(words.length / 2);
+      bits = [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+    }
+    return bits.map(function (t) { return { text: t, kind: block.kind, meta: block.meta }; });
+  }
+  function storyBlocks(blocks) {
+    return blocks.filter(function (b) { return !(b.kind === 'choice' && choiceAsChips()); });
+  }
+  function fillOut(blocks) {
+    out.innerHTML = '';
+    blocks.forEach(function (b) { out.appendChild(renderBlock(b)); });
+  }
+  function overflows() { return out.scrollHeight > out.clientHeight + 2; }
+  function takeFitting(blocks) {
+    var kept = [];
+    out.innerHTML = '';
+    for (var i = 0; i < blocks.length; i++) {
+      out.appendChild(renderBlock(blocks[i]));
+      if (overflows()) {
+        out.removeChild(out.lastChild);
+        break;
+      }
+      kept.push(blocks[i]);
+    }
+    return kept;
+  }
+  function setPager(on) { pager.hidden = !on; }
+  function withChipReserve(blocks, fn) {
+    var box = $('chips');
+    var need = choiceAsChips() && blocks.some(function (b) { return b.kind === 'choice'; });
+    var stamp = need ? box.innerHTML : '';
+    if (need && !box.firstChild) {
+      var dummy = document.createElement('span');
+      dummy.className = 'chip';
+      dummy.setAttribute('aria-hidden', 'true');
+      dummy.textContent = '1';
+      box.appendChild(dummy);
+    }
+    var result = fn();
+    if (need && !stamp) box.innerHTML = '';
+    return result;
+  }
+  function paginate(blocks) {
+    var live = out.getAttribute('aria-live');
+    out.setAttribute('aria-live', 'off');
+    var body = storyBlocks(blocks);
+    var built = withChipReserve(blocks, function () {
+      var pagesBuilt;
+      if (out.clientHeight < 24) pagesBuilt = [body];
+      else if (!body.length) pagesBuilt = [[]];
+      else {
+        setPager(false);
+        fillOut(body);
+        if (!overflows()) pagesBuilt = [body];
+        else {
+          setPager(true);
+          pagesBuilt = [];
+          var rest = body.slice();
+          var guard = 0;
+          while (rest.length && guard < 400) {
+            guard++;
+            var page = takeFitting(rest);
+            if (page.length) {
+              pagesBuilt.push(page);
+              rest = rest.slice(page.length);
+            } else {
+              var parts = splitBlock(rest[0]);
+              if (parts.length < 2 || parts[0].text === rest[0].text) pagesBuilt.push([rest.shift()]);
+              else rest.splice.apply(rest, [0, 1].concat(parts));
+            }
+          }
+          if (!pagesBuilt.length) pagesBuilt = [[]];
+          if (pagesBuilt.length < 2) setPager(false);
+        }
+      }
+      return pagesBuilt;
+    });
+    if (live) out.setAttribute('aria-live', live);
+    return built;
+  }
+  function setPageBtn(btn, on) {
+    btn.disabled = !on;
+    if (on) btn.removeAttribute('aria-hidden');
+    else btn.setAttribute('aria-hidden', 'true');
+  }
+  function showPage() {
+    var page = pages[pageIndex] || [];
+    fillOut(page);
+    var multi = pages.length > 1;
+    setPager(multi);
+    if (multi) {
+      $('pageCount').textContent = (pageIndex + 1) + '/' + pages.length;
+      setPageBtn($('pageBack'), pageIndex > 0);
+      setPageBtn($('pageMore'), hasMore());
+      $('pageMore').setAttribute('aria-label', 'Next page, ' + (pageIndex + 1) + ' of ' + pages.length);
+      $('pageBack').setAttribute('aria-label', 'Previous page, ' + (pageIndex + 1) + ' of ' + pages.length);
+    }
+    if (typeof game !== 'undefined' && game && game.view) renderChips(game.view());
+  }
+  function layoutPassage(blocks, index) {
+    passage = blocks || [];
+    pages = paginate(passage);
+    pageIndex = Math.min(index || 0, Math.max(0, pages.length - 1));
+    showPage();
+    if (out.clientHeight >= 24 && overflows()) {
+      var i = pageIndex;
+      pages = paginate(passage);
+      pageIndex = Math.min(i, Math.max(0, pages.length - 1));
+      showPage();
+    }
+  }
+  function commitPassage(blocks) { layoutPassage(blocks, 0); }
+  function relayoutPages() {
+    if (!passage.length) return;
+    layoutPassage(passage, pageIndex);
+  }
+  function advancePage(step) {
+    var next = pageIndex + step;
+    if (next < 0 || next >= pages.length) return;
+    pageIndex = next;
+    showPage();
+  }
+  function print(text, kind, meta) {
+    if (kind !== 'copy') {
+      transcript.push(kind === 'choice' ? '   ' + text : text);
+      saveTranscript();
+    }
+    var block = { text: text, kind: kind || 'text', meta: meta || null };
+    if (batch) batch.push(block);
+    else if (booting) {
+      passage.push(block);
+      layoutPassage(passage, 999);
+    } else commitPassage([block]);
   }
 
   var game = PleaseHoldEngine.createGame(STORY, {
@@ -311,38 +482,40 @@
     scenes.show('room:' + v.room, v.room, v);
   }
 
-  function chip(label, cmd, cls, hint) {
+  function chip(label, cmd, cls, hint, picked) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip' + (cls ? ' ' + cls : '');
     if (hint) { var h = document.createElement('b'); h.textContent = hint; b.appendChild(h); }
     b.appendChild(document.createTextNode(label));
+    if (picked) markDiscussed(b);
     b.addEventListener('click', function () { submit(cmd); });
     return b;
   }
   function renderChips(v) {
     var box = $('chips');
     box.innerHTML = '';
-    if (!game.isActive()) { box.appendChild(chip('PLAY', 'play', 'alt')); return; }
+    if (!v || !game.isActive()) { box.appendChild(chip('PLAY', 'play', 'alt')); return; }
     if (v.mode === 'name') return;
     if (!v.playing) { box.appendChild(chip('CONTINUE', '1', 'alt')); box.appendChild(chip('START OVER', '2')); return; }
     if (v.asking) { box.appendChild(chip('YES', 'yes', 'alt')); box.appendChild(chip('NO', 'no')); return; }
     if (v.ended) { ['restart', 'endings', 'share'].forEach(function (c) { box.appendChild(chip(c.toUpperCase(), c, c === 'share' ? 'alt' : '')); }); return; }
-    if (v.talking) return; // dialogue answers are already buttons
-    v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir)); });
-    v.people.forEach(function (n) { box.appendChild(chip(n, 'talk to ' + n, 'talk', 'TALK')); });
-    v.items.forEach(function (n) { box.appendChild(chip(n, 'take ' + n, '', 'TAKE')); });
+    var last = !pages.length || pageIndex >= pages.length - 1;
+    if (v.talking && choiceAsChips() && last && v.choices && v.choices.length) {
+      v.choices.forEach(function (c) { box.appendChild(chip(c.text, String(c.n), '', c.n + '.', c.picked)); });
+      return;
+    }
+    if (v.talking) return; // dialogue answers are buttons in the page
+    var picked = v.picked || {};
+    v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label])); });
+    v.people.forEach(function (p) { box.appendChild(chip(p.name, 'talk to ' + p.name, 'talk', 'TALK', p.picked)); });
+    v.items.forEach(function (n) { box.appendChild(chip(n, 'take ' + n, '', 'TAKE', !!picked[v.room + '|' + n])); });
   }
 
   // ------------------------------------------------------------------ log / share
   function copyText(text, what) {
     function fallback() {
-      var ta = document.createElement('textarea');
-      ta.className = 'copybox';
-      ta.value = text;
-      ta.readOnly = true;
-      out.appendChild(ta);
-      ta.focus(); ta.select();
+      print(text, 'copy');
       print('Your browser blocked copying. Select the text above and copy it yourself.', 'dim');
     }
     if (navigator.clipboard && window.isSecureContext) {
@@ -387,7 +560,7 @@
       print('Part of the work-in-progress corner of nathanskown.dev. Nothing here is finished.', 'shell');
       print('Right now: PLEASE HOLD. Novi, Michigan, the afternoon the bombs fall. Twenty places, six endings, one clock. Type “play”.', 'shell');
     },
-    clear: function () { out.innerHTML = ''; },
+    clear: function () { commitPassage([]); },
     play: function () { game.start(); }
   };
 
@@ -421,33 +594,52 @@
   }
 
   function submit(value) {
-    if (String(value).trim()) retireChoices();
-    var echo = print(promptEl.textContent + ' ' + value, 'echo');
-    if (String(value).trim()) { history.push(value); if (history.length > 100) history.shift(); }
+    var trimmed = String(value).trim();
+    if (trimmed) { history.push(value); if (history.length > 100) history.shift(); }
     hIndex = history.length;
+    booting = false;
+    batch = [];
+    print(promptEl.textContent + ' ' + value, 'echo');
     dispatch(String(value));
+    var blocks = batch;
+    batch = null;
     refresh();
-    // The story scroller shows the start of a long reply. The command line sits
-    // outside that scroller, so it stays on screen either way.
-    var replyHeight = out.scrollHeight - echo.offsetTop;
-    if (replyHeight > screen.clientHeight - 60) {
-      var delta = echo.getBoundingClientRect().top - screen.getBoundingClientRect().top;
-      screen.scrollTop += delta - 12;
-    } else screen.scrollTop = screen.scrollHeight;
+    commitPassage(blocks);
     if (window.innerWidth > 960) input.focus();
   }
 
-  function submitInput() { var v = input.value; input.value = ''; submit(v); }
+  function submitInput() {
+    var v = input.value;
+    if (!String(v).trim()) { if (hasMore()) advancePage(1); return; }
+    input.value = '';
+    submit(v);
+  }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); submitInput(); });
   input.addEventListener('keydown', function (e) {
+    if (e.key === ' ' && !input.value && hasMore()) { e.preventDefault(); advancePage(1); return; }
     if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); submitInput(); }
     else if (e.key === 'ArrowUp' && history.length) { e.preventDefault(); hIndex = Math.max(0, hIndex - 1); input.value = history[hIndex]; }
     else if (e.key === 'ArrowDown' && history.length) { e.preventDefault(); hIndex = Math.min(history.length, hIndex + 1); input.value = history[hIndex] || ''; }
   });
   screen.addEventListener('click', function (e) {
     if (e.target.closest('button')) return;
+    if (hasMore()) {
+      if (String(window.getSelection && window.getSelection())) return;
+      advancePage(1);
+      return;
+    }
     if (!String(window.getSelection && window.getSelection())) input.focus();
+  });
+  $('pageMore').addEventListener('click', function () { advancePage(1); });
+  $('pageBack').addEventListener('click', function () { advancePage(-1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target === input) return;
+    if (e.target && e.target.closest && e.target.closest('button, a, input, textarea, select')) return;
+    if (!hasMore()) return;
+    e.preventDefault();
+    advancePage(1);
   });
 
   var sideOpener = null;
@@ -548,7 +740,9 @@
     var fromVar = raw ? parseFloat(raw) : window.innerHeight;
     var visible = window.visualViewport ? window.visualViewport.height : fromVar;
     var h = Math.min(fromVar, visible, window.innerHeight);
+    var was = document.body.classList.contains('compact');
     document.body.classList.toggle('compact', h <= 520);
+    if (was !== document.body.classList.contains('compact')) relayoutPages();
   }
   if (window.visualViewport) {
     var vv = window.visualViewport;
@@ -570,11 +764,11 @@
     vv.addEventListener('resize', sizeApp);
     sizeApp();
   } else syncCompact();
-  window.addEventListener('resize', syncCompact);
+  window.addEventListener('resize', function () { syncCompact(); relayoutPages(); });
   if (window.MutationObserver) new MutationObserver(syncCompact).observe(root, { attributes: true, attributeFilter: ['style'] });
 
   if (window.ResizeObserver) new ResizeObserver(function () { scenes.redraw(); }).observe($('artWrap'));
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { scenes.redraw(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { scenes.redraw(); relayoutPages(); });
 
   // ------------------------------------------------------------------ boot
   var boot = [
@@ -588,6 +782,7 @@
   refresh();
   var i = 0;
   (function next() {
+    if (!booting) return;
     if (i < boot.length) { print(boot[i++], 'boot'); setTimeout(next, reduceMotion ? 0 : 110); return; }
     print('Type “help” for commands, or “play” to start PLEASE HOLD.', 'shell');
     if (window.innerWidth > 960) input.focus();
