@@ -171,6 +171,7 @@
         vars: JSON.parse(JSON.stringify(story.start.vars || {})),
         party: [], where: {}, roomItems: {}, visited: {}, fired: {}, once: {},
         ended: null, prev: null, checkpoints: [],
+        picked: {},
         // When the fallout arrives this game (minutes), and a fixed offset used for the radio's estimate.
         deadline: DL_EARLY + Math.round((DL_LATE - DL_EARLY) * random() / 5) * 5,
         etaSeed: random()
@@ -191,8 +192,15 @@
       var ns = JSON.parse(snap);
       ns.checkpoints = cps.filter(function (c) { return c.time <= ns.time; });
       ns.prev = null;
+      if (!ns.picked || typeof ns.picked !== 'object') ns.picked = {};
       S = ns;
     }
+    function markPicked(id) {
+      if (!S || !id) return;
+      if (!S.picked || typeof S.picked !== 'object') S.picked = {};
+      S.picked[id] = 1;
+    }
+    function isPicked(id) { return !!(S && S.picked && S.picked[id]); }
     function checkpoint() {
       var cps = S.checkpoints, last = cps[cps.length - 1];
       if (!last || S.time - last.time >= 20) {
@@ -437,6 +445,7 @@
       var e = findExit(q);
       if (!e) { say(DIRS[clean(q)] ? "You can't go that way." : "You can't go there from here."); out(exitLine(), 'dim'); return; }
       if (e['if'] && !test(e['if'])) { say(T(e.blocked) || "You can't go that way right now."); return; }
+      markPicked(S.room + '|' + (e.label ? T(e.label) : story.rooms[e.to].name));
       advance(moveMinutes(e));
       if (halt) return;
       if (e.text) say(T(e.text));
@@ -477,6 +486,7 @@
       if (halt) return;
       list.splice(list.indexOf(id), 1);
       S.inv.push(id);
+      markPicked(S.room + '|' + it.name);
       say(T(it.takeText) || 'Taken: ' + it.name + '.');
       run(it.onTake);
     }
@@ -567,6 +577,7 @@
       }
       var p = story.people[pid];
       if (!p.talk) return say(T(p.noTalk) || p.name + " doesn't want to talk.");
+      markPicked('talk:' + pid);
       seenThisTalk = {};
       var st = p.talk.start, nid = st;
       if (Array.isArray(st)) { nid = null; for (var i = 0; i < st.length; i++) if (test(st[i]['if'])) { nid = st[i].node; break; } }
@@ -585,16 +596,19 @@
         if (halt || S.ended || mode === 'ask') return;
         if (node.menu && !arr(node.choices).length) { showNode(pid, node.menu, true); return; }
       }
-      var choices = arr(node.choices).map(function (c, i) { return { c: c, key: pid + ':' + nid + ':' + i }; })
+      var choices = arr(node.choices).map(function (c, i) { return { c: c, key: c.id || (pid + ':' + nid + ':' + i) }; })
         .filter(function (x) { return test(x.c['if']) && !(x.c.once && S.once[x.key]); });
       if (!choices.length) { convo = null; if (node.next) showNode(pid, node.next); return; }
       convo = { pid: pid, choices: choices };
-      choices.forEach(function (x, i) { out((i + 1) + '. ' + T(x.c.text), 'choice'); });
+      choices.forEach(function (x, i) {
+        out((i + 1) + '. ' + T(x.c.text), 'choice', { id: x.key, picked: isPicked(x.key) });
+      });
       if (!S.once['tip:choices']) { S.once['tip:choices'] = 1; say(T(story.text.choiceTip), 'dim'); }
     }
     function choose(n) {
       var x = convo.choices[n - 1], pid = convo.pid;
       convo = null;
+      markPicked(x.key);
       if (x.c.once) S.once[x.key] = 1;
       // `pre` runs before the clock moves, so a flag can suppress an event the choice would otherwise cross.
       if (x.c.pre) run(x.c.pre);
@@ -700,7 +714,14 @@
         return;
       }
       if (mode === 'menu') {
-        if (line === '1' || line === 'continue') { S = pendingSave; pendingSave = null; mode = 'play'; describe(true); return; }
+        if (line === '1' || line === 'continue') {
+          S = pendingSave;
+          if (!S.picked || typeof S.picked !== 'object') S.picked = {};
+          pendingSave = null;
+          mode = 'play';
+          describe(true);
+          return;
+        }
         if (line === '2' || line === 'start over' || line === 'new' || line === 'restart') { del(KEY); newGame(); return; }
         if (line === 'quit') { mode = 'off'; say(T(story.text.quit), 'dim'); onExit(); return; }
         out('Type 1 to continue or 2 to start over.', 'dim');
@@ -779,8 +800,12 @@
         party: S.party.map(function (id) { return story.people[id].name; }),
         visited: Object.keys(S.visited),
         exits: visibleExits(r).map(function (x) { return { dir: x.dir, to: x.e.to, label: x.e.label ? T(x.e.label) : story.rooms[x.e.to].name }; }),
-        people: peopleHere().map(function (id) { return story.people[id].name; }),
+        people: peopleHere().map(function (id) { return { id: id, name: story.people[id].name, picked: isPicked('talk:' + id) }; }),
         items: roomItemsVisible().map(function (id) { return story.items[id].name; }),
+        picked: S.picked ? JSON.parse(JSON.stringify(S.picked)) : {},
+        choices: convo ? convo.choices.map(function (x, i) {
+          return { n: i + 1, text: T(x.c.text), id: x.key, picked: isPicked(x.key) };
+        }) : [],
         talking: !!convo || mode === 'ask',
         asking: mode === 'ask',
         talkingWith: convo ? convo.pid : null,

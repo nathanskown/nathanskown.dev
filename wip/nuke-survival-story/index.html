@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
-<link rel="stylesheet" href="css/terminal.css?v=54bba0ca">
+<link rel="stylesheet" href="css/terminal.css?v=1382ecaf">
 </head>
 <body>
   <div class="app" id="app">
@@ -66,7 +66,12 @@
 
         <div class="panel feed">
           <div class="feed-scroll" id="screen">
-            <div class="out" id="out" aria-live="polite" aria-relevant="additions" aria-label="Story"></div>
+            <div class="out" id="out" aria-live="polite" aria-atomic="true" aria-label="Story"></div>
+            <div class="pager" id="pager" hidden>
+              <button type="button" id="pageBack" class="page-btn">◂ BACK</button>
+              <span id="pageCount" class="page-count">1/1</span>
+              <button type="button" id="pageMore" class="page-btn">MORE ▸</button>
+            </div>
           </div>
           <div class="chips-wrap">
             <div class="chips" id="chips" aria-label="Quick actions"></div>
@@ -101,11 +106,11 @@
   </div>
   <div class="flash" id="flash"></div>
 
-  <script src="js/engine.js?v=c565d50"></script>
-  <script src="js/story.js?v=abc066c"></script>
+  <script src="js/engine.js?v=f371f34c"></script>
+  <script src="js/story.js?v=c00ba7d8"></script>
   <script src="js/art.js?v=c565d50"></script>
-  <script src="js/scenes.js?v=abc066c"></script>
+  <script src="js/scenes.js?v=35898563"></script>
   <script src="js/scene-art.js?v=061758e8"></script>
-  <script src="js/terminal.js?v=eafbc7c9"></script>
+  <script src="js/terminal.js?v=ac5da66d"></script>
 </body>
 </html>
