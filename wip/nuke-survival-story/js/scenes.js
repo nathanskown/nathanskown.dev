@@ -5,7 +5,8 @@
  * "instrument" screen per room, a dossier card for whoever you're talking
  * to, the detonation that opens the game, and one screen per ending.
  *
- * Everything is drawn in a virtual 640 x 240 space and scaled to fit.
+ * Everything is drawn in a virtual 640 x 240 space and scaled to fit the
+ * 16:9 picture frame (letterboxed). A shipped illustration can cover it.
  * Each scene is a function (g, t, v): g = drawing kit, t = seconds since the
  * scene appeared, v = the game's view (time, flags, vars, room...).
  *
@@ -172,9 +173,10 @@
         if (line) g.text(line, x, yy, drawn);
         return yy;
       },
-      // The phone strip, in the order this frame's facts were recorded. Null on a desktop canvas.
-      readout: function () {
-        if (!phone) return null;
+      // The phone strip, in the order this frame's facts were recorded.
+      // Desktop skips it unless an illustration is covering the canvas (force).
+      readout: function (force) {
+        if (!phone && !force) return null;
         return phoneFacts.slice();
       }
     };
@@ -1080,6 +1082,7 @@
     var noFlash = !!opts.noFlash;
     var onReadout = opts.onReadout || null;
     var lastSig = null;
+    var forceReadout = false;
     function now() { return (window.performance ? performance.now() : Date.now()) / 1000; }
     function size() {
       var r = canvas.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -1110,7 +1113,7 @@
     }
     function publish() {
       if (!onReadout) return;
-      var items = g.readout();
+      var items = g.readout(forceReadout);
       var sig = '';
       if (items) for (var i = 0; i < items.length; i++) {
         var it = items[i];
@@ -1132,7 +1135,8 @@
       update: function (v) { view = v || view; if (reduce) draw(); },
       redraw: draw,
       setNoFlash: function (v) { noFlash = !!v; },
-      readout: function () { return g.readout(); },
+      setForceReadout: function (v) { forceReadout = !!v; },
+      readout: function () { return g.readout(forceReadout); },
       has: function (kind, id) { return kind === 'room' ? !!rooms[id] : kind === 'ending' ? !!endings[id] : false; }
     };
   }

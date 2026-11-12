@@ -9,12 +9,17 @@
   var $ = function (id) { return document.getElementById(id); };
   var screen = $('screen'), out = $('out'), form = $('cmd'), input = $('input'), promptEl = $('prompt');
   var sceneEl = $('scene');
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var scenes = PleaseHoldScenes.Renderer($('sceneCanvas'), STORY, {
-    reduceMotion: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    reduceMotion: reduceMotion,
     onReadout: function (items) { renderReadout(items); }
   });
+  var sceneImages = PleaseHoldSceneArt.mount($('sceneImageA'), $('sceneImageB'), reduceMotion, function (on) {
+    $('artWrap').classList.toggle('has-art', !!on);
+    if (scenes.setForceReadout) scenes.setForceReadout(!!on);
+    if (!on && scenes.redraw) scenes.redraw();
+  });
   var detonationUntil = 0, staticOn = false;
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var flashesOn = !reduceMotion;
   try {
     var savedFlashes = localStorage.getItem('please-hold-v1:flashes');
@@ -28,7 +33,7 @@
   var roomOrder = Object.keys(STORY.rooms);
   var staticTimer = null, lastTicker = '';
   var tickItems = [], tickIndex = 0, tickTimer = 0, tickPaused = false;
-  var readoutKey = '', resetReadoutScroll = false;
+  var readoutKey = '', resetReadoutScroll = false, pendingStripReset = false;
   var TRANSCRIPT_KEY = 'please-hold-v1:transcript';
   var TRANSCRIPT_MAX = 200 * 1024;
   var transcript = [];
@@ -125,6 +130,9 @@
       staticOn = true;
       sceneEl.classList.toggle('static', flashesOn && !reduceMotion);
       noteScene('static');
+      sceneImages.show('');
+      if (scenes.setForceReadout) scenes.setForceReadout(false);
+      $('artWrap').classList.remove('has-art');
       scenes.show('static');
       staticTimer = setTimeout(function () { staticOn = false; sceneEl.classList.remove('static'); refresh(); }, 1100);
     }
@@ -249,8 +257,12 @@
       el.scrollTop = 0; resetReadoutScroll = false; return;
     }
     // Keep the place while a live value ticks. A new room or scene starts at the top.
-    var top = resetReadoutScroll ? 0 : el.scrollTop;
+    // On a phone the strip is display:none while the keyboard is up, and a scroll
+    // reset during that time is forgotten when the strip comes back.
+    var reset = resetReadoutScroll;
     resetReadoutScroll = false;
+    var top = reset ? 0 : el.scrollTop;
+    if (reset && (document.body.classList.contains('typing') || document.body.classList.contains('scene-hidden'))) pendingStripReset = true;
     el.hidden = false;
     el.className = 'scene-readout show';
     el.innerHTML = items.map(function (it) {
@@ -277,7 +289,11 @@
   }
   function renderScene(v) {
     if (staticOn) return;
-    noteScene(sceneKey(v));
+    var key = sceneKey(v);
+    noteScene(key);
+    var artOn = sceneImages.show(PleaseHoldSceneArt.hookFor(v, key));
+    $('artWrap').classList.toggle('has-art', !!artOn);
+    if (scenes.setForceReadout) scenes.setForceReadout(!!artOn);
     sceneEl.classList.toggle('ending', !!(v.playing && v.ended));
     sceneEl.classList.toggle('person', !!(v.playing && v.talkingWith));
     if (!v.playing) { setHeader('PLEASE HOLD', 'LAB · WIP'); scenes.show('title', null, v); return; }
@@ -501,13 +517,20 @@
     b.setAttribute('aria-expanded', hidden ? 'false' : 'true');
     b.textContent = hidden ? 'SHOW SCENE' : 'HIDE SCENE';
     if (persist) { try { localStorage.setItem('please-hold:scene-hidden', hidden ? '1' : '0'); } catch (e) { /* storage blocked */ } }
-    if (!hidden) scenes.redraw();
+    if (!hidden) {
+      scenes.redraw();
+      if (pendingStripReset) { $('sceneReadout').scrollTop = 0; pendingStripReset = false; }
+    }
   }
   $('sceneToggle').addEventListener('click', function () { setSceneHidden(!document.body.classList.contains('scene-hidden'), true); });
   try { if (localStorage.getItem('please-hold:scene-hidden') === '1') setSceneHidden(true, false); } catch (e) { /* storage blocked */ }
   input.addEventListener('focus', function () { if (narrow.matches) document.body.classList.add('typing'); });
   input.addEventListener('blur', function () {
     document.body.classList.remove('typing');
+    if (pendingStripReset && !document.body.classList.contains('scene-hidden')) {
+      $('sceneReadout').scrollTop = 0;
+      pendingStripReset = false;
+    }
     if (!document.body.classList.contains('scene-hidden')) scenes.redraw();
   });
   $('map').addEventListener('click', function (e) {
