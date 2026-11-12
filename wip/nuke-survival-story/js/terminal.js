@@ -143,18 +143,52 @@
     blocks.forEach(function (b) { out.appendChild(renderBlock(b)); });
   }
   function overflows() { return out.scrollHeight > out.clientHeight + 2; }
+  function fitPartial(block) {
+    var words = String(block.text).trim().split(/\s+/);
+    if (words.length < 2) return null;
+    var lo = 1, hi = words.length - 1, best = 0;
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      var el = renderBlock({ text: words.slice(0, mid).join(' '), kind: block.kind, meta: block.meta });
+      out.appendChild(el);
+      var ok = !overflows();
+      out.removeChild(el);
+      if (ok) { best = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    if (!best || best >= words.length) return null;
+    return {
+      fit: { text: words.slice(0, best).join(' '), kind: block.kind, meta: block.meta },
+      rest: { text: words.slice(best).join(' '), kind: block.kind, meta: block.meta }
+    };
+  }
   function takeFitting(blocks) {
     var kept = [];
+    var remainder = null;
+    var consumed = 0;
     out.innerHTML = '';
     for (var i = 0; i < blocks.length; i++) {
       out.appendChild(renderBlock(blocks[i]));
-      if (overflows()) {
-        out.removeChild(out.lastChild);
-        break;
+      if (!overflows()) {
+        kept.push(blocks[i]);
+        consumed = i + 1;
+        continue;
       }
-      kept.push(blocks[i]);
+      out.removeChild(out.lastChild);
+      if (kept.length) {
+        var partial = fitPartial(blocks[i]);
+        if (partial) {
+          out.appendChild(renderBlock(partial.fit));
+          if (!overflows()) {
+            kept.push(partial.fit);
+            remainder = partial.rest;
+            consumed = i + 1;
+          } else out.removeChild(out.lastChild);
+        }
+      }
+      break;
     }
-    return kept;
+    return { kept: kept, consumed: consumed, remainder: remainder };
   }
   function setPager(on) { pager.hidden = !on; }
   function renderTalkChoices(v) {
@@ -175,6 +209,13 @@
       b.addEventListener('click', function () { submit(String(c.n)); });
       box.appendChild(b);
     });
+    markTalkMore();
+  }
+  function markTalkMore() {
+    var box = $('talkChoices');
+    if (!box || box.hidden) return;
+    var more = box.scrollHeight > box.clientHeight + 4 && box.scrollTop + box.clientHeight < box.scrollHeight - 4;
+    box.classList.toggle('more', more);
   }
   function withChipReserve(blocks, fn) {
     renderTalkChoices();
@@ -199,10 +240,11 @@
           var guard = 0;
           while (rest.length && guard < 400) {
             guard++;
-            var page = takeFitting(rest);
-            if (page.length) {
-              pagesBuilt.push(page);
-              rest = rest.slice(page.length);
+            var got = takeFitting(rest);
+            if (got.kept.length) {
+              pagesBuilt.push(got.kept);
+              rest = rest.slice(got.consumed);
+              if (got.remainder) rest.unshift(got.remainder);
             } else {
               var parts = splitBlock(rest[0]);
               if (parts.length < 2 || parts[0].text === rest[0].text) pagesBuilt.push([rest.shift()]);
@@ -504,9 +546,14 @@
       scenes.show('end:' + v.ended, v.ended, v); return;
     }
     if (v.talkingWith) {
-      setHeader('FILE · ' + STORY.people[v.talkingWith].name.toUpperCase(), v.clock);
+      var person = STORY.people[v.talkingWith];
+      var full = person.name + (person.dossier && person.dossier.role ? ', ' + person.dossier.role : '');
+      $('artWrap').setAttribute('aria-label', full);
+      $('sceneTitle').setAttribute('title', full);
+      setHeader('FILE · ' + person.name.toUpperCase(), v.clock);
       scenes.show('person:' + v.talkingWith, v.talkingWith, v); return;
     }
+    $('artWrap').removeAttribute('aria-label');
     var idx = roomOrder.indexOf(v.room) + 1;
     setHeader('LOC ' + (idx < 10 ? '0' : '') + idx + ' · ' + v.roomName.toUpperCase(), v.clock);
     scenes.show('room:' + v.room, v.room, v);
@@ -835,6 +882,7 @@
   window.addEventListener('resize', function () { syncCompact(); relayoutPages(); });
   if (window.MutationObserver) new MutationObserver(syncCompact).observe(root, { attributes: true, attributeFilter: ['style'] });
   $('chips').addEventListener('scroll', syncChipHint, { passive: true });
+  $('talkChoices').addEventListener('scroll', markTalkMore, { passive: true });
   if (window.ResizeObserver) new ResizeObserver(syncChipHint).observe($('chips'));
 
   if (window.ResizeObserver) new ResizeObserver(function () { scenes.redraw(); }).observe($('artWrap'));

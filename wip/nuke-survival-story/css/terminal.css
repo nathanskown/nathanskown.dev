@@ -359,7 +359,14 @@ body.no-flash .flash.go, body.no-flash .flash.soft, body.no-flash .scene.static 
    and the chip row so the prompt and several lines of story stay on screen. */
 body.compact .scene-frame { display: none; }
 body.compact .chips { display: none; }
-body.compact .talk-choices { max-height: 168px; overflow: auto; }
+@media (max-width: 600px) {
+  #scene.person > .panel-h { display: none; }
+  .talk-choices { max-height: 122px; overflow: auto; scrollbar-width: thin; }
+  .talk-choices.more {
+    -webkit-mask-image: linear-gradient(#000 0, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(#000 0, #000 calc(100% - 28px), transparent);
+  }
+}
 body.compact .scene-readout.show,
 body.compact .art-wrap.has-art .scene-readout.show {
   max-height: 40px; padding-top: 3px; padding-bottom: 3px;
@@ -413,10 +420,13 @@ body.compact .chips.scrolled ~ .chips-hint { display: none; }
 #scene.person .ro-row.solo { grid-column: 1 / -1; font-family: var(--display); font-size: 26px; letter-spacing: .04em; line-height: 1; }
 #scene.person .ro-row.solo .k { color: var(--hi); margin-right: 0; }
 @media (max-width: 600px) {
-  #scene.person .scene-frame { width: 64px; height: 64px; max-height: 64px; }
-  #scene.person .art-wrap { padding: 8px; gap: 10px; flex-direction: row; max-height: 120px; align-items: center; }
-  #scene.person .scene-readout.show { max-height: none; overflow: visible; }
-  #scene.person .ro-row.solo { font-size: 22px; }
+  #scene.person .scene-frame { width: 56px; height: 56px; max-height: 56px; }
+  #scene.person .art-wrap { padding: 6px 8px; gap: 8px; flex-direction: row; max-height: 72px; align-items: center; }
+  #scene.person .scene-readout.show { max-height: none; overflow: hidden; }
+  #scene.person .ro-row { flex-wrap: nowrap; min-width: 0; }
+  #scene.person .ro-row.solo { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #scene.person .ro-row:not(.solo),
+  #scene.person .ro-row .v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   #scene.person.card-tight .ro-row:not(.solo) { display: none; }
 }
 .talk-choices { display: none; flex: none; flex-direction: column; gap: 6px; padding: 0 12px 8px; }
@@ -428,9 +438,6 @@ body.compact .chips.scrolled ~ .chips-hint { display: none; }
 }
 .talk-choice.picked { color: var(--picked); border-style: dashed; }
 .talk-choice:hover, .talk-choice:focus-visible { background: var(--band); border-color: var(--dim); outline: none; }
-@media (max-width: 600px) and (max-height: 720px) {
-  .talk-choices { max-height: 160px; overflow: auto; }
-}
 body.compact #scene.person .scene-frame { display: none; }
 body.compact #scene.person .art-wrap { max-height: none; min-height: 40px; padding: 4px 8px; }
 body.compact #scene.person .scene-readout.show,
