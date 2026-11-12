@@ -78,7 +78,7 @@ var STORY = {
     ],
     events: [
       { at: "12:40 PM", effects: { fx: "flash" }, text: "Another flash, fainter, far off to the east-northeast. Macomb County, maybe. The sound comes almost two minutes later, a long low knock, like someone at a door in another house." },
-      { at: "12:31 PM", effects: { flag: "msu_text" }, text: "Your phone buzzes once. One text made it through the jammed network, from your little sister at State, stamped 12:24: “are you ok?? were in the dorm basement, RA says stay here. DONT go to the game lol. love you.” You type three different answers and delete them. You send “ok. stay there. love you” and watch the little wheel spin, and spin." },
+      { at: "12:31 PM", effects: { flag: "msu_text" }, text: "Your phone buzzes once. One text has crawled through the jammed network, from your little sister at State, stamped 12:24. It says “are you ok?? were in the” and then nothing, because that's all of it that made it. You read it eleven times. You type “where are you. stay there.” and watch the little wheel spin, and spin." },
       { at: "1:15 PM", effects: { flag: "cells_dead" }, text: "Your phone's SOS ONLY turns into NO SERVICE. Somewhere a cell tower's backup battery has given up, or its fiber line ran through Detroit." },
       { at: "2:40 PM", effects: { flag: "water_off" }, text: [
         "Everywhere in Novi at once, faucets cough and go quiet. The water comes from Detroit's system, and Detroit's system is gone.",
@@ -101,6 +101,8 @@ var STORY = {
       ] },
       { at: "6:00 PM", effects: { flag: "landline_dead" } },
       { at: "6:00 PM", if: { in: "kitchen" }, text: "The hold music stops. Then the line. Not a dial tone. Nothing." },
+      { at: "2:10 PM", if: { in: ["street", "garage", "dunmore", "hub", "civic", "strip", "interchange", "m5"] }, text: "Two jets cross the sky, very high, heading west, too high to hear. Everyone outside watches them all the way to the horizon. Nobody says what they're thinking, and everybody is thinking it." },
+      { at: "5:15 PM", if: { in: ["street", "garage", "dunmore", "hub", "civic", "strip", "interchange", "m5"] }, text: "Far to the west, low on the horizon, the sky has picked up a faint brown edge, like smoke from a field burning somewhere past Lansing. It could be anything. You stand and look at it longer than you mean to." },
       { at: "6:45 PM", text: "The light is going orange. The sky to the west looks completely ordinary." },
       { at: "7:34 PM", text: "The sun goes down over Novi. Streetlights don't come on. Somewhere a generator is running, and somewhere a dog won't stop." }
     ],
@@ -123,7 +125,7 @@ var STORY = {
   text: {
     askName: "BRIGHTLINE FIBER · ACCOUNT VERIFICATION\nBefore we connect you, please say or enter the first name on the account.\n(Type your first name and press Enter.)",
     askNameAgain: "We didn't catch that. Please enter the first name on the account.",
-    afterIntro: "(Type “help” for commands, or “hint” if you're stuck. The game saves automatically.)",
+    afterIntro: "Somewhere in the next few hours, the fallout will arrive. Until then, the question isn't only where you'll be. It's who will be with you.\n\n(Type “help” for commands, or “hint” if you're stuck. The game saves automatically.)",
     unknown: "You're not sure how to do that. (Type “help” for commands.)",
     wait: "You wait.",
     noHint: "Look around. Talk to people. The clock is running.",
@@ -193,15 +195,14 @@ var STORY = {
 
   intro: [
     "Novi, Michigan. A Thursday in September. 12:09 PM.",
-    "You are twenty-eight years old and you own a house, which still sounds like a lie when you say it out loud. It's the smallest house on Cedar Hollow Court, a brick ranch a mile off Beck and Ten Mile, with a basement that takes on water if you look at it wrong. You bought it two years ago with everything you had and some you didn't. The HOA newsletter calls it “the starter home.” You've decided to take that as a compliment.",
-    "You work in finance, which mostly means you build slides about other people's money for a wealth-management firm off Twelve Mile. Today is a work-from-home day, which mostly means you have been on hold with Brightline Fiber for forty-seven minutes. The internet went out at nine. The hold music is a saxophone version of a song you almost recognize.",
-    "There's a Lions hoodie on the back of your chair that's older than your car. There are two tickets to tonight's Tigers game on the counter under your keys, because you promised your little sister you'd drive to East Lansing, pick her up from State, and buy her a hot dog she'll complain about. Your older sister is in Arizona, two thousand miles away, working a hospital shift. The three of you have a group chat that is mostly memes and arguments about whose turn it is to call Mom.",
-    "Brightline's automated system has your name on file, {name}, and has called you “a valued customer” eleven times since nine o'clock.",
+    "You have been on hold with Brightline Fiber for forty-seven minutes. The internet went out at nine. The hold music is a saxophone version of a song you almost recognize, and an automated voice has called you, {name}, “a valued customer” eleven times.",
+    "You are twenty-eight and you own a house, which still sounds like a lie when you say it out loud: the smallest house on Cedar Hollow Court, a brick ranch a mile off Beck and Ten Mile, with a basement that takes on water if you look at it wrong. The HOA newsletter calls it “the starter home.” You've decided to take that as a compliment.",
+    "You build slides about other people's money for a wealth-management firm off Twelve Mile. There's a Lions hoodie on the back of your chair that's older than your car, and two tickets to tonight's Tigers game on the counter under your keys, because you promised your little sister you'd drive to East Lansing, pick her up from State, and buy her a hot dog she'll complain about. Your older sister is in Arizona, working a hospital shift. The three of you have a group chat that is mostly memes and arguments about whose turn it is to call Mom.",
     "At 12:09 every phone in the house screams at once. The cell on the counter. The tablet in the bedroom. The old flip phone in the junk drawer that you forgot still had a SIM card.",
     "EMERGENCY ALERT\nBALLISTIC MISSILE THREAT INBOUND TO MICHIGAN. SEEK IMMEDIATE SHELTER. THIS IS NOT A DRILL.",
     "You read it twice. Then you do what almost everyone does, the thing every pamphlet ever printed tells you not to do. You go to the window and look.",
     "At 12:12 the sky to the southeast goes white. Not bright. White. For a second and a half, the shadows in your kitchen point the wrong way, and you think, absurdly, of the Tigers tickets.",
-    "You count without meaning to, the way you count after lightning. You get to a hundred and twelve.",
+    "You count without meaning to, the way you count after lightning. You get to a hundred and twenty-six.",
     "Then the east windows come in all at once, and the sound arrives. It isn't a bang. It's a weight, as if the air itself has been dropped on the roof.",
     "Then quiet. A car alarm. Two. Every dog on Cedar Hollow Court.",
     "The landline receiver is still in your hand, still playing the saxophone.",
@@ -272,7 +273,7 @@ var STORY = {
           effects: { flag: ["talked_sister", "knows_shelter_basics", "knows_get_inside"], text: [
             "You press FLASH, a button you have never pressed in two years of owning this phone. Static, a click, and then your older sister's voice from two thousand miles away, thin and far off, like she's calling from the bottom of a pool.",
             "“Oh thank God. Thank God. I've been calling every number I have for three hours.” She's at work. You can hear the hospital behind her: a page overhead, someone shouting a room number. “Listen to me. Are you listening? Basement. Middle of the basement, away from the window. Water, as much as you can. You stay down there two weeks. Not two days. Two weeks. You don't go out for anything. You don't let anybody talk you into driving anywhere.”",
-            "You tell her about the text from State. She already knows. “Twelve twenty-four. Dorm basement. She said you'd better not go to the game.” You laugh, and it comes out wrong, and she laughs too, and hers comes out wrong as well.",
+            "You tell her about the text from State, the one that stops halfway through a sentence. She already knows the rest. “She got through to me at one. Dorm basement, the whole floor. The RA has them in the laundry room, sitting on the folding tables. She's okay.” A pause. “She said you'd better not be going to the game.” You laugh, and it comes out wrong, and she laughs too, and hers comes out wrong as well.",
             "“Hey,” she says. “Hey. I mean it. Two weeks.” Then the line clicks, and the saxophone comes back, and you understand that you were never removed from the queue at all."
           ] }
         },
@@ -436,7 +437,7 @@ var STORY = {
         west: { to: "church", time: 8 }
       },
       scenery: {
-        "traffic, cars, westbound, shoulder, people": "A woman in scrubs. A man carrying a toddler and a laundry basket full of shoes. A teenager pushing his grandmother in an office chair. Nobody is honking. That's the thing you'll remember.",
+        "traffic, cars, westbound, shoulder, people": "A woman in scrubs. A man carrying a toddler and a laundry basket full of shoes. A teenager pushing his grandmother in an office chair. Nobody is honking. That's the thing you'll remember. Out of habit, you count cars past the officer for one minute: fourteen. You do the math before you can stop yourself. At this rate, the westbound line clears Ten Mile sometime Saturday.",
         "signals, lights, traffic lights": "Dark. Every one of them, as far as you can see.",
         "bus, smart bus": "A SMART bus, packed, with a hand-lettered sign in the window: NOT IN SERVICE / GOING ANYWAY."
       }
@@ -540,13 +541,13 @@ var STORY = {
       name: "St. Clare's",
       aliases: ["church", "st clares", "st. clare's", "st clare", "saint clares", "wedding"],
       text: [
-        { if: { notFlag: "wedding_over" }, text: "There's a wedding going on. White ribbons on the pews, a three-tier cake on a folding table in the entryway, maybe forty guests in good clothes. Some of them are crying for reasons that have nothing to do with weddings." },
+        { if: { notFlag: "wedding_over" }, text: "Ryan's wedding is going on. White ribbons on the pews, a three-tier cake on a folding table in the entryway, maybe forty guests in good clothes. Some of them are crying for reasons that have nothing to do with weddings." },
         { if: { flag: "wedding_over", notFlag: "witnessed" }, text: "The pews are empty. White ribbons, programs on the floor, a three-tier cake with one slice missing. Taped to the basement door, in the bride's handwriting: MARRIED 1:45 PM. SHELTERING DOWNSTAIRS. WE'RE FULL, WE'RE SORRY, GOD BLESS. M & R." },
         { if: { notFlag: ["witnessed", "wedding_over"], before: "1:15 PM" }, text: "The bride is standing in the aisle in her full dress, talking to the priest with the focus of someone defusing a bomb." },
-        { if: { notFlag: ["witnessed", "wedding_over"], after: "1:15 PM" }, text: "The ceremony has started. Mady is at the altar, and Father Andrew is speaking. The guests are quieter than a church usually is." },
+        { if: { notFlag: ["witnessed", "wedding_over"], after: "1:15 PM" }, text: "The ceremony has started. Ryan is at the altar with Mady, and Father Andrew is speaking. The guests are quieter than a church usually is." },
         { if: { flag: "witnessed" }, text: "The newlyweds are leading their guests down to the church basement, two by two, like an ark." }
       ],
-      short: "St. Clare's. The wedding, the cake, the guests in good clothes.",
+      short: "St. Clare's. Ryan's wedding, the cake, the guests in good clothes.",
       exits: { east: { to: "hub", time: 8, label: "Ten Mile and Taft" } },
       scenery: {
         "cake": "Three tiers, buttercream, sugar roses. Somebody has already cut a slice from the back and tried to hide it.",
@@ -634,7 +635,7 @@ var STORY = {
       name: "Grocery Store",
       aliases: ["grocery", "grocery store", "supermarket", "store"],
       text: [
-        "The automatic doors have been pried open and stay that way. Inside, it's dark and loud. The water aisle has been stripped down to the shelf paper. A manager with a bullhorn is losing an argument with three hundred people. In the dark, the freezer cases are sweating, and the floor is slick with something you decide not to think about.",
+        "The automatic doors have been pried open and stay that way. Inside, it's dark and loud. The water aisle has been stripped down to the shelf paper. A manager with a bullhorn is losing an argument with three hundred people. In the dark, the freezer cases are sweating, and the floor is slick with something you decide not to think about. You have built slides about supply shocks. You have never stood inside one.",
         { if: { flag: "trent_gone" }, text: "Near the registers there's an empty space where a cart full of water used to be." },
         { if: { notFlag: "trent_gone" }, text: "Near the registers, a man in a Lions windbreaker stands guard over a cart stacked with eight cases of water, one hand resting on something at his belt." }
       ],
@@ -818,7 +819,7 @@ var STORY = {
             ]
           },
           news: {
-            text: "“Phones are out. Jeff's got a radio. Mady is getting married at St. Clare's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
+            text: "“Phones are out. Jeff's got a radio. Your buddy Ryan is getting married at St. Clare's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
             choices: [
               { text: "Rob. I'm so sorry.", next: "sorry" },
               { text: "(Back.)", next: "start" }
@@ -1019,8 +1020,14 @@ var STORY = {
             text: "Officer Ian doesn't stop moving his hands. “Can't talk. Go home. Basement. Stay off the roads.”",
             choices: [
               { text: "Is there anywhere official to go?", next: "official" },
+              { text: "Are you okay?", next: "okay" },
               { text: "Okay." }
             ]
+          },
+          okay: {
+            text: "“Ask me in two weeks.” He waves a pickup through, then a bus. Then, without looking at you: “My son's at Novi Meadows. Second grade. They walked all the elementary kids over to the high school gym at twelve-thirty.” He tips his head east, toward the roof you can just see over the trees. “I can see it from here. Somebody has to do the intersection.”",
+            effects: { flag: "knows_ian_kid" },
+            menu: "start"
           },
           official: {
             text: "“Civic Center's coordinating, east on Ten Mile. But if you have a basement, you already have the best thing they can give you.” He waves a minivan through. “Get inside. Stay inside. Stay tuned. Go.”",
@@ -1245,7 +1252,7 @@ var STORY = {
         start: "start",
         nodes: {
           start: {
-            text: "“Are you a guest?” The bride looks you over. “Doesn't matter. Are you over eighteen and not related to either of us?”",
+            text: "“You're Ryan's friend, right? The finance one.” The bride looks you over. “Doesn't matter. Are you over eighteen and not related to either of us?”",
             choices: [
               { text: "...Yes?", next: "witness" },
               { text: "Why are you still doing this?", next: "why" },
@@ -1332,8 +1339,13 @@ var STORY = {
               { text: "What does potassium iodide actually do?", next: "ki" },
               { text: "Can I get a packet?", if: { notFlag: "got_ki" }, next: "packet" },
               { text: "I'm here for Adam's insulin.", if: { flag: "knows_dale_insulin", notFlag: "got_insulin" }, next: "insulin" },
+              { text: "Why are you still here?", next: "stay" },
               { text: "Thanks." }
             ]
+          },
+          stay: {
+            text: "He fills a bottle while he talks, counting under his breath between sentences. “My wife and my mother are in our basement on Nine Mile. I told them I'd be home by five.” Thirty-one, thirty-two. “Everybody in that line has a prescription that runs out in a week. So I close at four-thirty, I walk home, and I'm home by five.” He caps the bottle. “It's a long walk. I've done the math.”",
+            menu: "start"
           },
           ki: {
             text: "“It fills your thyroid with safe iodine so it can't absorb the radioactive kind. That's all. It doesn't protect anything else. It doesn't stop fallout. It's not a force field.” He nods at the line. “Half of them think it's a force field. Take it only when health officials tell you to. Walls are what protect you.”",
@@ -1548,7 +1560,14 @@ var STORY = {
             effects: { if: { flag: "knows_shelter_basics" }, join: "kyle" }
           },
           deck: {
-            effects: { ending: "business_as_usual" }
+            effects: { ask: {
+              text: [
+                "Brendan pulls out the chair next to him. Conference Room B is three walls of glass on the third floor, and the fallout is coming tonight.",
+                "Sit down and finish the deck?"
+              ],
+              yes: { ending: "business_as_usual" },
+              no: "You don't sit down. Brendan doesn't seem to notice. He's already back on slide twelve."
+            } }
           },
           walking: {
             text: "Brendan walks beside you, still holding his laptop like a hymnal. “I could have finished slide twelve,” he says. Then: “Thanks.”",
@@ -1594,7 +1613,7 @@ var STORY = {
     { item: "flashlight", effects: { text: "Click. It works. You turn it off to save the batteries." } },
     { item: "cellphone", effects: { text: [
       { if: { notFlag: "cells_dead" }, text: "SOS ONLY. You try to call your sister. The call fails before it rings. You try a text. A red exclamation point." },
-      { if: { flag: "cells_dead" }, text: "NO SERVICE. Your thumb opens the group chat anyway. Nobody has said anything since 12:09." }
+      { if: { flag: "cells_dead" }, text: "NO SERVICE. Your thumb opens the group chat anyway. The last message is still your little sister's, from 12:24: “are you ok?? were in the”." }
     ] } },
     { item: "bicycle", effects: { text: "You're already walking it everywhere you go. (Moving is faster with the bike, unless you're walking with someone.)" } }
   ],
@@ -1616,7 +1635,7 @@ var STORY = {
   hints: [
     { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The front door is open. Jeff's garage is across the court, and his radio is on." },
     { if: { notFlag: "knows_get_inside", before: "1:00 PM" }, text: "Jeff's radio might know what's going on. His garage is north of your house, across the court." },
-    { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "There's a wedding at St. Clare's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
+    { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "Ryan's wedding is at St. Clare's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
     { if: { flag: "truck_fueled", notFlag: "ray_left", without: "ray", before: "5:30 PM", after: "4:15 PM" }, text: "Jeff leaves for the cabin at 5:30, with you or without you." },
     { if: { flag: "knows_dale_insulin", lacks: "insulin", notFlag: "dale_open", before: "4:30 PM" }, text: "Adam needs his insulin. The pharmacy on Grand River closes at 4:30." },
     { if: { after: "3:00 PM", before: "4:00 PM", notFlag: ["haddads_moved", "haddads_walked"] }, text: "Someone is stranded on the I-96 shoulder by the mall. If nobody stops by four, they start walking." },
@@ -1673,12 +1692,14 @@ var STORY = {
     { if: { not: { ending: "shelter_in_place" }, flag: "dana_convinced" }, text: "THE GYM · Moved to the band room. Coach Connor closed the door himself." },
     { if: { notFlag: "dana_convinced", not: { ending: "shelter_in_place" } }, text: "THE GYM · Two hundred people stayed under the skylights." },
 
-    { text: "OFFICER IAN · Directed traffic at Ten Mile and Taft until the last car was through, then went home." },
+    { if: { flag: "dana_convinced" }, text: "OFFICER IAN · Directed traffic at Ten Mile and Taft until the last car was through, then walked to the high school and found his son on the risers in the band room." },
+    { if: { notFlag: "dana_convinced" }, text: "OFFICER IAN · Directed traffic at Ten Mile and Taft until the last car was through, then walked to the high school, where his son was in the gym." },
     { if: { flag: "warned_mall" }, text: "THE MALL · A thousand people moved into the service corridors because Derek, the security guard, told them to." },
     { if: { notFlag: "warned_mall" }, text: "THE MALL · A thousand people sat under the glass atrium. Nobody told them not to." },
 
-    { if: { flag: "witnessed" }, text: "MADY AND RYAN · Married at {wedAt}. Your signature is on the license." },
-    { if: { notFlag: "witnessed" }, text: "MADY AND RYAN · Married at 1:45 PM, with a stranger's signature on the license, and went downstairs." }
+    { if: { flag: "witnessed" }, text: "RYAN AND MADY · Married at {wedAt}. Your signature is on the license." },
+    { if: { notFlag: "witnessed" }, text: "RYAN AND MADY · Married at 1:45 PM, with a stranger's signature on the license, and went downstairs." },
+    { text: "BRIGHTLINE FIBER · Ticket #4,112 was closed automatically on day three: “Customer unreachable.” Your internet comes back in March. You never find out what song the saxophone was playing." }
   ],
 
   // ==========================================================================
@@ -1700,7 +1721,7 @@ var STORY = {
         { if: { with: "brenda" }, text: "Rob takes one look at Connor's clipboard and quietly starts a second one. By morning there's a sign-up sheet for the latrine buckets, and nobody argues with it." },
         { if: { with: "kyle" }, text: "Brendan organizes the water rations into a spreadsheet on the back of a fall concert program. It's the best work he's ever done, and nobody from Regional will ever see it." },
         { if: { flag: "warned_mall" }, text: "On day three, a man finds his way down the stairs from the mall, two miles away. He says a security guard named Derek got a thousand people into the service corridors. He wants whoever told Derek to know." },
-        { if: { flag: "witnessed" }, text: "You think about Mady and Ryan in the church basement, married four hours before the world ended, and you hope Cousin Charlie is behaving." },
+        { if: { flag: "witnessed" }, text: "You think about Ryan and Mady in the church basement, married an hour and a half after the world ended, and you hope Cousin Charlie is behaving." },
         "On day fourteen, Lieutenant Hunter knocks on the steel door with a borrowed Geiger counter and a face you'll remember for the rest of your life. He says the readings are down. He says, carefully, that outside isn't safe, but it's survivable.",
         "Before anyone goes up the stairs, the band plays: An Evening of American Classics, a month early, missing the whole trumpet section, the tuba played by a freshman who has had eleven lessons. It's the worst performance in the history of Novi High School. Nobody in that room has ever heard anything better."
       ]
@@ -1745,7 +1766,7 @@ var STORY = {
       text: [
         { if: { flag: "route_back", before: "5:00 PM" }, text: "The back roads are empty in a way that feels like a secret. Taft to Pontiac Trail, through Walled Lake and Commerce, past lakes with docks and pontoon boats tied up as if it were any Thursday. Jeff drives exactly the speed limit. North of Flint the traffic thins to nothing, and for a few minutes the radio plays an old Motown song from a station somewhere that's still on the air, and nobody in the truck says anything." },
         { if: { flag: "route_back", before: "5:00 PM" }, text: "You reach the cabin at 11:40 PM. Jeff backs the truck into the shed by feel. The root cellar smells like dirt and potatoes and thirty summers. When the fallout reaches Otsego County two days later, lighter than it was downstate, you're already underground, and Jeff is teaching you how to play euchre with a deck that's missing the nine of hearts." },
-        { if: { flag: "route_back", after: "5:00 PM" }, text: "The back roads are empty, but you left late. You're past Holly when the light goes orange and then gray. At {fallout}, Jeff's wipers start smearing a fine grit across the windshield. “Windows up. Vents off,” he says, very calmly. He pulls into the first farm with a light on, and a stranger named Sean lets four people he's never met into his basement without asking a single question. You make it to the cabin six days later. You never really thank Sean enough. You try." },
+        { if: { flag: "route_back", after: "5:00 PM" }, text: "The back roads are empty, but you left late. You're past Holly when the light goes orange and then gray. At {fallout}, Jeff's wipers start smearing a fine grit across the windshield. “Windows up. Vents off,” he says, very calmly. He pulls into the first farm with a light on, and a stranger named Sean lets every one of you into his basement without asking a single question, as if he'd been expecting you. You make it to the cabin six days later. You never really thank Sean enough. You try." },
         { if: { flag: "route_m5" }, text: "M-5 doesn't move. In four hours you go seven miles. When the grit starts on the windshield you're in Commerce Township, and Jeff, very calmly, says “Windows up. Vents off,” and gets out to look for any building with a basement. You spend the first two weeks in a church basement in Walled Lake with ninety strangers and one bathroom. Jeff's truck is still on M-5 when you come up. The keys are still in it. So is the coffee can of seeds." },
         { if: { with: "haddads" }, text: "Mary and Jose ride in the back the whole way. In the spring, Mary finally gets through to her sister in Grand Rapids, by ham radio, with Jeff holding the microphone for her because her hands are shaking." },
         { if: { with: "ruth" }, text: "Steven tells Jeff he's driving too slowly the entire way, and Jeff loves him for it." },

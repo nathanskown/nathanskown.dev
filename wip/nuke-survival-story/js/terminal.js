@@ -503,6 +503,7 @@
     var last = !pages.length || pageIndex >= pages.length - 1;
     if (v.talking && choiceAsChips() && last && v.choices && v.choices.length) {
       v.choices.forEach(function (c) { box.appendChild(chip(c.text, String(c.n), '', c.n + '.', c.picked)); });
+      syncChipHint();
       return;
     }
     if (v.talking) return; // dialogue answers are buttons in the page
@@ -510,6 +511,15 @@
     v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label])); });
     v.people.forEach(function (p) { box.appendChild(chip(p.name, 'talk to ' + p.name, 'talk', 'TALK', p.picked)); });
     v.items.forEach(function (n) { box.appendChild(chip(n, 'take ' + n, '', 'TAKE', !!picked[v.room + '|' + n])); });
+    syncChipHint();
+  }
+  // A fade on the right edge of the phone chip row, only while more chips sit past it.
+  function syncChipHint() {
+    var box = $('chips');
+    var hidden = getComputedStyle(box).display === 'none';
+    var more = !hidden && box.scrollWidth - box.clientWidth - box.scrollLeft > 4;
+    box.classList.toggle('more', more);
+    box.classList.toggle('scrolled', !hidden && box.scrollLeft > 4);
   }
 
   // ------------------------------------------------------------------ log / share
@@ -742,7 +752,11 @@
     var h = Math.min(fromVar, visible, window.innerHeight);
     var was = document.body.classList.contains('compact');
     document.body.classList.toggle('compact', h <= 520);
+    // The picture is already gone in compact mode, so the header button goes with it.
+    // Its label and the saved hide/show choice stay as they were.
+    if (!was && document.body.classList.contains('compact') && document.activeElement === $('sceneToggle')) input.focus();
     if (was !== document.body.classList.contains('compact')) relayoutPages();
+    requestAnimationFrame(syncChipHint);
   }
   if (window.visualViewport) {
     var vv = window.visualViewport;
@@ -766,6 +780,8 @@
   } else syncCompact();
   window.addEventListener('resize', function () { syncCompact(); relayoutPages(); });
   if (window.MutationObserver) new MutationObserver(syncCompact).observe(root, { attributes: true, attributeFilter: ['style'] });
+  $('chips').addEventListener('scroll', syncChipHint, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(syncChipHint).observe($('chips'));
 
   if (window.ResizeObserver) new ResizeObserver(function () { scenes.redraw(); }).observe($('artWrap'));
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { scenes.redraw(); relayoutPages(); });

@@ -977,13 +977,13 @@
     }
     var shock = (t - 0.4) * 60;
     if (shock > 0) g.circle(fx, gy, shock, C.g, null, 1);
-    var count = Math.min(112, Math.floor(t * 14));
+    var count = Math.min(126, Math.floor(t * 15));
     g.fact('T+', count + ' s');
-    g.fact(count >= 112 ? 'SHOCK ARRIVED · WINDOWS OUT' : 'COUNTING · SOUND HAS NOT ARRIVED');
+    g.fact(count >= 126 ? 'SHOCK ARRIVED · WINDOWS OUT' : 'COUNTING · SOUND HAS NOT ARRIVED');
     g.fact('DETROIT · ~25 MI ESE');
     g.text('T+', 24, 40, { size: 10, color: C.dim });
-    g.big(String(count) + ' s', 24, 76, 38, count >= 112 ? C.red : C.g);
-    g.text(count >= 112 ? 'SHOCK ARRIVED · WINDOWS OUT' : 'COUNTING · SOUND HAS NOT ARRIVED', 24, 96, { size: 9, color: count >= 112 ? C.red : C.dim });
+    g.big(String(count) + ' s', 24, 76, 38, count >= 126 ? C.red : C.g);
+    g.text(count >= 126 ? 'SHOCK ARRIVED · WINDOWS OUT' : 'COUNTING · SOUND HAS NOT ARRIVED', 24, 96, { size: 9, color: count >= 126 ? C.red : C.dim });
     g.text('DETROIT · ~25 MI ESE', fx, gy + 18, { size: 9, color: C.amber, align: 'center' });
     // The opening white-out is a flash. Reduced motion and FLASH OFF both skip it.
     if (!skipFlash && t < .35) { ctx.globalAlpha = 1 - t / .35; ctx.fillStyle = '#f2fff3'; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.globalAlpha = 1; }

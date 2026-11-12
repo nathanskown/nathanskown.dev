@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
-<link rel="stylesheet" href="css/terminal.css?v=f907dc5d">
+<link rel="stylesheet" href="css/terminal.css?v=1382ecaf">
 </head>
 <body>
   <div class="app" id="app">
@@ -73,7 +73,11 @@
               <button type="button" id="pageMore" class="page-btn">MORE ▸</button>
             </div>
           </div>
-          <div class="chips" id="chips" aria-label="Quick actions"></div>
+          <div class="chips-wrap">
+            <div class="chips" id="chips" aria-label="Quick actions"></div>
+            <span class="chips-hint chips-hint-left" aria-hidden="true"></span>
+            <span class="chips-hint chips-hint-right" aria-hidden="true"></span>
+          </div>
           <form class="cmd" id="cmd" autocomplete="off">
             <label class="prompt" id="prompt" for="input">guest@nskn:~$</label>
             <input id="input" name="input" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="send" aria-label="Command">
@@ -103,10 +107,10 @@
   <div class="flash" id="flash"></div>
 
   <script src="js/engine.js?v=f371f34c"></script>
-  <script src="js/story.js?v=c565d50"></script>
+  <script src="js/story.js?v=c00ba7d8"></script>
   <script src="js/art.js?v=c565d50"></script>
-  <script src="js/scenes.js?v=c3c6c727"></script>
+  <script src="js/scenes.js?v=35898563"></script>
   <script src="js/scene-art.js?v=061758e8"></script>
-  <script src="js/terminal.js?v=24df0225"></script>
+  <script src="js/terminal.js?v=ac5da66d"></script>
 </body>
 </html>
