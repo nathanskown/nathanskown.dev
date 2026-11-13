@@ -223,7 +223,7 @@ var STORY = {
         { if: { notFlag: "landline_dead" }, text: "The landline handset lies on the counter, off its cradle, still on hold. You can hear the saxophone from across the room." },
         { if: { flag: "landline_dead" }, text: "The landline handset lies on the counter. It's quiet now." },
         { if: { flag: "bathtub_full" }, text: "Down the hall, the bathtub is full to the overflow drain, and every pot you own sits on the counter full of water." },
-        "The basement door is by the pantry. The front door hangs open. You don't remember opening it."
+        "The basement door is by the pantry. The back door hangs open on the side yard. You don't remember opening it."
       ],
       short: [
         "Your kitchen: glass on the floor, the laptop, the phone on the counter.",
@@ -231,14 +231,14 @@ var STORY = {
       ],
       exits: {
         down: { to: "basement", time: 1, label: "the basement" },
-        out: { to: "street", time: 1, also: ["east", "front door", "street", "outside"] }
+        out: { to: "street", time: 1, also: ["east", "front door", "back door", "door", "street", "outside"] }
       },
       items: ["wallet", "flashlight"],
       scenery: {
         "window, windows, sky, cloud, southeast": "Southeast, past David and Stephanie's roofline, a column of cloud stands over where Detroit should be. Brown at the base, pink and gray at the edges, flattening at the top like it's hit a ceiling. It's already leaning east, away from you, toward Canada.",
         "laptop, deck, q3 deck, computer, slides": "Q3 REGIONAL PORTFOLIO REVIEW, DRAFT v7. Forty-one slides about allocation and drawdown and risk tolerance. Slide 12 still says [CHART GOES HERE]. Battery: 14%. You close the lid, then open it again, then close it.",
         "hoodie, lions hoodie, chair": "Honolulu blue, gone soft and thin from ten years of washing. It has outlasted three head coaches and one girlfriend. You put it on. It's not cold. You put it on anyway.",
-        "tickets, tigers tickets, keys": "Two tickets for tonight, 7:10 first pitch, upper deck behind first base. Comerica Park is in the middle of everything you saw turn white. You turn them face down, which doesn't help at all.",
+        "tickets, tigers tickets": "Two tickets for tonight, 7:10 first pitch, upper deck behind first base. Comerica Park is in the middle of everything you saw turn white. You turn them face down, which doesn't help at all.",
         "photo, picture, magnet, sisters": "A photo under a Spartan helmet magnet: you and your sisters at a State game last November, faces painted green, all three of you visibly freezing and visibly happy. Your older sister flew in from Arizona for it. Your younger sister picked the seats and has not let anyone forget it.",
         "sink, faucet, tap": [
           { if: { notFlag: "water_off" }, text: "Water runs, a little weaker than usual. For now." },
@@ -246,12 +246,14 @@ var STORY = {
         ],
         "bathtub, tub, bath, bathroom": [
           { if: { flag: "bathtub_full" }, text: "Forty-some gallons, and it tastes faintly of pipes. It's the most valuable thing you own." },
-          { if: { notFlag: "bathtub_full" }, text: "Down the hall. It's empty. You could fill it while the water still runs." }
+          { if: { notFlag: "bathtub_full" }, text: "Down the hall: a clawfoot tub, the one thing the previous owners left that you actually like. It's empty. You could fill it while the water still runs." }
         ],
         "phone, landline, handset, receiver, hold music, saxophone": [
           { if: { notFlag: "landline_dead" }, text: "A beige cordless the previous owners left behind. Still connected. Copper phone lines get their power from the phone company, not your house. You could listen, or hang up and try to call someone." },
           { if: { flag: "landline_dead" }, text: "Dead." }
         ],
+        "keys, car keys": "Your keys, on a Spartans lanyard your little sister gave you as a joke and you kept as not a joke. The car is in the driveway, for whatever good it does. From here you can hear Ten Mile: engines idling, nobody moving.",
+        "back door, front door, door, side yard": "The back door stands open on the side yard and the neighbors' fence. You must have pushed it open on your way to the window without noticing. Glass crunches on the step.",
         "glass, floor": "Window glass, in pebbles and in long knives. You step around the long ones.",
         "sandwich, turkey sandwich": "Half a turkey sandwich. You made it at 11:50, in a different world.",
         "fridge, refrigerator, freezer": "Keep it closed and it'll stay cold for a day or so. After that, the freezer becomes a countdown.",
@@ -262,7 +264,7 @@ var STORY = {
           say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill up bathtub", "fill pots", "fill water", "store water", "fill bathtub with water", "fill sink"],
           if: { notFlag: ["water_off", "bathtub_full"] },
           time: 10,
-          effects: { flag: "bathtub_full", text: "You go down the hall, jam the stopper in and open the tap all the way. Then the bathroom sink. Then you fill every pot in the kitchen. The pressure is already weaker than it should be. When it's done you stand there looking at forty-some gallons of water like it's a stack of gold bars, because it is." }
+          effects: { flag: "bathtub_full", text: "You go down the hall, jam the stopper into the old clawfoot tub the previous owners left behind, and open the tap all the way. Then the bathroom sink. Then you fill every pot in the kitchen. The pressure is already weaker than it should be. When it's done you stand there looking at forty-some gallons of water like it's a stack of gold bars, because it is." }
         },
         { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "bathtub_full" }, effects: { text: "It's full. Every pot, too." } },
         { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "water_off" }, effects: { text: "You open the tap down the hall. A cough of air, a few brown drops. Too late." } },
@@ -318,7 +320,12 @@ var STORY = {
         ],
         "window, window well, well": "The closest the outside gets to you down here. Plastic sheeting and tape would cover it. Dirt piled in the well would be even better.",
         "pantry, shelf, soup, pasta, food": "Soup, pasta, peanut butter, a jar of olives nobody has opened since 2021. Enough for one person for two weeks, if you're not picky. Less if you're not alone.",
-        "couch, tv, treadmill": "The treadmill holds three coats and a tote bag of tote bags.",
+        "treadmill, coats": "The treadmill holds three coats and a tote bag of tote bags.",
+        "couch, sofa": "Plaid, from your parents' old basement, where it was already old. You've fallen asleep on it during more Lions games than you've stayed awake for. It would fit two people sitting up, or one lying down badly.",
+        "tv, television": "A black screen with your reflection in it. No power, no cable, no internet. It's the most honest it has ever been.",
+        "rug": "A gray rug from a big-box store, the whole of your basement renovation budget. There's a dark ring on it from the time the window well flooded.",
+        "dehumidifier": "Off, with a half-full bucket of water inside it. You look at the water. No. Not yet.",
+        "toolbox, dad's toolbox, tools": "Your dad's old red toolbox, rusted at the hinges. Socket set, a level, three kinds of tape, and coiled underneath it all, six feet of garden hose. Good for draining something, if you knew what to drain and how to do it without flooding the place.",
         "furnace": "Off. In September it won't matter. You decide not to think about November.",
         "bins, christmas bins": "Ornaments, lights, a ceramic village. The little church has a light inside that runs on batteries."
       },
@@ -346,7 +353,10 @@ var STORY = {
             yes: { ending: "home_base" },
             no: "You leave the door open. Not yet."
           } },
-          fail: "You sit on the bottom step and do the math. A gallon a day per person, for two weeks. You have whatever's left in the pipes, which is nothing. You need water before you close this door."
+          fail: [
+            { if: { notFlag: "water_off" }, text: "You sit on the bottom step and do the math. A gallon a day per person, for two weeks. Right now you have whatever is in the pipes, and the pipes are already losing pressure. You need water stored before you close this door." },
+            { if: { flag: "water_off" }, text: "You sit on the bottom step and do the math. A gallon a day per person, for two weeks. You have whatever's left in the pipes, which is nothing. You need water before you close this door." }
+          ]
         }
       ]
     },
@@ -384,7 +394,7 @@ var STORY = {
       aliases: ["garage", "jeff's garage", "jeffs garage", "jeff's house"],
       text: [
         "Jeff keeps his garage the way he kept his station at the Wixom plant for thirty-one years: everything labeled, every tool hanging inside its own outline on the pegboard. A Tigers schedule magnet from three seasons ago is still on the beer fridge. Jeff says he'll take it down when they win something.",
-        { if: { notFlag: "ray_left" }, text: "A silver pickup sits nose-out. On the workbench, a battery radio murmurs." },
+        { if: { notFlag: "ray_left" }, text: "A silver pickup sits nose-out. On a crate by the workbench, a battery radio murmurs." },
         { if: { flag: "ray_left", lacks: "radio" }, text: "The truck is gone. On the workbench, a note under the radio: WENT NORTH. KEEP THE RADIO. AM ONLY. — J." },
         { if: { flag: "ray_left", has: "radio" }, text: "The truck is gone. On the workbench, a note: WENT NORTH. KEEP THE RADIO. AM ONLY. — J." },
         { if: { flag: "truck_fueled", notFlag: "ray_left" }, text: "The truck's tailgate is down, half loaded: blankets, a cooler, two jugs of water, a coffee can of Jeff's late wife's seed packets." }
@@ -397,7 +407,7 @@ var STORY = {
           { if: { notFlag: "truck_fueled" }, text: "A silver pickup with a fuel gauge just above a quarter. Gas stations can't pump without power, so a quarter tank is what Jeff has." },
           { if: { flag: "truck_fueled" }, text: "Fueled up. Enough to get past Gaylord, Jeff says." }
         ],
-        "radio, workbench, bench": NEWS,
+        "radio, workbench, bench, crate": NEWS,
         "pegboard, tools": "A hammer inside a hammer outline. A wrench inside a wrench outline. One empty outline in the shape of a hacksaw, which is somehow the most unsettling thing in here."
       },
       actions: [
@@ -936,7 +946,7 @@ var STORY = {
       dossier: { age: "58", role: "Prepper. Bunker rated for four.", status: "Missing: one insulin refill." },
       portrait: { prop: "vest" },
       room: "dunmore",
-      here: { if: { notFlag: "dale_open" }, text: "Adam stands on the hatch.", else: "Adam stands beside the open hatch." },
+      here: { if: { notFlag: "dale_open" }, text: "Adam stands on the hatch with a shotgun, its barrel pointed at the grass.", else: "Adam stands beside the open hatch." },
       desc: "Fifty-eight. A plate carrier over a golf polo. A shotgun held correctly, pointed at the grass. A medical alert bracelet on his wrist.",
       talk: {
         start: [

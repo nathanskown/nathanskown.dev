@@ -70,7 +70,12 @@
   // ---------------------------------------------------------------- game
   function createGame(story, opts) {
     opts = opts || {};
-    var out = opts.print || function () {};
+    var print = opts.print || function () {};
+    // While a dialogue choice moves the clock, timed news is held back and shown after the reply.
+    var held = null;
+    function out(t, k, m) { if (held) held.push([t, k, m]); else print(t, k, m); }
+    var pendingNews = null;
+    function flushNews() { var n = pendingNews; pendingNews = null; (n || []).forEach(function (a) { print(a[0], a[1], a[2]); }); }
     var store = opts.storage || safeStorage();
     var onExit = opts.onExit || function () {};
     var fx = function (name) { if (opts.onFx) opts.onFx(name); };
@@ -608,8 +613,9 @@
       choices.forEach(function (x, i) { x.n = i + 1; });
       var anyOpen = false;
       for (var oi = 0; oi < choices.length; oi++) if (choices[oi].open) anyOpen = true;
-      if (!anyOpen) { convo = null; if (node.next) showNode(pid, node.next); return; }
+      if (!anyOpen) { convo = null; flushNews(); if (node.next) showNode(pid, node.next); return; }
       convo = { pid: pid, choices: choices };
+      flushNews();
       choices.forEach(function (x) {
         out(x.n + '. ' + T(x.c.text), 'choice', { id: x.key, picked: isPicked(x.key), spent: !x.open });
       });
@@ -627,11 +633,14 @@
       // `pre` runs before the clock moves, so a flag can suppress an event the choice would otherwise cross.
       if (x.c.pre) run(x.c.pre);
       if (halt) return;
+      held = [];
       advance(x.c.time != null ? x.c.time : story.clock.talkMinutes);
-      if (halt) return;
+      pendingNews = held; held = null;
+      if (halt) { flushNews(); return; }
       run(x.c.effects);
-      if (halt || S.ended || mode === 'ask') return;
-      if (x.c.next) showNode(pid, x.c.next);
+      if (S.ended) { pendingNews = null; return; }
+      if (!halt && mode !== 'ask' && x.c.next) showNode(pid, x.c.next);
+      flushNews();
     }
 
     // ---- top level
@@ -722,6 +731,10 @@
       if (mode === 'name') {
         if (line === 'quit') { mode = 'off'; say(T(story.text.quit), 'dim'); onExit(); return; }
         var n = cleanName(raw);
+        if (/^(play|help|look|l|hint|restart|start|continue|yes|no|y|n|inventory|i|quit|q|go|north|south|east|west|up|down|out|in)$/.test(line)) {
+          say(T(story.text.nameIsCommand || "That sounds like a command, not a name. Please enter the first name on the account."), 'note');
+          return;
+        }
         if (!n) { say(T(story.text.askNameAgain || story.text.askName), 'note'); return; }
         S.vars.name = n;
         beginStory();
@@ -794,6 +807,12 @@
         }
         convo = null;
         if (/^(bye|goodbye|leave|nevermind|never mind|0|stop|back)$/.test(line)) { say(T(story.text.endTalk), 'dim'); return; }
+      }
+      if (/^\d+$/.test(line)) {
+        var here = peopleHere().map(function (id) { return story.people[id].name; });
+        return say(here.length
+          ? "You're not talking to anyone right now. (Type “talk to " + here[0] + "” to start.)"
+          : "You're not talking to anyone right now.", 'dim');
       }
       if (/^(help|\?|commands)$/.test(line)) return say(T(story.help));
       if (line === 'endings') return listEndings();
