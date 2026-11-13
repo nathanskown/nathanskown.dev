@@ -423,7 +423,8 @@
     var labels = ART.mapLabels, byLabel = {};
     Object.keys(labels).forEach(function (id) { byLabel['[' + labels[id] + ']'] = id; });
     var near = {};
-    (v.exits || []).forEach(function (x) { near[x.to] = x.dir; });
+    var mins = {};
+    (v.exits || []).forEach(function (x) { near[x.to] = x.dir; mins[x.to] = x.mins; });
     var src = ART.map.replace(/^\n/, '');
     var html = esc(src).replace(/\[[^\]\n]+\]/g, function (m) {
       var id = byLabel[m.replace(/&amp;/g, '&')];
@@ -434,11 +435,16 @@
       else if (v.playing && v.visited.indexOf(id) >= 0) cls = 'seen';
       if (cls === 'near') {
         var place = m.replace(/^\[|\]$/g, '');
-        return '<button type="button" class="' + cls + '" data-go="' + esc(near[id]) + '" aria-label="Go ' + esc(near[id]) + ' to ' + esc(place) + '">' + m + '</button>';
+        return '<button type="button" class="' + cls + '" data-go="' + esc(near[id]) + '" aria-label="Go ' + esc(near[id]) + ' to ' + esc(place) + ', ' + mins[id] + ' min' + '" title="' + mins[id] + ' min walk">' + m + '</button>';
       }
       return '<span class="' + cls + '">' + m + '</span>';
     });
     $('map').innerHTML = html;
+    var walks = $('mapWalks');
+    if (walks) {
+      var longs = (v.playing && !v.talking && !v.ended) ? (v.exits || []).filter(function (x) { return x.long; }) : [];
+      walks.textContent = longs.length ? 'Long walks from here: ' + longs.map(function (x) { return x.label + ' ' + x.mins + ' min'; }).join(' · ') : '';
+    }
   }
 
   function renderInventory(v) {
@@ -577,12 +583,13 @@
     scenes.show('room:' + v.room, v.room, v);
   }
 
-  function chip(label, cmd, cls, hint, picked) {
+  function chip(label, cmd, cls, hint, picked, extra) {
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip' + (cls ? ' ' + cls : '');
     if (hint) { var h = document.createElement('b'); h.textContent = hint; b.appendChild(h); }
     b.appendChild(document.createTextNode(label));
+    if (extra) { var x = document.createElement('span'); x.className = 'mins'; x.textContent = ' ' + extra; b.appendChild(x); }
     if (picked) markDiscussed(b);
     b.addEventListener('click', function () { submit(cmd); });
     return b;
@@ -598,7 +605,7 @@
     if (v.ended) { ['restart', 'endings', 'share'].forEach(function (c) { box.appendChild(chip(c.toUpperCase(), c, c === 'share' ? 'alt' : '')); }); return; }
     if (v.talking) return; // dialogue answers are the stacked list, or buttons in the page
     var picked = v.picked || {};
-    v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label])); });
+    v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label], x.long ? x.mins + ' min' : '')); });
     v.people.forEach(function (p) { box.appendChild(chip(p.name, 'talk to ' + p.name, 'talk', 'TALK', p.picked)); });
     v.items.forEach(function (n) { box.appendChild(chip(n, 'take ' + n, '', 'TAKE', !!picked[v.room + '|' + n])); });
     syncChipHint();

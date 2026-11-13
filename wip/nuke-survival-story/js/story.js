@@ -1277,7 +1277,7 @@ var STORY = {
               { if: { after: "1:15 PM" }, text: "“Father Andrew started at one-fifteen, with or without him. We need two witnesses to sign the license, and Father Andrew says the State of Michigan still exists until he hears otherwise. Will you sign?”" }
             ],
             choices: [
-              { text: "I'll sign.", time: 20, pre: { flag: "witnessed" }, next: "signed" },
+              { text: "I'll sign.", time: 20, until: "1:35 PM", pre: { flag: "witnessed" }, next: "signed" },
               { text: "I can't. I'm sorry.", effects: { text: "“Then go,” she says, not unkindly. “We're doing this.”" } }
             ]
           },
@@ -1313,7 +1313,7 @@ var STORY = {
               { text: "A siphon pump. ($15)", if: { var: ["cash", ">=", 15], lacks: "siphon" }, effects: { add: { cash: -15 }, give: "siphon", text: "“Newer cars have screens in the filler neck,” Chris says. “Find something old.”" }, next: "start" },
               { text: "A battery radio. ($30)", if: { var: ["cash", ">=", 30], lacks: "radio" }, effects: { add: { cash: -30 }, give: "radio", text: "“Last one. Batteries included, which is the only reason anybody's buying it.”" }, next: "start" },
               { text: "I don't have enough cash.", if: { var: ["cash", "<", 15], notFlag: "chris_iou", any: [{ lacks: "sheeting" }, { lacks: "siphon" }] }, next: "iou" },
-              { text: "Can I return this?", once: true, next: "returns" },
+              { text: "Can I return this?", once: true, if: { any: [{ has: "sheeting" }, { has: "siphon" }, { has: "radio" }] }, next: "returns" },
               { text: "That's all." }
             ]
           },
@@ -1644,7 +1644,7 @@ var STORY = {
   //  HINTS — the first one whose `if` is true is shown.
   // ==========================================================================
   hints: [
-    { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The front door is open. Jeff's garage is across the court, and his radio is on." },
+    { if: { notFlag: ["bathtub_full", "water_off"], in: "kitchen" }, text: "The back door is open. Jeff's garage is across the court, and his radio is on." },
     { if: { notFlag: "knows_get_inside", before: "1:00 PM" }, text: "Jeff's radio might know what's going on. His garage is north of your house, across the court." },
     { if: { after: "12:45 PM", before: "1:45 PM", notFlag: ["witnessed", "wedding_over"] }, text: "Ryan's wedding is at St. Clare's, west of Ten Mile and Taft. By 1:45 the whole party goes downstairs, and the reception's water goes with them." },
     { if: { flag: "truck_fueled", notFlag: "ray_left", without: "ray", before: "5:30 PM", after: "4:15 PM" }, text: "Jeff leaves for the cabin at 5:30, with you or without you." },

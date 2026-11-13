@@ -354,7 +354,8 @@
       var xs = visibleExits(room());
       if (!xs.length) return 'There is no obvious way out.';
       return 'Exits: ' + xs.map(function (x) {
-        return x.dir + ' (' + (x.e.label ? T(x.e.label) : story.rooms[x.e.to].name) + ')';
+        var m = moveMinutes(x.e);
+        return x.dir + ' (' + (x.e.label ? T(x.e.label) : story.rooms[x.e.to].name) + (m >= LONG_WALK ? ', ' + m + ' min' : '') + ')';
       }).join(', ') + '.';
     }
     function peopleHere() {
@@ -444,6 +445,8 @@
       var k = pick(t, cands);
       return k == null ? null : xs[k].e;
     }
+    // Walks this long or longer show their minutes on exits, chips and the map.
+    var LONG_WALK = 5;
     function moveMinutes(e) {
       var base = e.time != null ? e.time : story.clock.moveMinutes;
       var f = 1;
@@ -665,7 +668,10 @@
       if (x.c.pre) run(x.c.pre);
       if (halt) return;
       held = [];
-      advance(x.c.time != null ? x.c.time : story.clock.talkMinutes);
+      var mins = x.c.time != null ? x.c.time : story.clock.talkMinutes;
+      // `until` makes a choice end no earlier than that clock time (a ceremony that starts at 1:15 runs to 1:35).
+      if (x.c.until) mins = Math.max(mins, parseTime(x.c.until) - S.time);
+      advance(mins);
       pendingNews = held; held = null;
       if (halt) { flushNews(); return; }
       run(x.c.effects);
@@ -867,7 +873,7 @@
         inventory: S.inv.map(function (id) { return story.items[id].name; }),
         party: S.party.map(function (id) { return story.people[id].name; }),
         visited: Object.keys(S.visited),
-        exits: visibleExits(r).map(function (x) { return { dir: x.dir, to: x.e.to, label: x.e.label ? T(x.e.label) : story.rooms[x.e.to].name }; }),
+        exits: visibleExits(r).map(function (x) { return { dir: x.dir, to: x.e.to, label: x.e.label ? T(x.e.label) : story.rooms[x.e.to].name, mins: moveMinutes(x.e), long: moveMinutes(x.e) >= LONG_WALK }; }),
         people: peopleHere().map(function (id) { return { id: id, name: story.people[id].name, picked: isPicked('talk:' + id) }; }),
         items: roomItemsVisible().map(function (id) { return story.items[id].name; }),
         picked: S.picked ? JSON.parse(JSON.stringify(S.picked)) : {},
