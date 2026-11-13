@@ -49,7 +49,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
 .t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:max(var(--fs-xs),.82em);line-height:1.45;letter-spacing:calc(.1em*var(--ls,1))}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:var(--fs);letter-spacing:.04em}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:var(--fs);letter-spacing:calc(.04em*var(--ls,1));white-space:nowrap;max-width:100%}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}

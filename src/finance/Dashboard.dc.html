@@ -598,12 +598,13 @@ class Component extends DCLogic {
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
     });
-    var wlist = this.pf('watch', CZ.watch), qi = {};
-    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
-    (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
+    // live quote first, then the hourly dashboard file, then the nightly file (prior session: labeled so it never reads as today's)
+    var wlist = this.pf('watch', CZ.watch), qi = {}, nightly = {};
+    (D.watch || []).forEach(function (w) { qi[w.sym] = w; });
+    ((st.qidx || {}).tickers || []).forEach(function (t) { if (!qi[t.sym]) { qi[t.sym] = t; nightly[t.sym] = true; } });
     var watch = wlist.map(function (sym) {
-      var w = (st.wq || {})[sym] || qi[sym] || { sym: sym, name: 'Loading…' };
-      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+      var live = (st.wq || {})[sym], w = live || qi[sym] || { sym: sym, name: 'Loading…' }, prior = !live && nightly[sym];
+      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct) + (prior ? ' prior close' : ''), color: (w.pct || 0) >= 0 ? UP : DN };
     });
     // panel order, visibility and the Customize controls
     var pp = this.pf('panels', null) || {}, order = (pp.order || []).filter(function (id) { return CZ.panels.some(function (x) { return x[0] === id; }); });

@@ -53,15 +53,15 @@ Terminal style everywhere, including one-off pages like About and Career:
 |---|---|---|
 | Home, About, Career, Under the Hood, Status, 404 | green `#8dff9c` | `assets/site.css` `--g` |
 | Markets (`finance/`) | amber `#ffb84d` | `assets/finance.css` `--a` |
-| Sports (`sports/`) | cyan `#66e6f2` | `assets/sports.css` `--a` |
+| Sports (`sports/`) | cyan `#3df2ff` | `assets/sports.css` `--a` (the "v2 look" block; the older `#66e6f2` above it is overridden) |
 | Music (`music/`) | purple `#d58bff` | `music/assets/music.css` `--g` |
 
 - Shades (highlight, dim, lines, bands) are always derived from the section color, never picked freely.
 - Up / good = green `#4ade80`. Down / bad = red `#ff5f56`. Warning = `#ffb84d`. Same on every page.
 - Music keeps green/red only for correct/wrong answers.
 - When a page links to another section (homepage cards, Under the Hood tiles), that link uses the other section's color.
-- Known strays to fix when you touch those files: `#3df2ff` (Under the Hood sports color, should be `#66e6f2`) and
-  `#ffbf3a` (homepage and About markets color, should be `#ffb84d`).
+- The homepage, About, Editions and Under the Hood draw their Markets links in `#ffbf3a` (a hair warmer than `#ffb84d`).
+  That's today's look and stays. Use `#ffb84d` on Markets pages themselves.
 
 ## Data sources
 - **Every number on a page is read from a file in `data/` or an `/api/` call when the page loads.** No numbers typed

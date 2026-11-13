@@ -16,7 +16,7 @@ const CSP = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https:",
   "media-src 'self' blob: https:",
-  "connect-src 'self' https://music-api.nskown.workers.dev https://en.wikipedia.org https://cloudflareinsights.com https://static.cloudflareinsights.com",
+  "connect-src 'self' https://music-api.nskown.workers.dev https://en.wikipedia.org https://api.github.com https://cloudflareinsights.com https://static.cloudflareinsights.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

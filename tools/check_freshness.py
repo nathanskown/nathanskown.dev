@@ -216,7 +216,14 @@ def check_quotes(clock, q, d, r):
         r.stale(page, f"nightly quotes file is from {fmt(upd)}, more than one session old",
                 "check the daily refresh-finance run")
     session_started = clock.state in ("open", "post")
-    if session_started and upd and upd < clock.open_at:
+    def labeled(name):  # the page itself says these are prior-close numbers
+        try:
+            return "prior close" in (ROOT / "src" / "finance" / name).read_text().lower()
+        except OSError:
+            return False
+    if session_started and upd and upd < clock.open_at and labeled("Main.dc.html"):
+        r.ok(page, "tracked-tickers strip shows the nightly file, labeled PRIOR CLOSE")
+    elif session_started and upd and upd < clock.open_at:
         top = sorted(q.get("tickers") or [], key=lambda t: -abs(t.get("pct") or 0))[:3]
         ex = ", ".join(f"{t['sym']} {t.get('pct', 0):+.2f}%" for t in top)
         r.warn(page, f"tracked-tickers strip reads quotes/index.json from {fmt(upd)}: those are {clock.session if clock.state != 'open' else prev_trading_day(clock.today)}'s moves "
@@ -226,7 +233,7 @@ def check_quotes(clock, q, d, r):
     idx = {t["sym"]: (t.get("price"), t.get("pct")) for t in q.get("tickers") or [] if "sym" in t}
     watch = (d or {}).get("watch") or []
     same = [w["sym"] for w in watch if idx.get(w.get("sym")) == (w.get("price"), w.get("pct"))]
-    if session_started and watch and len(same) == len(watch) and upd and upd < clock.open_at:
+    if session_started and watch and len(same) == len(watch) and upd and upd < clock.open_at and not labeled("Dashboard.dc.html"):
         r.stale(page, f"dashboard watchlist ({', '.join(same)}) shows the nightly prior-session prices and moves while the market "
                       f"is {'open' if clock.state == 'open' else 'closed for the day'}; first paint reads as today's",
                 "load live watchlist prices first, or label first paint 'prior close'")

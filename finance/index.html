@@ -22,7 +22,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Market dashboard \u00b7 NSKN Terminal","description":"US market dashboard: indices, sectors, movers, Treasury yields, economic data, earnings calendar and headlines, refreshed through the trading day.","url":"https://nathanskown.dev/finance/","isPartOf":{"@type":"WebSite","name":"NSKN Terminal","url":"https://nathanskown.dev/"},"author":{"@type":"Person","name":"Nathan Skown","url":"https://nathanskown.dev/about/"}}</script>
-<link rel="stylesheet" href="/assets/finance.css?v=4e308285">
+<link rel="stylesheet" href="/assets/finance.css?v=288afb7f">
 </head>
 <body>
 <div id="app"><div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><h1>Market dashboard</h1><p>US market dashboard: indices, sectors, movers, Treasury yields, economic data, earnings calendar and headlines, refreshed through the trading day.</p><p><a href="/finance/">Markets</a> <a href="/sports/">Sports</a> <a href="/music/">Music</a> <a href="/about/">About</a> <a href="/under-the-hood/">Under the hood</a></p></div></div>
@@ -209,12 +209,13 @@ class Component extends DCLogic {
     var headlines = (D.headlines || []).slice(0, 6).map(function (h) {
       return { time: F.time(h.published), h: h.title, tag: h.type + ' · ' + h.source + (h.tickers && h.tickers.length ? ' · ' + h.tickers.join(' ') : ''), link: h.link };
     });
-    var wlist = this.pf('watch', CZ.watch), qi = {};
-    ((st.qidx || {}).tickers || []).forEach(function (t) { qi[t.sym] = t; });
-    (D.watch || []).forEach(function (w) { qi[w.sym] = qi[w.sym] || w; });
+    // live quote first, then the hourly dashboard file, then the nightly file (prior session: labeled so it never reads as today's)
+    var wlist = this.pf('watch', CZ.watch), qi = {}, nightly = {};
+    (D.watch || []).forEach(function (w) { qi[w.sym] = w; });
+    ((st.qidx || {}).tickers || []).forEach(function (t) { if (!qi[t.sym]) { qi[t.sym] = t; nightly[t.sym] = true; } });
     var watch = wlist.map(function (sym) {
-      var w = (st.wq || {})[sym] || qi[sym] || { sym: sym, name: 'Loading…' };
-      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct), color: (w.pct || 0) >= 0 ? UP : DN };
+      var live = (st.wq || {})[sym], w = live || qi[sym] || { sym: sym, name: 'Loading…' }, prior = !live && nightly[sym];
+      return { t: sym, n: w.name || '', px: w.price === undefined ? '—' : F.usd(w.price, 2), href: 'Main.dc.html?sym=' + sym, chg: w.pct === undefined ? '' : F.pct(w.pct) + (prior ? ' prior close' : ''), color: (w.pct || 0) >= 0 ? UP : DN };
     });
     // panel order, visibility and the Customize controls
     var pp = this.pf('panels', null) || {}, order = (pp.order || []).filter(function (id) { return CZ.panels.some(function (x) { return x[0] === id; }); });

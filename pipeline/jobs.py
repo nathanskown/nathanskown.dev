@@ -968,6 +968,13 @@ _IND_WHY = {
 }
 
 
+def _before_open():
+    """True before 9:30 AM New York time on a weekday: the only time futures lines belong in the Digest."""
+    from zoneinfo import ZoneInfo
+    n = datetime.now(ZoneInfo("America/New_York"))
+    return n.weekday() < 5 and (n.hour, n.minute) < (9, 30)
+
+
 def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn):
     import re as _re
     pct = lambda k: (tiles.get(k) or {}).get("pct")  # noqa: E731
@@ -994,7 +1001,7 @@ def _auto_story(day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, 
         bits.append(f"The S&P 500 is {f1(spx)}, the Nasdaq {f1(ixic)}, the Dow {f1(dji)} and the Russell 2000 {f1(rut)}." if None not in (ixic, dji, rut) else f"The S&P 500 is {f1(spx)}.")
     if br.get("n"):
         bits.append(f"{br['adv']} of {br['n']} S&P 500 stocks are up.")
-    if es and es.get("pct") is not None:
+    if es and es.get("pct") is not None and _before_open():
         bits.append(f"Futures point {'higher' if es['pct'] > 0.15 else 'lower' if es['pct'] < -0.15 else 'flat'} ({es['pct']:+.2f}%).")
     lede = " ".join(bits)
     # ---- what's moving ----
@@ -1290,7 +1297,7 @@ def digest():
             txt = f"{'Beat' if beat else 'Missed'} by {abs(sp):.1f}%; the stock barely moved ({mv:+.1f}%)."
         auto_earn[e["sym"]] = txt
     tone_bits = []
-    if es and es["pct"] is not None:
+    if es and es["pct"] is not None and _before_open():
         p = es["pct"]
         tone_bits.append("S&P futures are " + ("sharply lower" if p <= -1 else "lower" if p <= -0.3 else "sharply higher" if p >= 1 else "higher" if p >= 0.3 else "little changed") + f" ({p:+.2f}%)")
     vx = tiles.get("vix")

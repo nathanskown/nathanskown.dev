@@ -22,7 +22,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Market digest \u00b7 NSKN Terminal","description":"The day's market brief: futures, overnight markets, what moved yesterday and what's on today's calendar.","url":"https://nathanskown.dev/finance/digest/","isPartOf":{"@type":"WebSite","name":"NSKN Terminal","url":"https://nathanskown.dev/"},"author":{"@type":"Person","name":"Nathan Skown","url":"https://nathanskown.dev/about/"}}</script>
-<link rel="stylesheet" href="/assets/finance.css?v=4e308285">
+<link rel="stylesheet" href="/assets/finance.css?v=288afb7f">
 </head>
 <body>
 <div id="app"><div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><h1>Market digest</h1><p>The day&#x27;s market brief: futures, overnight markets, what moved yesterday and what&#x27;s on today&#x27;s calendar.</p><p><a href="/finance/">Markets</a> <a href="/sports/">Sports</a> <a href="/music/">Music</a> <a href="/about/">About</a> <a href="/under-the-hood/">Under the hood</a></p></div></div>
@@ -51,7 +51,8 @@ class Component extends DCLogic {
     var handFresh = !!(HAND && D.date && HAND.date === D.date);
     // today's hand-written edition wins; otherwise the page writes its own from the latest numbers (rules, no AI)
     var usingAuto = !handFresh && !!AUTOSTORY && !!D.date;
-    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : HAND);
+    // an older hand-written edition only shows (labeled with its date) once today's digest has loaded and has no story; never on first paint
+    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : (D.date ? HAND : null));
     var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
     var edDateLabel = '';
     if (ED && ED.date) { try { edDateLabel = new Date(ED.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {} }

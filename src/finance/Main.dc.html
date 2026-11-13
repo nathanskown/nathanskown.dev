@@ -144,7 +144,8 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size:var(--fs)">{{rc.t}}</a></sc-for>
 </nav>
 </sc-if>
-<nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
+<nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin; align-items: center">
+<span style="flex: none; color: #A87933; font-size:var(--fs); letter-spacing: calc(.12em*var(--ls,1)); margin-right: 4px" title="Moves from the last full trading session, built nightly">PRIOR CLOSE</span>
 <sc-for list="{{picker}}" as="pk" hint-placeholder-count="12">
 <a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size:var(--fs); white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
 </sc-for>

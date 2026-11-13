@@ -344,3 +344,5 @@ body.has-crawl{padding-bottom:34px}
 
 /* small text gets a light glow (sharper); headlines and big numbers keep the full one */
 .big{text-shadow:0 0 12px rgba(102,230,242,.35)}
+/* breadcrumb links: a 44px tap area on phones without changing the layout */
+.t nav[aria-label="Breadcrumb"] a{display:inline-block;padding:12px 6px;margin:-12px -6px}

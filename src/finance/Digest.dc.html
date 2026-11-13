@@ -458,7 +458,8 @@ class Component extends DCLogic {
     var handFresh = !!(HAND && D.date && HAND.date === D.date);
     // today's hand-written edition wins; otherwise the page writes its own from the latest numbers (rules, no AI)
     var usingAuto = !handFresh && !!AUTOSTORY && !!D.date;
-    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : HAND);
+    // an older hand-written edition only shows (labeled with its date) once today's digest has loaded and has no story; never on first paint
+    var ED = handFresh ? HAND : (usingAuto ? Object.assign({ date: D.date, written: D.updated }, AUTOSTORY) : (D.date ? HAND : null));
     var SIG = { neg: ['NEGATIVE', DN], pos: ['POSITIVE', UP], mix: ['MIXED', '#ffb84d'] };
     var edDateLabel = '';
     if (ED && ED.date) { try { edDateLabel = new Date(ED.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }); } catch (e) {} }
