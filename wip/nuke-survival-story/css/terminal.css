@@ -462,3 +462,29 @@ body.compact #scene.person .ro-row.solo { font-size: 18px; white-space: nowrap; 
 .list.notes li.missed::before { content: "✗ "; color: var(--red); }
 .list.notes .due { color: var(--amber); white-space: nowrap; font-size: .92em; }
 .list.notes li.missed .due { color: var(--red); }
+
+/* ---- phones: more room for the story */
+@media (max-width: 600px) {
+  /* Place facts sit beside the picture, not under it. */
+  #scene:not(.person) .art-wrap.has-art { flex-direction: row; align-items: stretch; }
+  #scene:not(.person) .art-wrap.has-art .scene-frame {
+    flex: none; margin-inline: 0; height: var(--scene-cap); max-height: var(--scene-cap);
+    width: calc(var(--scene-cap) * 16 / 9); max-width: 58%;
+  }
+  #scene:not(.person) .art-wrap.has-art .scene-readout.show {
+    flex: 1; min-width: 0; grid-template-columns: 1fr; align-content: start; gap: 2px;
+    max-height: var(--scene-cap); border-top: 0; border-left: 1px solid var(--line); font-size: 12px;
+  }
+  /* While more pages are left, the chip row and the answers wait for the last page. */
+  body.pages-more .chips-wrap, body.pages-more .talk-choices { display: none; }
+  /* Room for about five answers before the list scrolls. */
+  .talk-choices { max-height: min(280px, calc(var(--app-h, 100dvh) * .42)); }
+}
+/* Keyboard up or a short window: leave the story a few lines above the answers. */
+@media (max-width: 600px) {
+  body.compact .talk-choices { max-height: calc(var(--app-h, 100dvh) * .3); }
+}
+/* If one sentence is still taller than the space left, it scrolls instead of being cut off. */
+@media (max-width: 600px) {
+  .out { overflow-y: auto; scrollbar-width: thin; }
+}

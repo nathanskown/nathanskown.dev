@@ -135,7 +135,17 @@
   function splitBlock(block) {
     var bits = splitSentences(block.text);
     if (bits.length < 2) return [block];
-    return bits.map(function (t) { return { text: t, kind: block.kind, meta: block.meta }; });
+    return bits.map(function (t) { return { text: t, kind: block.kind, meta: block.meta, src: block.src || block }; });
+  }
+  // Pieces of one paragraph that were split for paging, sewn back together.
+  function joinPieces(blocks) {
+    var outBlocks = [];
+    blocks.forEach(function (b) {
+      var prev = outBlocks[outBlocks.length - 1];
+      if (prev && b.src && prev.src === b.src) outBlocks[outBlocks.length - 1] = { text: prev.text + ' ' + b.text, kind: b.kind, meta: b.meta, src: b.src };
+      else outBlocks.push(b);
+    });
+    return outBlocks;
   }
   function storyBlocks(blocks) {
     return blocks.filter(function (b) { return !(b.kind === 'choice' && phoneTalk()); });
@@ -160,8 +170,8 @@
     }
     if (!best || best >= bits.length) return null;
     return {
-      fit: { text: bits.slice(0, best).join(' '), kind: block.kind, meta: block.meta },
-      rest: { text: bits.slice(best).join(' '), kind: block.kind, meta: block.meta }
+      fit: { text: bits.slice(0, best).join(' '), kind: block.kind, meta: block.meta, src: block.src || block },
+      rest: { text: bits.slice(best).join(' '), kind: block.kind, meta: block.meta, src: block.src || block }
     };
   }
   function takeFitting(blocks) {
@@ -193,6 +203,40 @@
     return { kept: kept, consumed: consumed, remainder: remainder };
   }
   function setPager(on) { pager.hidden = !on; }
+  // Phones hide the chips and answers until the last page, so earlier pages hold more story.
+  function setPagesMore(on) { document.body.classList.toggle('pages-more', !!on && phoneTalk()); }
+  function takeOne(rest) {
+    rest = rest.slice();
+    for (var guard = 0; guard < 50; guard++) {
+      var got = takeFitting(rest);
+      if (got.kept.length) {
+        var left = rest.slice(got.consumed);
+        if (got.remainder) left.unshift(got.remainder);
+        return [got.kept, left];
+      }
+      var parts = splitBlock(rest[0]);
+      if (parts.length < 2 || parts[0].text === rest[0].text) break;
+      rest = parts.concat(rest.slice(1));
+    }
+    return [[rest[0]], rest.slice(1)];
+  }
+  function splitPages(rest, into) {
+    var guard = 0;
+    while (rest.length && guard < 400) {
+      guard++;
+      var got = takeFitting(rest);
+      if (got.kept.length) {
+        into.push(got.kept);
+        rest = rest.slice(got.consumed);
+        if (got.remainder) rest.unshift(got.remainder);
+      } else {
+        var parts = splitBlock(rest[0]);
+        if (parts.length < 2 || parts[0].text === rest[0].text) into.push([rest.shift()]);
+        else rest.splice.apply(rest, [0, 1].concat(parts));
+      }
+    }
+    return into;
+  }
   function renderTalkChoices(v) {
     var box = $('talkChoices');
     if (!box) return;
@@ -233,25 +277,38 @@
       else if (!body.length) pagesBuilt = [[]];
       else {
         setPager(false);
+        setPagesMore(false);
         fillOut(body);
         if (!overflows()) pagesBuilt = [body];
         else {
           setPager(true);
-          pagesBuilt = [];
-          var rest = body.slice();
-          var guard = 0;
-          while (rest.length && guard < 400) {
-            guard++;
-            var got = takeFitting(rest);
-            if (got.kept.length) {
-              pagesBuilt.push(got.kept);
-              rest = rest.slice(got.consumed);
-              if (got.remainder) rest.unshift(got.remainder);
-            } else {
-              var parts = splitBlock(rest[0]);
-              if (parts.length < 2 || parts[0].text === rest[0].text) pagesBuilt.push([rest.shift()]);
-              else rest.splice.apply(rest, [0, 1].concat(parts));
+          if (!phoneTalk()) pagesBuilt = splitPages(body.slice(), []);
+          else {
+            // Phones: earlier pages are measured without the chips or answers (they wait for the
+            // last page), and the last page is measured with them back.
+            pagesBuilt = [];
+            var rest = body.slice(), guard = 0;
+            while (rest.length && guard++ < 400) {
+              setPagesMore(false);
+              fillOut(rest);
+              if (!overflows()) { pagesBuilt.push(rest); break; }
+              setPagesMore(true);
+              var t = takeOne(rest);
+              // Everything fits once the chips are hidden, but this would then be the last page,
+              // which shows them. Split at the smaller size, keep its last page, and put the
+              // rest back together as one full page.
+              if (!t[1].length) {
+                setPagesMore(false);
+                var small = splitPages(rest.slice(), []);
+                var final = small.pop();
+                if (small.length) pagesBuilt.push(joinPieces([].concat.apply([], small)));
+                pagesBuilt.push(final);
+                break;
+              }
+              pagesBuilt.push(t[0]);
+              rest = t[1];
             }
+            setPagesMore(false);
           }
           if (!pagesBuilt.length) pagesBuilt = [[]];
           if (pagesBuilt.length < 2) setPager(false);
@@ -270,8 +327,10 @@
   function showPage() {
     var page = pages[pageIndex] || [];
     fillOut(page);
+    out.scrollTop = 0;
     var multi = pages.length > 1;
     setPager(multi);
+    setPagesMore(multi && hasMore());
     if (multi) {
       $('pageCount').textContent = (pageIndex + 1) + '/' + pages.length;
       setPageBtn($('pageBack'), pageIndex > 0);
