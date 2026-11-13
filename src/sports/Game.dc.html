@@ -62,7 +62,7 @@
 <sc-for list="{{pick.games}}" as="g" hint-placeholder-count="6">
 <a class="s-card" href="{{g.href}}">
 <div class="s-line"><span class="s-team"><img class="s-logo" src="{{g.aLogo}}" alt="">{{g.away}}</span><span class="hi">{{g.as}}</span><span class="s-team"><img class="s-logo" src="{{g.hLogo}}" alt="">{{g.home}}</span><span class="hi">{{g.hs}}</span></div>
-<div style="{{g.stStyle}}; font-size:13px; margin-top: 4px">{{g.status}}</div>
+<div style="{{g.stStyle}}; font-size:var(--fs); margin-top: 4px">{{g.status}}</div>
 </a>
 </sc-for>
 </div>
@@ -78,7 +78,7 @@
 <sc-if value="{{ok}}" hint-placeholder-val="{{true}}">
 <div class="s-band" style="{{bandStyle}}">
 <div style="max-width: 1280px; margin: 0 auto; padding: 20px 16px">
-<nav aria-label="Breadcrumb" class="dim" style="font-size:13px"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
+<nav aria-label="Breadcrumb" class="dim" style="font-size:var(--fs)"><a href="Main.dc.html">Sports</a> › <a href="{{lgHref}}">{{lgLabel}}</a> › Game</nav>
 <h1 class="sr">{{g.away.name}} at {{g.home.name}}</h1>
 <sc-if value="{{g.note}}" hint-placeholder-val="{{false}}"><div class="t-th" style="margin-top: 6px">{{g.note}}</div></sc-if>
 <div class="s-match" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 12px">
@@ -95,7 +95,7 @@
 <img class="s-hero-logo" src="{{g.home.logo}}" alt="">
 </a>
 </div>
-<div class="dim" style="margin-top: 12px; font-size:13px; text-align: center">{{g.info}}</div>
+<div class="dim" style="margin-top: 12px; font-size:var(--fs); text-align: center">{{g.info}}</div>
 </div>
 </div>
 
@@ -129,7 +129,7 @@
 <sc-if value="{{tot.has}}" hint-placeholder-val="{{false}}"><div class="s-stat"><div class="k">Projected total</div><div class="v">{{tot.v}}</div><div class="s">{{tot.s}}</div></div></sc-if>
 </div>
 <div class="s-vs" style="{{proj.vs}}; margin-top: 12px" aria-hidden="true"><i style="{{proj.bar}}"></i></div>
-<div style="display: flex; justify-content: space-between; font-size:13px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{proj.aName}}</span><span>{{proj.hName}}</span></div>
+<div style="display: flex; justify-content: space-between; font-size:var(--fs); margin-top: 4px" class="dim" aria-hidden="true"><span>{{proj.aName}}</span><span>{{proj.hName}}</span></div>
 </sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{proj.note}}</p>
 </div>
@@ -145,7 +145,7 @@
 </div>
 <sc-if value="{{pp.none}}" hint-placeholder-val="{{false}}"><div class="s-empty" style="margin-top: 10px">{{pp.noneText}}</div></sc-if>
 <sc-for list="{{pp.teams}}" as="t" hint-placeholder-count="2">
-<h3 style="margin: 14px 0 6px; font-size: 13px; letter-spacing: .08em">{{t.abbr}} <span class="dim" style="font-weight: 400; letter-spacing: 0">{{t.sub}}</span></h3>
+<h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}} <span class="dim" style="font-weight: 400; letter-spacing: 0">{{t.sub}}</span></h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Player</th><th scope="col">Median</th><th scope="col">Middle 50%</th><th scope="col">Ceiling</th><th scope="col">Chance of reaching</th><th scope="col">Volume</th><th scope="col">Your line</th><th scope="col">Over</th><th scope="col">Under</th></tr></thead>
 <tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.median}}</td><td>{{r.range}}</td><td>{{r.ceil}}</td><td class="dim">{{r.ladder}}</td><td class="dim">{{r.vol}}</td><td><input class="s-input" style="width: 84px; min-height: 32px; padding: 2px 6px" type="number" step="0.5" inputmode="decimal" value="{{r.line}}" onChange="{{r.onLine}}" aria-label="{{r.lineLabel}}"></td><td style="{{r.overSt}}">{{r.over}}</td><td style="{{r.underSt}}">{{r.under}}</td></tr></sc-for></tbody>
@@ -160,14 +160,14 @@
 <div class="t-ph"><h2>Shots on goal</h2><span class="dim">{{sg.sub}}</span><button type="button" class="s-tab" onClick="{{sg.csv}}">Download CSV</button></div>
 <div class="t-pb">
 <sc-for list="{{sg.teams}}" as="t" hint-placeholder-count="2">
-<h3 style="margin: 14px 0 6px; font-size: 13px; letter-spacing: .08em">{{t.abbr}}</h3>
+<h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}}</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th><th scope="col">Ceiling</th><th scope="col">Anytime goal</th><th scope="col">Ice time</th></tr></thead>
 <tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.l1}}</td><td>{{r.l2}}</td><td>{{r.l3}}</td><td>{{r.l4}}</td><td>{{r.l5}}</td><td>{{r.ceil}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
 <sc-if value="{{sg.hasG}}" hint-placeholder-val="{{false}}">
-<h3 style="margin: 16px 0 6px; font-size: 13px; letter-spacing: .08em">Goalie saves</h3>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">Goalie saves</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Goalie</th><th scope="col">Shots faced</th><th scope="col">Save %</th><th scope="col">Expected saves</th><th scope="col">20+</th><th scope="col">25+</th><th scope="col">30+</th><th scope="col">35+</th><th scope="col">Note</th></tr></thead>
 <tbody><sc-for list="{{sg.goalies}}" as="g" hint-placeholder-count="2"><tr><th scope="row" class="l">{{g.player}} <span class="dim">{{g.team}}</span></th><td>{{g.shots}}</td><td>{{g.sv}}</td><td style="color: var(--wh); font-weight: 600">{{g.mean}}</td><td>{{g.s20}}</td><td>{{g.s25}}</td><td>{{g.s30}}</td><td>{{g.s35}}</td><td class="dim">{{g.note}}</td></tr></sc-for></tbody>
@@ -221,7 +221,7 @@
 <sc-if value="{{noLeaders}}" hint-placeholder-val="{{false}}"><div class="s-empty">No player leaders in the feed for this game yet.</div></sc-if>
 <sc-for list="{{leaders}}" as="L" hint-placeholder-count="2">
 <div class="t-th" style="margin-top: 6px">{{L.abbr}}</div>
-<sc-for list="{{L.cats}}" as="c" hint-placeholder-count="3"><div class="s-game"><span class="dim" style="width: 130px; flex: none; font-size:13px">{{c.cat}}</span><span class="o hi">{{c.name}}</span><span class="r" style="white-space: normal; text-align: right">{{c.line}}</span></div></sc-for>
+<sc-for list="{{L.cats}}" as="c" hint-placeholder-count="3"><div class="s-game"><span class="dim" style="width: 130px; flex: none; font-size:var(--fs)">{{c.cat}}</span><span class="o hi">{{c.name}}</span><span class="r" style="white-space: normal; text-align: right">{{c.line}}</span></div></sc-for>
 </sc-for>
 </div>
 </section>
@@ -273,7 +273,7 @@
 </sc-if>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:13px" class="dim">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:var(--fs)" class="dim">
 <span>Scores, box scores and play text: ESPN public API · Projections: house model · No betting lines or third-party win probabilities · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>

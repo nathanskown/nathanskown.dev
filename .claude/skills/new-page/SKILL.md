@@ -41,6 +41,8 @@ Repeat the plan back in a few plain lines (address, color, panels, the data file
 - Betting lines, if shown: labeled with source and time, never framed as a pick to bet. Update the Under the Hood
   "no betting lines" sentence if this is the first page to show them.
 - Phone: no sideways scroll at 375px, tap targets ≥ 44px, inputs ≥ 16px font.
+- Text sizes: only the named sizes from CLAUDE.md "Type" (`var(--fs)` for body, `--fs-sm`, `--fs-md`…), never a raw
+  pixel size under 16px, nothing under 12px, wide letter-spacing written as `calc(…em*var(--ls,1))`.
 - New data file? Add a check for it in `tools/validate_data.py` (`rule_for` plus a check function).
 - New source the owner approved? Add a row to the "Sources and what they feed" table in `under-the-hood/index.html`.
 - Add the page to `sitemap.xml`.

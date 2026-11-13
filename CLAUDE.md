@@ -25,6 +25,29 @@ Terminal style everywhere, including one-off pages like About and Career:
   `assets/site.css` (`.nk-*`), Music uses `music/assets/music.css` (`.mx-*`).
 - Phone: works at 375px wide with no sideways scrolling, tap targets at least 44px, inputs at 16px (stops iOS zoom).
 
+## Type (text sizes)
+- **Use the named sizes, never a raw pixel size under 16px.** They're defined at the top of each section stylesheet
+  (and in the `<style>` of the standalone pages: About, Under the Hood, Status, Career, Editions):
+
+  | Name | Desktop | Phone (≤760px) | Use for |
+  |---|---|---|---|
+  | `var(--fs-xs)` | 12px | 12px | tiny keys and badges only (`GO`, `START HERE`) |
+  | `var(--fs-sm)` | 13px | 13.5px | secondary notes, captions |
+  | `var(--fs)` | 14px | 15px | body text, table rows, most labels |
+  | `var(--fs-md)` | 15px | 16px | panel titles, emphasized lines |
+  | `var(--fs-lg)` | 16px | 17px | lead sentences |
+
+  16px and up (inputs, headlines, VT323 big numbers) may stay as fixed sizes.
+- **Nothing under 12px**, ever. Relative sizes (`.82em`, `<small>`) are written as `max(var(--fs-xs), .82em)`.
+- **Wide letter-spacing** (`.08em` and up, mostly on uppercase labels) is written `calc(.12em*var(--ls,1))` so it
+  tightens on phones (`--ls` is .55 there) instead of wrapping.
+- **Glow**: body and table text gets only a faint 3px glow, so small text stays sharp. Headlines (`h1`) and big numbers
+  (`.big`) keep the full glow. Scanlines stay light (about 9-10% dark).
+- **Fonts**: buttons and form fields inherit the page font. Markets and Sports set this with
+  `:where(.t) :where(button,input,select,textarea){font-family:inherit…}`, so nothing falls back to Arial.
+- Text meant to be read must contrast at least 4.5:1 with its background. Decoration-only shades (`--deco` in Music,
+  `--mute` in Home/Markets/Sports) are never used for text people need to read.
+
 ## Colors (locked)
 | Section | Main color | Where |
 |---|---|---|

@@ -50,7 +50,7 @@
 
 <main class="s-wrap">
 <div>
-<div class="dim" style="letter-spacing: .14em; font-size:13px">NSKN » SPORTS » {{code}}</div>
+<div class="dim" style="letter-spacing: calc(.14em*var(--ls,1)); font-size:var(--fs)">NSKN » SPORTS » {{code}}</div>
 <h1 style="margin: 6px 0 0">{{title}}</h1>
 <p style="margin: 8px 0 0; max-width: 72ch" class="hi">{{blurb}}</p>
 </div>
@@ -106,7 +106,7 @@
 <div class="s-stat"><div class="k">Likely range</div><div class="v">{{sim.range}}</div><div class="s">middle 80% of outcomes</div></div>
 </div>
 <div class="s-vs" style="{{sim.vs}}; margin-top: 14px; height: 14px" aria-hidden="true"><i style="{{sim.bar}}"></i></div>
-<div style="display: flex; justify-content: space-between; font-size:13px; margin-top: 4px" class="dim" aria-hidden="true"><span>{{sim.aName}} {{sim.aP}}</span><span>{{sim.hP}} {{sim.hName}}</span></div>
+<div style="display: flex; justify-content: space-between; font-size:var(--fs); margin-top: 4px" class="dim" aria-hidden="true"><span>{{sim.aName}} {{sim.aP}}</span><span>{{sim.hP}} {{sim.hName}}</span></div>
 </sc-if>
 <p class="s-note" style="margin: 10px 0 0">{{sim.foot}}</p>
 </div>
@@ -154,7 +154,7 @@
 <div class="s-grid">
 <sc-for list="{{trk.cards}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
 </div>
-<h3 style="margin: 16px 0 6px; font-size: 14px">Calibration</h3>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs-md)">Calibration</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Model’s favorite had</th><th scope="col">Games</th><th scope="col">Expected to win</th><th scope="col">Actually won</th></tr></thead>
 <tbody><sc-for list="{{trk.cal}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td></tr></sc-for></tbody>
@@ -189,7 +189,7 @@
 <div class="t-ph"><h2>NFL player stat projections</h2><span class="dim">{{trk.pp.sub}}</span></div>
 <div class="t-pb">
 <p class="s-note hi" style="margin: 0 0 10px">The projections on NFL game pages (receiving yards, receptions, rushing yards, passing yards), scored on results. Part 1 grades the whole predicted range, not only the middle. Part 2 shows what happens when those chances are compared with sportsbook prices after the fact. Prices are used only to grade; they never change a projection and are not shown.</p>
-<h3 style="margin: 4px 0 6px; font-size: 14px">1. Where results landed in the predicted range</h3>
+<h3 style="margin: 4px 0 6px; font-size: var(--fs-md)">1. Where results landed in the predicted range</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Stat</th><th scope="col">Graded</th><th scope="col">Range score, this season</th><th scope="col">Range score, past tests</th><th scope="col">Finished above the 75th</th><th scope="col">Above the 90th</th><th scope="col">Above the 95th</th></tr></thead>
 <tbody><sc-for list="{{trk.pp.range}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.mk}}</th><td>{{r.n}}</td><td>{{r.now}}</td><td>{{r.past}}</td><td>{{r.t75}}</td><td>{{r.t90}}</td><td>{{r.t95}}</td></tr></sc-for></tbody>
@@ -201,21 +201,21 @@
 </table></div>
 <p class="s-note" style="margin: 6px 0 14px">Each tenth should hold about 10% of results. Piles at either end mean ranges that are too narrow.</p>
 <sc-if value="{{trk.pp.hasBook}}" hint-placeholder-val="{{false}}">
-<h3 style="margin: 4px 0 6px; font-size: 14px">2. Picks graded against closing sportsbook prices</h3>
+<h3 style="margin: 4px 0 6px; font-size: var(--fs-md)">2. Picks graded against closing sportsbook prices</h3>
 <div class="s-grid">
 <sc-for list="{{trk.pp.cards}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
 </div>
-<h4 style="margin: 14px 0 6px; font-size: 13px">Is the stated chance honest?</h4>
+<h4 style="margin: 14px 0 6px; font-size: var(--fs)">Is the stated chance honest?</h4>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Chance on the picked side</th><th scope="col">Picks</th><th scope="col">Stated</th><th scope="col">Hit</th></tr></thead>
 <tbody><sc-for list="{{trk.pp.calib}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td></tr></sc-for></tbody>
 </table></div>
-<h4 style="margin: 14px 0 6px; font-size: 13px">Does a bigger gap to the market pay?</h4>
+<h4 style="margin: 14px 0 6px; font-size: var(--fs)">Does a bigger gap to the market pay?</h4>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Gap</th><th scope="col">Picks</th><th scope="col">Won</th><th scope="col">Units</th><th scope="col">Return per pick</th></tr></thead>
 <tbody><sc-for list="{{trk.pp.edge}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.won}}</td><td style="{{r.st}}">{{r.units}}</td><td style="{{r.st}}">{{r.roi}}</td></tr></sc-for></tbody>
 </table></div>
-<h4 style="margin: 14px 0 6px; font-size: 13px">Overs, unders, each stat and the latest picks</h4>
+<h4 style="margin: 14px 0 6px; font-size: var(--fs)">Overs, unders, each stat and the latest picks</h4>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Split (gap of 5 points or more)</th><th scope="col">Picks</th><th scope="col">Won</th><th scope="col">Units</th><th scope="col">Return per pick</th></tr></thead>
 <tbody><sc-for list="{{trk.pp.splits}}" as="r" hint-placeholder-count="8"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.won}}</td><td style="{{r.st}}">{{r.units}}</td><td style="{{r.st}}">{{r.roi}}</td></tr></sc-for></tbody>
@@ -238,14 +238,14 @@
 <tbody><sc-for list="{{trk.sg.rows}}" as="r" hint-placeholder-count="3"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.rps}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
 </table></div>
 <sc-if value="{{trk.sg.hasGoal}}" hint-placeholder-val="{{false}}">
-<h3 style="margin: 16px 0 6px; font-size: 14px">Anytime goal</h3>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs-md)">Anytime goal</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Test</th><th scope="col">Skater games</th><th scope="col">Brier score</th><th scope="col">League-rate baseline</th><th scope="col">Under 10%</th><th scope="col">10–20%</th><th scope="col">20–30%</th><th scope="col">30%+</th></tr></thead>
 <tbody><sc-for list="{{trk.sg.goalRows}}" as="r" hint-placeholder-count="2"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.brier}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
 </table></div>
 </sc-if>
 <sc-if value="{{trk.sg.hasSave}}" hint-placeholder-val="{{false}}">
-<h3 style="margin: 16px 0 6px; font-size: 14px">Goalie saves</h3>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs-md)">Goalie saves</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Test</th><th scope="col">Starts</th><th scope="col">Range score</th><th scope="col">League-distribution baseline</th><th scope="col">20+</th><th scope="col">25+</th><th scope="col">30+</th><th scope="col">35+</th></tr></thead>
 <tbody><sc-for list="{{trk.sg.saveRows}}" as="r" hint-placeholder-count="2"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.rps}}</td><td>{{r.base}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="4"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
@@ -273,7 +273,7 @@
 <sc-if value="{{isMeth}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="The model">
 <div class="t-ph"><h2>The house model</h2><span class="dim">Applies to every league</span></div>
-<div class="t-pb s-note hi" style="font-size: 14px">
+<div class="t-pb s-note hi" style="font-size: var(--fs-md)">
 <p style="margin: 0">Each team gets one number: how many points (goals, runs) better or worse than an average team it would be on a neutral field. It is solved from every completed game this season at once, so beating good teams counts more than beating bad ones, and the home team’s built-in edge is taken out first.</p>
 <p>Early in a season a few games say little, so every rating is pulled toward a starting point as if the team had already played <i>k</i> games at that level. The starting point is a share of the team’s rating from last season wherever replaying past seasons showed that last year carries information, otherwise the league average. That is the same idea as “SRS × games ÷ (games + k)”. Where it tested better, recent games count more than old ones (a half-life in weeks), blowouts are damped, and teams outside the division the site covers (FCS, non-D-I) share one pooled rating. All-star and international exhibition games are left out, and a relocated team keeps its history (Arizona → Utah).</p>
 <p>Ratings come from margins, so they carry a team’s usual quarterback but cannot see a change. For NFL games the projection is moved by the starting quarterback’s recent play (EPA per dropback, recent seasons weighted more, shrunk toward replacement level) against the team’s usual starter, using free nflverse data. NFL ratings also count each game’s result 60% on team efficiency (expected points added per play, from nflverse) and 40% on the final margin, which tested better than margins alone. Fitted on 12 seasons, the quarterback adjustment improved held-out log loss in every one of the last seven test seasons. Betting markets know more still, so the pipeline records the market’s number for every game it forecasts but never uses it: forecasts, ratings and season odds come from scores and this quarterback signal only. After the games finish, the track record compares the house forecast with the market’s, and the gaps show what information is still missing. The market numbers themselves are never published on this site.</p>
@@ -306,7 +306,7 @@
 <div class="s-grid" style="margin-top: 10px">
 <sc-for list="{{calc.out}}" as="c" hint-placeholder-count="4"><div class="s-stat"><div class="k">{{c.k}}</div><div class="v">{{c.v}}</div><div class="s">{{c.s}}</div></div></sc-for>
 </div>
-<h3 style="margin: 16px 0 6px; font-size: 14px">Converter: prediction-market price or percent to American odds</h3>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs-md)">Converter: prediction-market price or percent to American odds</h3>
 <div class="s-grid">
 <label><span class="t-th">Price in cents or percent (e.g. 62)</span><input class="s-input" type="number" step="0.5" inputmode="decimal" value="{{calc.c}}" onChange="{{calc.onC}}"></label>
 <label><span class="t-th">American odds (e.g. -150 or +130)</span><input class="s-input" type="number" step="1" inputmode="numeric" value="{{calc.d}}" onChange="{{calc.onD}}"></label>
@@ -339,7 +339,7 @@
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:13px" class="dim">
+<div style="max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size:var(--fs)" class="dim">
 <span>Data: ESPN public API · Ratings, projections and odds: house model · All times {{tzLabel}}</span>
 <span>Built by Nathan Skown</span>
 </div>

@@ -21,9 +21,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
 <style>
+:root{--fs-xs:12px;--fs-sm:13px;--fs:14px;--fs-md:15px;--fs-lg:16px;--ls:1}@media (max-width:760px){:root{--fs-sm:13.5px;--fs:15px;--fs-md:16px;--fs-lg:17px;--ls:.55}}
+
 :root{--g:#8dff9c;--hi:#d6ffdc;--wh:#f2fff4;--dim:#7fc78a;--line:#163f1e;--bg:#020402;--panel:#041006;--mkt:#ffbf3a;--spt:#3df2ff;--mus:#d58bff;--ok:#4ade80;--warn:#ffb84d;--bad:#ff5f56}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(1100px 460px at 50% -160px,rgba(141,255,156,.12),transparent 70%),var(--bg);color:var(--hi);font:14px/1.6 'IBM Plex Mono',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+body{margin:0;background:radial-gradient(1100px 460px at 50% -160px,rgba(141,255,156,.12),transparent 70%),var(--bg);color:var(--hi);font:var(--fs-md)/1.6 'IBM Plex Mono',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
 a{color:var(--g)}
 a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px rgba(141,255,156,.3)}
 .skip{position:absolute;left:8px;top:-60px;background:var(--g);color:#000;padding:8px 14px;font-weight:600;z-index:9}
@@ -32,33 +34,33 @@ a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:2px;b
 .bar a{color:#000;text-decoration:none}
 .bar a:hover{text-decoration:underline}
 main{max-width:1120px;margin:0 auto;padding:26px 16px 70px}
-.kick{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.kick{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);letter-spacing:calc(.18em*var(--ls,1));text-transform:uppercase;color:var(--dim)}
 .kick::before{content:"";width:18px;height:2px;background:var(--g)}
 h1{font-family:VT323,monospace;font-weight:400;font-size:clamp(52px,8vw,96px);line-height:.88;margin:8px 0 10px;letter-spacing:.02em;background:linear-gradient(92deg,#fff,#d6ffdc 35%,#8dff9c 70%,#3df2ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(141,255,156,.35))}
-.lead{max-width:74ch;font-size:15px;color:var(--hi);margin:0 0 26px}
-h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--wh);margin:0;padding:6px 14px;background:linear-gradient(90deg,rgba(141,255,156,.18),rgba(141,255,156,.03));border-left:3px solid var(--g);border-bottom:1px solid var(--line)}
+.lead{max-width:74ch;font-size:var(--fs-lg);color:var(--hi);margin:0 0 26px}
+h2{font-size:var(--fs);letter-spacing:calc(.14em*var(--ls,1));text-transform:uppercase;color:var(--wh);margin:0;padding:6px 14px;background:linear-gradient(90deg,rgba(141,255,156,.18),rgba(141,255,156,.03));border-left:3px solid var(--g);border-bottom:1px solid var(--line)}
 section{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);margin:0 0 20px}
 .pb{padding:14px 16px 16px}
-.note{color:var(--dim);font-size:12.5px;margin:10px 0 0;max-width:90ch}
+.note{color:var(--dim);font-size:var(--fs-sm);margin:10px 0 0;max-width:90ch}
 .ed{border:1px solid var(--line);background:linear-gradient(180deg,#061409,#020602);margin:0 0 26px}
 .ed-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(141,255,156,.14),transparent)}
 .ed-h .no{font-family:VT323,monospace;font-size:44px;line-height:.9;color:#fff;text-shadow:0 0 14px rgba(141,255,156,.5)}
-.ed-h h2{all:unset;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--wh);font-weight:600}
-.ed-h .dt{color:var(--dim);font-size:12.5px}
-.ed-h .cur{background:var(--g);color:#000;font-size:11px;font-weight:600;letter-spacing:.12em;padding:2px 7px}
+.ed-h h2{all:unset;font-size:var(--fs-lg);letter-spacing:calc(.14em*var(--ls,1));text-transform:uppercase;color:var(--wh);font-weight:600}
+.ed-h .dt{color:var(--dim);font-size:var(--fs-sm)}
+.ed-h .cur{background:var(--g);color:#000;font-size:var(--fs-xs);font-weight:600;letter-spacing:calc(.12em*var(--ls,1));padding:2px 7px}
 .ed-b{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px;padding:16px}
 .ed ul{margin:0;padding-left:18px}.ed li{margin:0 0 6px}
-.ed .meta{color:var(--dim);font-size:12.5px;margin:12px 0 0}
+.ed .meta{color:var(--dim);font-size:var(--fs-sm);margin:12px 0 0}
 .shot{margin:0}
 .shot img{display:block;width:100%;height:auto;aspect-ratio:16/10;border:1px solid var(--line);background:#000}
-.shot figcaption{font-size:12px;color:var(--dim);margin-top:4px}
+.shot figcaption{font-size:var(--fs-sm);color:var(--dim);margin-top:4px}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
-.tabs button{font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#000;color:var(--dim);border:1px solid var(--line);padding:4px 9px;cursor:pointer}
+.tabs button{font:inherit;font-size:var(--fs-sm);letter-spacing:calc(.08em*var(--ls,1));text-transform:uppercase;background:#000;color:var(--dim);border:1px solid var(--line);padding:4px 9px;cursor:pointer}
 .tabs button[aria-pressed=true]{background:var(--g);color:#000;border-color:var(--g)}
 .tabs button:hover{color:var(--hi);border-color:var(--g)}
 .cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (max-width:860px){.ed-b{grid-template-columns:1fr}.cmp{grid-template-columns:1fr}}
-footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-size:12.5px}
+footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-size:var(--fs-sm)}
 </style>
 </head>
 <body>

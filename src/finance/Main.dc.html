@@ -12,7 +12,7 @@
 <style>
 body{margin:0;background:#050403}
 .t{--a:#ffb84d;--hi:#ffd89d;--wh:#ffe9c7;--dim:#c99442;--dim2:#a87933;--mute:#664a1f;--line:#382811;--line2:#241a0b;--band:#261c0c;--panel:#0a0704;--hover:#1c1408;--up:#4ade80;--dn:#ff5f56;
-position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
+position:relative;min-height:100vh;background:#050403;color:var(--a);font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:var(--fs);line-height:1.5;text-shadow:0 0 5px rgba(255,184,77,.22);-webkit-font-smoothing:antialiased}
 .t *{box-sizing:border-box}
 .t a{color:var(--hi);text-decoration:none}
 .t a:hover{color:#ffffff}
@@ -30,41 +30,41 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t h2{letter-spacing:.02em}
 
 /* Bloomberg-style chrome */
-.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap;overflow:hidden}
+.t-title{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;background:#0d0a06;border-bottom:1px solid var(--line);font-size:var(--fs);white-space:nowrap;overflow:hidden}
 .t-brand{font-weight:600;letter-spacing:.05em}
 .t-chip{border:1px solid var(--line);background:#000;padding:1px 8px;color:var(--dim)}
 .t-live{display:inline-flex;align-items:center;gap:6px;color:var(--hi)}
 .t-dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a);animation:t-pulse 1.6s ease-in-out infinite}
-.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:14px;color:var(--hi)}
+.t-help{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;padding:5px 12px 3px;font-size:var(--fs-md);color:var(--hi)}
 .t-inv{background:var(--a);color:#000;text-shadow:none;padding:0 3px}
 .t-cmd{display:flex;align-items:stretch;margin:4px 12px 8px;border:1px solid var(--line);background:#000;min-height:44px}
 .t-cmd:focus-within{border-color:var(--a)}
-.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:.08em;font-size:13px;white-space:nowrap}
-.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:.08em}
+.t-prompt{display:flex;align-items:center;padding:0 12px;background:var(--a);color:#000;text-shadow:none;font-weight:600;letter-spacing:calc(.08em*var(--ls,1));font-size:var(--fs);white-space:nowrap}
+.t-input{flex:1 1 auto;min-width:0;background:transparent;border:0;outline:0;color:var(--hi);font:inherit;font-size:16px;padding:0 12px;caret-color:var(--a);text-transform:uppercase;letter-spacing:calc(.08em*var(--ls,1))}
 .t-input::placeholder{color:var(--dim2);opacity:1}
-.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:14px;font-weight:500}
+.t-fbar{display:flex;align-items:stretch;flex-wrap:wrap;background:var(--a);color:#000;text-shadow:none;min-height:32px;padding-left:12px;font-size:var(--fs-md);font-weight:500}
 .t-fbar-title{display:flex;align-items:center;font-size:17px;margin-right:14px}
 .t .t-fkey{display:flex;align-items:center;padding:0 12px;min-height:32px;border-left:1px solid rgba(0,0,0,.3);color:#000}
 .t .t-fkey:hover{background:#000;color:var(--a)}
 .t .t-fkey.is-on{background:#000;color:var(--hi);text-shadow:0 0 5px rgba(255,184,77,.3)}
-.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--hi)}
-.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:13px;letter-spacing:.1em;font-weight:600;text-transform:uppercase}
+.t-sub{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;padding:4px 12px;border-bottom:1px solid var(--line);font-size:var(--fs);color:var(--hi)}
+.t-tag{background:var(--hi);color:#000;text-shadow:none;padding:0 8px;font-size:var(--fs);letter-spacing:calc(.1em*var(--ls,1));font-weight:600;text-transform:uppercase}
 
 /* panels with an explicit header band */
 .t-panel{background:var(--panel);border:1px solid var(--line);min-width:0}
-.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:13px}
-.t-ph h2{margin:0;font-size:14px;font-weight:500;color:var(--hi)}
+.t-ph{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;background:var(--band);padding:4px 12px;min-height:30px;font-size:var(--fs)}
+.t-ph h2{margin:0;font-size:var(--fs-md);font-weight:500;color:var(--hi)}
 .t-pn{color:var(--dim2);font-weight:400;margin-right:4px}
 .t-pb{padding:12px 14px 14px}
-.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:.82em;line-height:1.45;letter-spacing:.1em}
-.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:13px;letter-spacing:.04em}
+.t-k{display:inline-block;border:1px solid currentColor;padding:0 5px;font-size:max(var(--fs-xs),.82em);line-height:1.45;letter-spacing:calc(.1em*var(--ls,1))}
+.t-badge{display:inline-flex;align-items:center;gap:8px;min-height:32px;padding:0 12px;border:1px solid var(--line);background:#000;font-size:var(--fs);letter-spacing:.04em}
 
 /* converted panels: first row becomes a numbered header band */
 .t main{counter-reset:pn 9}
 .t-panel,.t-card{counter-increment:pn}
 .t .t-card{padding:14px !important}
 .t .t-card > :first-child{margin:-14px -14px 12px !important;padding:5px 14px !important;min-height:30px;background:var(--band) !important;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
-.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:14px !important;font-weight:500 !important;color:var(--hi) !important}
+.t .t-card > :first-child h2,.t .t-card > h2:first-child{font-size:var(--fs-md) !important;font-weight:500 !important;color:var(--hi) !important}
 .t .t-card > :first-child h2::before,.t .t-card > h2:first-child::before{content:counter(pn) ")";color:var(--dim2);font-weight:400;margin-right:8px}
 
 /* index tiles + tabs + rows (dashboard) */
@@ -72,11 +72,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 .t .tl:hover{border-color:var(--a)}
 .t .tl.is-on{background:var(--band);border-color:var(--a);box-shadow:0 0 18px rgba(255,184,77,.16)}
 .t-tabs{display:flex;gap:4px}
-.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:13px;letter-spacing:.1em}
+.t .t-tab{min-height:30px;padding:0 10px;border:1px solid var(--line);background:#000;color:var(--dim);cursor:pointer;font-size:var(--fs);letter-spacing:calc(.1em*var(--ls,1))}
 .t .t-tab:hover{color:var(--hi);border-color:var(--a)}
 .t .t-tab.is-on{background:var(--a);border-color:var(--a);color:#000;text-shadow:none}
 .t th{font-weight:400}
-.t-th{color:var(--dim);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.t-th{color:var(--dim);font-size:var(--fs);letter-spacing:calc(.1em*var(--ls,1));text-transform:uppercase}
 .t-row{border-bottom:1px solid var(--line2)}
 .t .t-rowlink{display:flex;gap:14px;padding:10px 6px;margin:0 -6px;border-bottom:1px solid var(--line2);color:var(--a)}
 .t .t-rowlink:hover{background:var(--hover);color:var(--a)}
@@ -140,20 +140,20 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <sc-if value="{{hasRecent}}" hint-placeholder-val="{{ false }}">
 <nav aria-label="Recently viewed" style="display: flex; gap: 6px; align-items: center; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin">
-<span style="flex: none; color: #A87933; font-size:13px; letter-spacing: .12em; margin-right: 4px">RECENT</span>
-<sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size:13px">{{rc.t}}</a></sc-for>
+<span style="flex: none; color: #A87933; font-size:var(--fs); letter-spacing: calc(.12em*var(--ls,1)); margin-right: 4px">RECENT</span>
+<sc-for list="{{recent}}" as="rc" hint-placeholder-count="5"><a href="{{rc.href}}" class="{{rc.cls}}" style="flex: none; display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border: 1px dashed #382811; background: #000; font-size:var(--fs)">{{rc.t}}</a></sc-for>
 </nav>
 </sc-if>
 <nav aria-label="Tracked tickers" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; scrollbar-width: thin">
 <sc-for list="{{picker}}" as="pk" hint-placeholder-count="12">
-<a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size:13px; white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
+<a href="{{pk.href}}" class="{{pk.cls}}" style="flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 10px; border: 1px solid #382811; background: #000; font-size:var(--fs); white-space: nowrap">{{pk.t}} <span style="color: {{pk.color}}">{{pk.chg}}</span></a>
 </sc-for>
 </nav>
 
 <sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
 <section class="t-panel" aria-label="Not tracked"><div class="t-pb" style="padding: 22px">
 <div class="hi" style="font-size: 16px">{{missingText}}</div>
-<div class="dim" style="font-size: 13px; margin-top: 6px">{{missingNote}}</div>
+<div class="dim" style="font-size: var(--fs); margin-top: 6px">{{missingNote}}</div>
 </div></section>
 </sc-if>
 
@@ -161,16 +161,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <section aria-label="Quote" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px">
 <div>
 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
-<span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{sym}}</span>
-<span style="color: #C99442; font-size: 13.5px">{{subline}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: var(--fs-md); padding: 3px 10px; border-radius: 0; background: #FFB84D; color: #000000; text-shadow: none">{{sym}}</span>
+<span style="color: #C99442; font-size: var(--fs)">{{subline}}</span>
 </div>
 <h1 style="margin: 10px 0 6px; font-size: 34px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: #FFD89D">{{name}}</h1>
 <div style="display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap">
 <span class="f-price" style="font-family: 'IBM Plex Mono', monospace; font-size: 44px; font-weight: 500; letter-spacing: -0.02em; color: #FFD89D">{{priceText}}</span>
 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: {{trendColor}}">{{trendArrow}} {{chgText}} ({{pctText}})</span>
-<span style="color: #C99442; font-size: 13.5px">{{rangeLabel}}</span>
+<span style="color: #C99442; font-size: var(--fs)">{{rangeLabel}}</span>
 </div>
-<div style="color: #A87933; font-size:13px; margin-top: 4px">{{asOf}}</div>
+<div style="color: #A87933; font-size:var(--fs); margin-top: 4px">{{asOf}}</div>
 <sc-if value="{{has52}}" hint-placeholder-val="{{ true }}">
 <div class="f-range" role="img" aria-label="{{pos52Text}}">
 <div class="f-range-l"><span>52W LOW {{lo52}}</span><span>52W HIGH {{hi52}}</span></div>
@@ -189,11 +189,11 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div aria-hidden="true" style="flex: none; width: 4px; background: #FFB84D; box-shadow: 0 0 10px rgba(255,184,77,.5)"></div>
 <div style="padding: 14px 18px; min-width: 0">
 <div style="display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px">
-<span style="font-size:13px; letter-spacing: .14em; color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
-<sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
+<span style="font-size:var(--fs); letter-spacing: calc(.14em*var(--ls,1)); color: #000; background: #FFB84D; text-shadow: none; padding: 0 6px">WHAT THEY DO</span>
+<sc-if value="{{aboutKind}}" hint-placeholder-val="{{ true }}"><span style="font-size:var(--fs); color: #FFD89D; text-transform: uppercase; letter-spacing: .06em">{{aboutKind}}</span></sc-if>
 </div>
-<p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #FFE9C7; max-width: 980px">{{aboutText}}</p>
-<div style="margin-top: 6px; font-size:13px; color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
+<p style="margin: 0; font-size: var(--fs-md); line-height: 1.6; color: #FFE9C7; max-width: 980px">{{aboutText}}</p>
+<div style="margin-top: 6px; font-size:var(--fs); color: #A87933">Summary from Wikipedia · <a href="{{aboutUrl}}" target="_blank" rel="noopener">read more ↗</a></div>
 </div>
 </section>
 </sc-if>
@@ -204,7 +204,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Price chart" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Price <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: {{rangeColor}}">{{rangeChgText}}</span></h2>
+<h2 style="margin: 0; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Price <span style="font-family: 'IBM Plex Mono', monospace; font-size: var(--fs); font-weight: 500; color: {{rangeColor}}">{{rangeChgText}}</span></h2>
 <div role="group" aria-label="Chart range" style="display: flex; flex-wrap: wrap; gap: 4px; background: #050403; border: 1px solid #382811; border-radius: 0; padding: 3px">
 <sc-for list="{{ranges}}" as="r" hint-placeholder-count="7">
 <button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="{{r.btnStyle}}">{{r.id}}</button>
@@ -221,22 +221,22 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <path d="{{areaPath}}" fill="{{trendFill}}" stroke="none"></path>
 <path d="{{linePath}}" fill="none" stroke="{{trendColor}}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
 </svg>
-<div style="display: flex; justify-content: space-between; color: #A87933; font-size:13px; font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
+<div style="display: flex; justify-content: space-between; color: #A87933; font-size:var(--fs); font-family: 'IBM Plex Mono', monospace; margin-top: 6px">
 <sc-for list="{{xLabels}}" as="x" hint-placeholder-count="5"><span>{{x}}</span></sc-for>
 </div>
 </div>
-<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; box-sizing: border-box; color: #A87933; font-size:13px; font-family: 'IBM Plex Mono', monospace; text-align: right; width: 64px">
+<div aria-hidden="true" style="display: flex; flex-direction: column; justify-content: space-between; height: 280px; padding: 8px 0 12px; box-sizing: border-box; color: #A87933; font-size:var(--fs); font-family: 'IBM Plex Mono', monospace; text-align: right; width: 64px">
 <span>{{yMax}}</span><span>{{yMid}}</span><span>{{yMin}}</span>
 </div>
 </div>
 </section>
 
 <section aria-label="Key statistics">
-<h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Key statistics</h2>
+<h2 style="margin: 0 0 12px; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Key statistics</h2>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{stats}}" as="s" hint-placeholder-count="8">
 <div class="f-stat sm" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size:13px">{{s.label}}</div>
+<div style="color: #C99442; font-size:var(--fs)">{{s.label}}</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; font-weight: 500; margin-top: 2px; color: #FFD89D">{{s.value}}</div>
 </div>
 </sc-for>
@@ -245,13 +245,13 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Quarterly financials" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Quarterly financials</h2>
-<span style="color: #A87933; font-size:13px">USD millions except per share · SEC XBRL filings · quarter ended</span>
+<h2 style="margin: 0; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Quarterly financials</h2>
+<span style="color: #A87933; font-size:var(--fs)">USD millions except per share · SEC XBRL filings · quarter ended</span>
 </div>
 <div style="overflow-x: auto">
-<table style="width: 100%; min-width: 560px; font-size: 14px">
+<table style="width: 100%; min-width: 560px; font-size: var(--fs-md)">
 <thead>
-<tr style="color: #C99442; font-size:13px; text-align: right">
+<tr style="color: #C99442; font-size:var(--fs); text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Metric</th>
 <sc-for list="{{finHead}}" as="fh" hint-placeholder-count="5"><th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">{{fh}}</th></sc-for>
 </tr>
@@ -266,16 +266,16 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </tbody>
 </table>
 </div>
-<sc-if value="{{noFin}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">{{noFinText}}</div></sc-if>
+<sc-if value="{{noFin}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: var(--fs)">{{noFinText}}</div></sc-if>
 </section>
 
 <sc-if value="{{hasPeers}}" hint-placeholder-val="{{ true }}">
 <section class="t-card" aria-label="Peer comparison" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #FFD89D">Peer comparison</h2>
+<h2 style="margin: 0 0 12px; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Peer comparison</h2>
 <div style="overflow-x: auto">
-<table style="width: 100%; min-width: 560px; font-size: 14px">
+<table style="width: 100%; min-width: 560px; font-size: var(--fs-md)">
 <thead>
-<tr style="color: #C99442; font-size:13px; text-align: right">
+<tr style="color: #C99442; font-size:var(--fs); text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13; padding-left: 0">Company</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">Mkt cap</th>
 <th scope="col" style="font-weight: 500; padding: 8px 10px; border-bottom: 1px solid #3D2C13">P/E (TTM)</th>
@@ -301,25 +301,25 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 
 <section class="t-card" aria-label="Insider and activist activity" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Insider and activist activity</h2>
-<span style="color: #A87933; font-size:13px">Forms 4, 13D and 13G via SEC EDGAR</span>
+<h2 style="margin: 0; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Insider and activist activity</h2>
+<span style="color: #A87933; font-size:var(--fs)">Forms 4, 13D and 13G via SEC EDGAR</span>
 </div>
 <sc-if value="{{activist}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; padding: 12px 14px; border-radius: 0; background: #2A0F0D; border: 1px solid #7A2A24; margin-bottom: 16px">
-<span style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #FF8A80; padding-top: 2px">ACTIVIST</span>
-<div style="flex: 1 1 300px; min-width: 0; font-size: 13.5px; color: #FFD89D">{{activistText}}</div>
+<span style="font-size:var(--fs); font-weight: 600; letter-spacing: 0.06em; color: #FF8A80; padding-top: 2px">ACTIVIST</span>
+<div style="flex: 1 1 300px; min-width: 0; font-size: var(--fs); color: #FFD89D">{{activistText}}</div>
 </div>
 </sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 10px; margin-bottom: 16px">
 <sc-for list="{{insTiles}}" as="it" hint-placeholder-count="4">
-<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size:13px">{{it.k}}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: {{it.color}}">{{it.v}}</div></div>
+<div style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 12px 14px"><div style="color: #C99442; font-size:var(--fs)">{{it.k}}</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; color: {{it.color}}">{{it.v}}</div></div>
 </sc-for>
 </div>
-<h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">Recent insider transactions</h3>
+<h3 style="margin: 0 0 6px; font-size: var(--fs); font-weight: 600; color: #FFD89D">Recent insider transactions</h3>
 <div style="overflow-x: auto; margin-bottom: 16px">
-<table style="width: 100%; min-width: 640px; font-size: 13.5px">
+<table style="width: 100%; min-width: 640px; font-size: var(--fs)">
 <thead>
-<tr style="color: #C99442; font-size:13px; text-align: right">
+<tr style="color: #C99442; font-size:var(--fs); text-align: right">
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px 6px 0; border-bottom: 1px solid #3D2C13">Date</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Insider</th>
 <th scope="col" style="text-align: left; font-weight: 500; padding: 6px 8px; border-bottom: 1px solid #3D2C13">Transaction</th>
@@ -332,7 +332,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <sc-for list="{{insiders}}" as="ins" hint-placeholder-count="5">
 <tr style="text-align: right; font-family: 'IBM Plex Mono', monospace">
 <td style="text-align: left; padding: 9px 8px 9px 0; border-bottom: 1px solid #221909; white-space: nowrap">{{ins.d}}</td>
-<th scope="row" style="text-align: left; font-weight: 500; padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.n}}<span style="display: block; font-weight: 400; font-size:13px; color: #A87933">{{ins.role}}</span></th>
+<th scope="row" style="text-align: left; font-weight: 500; padding: 9px 8px; border-bottom: 1px solid #221909; color: #FFD89D">{{ins.n}}<span style="display: block; font-weight: 400; font-size:var(--fs); color: #A87933">{{ins.role}}</span></th>
 <td style="text-align: left; padding: 9px 8px; border-bottom: 1px solid #221909; color: {{ins.color}}">{{ins.type}}</td>
 <td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.sh}}</td>
 <td style="padding: 9px 8px; border-bottom: 1px solid #221909">{{ins.px}}</td>
@@ -341,35 +341,35 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </tbody>
 </table>
-<sc-if value="{{noInsiders}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px; padding-top: 8px">No recent Form 4 transactions.</div></sc-if>
+<sc-if value="{{noInsiders}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: var(--fs); padding-top: 8px">No recent Form 4 transactions.</div></sc-if>
 </div>
-<h3 style="margin: 0 0 6px; font-size: 13px; font-weight: 600; color: #FFD89D">5%+ holder filings</h3>
+<h3 style="margin: 0 0 6px; font-size: var(--fs); font-weight: 600; color: #FFD89D">5%+ holder filings</h3>
 <sc-for list="{{bigHolders}}" as="bh" hint-placeholder-count="4">
 <a href="{{bh.url}}" target="_blank" rel="noopener" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 14px; padding: 10px 0; border-bottom: 1px solid #221909; color: #FFB84D">
-<span style="font-size: 14px; color: #FFD89D; min-width: 0">{{bh.n}} <span style="font-size:13px; color: #A87933">· {{bh.note}}</span></span>
-<span style="display: flex; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 13px">
+<span style="font-size: var(--fs-md); color: #FFD89D; min-width: 0">{{bh.n}} <span style="font-size:var(--fs); color: #A87933">· {{bh.note}}</span></span>
+<span style="display: flex; align-items: center; gap: 12px; font-family: 'IBM Plex Mono', monospace; font-size: var(--fs)">
 <span style="{{bh.formStyle}}">{{bh.form}}</span>
 <span style="color: #A87933">{{bh.d}}</span>
 </span>
 </a>
 </sc-for>
-<sc-if value="{{noBig}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: 13px">No recent 13D or 13G filings.</div></sc-if>
+<sc-if value="{{noBig}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: var(--fs)">No recent 13D or 13G filings.</div></sc-if>
 </section>
 
 <section class="t-card" aria-label="Index membership" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Index membership</h2>
-<span style="color: #A87933; font-size:13px">S&amp;P lists (Wikipedia) · Russell from iShares IWB/IWM holdings · passive ownership from 13F</span>
+<h2 style="margin: 0; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Index membership</h2>
+<span style="color: #A87933; font-size:var(--fs)">S&amp;P lists (Wikipedia) · Russell from iShares IWB/IWM holdings · passive ownership from 13F</span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 10px">
 <sc-for list="{{indexes}}" as="ix" hint-placeholder-count="3">
 <div style="background: #0E0A05; border: 1px solid #382811; padding: 12px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center"><span style="color: #FFD89D">{{ix.n}}</span><span style="{{ix.statusStyle}}">{{ix.status}}</span></div>
 </sc-for>
 <div class="f-stat" style="background: #0E0A05; border: 1px solid #382811; border-radius: 0; padding: 14px 16px">
-<div style="color: #C99442; font-size:13px">Held by index fund managers</div>
+<div style="color: #C99442; font-size:var(--fs)">Held by index fund managers</div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 24px; color: #FFD89D">{{passiveText}}</div>
 <div aria-hidden="true" style="height: 6px; border-radius: 0; background: #241A0B; margin: 8px 0 6px"><div style="{{passiveBar}}"></div></div>
-<div style="font-size:13px; color: #A87933">{{passiveNote}}</div>
+<div style="font-size:var(--fs); color: #A87933">{{passiveNote}}</div>
 </div>
 </div>
 </section>
@@ -379,54 +379,54 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
 
 <section aria-label="Next earnings" style="background: #261C0C; border: 1px solid #8A6326; border-radius: 0; padding: 18px">
-<div style="color: #FFD89D; font-size:13px; font-weight: 600; letter-spacing: 0.06em">NEXT EARNINGS</div>
+<div style="color: #FFD89D; font-size:var(--fs); font-weight: 600; letter-spacing: 0.06em">NEXT EARNINGS</div>
 <div style="font-size: 22px; font-weight: 600; margin: 4px 0 2px; color: #FFE9C7">{{nextDate}}</div>
-<div style="color: #FFB84D; font-size: 13.5px">{{nextWhen}}</div>
+<div style="color: #FFB84D; font-size: var(--fs)">{{nextWhen}}</div>
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px">
-<div><div style="color: #C99442; font-size:13px">EPS est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextEst}}</div></div>
-<div><div style="color: #C99442; font-size:13px">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextN}}</div></div>
+<div><div style="color: #C99442; font-size:var(--fs)">EPS est.</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextEst}}</div></div>
+<div><div style="color: #C99442; font-size:var(--fs)">Analysts</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: #FFE9C7">{{nextN}}</div></div>
 </div>
 </section>
 
 <section class="t-card" aria-label="Recent 8-K filings" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Recent 8-K filings</h2>
+<h2 style="margin: 0 0 6px; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Recent 8-K filings</h2>
 <sc-for list="{{eightK}}" as="ek" hint-placeholder-count="4">
-<a href="{{ek.url}}" target="_blank" rel="noopener" style="display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #221909; color: #FFB84D; font-size: 13px"><span>{{ek.items}}</span><span class="dim" style="flex: none">{{ek.d}}</span></a>
+<a href="{{ek.url}}" target="_blank" rel="noopener" style="display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #221909; color: #FFB84D; font-size: var(--fs)"><span>{{ek.items}}</span><span class="dim" style="flex: none">{{ek.d}}</span></a>
 </sc-for>
 </section>
 
 <section class="t-card" aria-label="Institutional ownership 13F" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10px">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600; color: #FFD89D">Institutional ownership (13F)</h2>
-<span style="font-size:13px; color: #A87933">{{ownPeriod}}</span>
+<h2 style="margin: 0; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Institutional ownership (13F)</h2>
+<span style="font-size:var(--fs); color: #A87933">{{ownPeriod}}</span>
 </div>
 <sc-if value="{{hasOwn}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 14px">
 <div>
 <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #FFE9C7">{{ownInst}}</div>
-<div style="font-size:13px; color: {{ownChgColor}}">{{ownChg}}</div>
-<div style="font-size:13px; color: #A87933">{{ownHolders}}</div>
+<div style="font-size:var(--fs); color: {{ownChgColor}}">{{ownChg}}</div>
+<div style="font-size:var(--fs); color: #A87933">{{ownHolders}}</div>
 </div>
 <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 40px; width: 110px">
 <sc-for list="{{ownBars}}" as="ob" hint-placeholder-count="8"><div style="{{ob}}"></div></sc-for>
 </div>
 </div>
-<div style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
-<sc-for list="{{ownBuy}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">{{ob.v}}</span></div></sc-for>
-<div style="font-size:13px; font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
-<sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
-<p style="margin: 10px 0 12px; font-size: 13px; color: #C99442">{{ownRead}}</p>
+<div style="font-size:var(--fs); font-weight: 600; letter-spacing: 0.06em; color: #4ADE80; margin-bottom: 2px">TOP BUYERS</div>
+<sc-for list="{{ownBuy}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: var(--fs); border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #4ADE80">{{ob.v}}</span></div></sc-for>
+<div style="font-size:var(--fs); font-weight: 600; letter-spacing: 0.06em; color: #FF5F56; margin: 12px 0 2px">TOP SELLERS</div>
+<sc-for list="{{ownSell}}" as="ob" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: var(--fs); border-bottom: 1px solid #221909"><span>{{ob.n}} <span style="color: #A87933">· {{ob.note}}</span></span><span style="font-family: 'IBM Plex Mono', monospace; color: #FF5F56">{{ob.v}}</span></div></sc-for>
+<p style="margin: 10px 0 12px; font-size: var(--fs); color: #C99442">{{ownRead}}</p>
 </sc-if>
-<sc-if value="{{noOwn}}" hint-placeholder-val="{{ false }}"><p class="dim" style="font-size: 13px; margin: 0 0 12px">{{noOwnText}}</p></sc-if>
-<a href="{{ownHref}}" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFD89D; font-size: 14px; font-weight: 500">Full 13F breakdown →</a>
+<sc-if value="{{noOwn}}" hint-placeholder-val="{{ false }}"><p class="dim" style="font-size: var(--fs); margin: 0 0 12px">{{noOwnText}}</p></sc-if>
+<a href="{{ownHref}}" style="display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 0; border: 1px solid #8A6326; background: #261C0C; color: #FFD89D; font-size: var(--fs-md); font-weight: 500">Full 13F breakdown →</a>
 </section>
 
 <section class="t-card" aria-label="Latest news" style="background: #0A0704; border: 1px solid #382811; border-radius: 0; padding: 18px">
-<h2 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #FFD89D">Latest news</h2>
+<h2 style="margin: 0 0 6px; font-size: var(--fs-lg); font-weight: 600; color: #FFD89D">Latest news</h2>
 <sc-for list="{{news}}" as="n" hint-placeholder-count="4">
 <a href="{{n.link}}" target="_blank" rel="noopener" style="display: block; padding: 12px 0; border-bottom: 1px solid #221909; color: #FFB84D">
-<div style="font-size: 14px; font-weight: 500; line-height: 1.4">{{n.h}}</div>
-<div style="color: #A87933; font-size:13px; margin-top: 4px">{{n.meta}}</div>
+<div style="font-size: var(--fs-md); font-weight: 500; line-height: 1.4">{{n.h}}</div>
+<div style="color: #A87933; font-size:var(--fs); margin-top: 4px">{{n.meta}}</div>
 </a>
 </sc-for>
 </section>
@@ -437,7 +437,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </main>
 
 <footer class="t-foot">
-<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:13px">
+<div style="max-width: 1280px; margin: 0 auto; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: #A87933; font-size:var(--fs)">
 <span>Prices: Yahoo Finance (delayed) · Financials, insiders, 13D/G, 13F: SEC EDGAR · Earnings dates: Nasdaq · Refreshed daily</span>
 <span><a href="Notes.dc.html">Data notes</a> · <a href="Calendar.dc.html">Index dates</a> · Not investment advice · © 2026 Nathan Skown</span>
 </div>
@@ -606,7 +606,7 @@ class Component extends DCLogic {
         PREFS.set('fin.range', id);
         try { var u = new URLSearchParams(location.search); u.set('range', id); history.replaceState(null, '', location.pathname + '?' + u.toString()); } catch (e) { /* ignore */ }
         self.setState({ range: id }); },
-        btnStyle: 'min-width: 44px; height: 36px; padding: 0 10px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: 13px; font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;') };
+        btnStyle: 'min-width: 44px; height: 36px; padding: 0 10px; border: none; border-radius: 0; cursor: pointer; font-family: IBM Plex Mono, monospace; font-size: var(--fs); font-weight: 500; ' + (on ? 'background: #FFB84D; color: #000000; text-shadow: none;' : 'background: transparent; color: #C99442;') };
     });
     var S = Q.stats || {};
     var stats = [
@@ -651,13 +651,13 @@ class Component extends DCLogic {
     var bigs = (Q.holders5 || []).map(function (h) {
       var act = h.activist;
       return { n: h.filer ? F.firm(h.filer) : 'Filer', note: act ? 'activist-eligible 13D' : 'passive 13G', form: h.form, d: F.day(h.date), url: h.url,
-        formStyle: 'font-size:13px; font-weight: 600; padding: 2px 10px; border-radius: 0; ' + (act ? 'background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' : 'background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;') };
+        formStyle: 'font-size:var(--fs); font-weight: 600; padding: 2px 10px; border-radius: 0; ' + (act ? 'background: #2A0F0D; border: 1px solid #7A2A24; color: #FF8A80;' : 'background: #1A1309; border: 1px solid #4A3517; color: #FFB84D;') };
     });
     var cutoff = Date.now() - 180 * 86400000;
     var act = (Q.holders5 || []).filter(function (h) { return h.activist && new Date(h.date).getTime() >= cutoff; })[0];
     var idxRows = (Q.index || []).map(function (ix) {
       return { n: ix.name, status: ix.member === null || ix.member === undefined ? 'Data unavailable' : ix.member ? 'Member' : 'Not a member',
-        statusStyle: 'font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
+        statusStyle: 'font-size: var(--fs-sm); font-weight: 600; padding: 2px 10px; border-radius: 0; white-space: nowrap; ' + (ix.member ? 'background: #FFB84D; color: #000; text-shadow: none;' : 'background: #1A1309; border: 1px solid #4A3517; color: #C99442;') };
     });
     var O = Q.own;
     var N = Q.next;
