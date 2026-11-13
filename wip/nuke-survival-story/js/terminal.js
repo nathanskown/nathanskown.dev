@@ -457,6 +457,22 @@
     party.innerHTML = v.party.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') || '<li class="empty">alone</li>';
   }
 
+  function renderNotes(v) {
+    var list = $('notes'), count = $('notesCount'), legend = $('notesLegend');
+    var notes = (v && v.playing && v.notes) || [];
+    var open = notes.filter(function (n) { return n.state === 'open'; });
+    var order = { open: 0, done: 1, missed: 2 };
+    list.innerHTML = notes.slice().sort(function (a, b) { return order[a.state] - order[b.state]; }).map(function (n) {
+      var label = n.state === 'done' ? 'Done: ' : (n.state === 'missed' ? 'Missed: ' : '');
+      var due = n.due ? ' <span class="due">by ' + esc(n.due) + '</span>' : '';
+      var tail = n.state === 'missed' ? ' <span class="due">missed</span>' : '';
+      return '<li class="' + n.state + '"><span class="sr-only">' + label + '</span>' + esc(n.text) + due + tail + '</li>';
+    }).join('') || '<li class="empty">' + (v && v.playing ? 'Nothing yet. Talk to people.' : '—') + '</li>';
+    count.textContent = open.length ? ' ' + open.length : '';
+    $('notesKey').setAttribute('aria-label', 'Notes' + (open.length ? ', ' + open.length + ' open' : ''));
+    legend.textContent = open.length ? open.length + ' OPEN' : '';
+  }
+
   function markReadout(el) {
     var overflow = el.scrollHeight > el.clientHeight + 2;
     var notAtEnd = el.scrollTop + el.clientHeight < el.scrollHeight - 2;
@@ -625,6 +641,7 @@
     renderTicker(v);
     renderMap(v);
     renderInventory(v);
+    renderNotes(v);
     renderTalkChoices(v);
     renderChips(v);
   }
@@ -734,7 +751,7 @@
     sideOpener = opener || document.activeElement;
     document.body.classList.add('show-side');
     syncSide();
-    var target = which === 'map' ? $('map') : $('inv');
+    var target = which === 'map' ? $('map') : (which === 'notes' ? $('notes') : $('inv'));
     var panel = target && target.closest ? target.closest('.panel') : null;
     if (panel && panel.scrollIntoView) panel.scrollIntoView();
     document.querySelector('.side-close').focus();

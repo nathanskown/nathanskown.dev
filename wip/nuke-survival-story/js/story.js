@@ -143,7 +143,7 @@ var STORY = {
 
   help: [
     "COMMANDS",
-    "look (l): describe where you are.  examine X (x X): look closely at something.\ngo north (n, s, e, w, ne, nw, se, sw, up, down, in, out). You can also type a place: “go garage”.\ntake X, drop X, inventory (i)\ntalk to X, then answer with numbers.\nuse X, use X on Y, give X to Y\nwait (or wait 30): let time pass.  time: check the clock.\nhint, endings, restart, quit\nfeedback: copy your whole playthrough to send to whoever shared this with you.\nshare: copy your ending.\nflashes: turn the bright flashes on or off.",
+    "look (l): describe where you are.  examine X (x X): look closely at something.\ngo north (n, s, e, w, ne, nw, se, sw, up, down, in, out). You can also type a place: “go garage”.\ntake X, drop X, inventory (i)\ntalk to X, then answer with numbers.\nuse X, use X on Y, give X to Y\nwait (or wait 30): let time pass.  time: check the clock.\nnotes: what you've learned and what's still open.\nhint, endings, restart, quit\nfeedback: copy your whole playthrough to send to whoever shared this with you.\nshare: copy your ending.\nflashes: turn the bright flashes on or off.",
     "Every move costs time. Some things only work before a certain hour."
   ],
 
@@ -829,6 +829,7 @@ var STORY = {
             ]
           },
           news: {
+            effects: { flag: "knows_wedding" },
             text: "“Phones are out. Jeff's got a radio. Your buddy Ryan is getting married at St. Clare's at one-fifteen, and they're going ahead with it, which is either beautiful or insane. They're saying Detroit, and maybe Chicago, and then the man on the radio started repeating himself.” His pen stops moving. “Diane's at work. Renaissance Center. Thirty-ninth floor.” He looks down at the clipboard. “I'm writing it down,” he says again.",
             choices: [
               { text: "Rob. I'm so sorry.", next: "sorry" },
@@ -1660,6 +1661,58 @@ var STORY = {
     { if: { flag: "truck_fueled", notFlag: "saw_gridlock" }, text: "Before you choose a route north, it might be worth seeing what M-5 looks like." },
     { if: { notFlag: ["bathtub_full", "heater_drained"], var: ["water", "<", 1] }, text: "Whatever you do tonight, you'll need water. Your own bathtub, the church, the grocery, the water heater..." },
     { text: "There are several ways through tonight: your own basement, the high school, Adam's bunker, Jeff's truck. Each needs different things. The radio says the fallout comes after dark." }
+  ],
+
+
+  // ==========================================================================
+  //  NOTES — the player's running list of what they've learned and what's
+  //  still open. A note appears once `show` is true. It's checked off when
+  //  `done` is true, or marked missed when `missed` is true. `due` is shown
+  //  beside it while it's open. Type "notes" in the game, or open NOTES.
+  // ==========================================================================
+  notes: [
+    { id: "water", show: {}, due: "2:40 PM",
+      text: { if: { flag: "water_off" }, text: "Store water before you close any door. City water is off now: the church, the grocery, the water heater.", else: "Store water before you close any door: a gallon a day each, for two weeks. City water is still running, barely." },
+      done: { any: [{ flag: "bathtub_full" }, { flag: "heater_drained" }, { var: ["water", ">=", 1] }] } },
+    { id: "fallout", show: { any: [{ flag: "knows_get_inside" }, { flag: "knows_deadline" }] },
+      text: [
+        { if: { after: "4:30 PM" }, text: "Fallout: the radio's best estimate is {eta}. Be inside before it." },
+        { if: { before: "4:30 PM", flag: "knows_deadline" }, text: "Fallout from the strikes out west is coming tonight, after dark. Be inside before it." },
+        { if: { before: "4:30 PM", notFlag: "knows_deadline" }, text: "The radio says get inside and stay inside, at least a day. Nobody has said yet when the fallout gets here." }
+      ] },
+    { id: "wedding", show: { any: [{ flag: "knows_wedding" }, { visited: "church" }] }, due: "1:45 PM",
+      text: "Ryan's wedding at St. Clare's, west of Ten Mile and Taft. 1:15 ceremony; everyone goes downstairs at 1:45.",
+      done: { flag: "witnessed" }, missed: { flag: "wedding_over", notFlag: "witnessed" } },
+    { id: "steven", show: { flag: "heard_of_ruth" }, due: "4:00 PM",
+      text: "Steven at Willow Glen, south of Ten Mile, ran civil defense for the county. Willow Glen locks its doors at 4:00.",
+      done: { any: [{ flag: "knows_shelter_basics" }, { flag: "ruth_left" }] }, missed: { after: "4:00 PM", notFlag: ["knows_shelter_basics", "ruth_left"] } },
+    { id: "heater", show: { flag: "knows_waterheater" },
+      text: "Steven's way: drain the water heater in your basement. Forty gallons. You'll need the flashlight back there.",
+      done: { flag: "heater_drained" } },
+    { id: "jeff_gas", show: { flag: "knows_ray_plan" },
+      text: "Jeff will drive north to his cabin past Gaylord if he gets five more gallons of gas. The pumps are dead; the freeway is full of abandoned cars.",
+      done: { flag: "truck_fueled" } },
+    { id: "jeff_leaves", show: { flag: "truck_fueled" }, due: "5:30 PM",
+      text: "Jeff leaves for the cabin at 5:30, with you or without you.",
+      done: { any: [{ with: "ray" }, { ending: "up_north" }] }, missed: { flag: "ray_left", without: "ray" } },
+    { id: "adam", show: { flag: "knows_dale_insulin" }, due: "4:30 PM",
+      text: { if: { has: "insulin" }, text: "Bring Adam his insulin. He's on the hatch, across the court.", else: "Adam needs his insulin refill. The pharmacy on Grand River closes at 4:30." },
+      done: { flag: "dale_has_insulin" }, missed: { after: "4:30 PM", notFlag: ["got_insulin", "dale_has_insulin"] } },
+    { id: "school", show: { any: [{ flag: "knows_bandroom" }, { flag: "marsh_message" }] },
+      text: "Coach Connor has two hundred people under the gym skylights at Novi High. The band room is below grade. He needs a reason he'll believe.",
+      done: { flag: "dana_convinced" } },
+    { id: "school_water", show: { flag: "dana_convinced" },
+      text: "The band room needs water. The church has more than it needs.",
+      done: { flag: "school_water" } },
+    { id: "school_sheeting", show: { flag: "dana_convinced" }, due: "5:00 PM",
+      text: "The band room stairwell windows need covering. The hardware store sells sheeting until 5:00.",
+      done: { flag: "school_sheeting" }, missed: { after: "5:00 PM", notFlag: "school_sheeting", lacks: "sheeting" } },
+    { id: "family", show: { visited: "interchange" }, due: "4:00 PM",
+      text: "Mary and her son Jose are stranded on the I-96 shoulder by the mall. If nobody stops by 4:00, they start walking.",
+      done: { flag: "haddads_moved" }, missed: { flag: "haddads_walked" } },
+    { id: "mall", show: { visited: "mall" },
+      text: "A thousand people are sitting under the mall's glass atrium. Derek, the guard, is waiting for someone to tell him he's right.",
+      done: { flag: "warned_mall" } }
   ],
 
   // ==========================================================================

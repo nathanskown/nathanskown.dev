@@ -566,6 +566,37 @@
       var h = arr(story.hints).filter(function (x) { return test(x['if']); });
       say(h.length ? T(h[0].text) : T(story.text.noHint));
     }
+    // ---- notes: what the player has learned and what's still open
+    function noteList() {
+      return arr(story.notes).filter(function (n) { return test(n.show); }).map(function (n) {
+        var state = n.done && test(n.done) ? 'done' : (n.missed && test(n.missed) ? 'missed' : 'open');
+        return { id: n.id, text: T(n.text), state: state, due: state === 'open' && n.due ? n.due : '' };
+      });
+    }
+    function listNotes() {
+      var list = noteList();
+      if (!list.length) return say(T(story.text.noNotes || "Nothing written down yet. Talk to people; what they tell you ends up here."), 'dim');
+      out('NOTES · ' + fmtTime(S.time), 'title');
+      var order = { open: 0, done: 1, missed: 2 };
+      list.sort(function (a, b) { return order[a.state] - order[b.state]; }).forEach(function (n) {
+        var mark = n.state === 'done' ? '✓ ' : (n.state === 'missed' ? '✗ ' : '▸ ');
+        var tail = n.state === 'missed' ? ' (missed)' : (n.due ? ' (by ' + n.due + ')' : '');
+        out(mark + n.text + tail, n.state === 'open' ? 'text' : 'dim');
+      });
+    }
+    // After a move or an answer, mention any note that just appeared, once.
+    function announceNotes() {
+      if (!S || S.ended || mode === 'off') return;
+      noteList().forEach(function (n) {
+        var k = 'note:' + n.id;
+        if (S.once[k]) return;
+        S.once[k] = 1;
+        if (n.id === 'water') return; // the first note is there from the start; the intro covers it
+        var tip = S.once['tip:notes'] ? '' : ' (Type “notes” to see them all.)';
+        S.once['tip:notes'] = 1;
+        out('New note: ' + n.text + tip, 'note');
+      });
+    }
     function listEndings() {
       var found = endingsFound(), keys = Object.keys(story.endings);
       out('Endings found: ' + found.filter(function (k) { return story.endings[k]; }).length + ' of ' + keys.length, 'title');
@@ -800,7 +831,7 @@
           for (var ci = 0; ci < convo.choices.length; ci++) if (convo.choices[ci].n === n) known = true;
           if (known) {
             S.prev = snapshot(); checkpoint();
-            choose(n); persist(); return;
+            choose(n); announceNotes(); persist(); return;
           }
           out('That isn\'t one of the numbers.', 'dim');
           return;
@@ -816,11 +847,13 @@
       }
       if (/^(help|\?|commands)$/.test(line)) return say(T(story.help));
       if (line === 'endings') return listEndings();
+      if (/^(notes|note|journal|todo|tasks|to do)$/.test(line)) return listNotes();
       if (line === 'restart') { mode = 'confirm'; out('Start over from the beginning? Your current game will be lost. (yes / no)', 'note'); return; }
       if (line === 'save') return out('The game saves automatically after every move.', 'note');
       S.prev = snapshot();
       checkpoint();
       exec(stripArticles(line));
+      announceNotes();
       persist();
     }
 
@@ -852,7 +885,8 @@
         fallout: fmtTime(S.deadline),
         endingsFound: endingsFound().length,
         endingsTotal: Object.keys(story.endings).length,
-        sheltered: shelteredCount()
+        sheltered: shelteredCount(),
+        notes: noteList()
       };
     }
 

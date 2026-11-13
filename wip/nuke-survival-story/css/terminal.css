@@ -447,3 +447,15 @@ body.compact #scene.person .art-wrap.has-art .scene-readout.show {
 }
 body.compact #scene.person .ro-row:not(.solo) { display: none; }
 body.compact #scene.person .ro-row.solo { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- notes: what you've learned and what's still open */
+.fk-count { color: var(--amber); margin-left: .35em; }
+.list.notes li { padding: 5px 0; line-height: 1.45; border-bottom: 1px dotted var(--line); }
+.list.notes li:last-child { border-bottom: 0; }
+.list.notes li.open::before { content: "▸ "; color: var(--amber); }
+.list.notes li.done { color: var(--dim); }
+.list.notes li.done::before { content: "✓ "; color: var(--g); }
+.list.notes li.missed { color: var(--mute); }
+.list.notes li.missed::before { content: "✗ "; color: var(--red); }
+.list.notes .due { color: var(--amber); white-space: nowrap; font-size: .92em; }
+.list.notes li.missed .due { color: var(--red); }

@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
-<link rel="stylesheet" href="css/terminal.css?v=1eb2ac3">
+<link rel="stylesheet" href="css/terminal.css?v=1a5fa10">
 </head>
 <body>
   <div class="app" id="app">
@@ -43,11 +43,12 @@
 
     <nav class="fkeys" id="fkeys" aria-label="Quick commands">
       <button type="button" data-cmd="look"><b>1)</b> LOOK</button>
-      <button type="button" data-panel="inv"><b>2)</b> INV</button>
-      <button type="button" data-panel="map"><b>3)</b> MAP</button>
-      <button type="button" data-cmd="listen to radio"><b>4)</b> RADIO</button>
-      <button type="button" data-cmd="hint"><b>5)</b> HINT</button>
-      <button type="button" data-cmd="help"><b>6)</b> HELP</button>
+      <button type="button" data-panel="notes" id="notesKey"><b>2)</b> NOTES<span class="fk-count" id="notesCount"></span></button>
+      <button type="button" data-panel="inv"><b>3)</b> INV</button>
+      <button type="button" data-panel="map"><b>4)</b> MAP</button>
+      <button type="button" data-cmd="listen to radio"><b>5)</b> RADIO</button>
+      <button type="button" data-cmd="hint"><b>6)</b> HINT</button>
+      <button type="button" data-cmd="help"><b>7)</b> HELP</button>
       <button type="button" id="flashToggle" class="flash-toggle" aria-pressed="true">FLASH ON</button>
     </nav>
 
@@ -87,8 +88,12 @@
         </div>
       </main>
 
-      <aside class="side" id="side" aria-label="Map and inventory">
+      <aside class="side" id="side" aria-label="Notes, map and inventory">
         <button type="button" class="side-close" data-panel="side">CLOSE ✕</button>
+        <div class="panel">
+          <div class="panel-h">NOTES<span class="grow"></span><span class="legend" id="notesLegend"></span></div>
+          <ul class="list notes" id="notes"></ul>
+        </div>
         <div class="panel">
           <div class="panel-h">MAP · NOVI, MI<span class="grow"></span><span class="legend">▮ YOU</span></div>
           <div class="map-wrap"><pre class="map" id="map"></pre></div>
@@ -104,12 +109,12 @@
   </div>
   <div class="flash" id="flash"></div>
 
-  <script src="js/engine.js?v=1eb2ac3"></script>
-  <script src="js/story.js?v=1eb2ac3"></script>
-  <script src="js/art.js?v=1eb2ac3"></script>
-  <script src="js/scenes.js?v=1eb2ac3"></script>
-  <script src="js/scene-art.js?v=1eb2ac3"></script>
-  <script src="js/people-art.js?v=1eb2ac3"></script>
-  <script src="js/terminal.js?v=1eb2ac3"></script>
+  <script src="js/engine.js?v=1a5fa10"></script>
+  <script src="js/story.js?v=1a5fa10"></script>
+  <script src="js/art.js?v=1a5fa10"></script>
+  <script src="js/scenes.js?v=1a5fa10"></script>
+  <script src="js/scene-art.js?v=1a5fa10"></script>
+  <script src="js/people-art.js?v=1a5fa10"></script>
+  <script src="js/terminal.js?v=1a5fa10"></script>
 </body>
 </html>
