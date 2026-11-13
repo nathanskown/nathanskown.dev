@@ -141,7 +141,7 @@
         if (name === 'falloutBefore') return falloutOffset(-115);
         if (name === 'falloutAfter') return fmtTime(S.deadline + 80);
         if (name === 'weddingTime') return fmtTime(Math.max(S.time, parseTime('1:15 PM')));
-        if (name === 'party') return String(partySize());
+        if (name === 'party') return String(shelteredCount());
         if (name === 'wedAt' && !(S.vars && S.vars.wedAt)) return '1:45 PM';
         if (S.vars && Object.prototype.hasOwnProperty.call(S.vars, name)) return String(S.vars[name]);
         return all;
@@ -210,6 +210,10 @@
     }
     function partySize() {
       return 1 + S.party.reduce(function (n, id) { return n + (story.people[id].count || 1); }, 0);
+    }
+    // People in the party, plus Adam when the ending is his bunker. He never joins the party; he is already down there.
+    function shelteredCount() {
+      return partySize() + (S.ended === 'bunker' ? 1 : 0);
     }
 
     // ---- conditions
@@ -596,17 +600,27 @@
         if (halt || S.ended || mode === 'ask') return;
         if (node.menu && !arr(node.choices).length) { showNode(pid, node.menu, true); return; }
       }
-      var choices = arr(node.choices).map(function (c, i) { return { c: c, key: c.id || (pid + ':' + nid + ':' + i) }; })
-        .filter(function (x) { return test(x.c['if']) && !(x.c.once && S.once[x.key]); });
-      if (!choices.length) { convo = null; if (node.next) showNode(pid, node.next); return; }
+      var choices = arr(node.choices).map(function (c, i) {
+        var key = c.id || (pid + ':' + nid + ':' + i);
+        var open = test(c['if']) && !(c.once && S.once[key]);
+        return { c: c, key: key, open: open };
+      }).filter(function (x) { return x.open || isPicked(x.key); });
+      choices.forEach(function (x, i) { x.n = i + 1; });
+      var anyOpen = false;
+      for (var oi = 0; oi < choices.length; oi++) if (choices[oi].open) anyOpen = true;
+      if (!anyOpen) { convo = null; if (node.next) showNode(pid, node.next); return; }
       convo = { pid: pid, choices: choices };
-      choices.forEach(function (x, i) {
-        out((i + 1) + '. ' + T(x.c.text), 'choice', { id: x.key, picked: isPicked(x.key) });
+      choices.forEach(function (x) {
+        out(x.n + '. ' + T(x.c.text), 'choice', { id: x.key, picked: isPicked(x.key), spent: !x.open });
       });
       if (!S.once['tip:choices']) { S.once['tip:choices'] = 1; say(T(story.text.choiceTip), 'dim'); }
     }
     function choose(n) {
-      var x = convo.choices[n - 1], pid = convo.pid;
+      var x = null;
+      for (var i = 0; i < convo.choices.length; i++) if (convo.choices[i].n === n) { x = convo.choices[i]; break; }
+      if (!x) { out('That isn\'t one of the numbers.', 'dim'); return; }
+      if (!x.open) { out('You\'ve already been through that.', 'dim'); return; }
+      var pid = convo.pid;
       convo = null;
       markPicked(x.key);
       if (x.c.once) S.once[x.key] = 1;
@@ -769,11 +783,13 @@
       if (convo) {
         if (/^\d+$/.test(line)) {
           var n = Number(line);
-          if (n >= 1 && n <= convo.choices.length) {
+          var known = false;
+          for (var ci = 0; ci < convo.choices.length; ci++) if (convo.choices[ci].n === n) known = true;
+          if (known) {
             S.prev = snapshot(); checkpoint();
             choose(n); persist(); return;
           }
-          out('Pick a number from 1 to ' + convo.choices.length + '.', 'dim');
+          out('That isn\'t one of the numbers.', 'dim');
           return;
         }
         convo = null;
@@ -803,8 +819,8 @@
         people: peopleHere().map(function (id) { return { id: id, name: story.people[id].name, picked: isPicked('talk:' + id) }; }),
         items: roomItemsVisible().map(function (id) { return story.items[id].name; }),
         picked: S.picked ? JSON.parse(JSON.stringify(S.picked)) : {},
-        choices: convo ? convo.choices.map(function (x, i) {
-          return { n: i + 1, text: T(x.c.text), id: x.key, picked: isPicked(x.key) };
+        choices: convo ? convo.choices.map(function (x) {
+          return { n: x.n, text: T(x.c.text), id: x.key, picked: isPicked(x.key), spent: !x.open };
         }) : [],
         talking: !!convo || mode === 'ask',
         asking: mode === 'ask',
@@ -817,7 +833,7 @@
         fallout: fmtTime(S.deadline),
         endingsFound: endingsFound().length,
         endingsTotal: Object.keys(story.endings).length,
-        sheltered: partySize()
+        sheltered: shelteredCount()
       };
     }
 

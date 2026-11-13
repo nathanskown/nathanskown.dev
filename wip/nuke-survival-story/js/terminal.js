@@ -115,24 +115,26 @@
     }
     return el;
   }
+  var ABBR = { st: 1, dr: 1, mr: 1, mrs: 1, mt: 1 };
   function splitSentences(text) {
     var parts = [];
+    var buf = '';
     var re = /[^.!?]+[.!?]+["”']?(?:\s+|$)|[^.!?]+$/g;
     var m;
     while ((m = re.exec(text))) {
-      var s = m[0].trim();
+      buf += m[0];
+      var end = /([A-Za-z]+)\.["”']?\s*$/.exec(buf);
+      if (end && ABBR[end[1].toLowerCase()]) continue;
+      var s = buf.trim();
       if (s) parts.push(s);
+      buf = '';
     }
-    return parts.length ? parts : [text];
+    if (buf.trim()) parts.push(buf.trim());
+    return parts.length ? parts : [String(text)];
   }
   function splitBlock(block) {
     var bits = splitSentences(block.text);
-    if (bits.length < 2) {
-      var words = String(block.text).split(/\s+/);
-      if (words.length < 2) return [block];
-      var mid = Math.ceil(words.length / 2);
-      bits = [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
-    }
+    if (bits.length < 2) return [block];
     return bits.map(function (t) { return { text: t, kind: block.kind, meta: block.meta }; });
   }
   function storyBlocks(blocks) {
@@ -144,22 +146,22 @@
   }
   function overflows() { return out.scrollHeight > out.clientHeight + 2; }
   function fitPartial(block) {
-    var words = String(block.text).trim().split(/\s+/);
-    if (words.length < 2) return null;
-    var lo = 1, hi = words.length - 1, best = 0;
+    var bits = splitSentences(block.text);
+    if (bits.length < 2) return null;
+    var lo = 1, hi = bits.length - 1, best = 0;
     while (lo <= hi) {
       var mid = (lo + hi) >> 1;
-      var el = renderBlock({ text: words.slice(0, mid).join(' '), kind: block.kind, meta: block.meta });
+      var el = renderBlock({ text: bits.slice(0, mid).join(' '), kind: block.kind, meta: block.meta });
       out.appendChild(el);
       var ok = !overflows();
       out.removeChild(el);
       if (ok) { best = mid; lo = mid + 1; }
       else hi = mid - 1;
     }
-    if (!best || best >= words.length) return null;
+    if (!best || best >= bits.length) return null;
     return {
-      fit: { text: words.slice(0, best).join(' '), kind: block.kind, meta: block.meta },
-      rest: { text: words.slice(best).join(' '), kind: block.kind, meta: block.meta }
+      fit: { text: bits.slice(0, best).join(' '), kind: block.kind, meta: block.meta },
+      rest: { text: bits.slice(best).join(' '), kind: block.kind, meta: block.meta }
     };
   }
   function takeFitting(blocks) {

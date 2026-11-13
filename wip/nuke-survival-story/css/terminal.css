@@ -123,14 +123,15 @@ body.show-side .side { transform: none; }
 .scene { flex: none; }
 .art-wrap { padding: 0; overflow: hidden; }
 /* The picture is 16:9. On a short desktop window it stays 16:9 and narrows
-   so the command line below is still on screen. Phones use the full width. */
+   so the command line and a full page of story stay on screen. Phones set their own cap. */
 .scene-frame {
   position: relative;
   aspect-ratio: 16 / 9;
   background: #030703;
   overflow: hidden;
-  /* Shrink on a short window, including while the phone keyboard is up (--app-h), and stay 16:9. */
-  --scene-cap: max(140px, min(34dvh, calc(var(--app-h, 100dvh) - 520px)));
+  /* Shrink on a short window, including while the phone keyboard is up (--app-h), and stay 16:9.
+     34dvh alone leaves the story about one line tall at 800px, so the pager breaks every line. */
+  --scene-cap: max(120px, min(34dvh, calc(var(--app-h, 100dvh) - 700px)));
   width: min(100%, calc(var(--scene-cap) * 16 / 9));
   max-height: var(--scene-cap);
   margin-inline: auto;
