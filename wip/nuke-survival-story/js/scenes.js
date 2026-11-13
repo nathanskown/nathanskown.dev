@@ -1048,12 +1048,26 @@
     };
     if (P[prop]) P[prop]();
   }
+  // A status line that names an unfinished job goes stale once that job is done.
+  function liveStatus(pid, p, v) {
+    var base = (p.dossier && p.dossier.status) || '—';
+    var f = (v && v.flags) || {};
+    if (pid === 'brenda' && v && v.time > hm('2:00 PM')) return 'Check-in done. Wife at work downtown, 39th floor.';
+    if (pid === 'dale' && f.dale_has_insulin) return 'Has his insulin. It\'s in the fridge.';
+    if (pid === 'ruth' && f.ruth_left) return 'Left Willow Glen. The crossword is finished.';
+    if (pid === 'jess' && (f.witnessed || f.wedding_over)) return 'Married. Sheltering in the church basement.';
+    if (pid === 'trent' && f.trent_gone) return 'Gone. The water cart is gone.';
+    if (pid === 'deshawn' && f.warned_mall) return 'Moved everyone into the service corridors.';
+    if (pid === 'haddads' && f.haddads_moved) return 'With you. Off the shoulder.';
+    if (pid === 'haddads' && f.haddads_walked) return 'Walked west. The car is still on the shoulder.';
+    return base;
+  }
   // A square mugshot for the talk card. Name, role, and status are HTML beside it.
-  function portrait(g, pid, p) {
+  function portrait(g, pid, p, v) {
     var d = p.dossier || {};
     var role = d.role || '';
     g.fact(p.name.toUpperCase() + (role ? ' · ' + role : ''));
-    g.fact('STATUS', d.status || '—');
+    g.fact('STATUS', liveStatus(pid, p, v));
     // The photo, when there is one, sits on top of this. A missing file leaves the silhouette.
     silhouette(g, 4, 4, 152, 152, (p.portrait || {}).prop);
   }
@@ -1095,7 +1109,7 @@
         else if (k === 'static') noise(g, t, skipBright);
         else if (k.indexOf('room:') === 0) (rooms[scene.id] || title)(g, t, view);
         else if (k.indexOf('end:') === 0) (endings[scene.id] || title)(g, t, view);
-        else if (k.indexOf('person:') === 0) portrait(g, scene.id, story.people[scene.id] || { name: scene.id, dossier: {} });
+        else if (k.indexOf('person:') === 0) portrait(g, scene.id, story.people[scene.id] || { name: scene.id, dossier: {} }, view);
       } catch (e) { if (window.console) console.error('scene', scene.key, e); }
       publish();
     }

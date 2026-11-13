@@ -1655,7 +1655,9 @@ var STORY = {
   // ==========================================================================
   //  AFTERWARD — shown under every ending: what happened to everyone.
   //  Every line whose `if` is true is shown, in order. {party} = people
-  //  sheltering with you, counting you. `ending: "id"` checks which ending.
+  //  sheltering with you, counting you. Adam is not in the party list, but
+  //  he is in the bunker with you, so that ending counts him too.
+  //  `ending: "id"` checks which ending.
   // ==========================================================================
   afterword: [
     { if: { not: { ending: ["up_north", "business_as_usual", "locked_out", "shelter_in_place"] } }, text: "SHELTERED WITH YOU: {party}, counting you." },
