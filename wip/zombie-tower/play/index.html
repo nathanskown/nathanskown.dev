@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b12">
+  <title>Zombie Tower</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; height: 100%; background: #0d0b12; overflow: hidden; }
+    body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    #game { width: 100vw; height: 100vh; height: 100dvh; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  </style>
+  <!-- Phaser 3.88.2 game framework, kept in the project (the website only allows its own scripts). -->
+  <script src="vendor/phaser.min.js"></script>
+</head>
+<body>
+  <div id="game"></div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
