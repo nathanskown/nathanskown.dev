@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from . import src_market as mk
 from . import src_misc as mi
 from . import src_sec as sec
-from .net import CONFIG, attempt, get, now_iso, num, r, read, record, write
+from .net import CONFIG, STATUS, attempt, get, now_iso, num, r, read, record, write
 
 UNIVERSE = CONFIG["universe"]
 TILES = [("spx", "^GSPC", "S&P 500", "", 2), ("ixic", "^IXIC", "Nasdaq Comp.", "", 2), ("dji", "^DJI", "Dow Jones", "", 2),
@@ -171,9 +171,22 @@ def headlines():
         for a in info.get("aliases", []):
             alias[a.lower()] = t
     fresh = 0
+    old_health = old.get("feeds") or {}
+    health = {}
     for kind, feeds in CONFIG["feeds"].items():
         for src, url in feeds.items():
             items = attempt(f"feed: {src}", mi.feed, url, default=[]) or []
+            # A failed feed never blanks anything: items already kept in headlines.json stay. Record when each feed last worked
+            # so the status page can say how old the kept items are.
+            st = STATUS.get(f"feed: {src}", {})
+            prev = old_health.get(src) or {}
+            if st.get("ok"):
+                health[src] = {"lastOk": now_iso(), "n": len(items)}
+                if not items and kind == "SEC filing":
+                    st["note"] = "feed answered but listed 0 filings (check the form type in config.json)"
+            else:
+                health[src] = {"lastOk": prev.get("lastOk"), "n": prev.get("n"), "lastError": st.get("error"), "failedAt": now_iso()}
+                st["note"] = "kept the last good items" + (f"; last good fetch {prev['lastOk']}" if prev.get("lastOk") else "")
             for it in items[:60]:
                 if it["link"] in seen:
                     continue
@@ -199,7 +212,7 @@ def headlines():
                                     "tickers": sorted(t.replace(".", "-") for t in tick)[:6], "notable": notable}
                 fresh += 1
     items = sorted(seen.values(), key=lambda h: h["published"], reverse=True)[:400]
-    write("headlines.json", {"updated": now_iso(), "fresh": fresh, "items": items})
+    write("headlines.json", {"updated": now_iso(), "fresh": fresh, "feeds": health, "items": items})
     return items
 
 
@@ -397,6 +410,25 @@ def _season(d):
     return qend, f"Q{q} {qend.year}"
 
 
+
+def _ny_now():
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo("America/New_York"))
+
+
+def report_passed(x, ny=None):
+    """True once a company's report time has passed, New York time: any earlier date; today's before-the-open names from
+    9:30 AM; after-the-close names, and names with no time given, from 5:30 PM. Same rule as F.reportPassed in dc-runtime.js
+    and the check in tools/check_freshness.py. Passing says nothing about whether results have been pulled yet."""
+    ny = ny or _ny_now()
+    d, w = x.get("date") or "", (x.get("when") or "").upper()
+    if d > ny.date().isoformat():
+        return False
+    if d < ny.date().isoformat():
+        return True
+    return (ny.hour, ny.minute) >= ((9, 30) if w == "BMO" else (17, 30))
+
+
 def earnings(mem, live=False):
     """Earnings season. live=True (hourly market job) refetches only today and yesterday so reports land the same day."""
     sp = set(mem.get("sp500", []))
@@ -482,8 +514,14 @@ def earnings(mem, live=False):
         key = f"{x['sym']}:{x['date']}"
         recent_out.append({**x, "sector": sect.get(x["sym"]), "move": allmv.get(key), "moveLive": key in live_moves,
                            "beat": x["eps"] >= x["est"], "surprisePct": r((x["eps"] - x["est"]) / abs(x["est"]) * 100, 1) if x["est"] else None})
-    upcoming = sorted([x for x in rows if ds(d0) <= x["date"] <= ds(d0 + timedelta(days=14))],
+    ny = _ny_now()
+    d_ny = ds(ny.date())
+    # Upcoming = not reported yet AND report time still ahead. Names whose time has passed move to "pending" (reported, results
+    # not pulled yet) instead of staying here until the EPS arrives, which on Nov 16 left Tyson (before the open) listed as upcoming all evening.
+    upcoming = sorted([x for x in rows if d_ny <= x["date"] <= ds(d0 + timedelta(days=14)) and x["eps"] is None and not report_passed(x, ny)],
                       key=lambda x: (x["date"], -(x["mcap"] or 0)))
+    pending = sorted([x for x in rows if x["eps"] is None and report_passed(x, ny) and ds(ny.date() - timedelta(days=5)) <= x["date"]],
+                     key=lambda x: (x["date"], x["mcap"] or 0), reverse=True)
     # trim the upcoming table to the biggest names per day
     per_day = defaultdict(list)
     for x in upcoming:
@@ -501,7 +539,8 @@ def earnings(mem, live=False):
                      "medGrowth": r(statistics.median(growth), 1) if growth else None,
                      "moveBeat": r(statistics.mean(mv_b), 2) if mv_b else None, "moveMiss": r(statistics.mean(mv_m), 2) if mv_m else None},
            "sectors": sorted([{"name": s, "beat": b, "n": n} for s, (b, n) in by_sec.items()], key=lambda z: (-z["n"], z["name"])),
-           "recent": recent_out, "upcoming": [x for v in per_day.values() for x in v], "themes": themes}
+           "recent": recent_out, "upcoming": [x for v in per_day.values() for x in v],
+           "pending": [{**x, "sector": sect.get(x["sym"])} for x in pending[:12]], "themes": themes}
     write("earnings.json", out)
     return all_cal
 
@@ -1202,7 +1241,10 @@ def digest():
     cal_today = [c for c in cal if c["date"] == day]
     cal_week = [c for c in cal if day < c["date"] <= end]
     # earnings today, split by timing, plus reports that already landed in the last two days
-    ups = [e for e in earn.get("upcoming", []) if e.get("date") == day]
+    ny_ = _ny_now()
+    ups = [e for e in earn.get("upcoming", []) if e.get("date") == day and not report_passed(e, ny_)]  # earnings.json can be hours old
+    waiting = [e for e in (earn.get("upcoming", []) + earn.get("pending", [])) if e.get("date") == ny_.date().isoformat() and e.get("eps") is None and report_passed(e, ny_)]
+    waiting = list({e["sym"]: e for e in waiting}.values())
     rec = [e for e in earn.get("recent", []) if e.get("date") >= (ct.date() - timedelta(days=2)).isoformat()]
     ups.sort(key=lambda e: -(e.get("mcap") or 0))
     rec.sort(key=lambda e: -(e.get("mcap") or 0))
@@ -1323,7 +1365,8 @@ def digest():
     auto["story"] = attempt("auto story", _auto_story, day, tiles, dash, futures, levels, macro_, ups, rec, cal_today, heads, od, reads, auto_earn, es, tn, default=None)
     write("digest.json", {"auto": auto, "updated": now_iso(), "date": day, "top": top, "futures": futures, "macro": macro_rows, "world": world,
                           "levels": levels, "calToday": cal_today, "calWeek": cal_week[:14], "latest": macro_.get("latest", [])[:8],
-                          "reportingToday": [trim(e) for e in ups[:14]], "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
+                          "reportingToday": [trim(e) for e in ups[:14]], "reportedPending": [trim(e) for e in sorted(waiting, key=lambda e: -(e.get("mcap") or 0))[:10]],
+                          "reported": [trim(e) for e in rec[:10]], "news": news, "watch": watch,
                           "breadth": dash.get("breadth"), "odds": od.get("groups", [])})
 
 

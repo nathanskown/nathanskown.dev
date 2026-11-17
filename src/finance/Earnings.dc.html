@@ -221,6 +221,15 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 </sc-for>
 </div>
 </div>
+<sc-if value="{{hasPending}}" hint-placeholder-val="{{ false }}"><div style="margin-bottom: 14px">
+<div style="font-size: var(--fs); letter-spacing: calc(.12em*var(--ls,1)); color: #c99442; margin-bottom: 2px">REPORTED · RESULTS PENDING</div>
+<sc-for list="{{pending}}" as="pd" hint-placeholder-count="2">
+<div class="t-row" style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; padding: 8px 0">
+<span><a href="{{pd.href}}" style="font-weight: 600; color: #ffd89d; margin-right: 8px">{{pd.t}}</a>{{pd.n}}</span>
+<span style="font-size: var(--fs); color: #c99442">{{pd.when}} · est. {{pd.est}} · EPS not in yet</span>
+</div>
+</sc-for>
+</div></sc-if>
 <sc-if value="{{noReports}}" hint-placeholder-val="{{ false }}"><div class="dim" style="font-size: var(--fs)">No S&amp;P 500 reports in the last ten days match this filter.</div></sc-if>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 12px">
 <sc-for list="{{reports}}" as="rp" hint-placeholder-count="8">
@@ -368,6 +377,14 @@ class Component extends DCLogic {
         quoteHref: 'Main.dc.html?sym=' + r.sym };
     });
     var todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    // reported but results not pulled yet: the pipeline's list, plus anything in Upcoming whose report time passed since the last data run
+    var pend = {}, pendingAll = (E.pending || []).concat((E.upcoming || []).filter(function (u) { return u.eps == null && F.reportPassed(u); }))
+      .filter(function (u) { if (pend[u.sym + u.date]) return false; pend[u.sym + u.date] = 1; return true; })
+      .sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.mcap || 0) - (a.mcap || 0); });
+    var pending = pendingAll.map(function (u) {
+      return { t: u.sym, n: u.name, href: 'Main.dc.html?sym=' + u.sym, when: F.day(u.date) + ' · ' + (u.when === 'BMO' ? 'before the open' : u.when === 'AMC' ? 'after the close' : 'time not given'),
+        est: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2), mcap: F.money(u.mcap, 0) };
+    });
     var ernWatch = st.ernWatch !== undefined ? st.ernWatch : PREFS.get('fin.ernWatch', false);
     var wl = PREFS.get('fin.watch', ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL']);
     var secs = []; (E.upcoming || []).forEach(function (u) { var k = u.sector || 'Other'; if (secs.indexOf(k) < 0) secs.push(k); }); secs.sort();
@@ -375,7 +392,7 @@ class Component extends DCLogic {
     var sectorTabs = [{ id: 'all', label: 'All sectors' }].concat(secs.map(function (k) { return { id: k, label: k }; })).map(function (t) {
       return { label: t.label, pressed: t.id === sec ? 'true' : 'false', cls: 't-tab' + (t.id === sec ? ' is-on' : ''), pick: function () { self.setState({ sec: t.id }); } };
     });
-    var upAll = (E.upcoming || []).filter(function (u) { return (!ernWatch || wl.indexOf(u.sym) >= 0) && (sec === 'all' || (u.sector || 'Other') === sec); });
+    var upAll = (E.upcoming || []).filter(function (u) { return !F.reportPassed(u) && (!ernWatch || wl.indexOf(u.sym) >= 0) && (sec === 'all' || (u.sector || 'Other') === sec); });
     var upcoming = upAll.map(function (u) {
       var today = u.date === todayIso;
       return { date: F.day(u.date) + (today ? ' · Today' : ''), t: u.sym, href: 'Main.dc.html?sym=' + u.sym, n: u.name, sector: u.sector || '—', when: u.when, eps: u.est === null || u.est === undefined ? '—' : F.usd(u.est, 2),
@@ -391,7 +408,7 @@ class Component extends DCLogic {
       p1Btn: st.p1 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾', p2Btn: st.p2 !== false ? 'COLLAPSE ▴' : 'EXPAND ▾',
       toggle1: function () { self.setState({ p1: st.p1 === false }); }, toggle2: function () { self.setState({ p2: st.p2 === false }); },
       sectorTabs: sectorTabs, noUpcoming: !!E.updated && !upcoming.length, upCount: upAll.length + ' scheduled · largest S&P 500 reporters, next two weeks',
-      filterTabs: filterTabs, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
+      filterTabs: filterTabs, pending: pending, hasPending: pending.length > 0, reports: reports, noReports: !!E.updated && !reports.length, upcoming: upcoming,
       ernWatchOn: ernWatch ? 'true' : 'false', ernWatchCls: 't-tab' + (ernWatch ? ' is-on' : ''),
       ernWatchToggle: function () { PREFS.set('fin.ernWatch', !ernWatch); self.setState({ ernWatch: !ernWatch }); }
     };

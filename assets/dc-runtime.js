@@ -57,6 +57,18 @@
       var nyAsUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute), off = nyAsUtc - Math.floor(now.getTime() / 60000) * 60000;
       return F.time(new Date(Date.UTC(+p.year, +p.month - 1, +p.day, h, m) - off).toISOString());
     },
+    // True once a company's report time has passed (New York time): earlier dates; today's before-the-open names from 9:30 AM;
+    // after-the-close names and names with no time given from 5:30 PM. Mirrors report_passed() in pipeline/jobs.py, so a page
+    // loaded between data runs does not keep showing a company as "upcoming" after it has reported.
+    reportPassed: function (x) {
+      if (!x || !x.date) return false;
+      var now = new Date(), d = now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      if (x.date > d) return false;
+      if (x.date < d) return true;
+      var hm = now.toLocaleTimeString('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).split(':');
+      var mins = (+hm[0] % 24) * 60 + +hm[1];
+      return mins >= (String(x.when || '').toUpperCase() === 'BMO' ? 570 : 1050);
+    },
     day: function (iso) { if (!iso) return ''; var dateOnly = String(iso).length === 10, d = typeof iso === 'number' ? new Date(iso * 1000) : new Date(dateOnly ? iso + 'T12:00:00Z' : iso); return d.toLocaleDateString('en-US', { timeZone: dateOnly ? 'UTC' : TZ, month: 'short', day: 'numeric' }); },
     ago: function (iso) {
       if (!iso) return '';

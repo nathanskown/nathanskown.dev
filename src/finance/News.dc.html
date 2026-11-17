@@ -378,7 +378,7 @@ class Component extends DCLogic {
       var past = c.at && new Date(c.at).getTime() <= Date.now();
       return { t: c.at ? (past ? 'Out ' : '') + F.time(new Date(c.at).getTime() / 1000) : 'Today', e: c.name };
     })
-      .concat(((st.earnings || {}).upcoming || []).filter(function (x) { return x.date === todayIso; }).slice(0, 5).map(function (x) { return { t: x.when, e: x.name + ' (' + x.sym + ') earnings' }; }));
+      .concat(((st.earnings || {}).upcoming || []).filter(function (x) { return x.date === todayIso && !F.reportPassed(x); }).slice(0, 5).map(function (x) { return { t: x.when, e: x.name + ' (' + x.sym + ') earnings' }; }));
     var sources = [];
     var feeds = (st.config || {}).feeds || {};
     Object.keys(feeds).forEach(function (k) { sources = sources.concat(Object.keys(feeds[k])); });

@@ -494,6 +494,9 @@ class Component extends DCLogic {
                     prev: d === null ? 'Change shows after the first full day of readings' : (d === 0 ? 'Unchanged' : (d > 0 ? 'Up ' : 'Down ') + Math.abs(d).toFixed(0) + (Math.abs(Math.round(d)) === 1 ? ' pt' : ' pts') + ' vs. prior day (' + Math.round(m.prev) + '%)') });
       });
     });
+    // reported, EPS not in yet: the pipeline's list plus anything in "reporting today" whose time passed since the last data run
+    var seenW = {}, waiting = (D.reportedPending || []).concat((D.reportingToday || []).filter(function (e) { return F.reportPassed(e) && e.eps == null; }))
+      .filter(function (e) { if (seenW[e.sym]) return false; seenW[e.sym] = 1; return true; });
     var br = D.breadth;
     var stale = !usingAuto && ED && D.date && ED.date !== D.date ? 'This editorial was written for ' + edDateLabel + '. Today\'s has not been written yet; the data below is current.' : '';
     return {
@@ -520,13 +523,15 @@ class Component extends DCLogic {
       }),
       autoTone: (D.auto || {}).tone || '',
       lvlReads: (D.auto || {}).levels || [],
-      today: (D.reportingToday || []).map(function (e) { return { t: e.sym, n: e.name, when: e.when || '—', est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
-      noToday: !!D.updated && !(D.reportingToday || []).length,
-      done: (D.reported || []).map(function (e) {
+      today: (D.reportingToday || []).filter(function (e) { return !F.reportPassed(e); }).map(function (e) { return { t: e.sym, n: e.name, when: e.when || '—', est: e.est === null || e.est === undefined ? '—' : money(e.est) }; }),
+      noToday: !!D.updated && !(D.reportingToday || []).filter(function (e) { return !F.reportPassed(e); }).length,
+      done: waiting.map(function (e) {
+        return { t: e.sym, n: e.name, eps: '—', est: money(e.est), color: '#c99442', sur: 'RESULTS PENDING', move: '', ctx: '' };
+      }).concat((D.reported || []).map(function (e) {
         return { t: e.sym, n: e.name, eps: money(e.eps), est: money(e.est), color: col(e.surprisePct),
                  sur: e.surprisePct === null || e.surprisePct === undefined ? '' : (e.surprisePct >= 0 ? 'BEAT ' : 'MISS ') + sgn(e.surprisePct, 1, '%'),
                  move: e.move === null || e.move === undefined ? '' : ' · stock ' + sgn(e.move, 2, '%'), ctx: ((D.auto || {}).earnings || {})[e.sym] || '' };
-      }),
+      })),
       news: (D.news || []).map(function (h) {
         return { time: tm(h.published), src: h.source, tick: (h.tickers || []).length ? ' · ' + h.tickers.join(', ') : '', h: h.title, link: h.link };
       }),
