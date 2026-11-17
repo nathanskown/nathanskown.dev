@@ -112,7 +112,12 @@ def _when(s):
 
 def feed(url):
     """RSS 2.0 or Atom -> [{title, link, summary, published}]."""
-    raw = get(url, kind="bytes")
+    if "sec.gov/cgi-bin" in url:
+        # EDGAR's "current filings" feeds are built on request and get slow when filings surge (after the close). A 20s limit
+        # with 3 quick tries timed out on every try on Nov 16; give them room and wait longer between tries (4s, 8s, 16s).
+        raw = get(url, kind="bytes", tries=4, timeout=40, backoff=4)
+    else:
+        raw = get(url, kind="bytes")
     root = ET.fromstring(raw)
     items = []
     for it in root.iter("item"):

@@ -57,7 +57,7 @@ def headers_for(url):
     return {"User-Agent": BROWSER_UA, "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9"}
 
 
-def get(url, params=None, kind="json", tries=3, timeout=20, stream=False):
+def get(url, params=None, kind="json", tries=3, timeout=20, stream=False, backoff=1.5):
     host = _host(url)
     if _dead.get(host, 0) >= BREAK:
         raise RuntimeError(f"{host} skipped: {BREAK} straight failures this run")
@@ -75,7 +75,8 @@ def get(url, params=None, kind="json", tries=3, timeout=20, stream=False):
             r = SESSION.get(url, params=params, headers=headers_for(url), timeout=timeout, stream=stream)
             if r.status_code == 429 or r.status_code >= 500:
                 err = f"HTTP {r.status_code}"
-                time.sleep(2 * (attempt + 1) ** 2)
+                ra = r.headers.get("Retry-After", "")
+                time.sleep(min(int(ra), 60) if ra.isdigit() else 2 * (attempt + 1) ** 2)
                 continue
             if r.status_code != 200:
                 if r.status_code in (401, 403):  # blocked, not just a missing document
@@ -86,7 +87,8 @@ def get(url, params=None, kind="json", tries=3, timeout=20, stream=False):
             return out
         except (requests.RequestException, ValueError) as e:
             err = f"{type(e).__name__}: {str(e)[:160]}"
-            time.sleep(1.5 * (attempt + 1))
+            if attempt < tries - 1:  # no point waiting after the last try
+                time.sleep(backoff * 2 ** attempt)  # 1.5s, 3s, 6s by default; slow feeds pass a longer base
     _dead[host] = _dead.get(host, 0) + 1
     raise RuntimeError(err or f"failed {url[:120]}")
 
