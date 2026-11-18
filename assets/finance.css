@@ -400,3 +400,5 @@ body.has-tape{padding-bottom:34px}
 .t .fd-topic{font-size:var(--fs-sm);letter-spacing:calc(.1em*var(--ls,1));text-transform:uppercase;color:var(--dim2)}
 
 /* small text gets a light glow (sharper); headlines and big numbers keep the full one */
+/* #A87933 on the headline row (#241a0c) is 4.43:1. One step lighter clears 4.5:1 without a new color. */
+.t [style*="#A87933"]{color:#AA7A33 !important}
