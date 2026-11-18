@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Please Hold tests</title>
+<style>body{background:#030703;color:#8dff9c;font:14px/1.5 "IBM Plex Mono",monospace;padding:16px}.fail{color:#ffb84d}</style>
+</head>
+<body>
+<h1>Please Hold tests</h1>
+<pre id="log"></pre>
+<script>
+  window.results = [];
+  window.report = function (ok, msg) {
+    window.results.push({ ok: ok, msg: msg });
+    var line = document.createElement('div');
+    line.className = ok ? 'ok' : 'fail';
+    line.textContent = (ok ? 'ok   ' : 'FAIL ') + msg;
+    document.getElementById('log').appendChild(line);
+  };
+</script>
+<script src="../js/split.js"></script>
+<script src="../js/engine.js"></script>
+<script src="../js/story.js"></script>
+<script src="split.test.js"></script>
+<script src="engine.test.js"></script>
+</body>
+</html>

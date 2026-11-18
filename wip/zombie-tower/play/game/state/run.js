@@ -1,7 +1,9 @@
 // The run = everything about the current climb that carries between floors.
-// Checkpoints are saved after each boss (and at the start of a new climb).
+// Checkpoints are saved after each boss, halfway through each zone, and at the start of a new climb.
+// A death sends you back to the checkpoint. Separately, a resume save is written as each floor starts,
+// so closing the tab (or the phone killing it) never costs more than the floor you were on.
 
-import { SAVE_KEY } from '../config.js';
+import { SAVE_KEY, RESUME_KEY } from '../config.js';
 import { ARMOR, armorDef } from '../data/armor.js';
 
 export function newRun() {
@@ -146,4 +148,22 @@ export const MERCY_STEP = 0.08; // zombie health -8% per retry
 export function clearCheckpoint() {
   memorySnap = null;
   try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ }
+}
+
+// ---- resume save: the run as the current floor started (climbs only)
+export function saveResume(run) {
+  if (run.mode === 'elevator') return;
+  try { localStorage.setItem(RESUME_KEY, JSON.stringify(cloneRun(run))); } catch { /* ignore */ }
+}
+
+export function loadResume() {
+  try {
+    const run = JSON.parse(localStorage.getItem(RESUME_KEY) || 'null');
+    if (run && run.version === 1 && run.mode !== 'elevator') return normalizeRun(run);
+  } catch { /* fall through */ }
+  return null;
+}
+
+export function clearResume() {
+  try { localStorage.removeItem(RESUME_KEY); } catch { /* ignore */ }
 }

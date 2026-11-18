@@ -56,5 +56,5 @@ export const BOSSES = {
   manager: { name: 'THE MANAGER', hp: 8000, speed: 55, dmg: 22 },
   specimen: { name: 'SPECIMEN ZERO', hp: 13000, speed: 62, dmg: 26 },
   warden: { name: 'THE WARDEN', hp: 19000, speed: 58, dmg: 30 },
-  founder: { name: 'THE FOUNDER', hp: 30000, speed: 48, dmg: 34 },
+  founder: { name: 'THE FOUNDER', hp: 20000, speed: 48, dmg: 34 },
 };

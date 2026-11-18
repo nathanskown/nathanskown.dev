@@ -1,6 +1,6 @@
 // One floor of the tower: build the map, spawn waves, fight, unlock the stairs.
 
-import { TILE, COLS, ROWS, W, H, TEAL, TEAL_HEX, txt } from '../config.js';
+import { TILE, COLS, ROWS, W, H, TEAL, TEAL_HEX, TOUCH, REDUCED, txt } from '../config.js';
 import { FLOORS, floorPlan, zoneOf, TOP_FLOOR, twistFor, TWISTS } from '../data/floors.js';
 import { ENEMIES, ZONE_NEW, ZONE_MINIONS, pickEnemy } from '../data/enemies.js';
 import { Player, DASH_MS } from '../game/Player.js';
@@ -17,7 +17,8 @@ import { Hud } from '../game/Hud.js';
 import { TouchControls } from '../game/Touch.js';
 import { aimMode, autoTarget, assistTarget } from '../game/aim.js';
 import { decorate } from '../game/decorate.js';
-import { clearCheckpoint, MAX_MERCY, MERCY_STEP, normalizeRun, isElevator, ELEVATOR_EFFECTIVE, derived } from '../state/run.js';
+import { fadeIn, fadeOut } from '../game/motion.js';
+import { clearCheckpoint, saveResume, clearResume, MAX_MERCY, MERCY_STEP, normalizeRun, isElevator, ELEVATOR_EFFECTIVE, derived } from '../state/run.js';
 
 const SOLID = new Set(['#', 'p', 'c', 'd', 'o']);
 
@@ -34,6 +35,9 @@ export class GameScene extends Phaser.Scene {
       this.plan = floorPlan(ELEVATOR_EFFECTIVE[this.run.step]);
       this.plan.pick = () => pickEnemy(this.floorN);
       this.plan.minions = ZONE_MINIONS[zoneOf(this.floorN).id];
+      // stop 3 is the first one in zone 2 (new zombie types): 10% less health, like floors 11-12 of a climb.
+      // (Stop 5 plays as floor 11, which floorPlan already softens.)
+      if (this.run.step === 2) this.plan.hpScale *= 0.9;
     } else this.plan = floorPlan(this.floorN);
     if (this.run.nightShift) { // after beating the tower: tougher everything, no retry bonus
       this.plan.hpScale *= 1.45;
@@ -68,7 +72,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.fadeIn(300, 0, 0, 0);
+    fadeIn(this, 300);
     this.buildMap();
 
     this.splats = this.add.graphics().setDepth(1);
@@ -117,7 +121,7 @@ export class GameScene extends Phaser.Scene {
 
     // UI + input
     this.hud = new Hud(this, this.player, this.run, this.def);
-    this.hud.pauseBtn.on('pointerdown', () => this.pauseGame());
+    this.hud.pauseHit.on('pointerdown', () => this.pauseGame());
     this.touch = new TouchControls(this);
     this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,R,Q,E,SPACE,ESC,ONE,TWO');
     // remember touch vs mouse across floors, so phone auto-aim works from the first frame
@@ -131,6 +135,23 @@ export class GameScene extends Phaser.Scene {
     this.events.on('resume', () => this.input.keyboard.resetKeys());
     this.events.once('shutdown', () => this.touch.destroy());
 
+    // Pause on its own when the player is interrupted: tab hidden, app switched, window loses focus,
+    // or the phone turned upright (the page then shows a "turn your phone" screen).
+    const portrait = typeof matchMedia === 'function' ? matchMedia('(orientation: portrait)') : null;
+    const interrupt = () => this.pauseGame();
+    const onVis = () => { if (document.hidden) interrupt(); };
+    const onTurn = () => { if (TOUCH && portrait.matches) interrupt(); };
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('blur', interrupt);
+    portrait?.addEventListener('change', onTurn);
+    this.events.once('shutdown', () => {
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('blur', interrupt);
+      portrait?.removeEventListener('change', onTurn);
+    });
+    // started while upright (or in a background tab): wait on the pause screen
+    if ((TOUCH && portrait?.matches) || document.hidden) this.time.delayedCall(0, interrupt);
+
     // waves
     this.queue = [];
     const total = this.twist === 'elite' ? Math.round(this.plan.total * 0.75) : this.plan.total;
@@ -140,6 +161,7 @@ export class GameScene extends Phaser.Scene {
     if (this.twist) this.setupTwist();
     this.setupSurvivor();
     recordFloor(this.run);
+    saveResume(this.run); // climbs: CONTINUE picks up from the start of this floor
 
     // intro banners
     const zone = zoneOf(this.floorN);
@@ -314,7 +336,7 @@ export class GameScene extends Phaser.Scene {
     for (const m of this.medkits.getChildren().slice()) {
       const left = m.expireAt - time;
       if (left <= 0) m.destroy();
-      else if (left < 3000) m.setAlpha(Math.floor(time / 120) % 2 ? 0.3 : 1);
+      else if (left < 3000) m.setAlpha(REDUCED ? 0.6 : Math.floor(time / 120) % 2 ? 0.3 : 1); // about to vanish
     }
     this.updateToxic(time);
     this.updateBurns(time);
@@ -1023,9 +1045,8 @@ export class GameScene extends Phaser.Scene {
     recordWin(this.run);
     this.time.delayedCall(3000, () => {
       this.player.writeBack();
-      if (!this.elevator) clearCheckpoint();
-      this.cameras.main.fadeOut(800, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('End', { mode: 'victory', run: this.run }));
+      if (!this.elevator) { clearCheckpoint(); clearResume(); }
+      fadeOut(this, 800, () => this.scene.start('End', { mode: 'victory', run: this.run }));
     });
   }
 
@@ -1033,8 +1054,7 @@ export class GameScene extends Phaser.Scene {
     this.leaving = true;
     this.player.body.setVelocity(0, 0);
     this.player.writeBack();
-    this.cameras.main.fadeOut(450, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
+    fadeOut(this, 450, () => {
       this.scene.start('Draft', { run: this.run, kind: this.isBossFloor && !this.elevator ? 'perk' : 'gear' });
     });
   }
@@ -1052,13 +1072,12 @@ export class GameScene extends Phaser.Scene {
     const t = txt(this, W / 2, H / 2, 'YOU DIED', 28, '#ff5f56', { ox: 0.5, oy: 0.5, stroke: '#000', strokeThickness: 6 }).setDepth(2000).setAlpha(0);
     this.tweens.add({ targets: t, alpha: 1, duration: 400 });
     this.time.delayedCall(1500, () => {
-      this.cameras.main.fadeOut(500, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('End', { mode: 'dead', run: this.run }));
+      fadeOut(this, 500, () => this.scene.start('End', { mode: 'dead', run: this.run }));
     });
   }
 
   pauseGame() {
-    if (this.over || this.leaving) return;
+    if (this.over || this.leaving || !this.scene.isActive()) return;
     this.scene.launch('Pause');
     this.scene.pause();
   }

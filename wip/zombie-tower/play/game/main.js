@@ -34,6 +34,10 @@ async function start() {
     input: { activePointers: 3 },
     scene: [BootScene, MenuScene, SetupScene, GameScene, DraftScene, PauseScene, EndScene],
   });
+  window.game.events.once('ready', () => {
+    window.game.canvas.setAttribute('aria-label', 'Zombie Tower game');
+    window.game.canvas.setAttribute('role', 'application');
+  });
 }
 
 start();

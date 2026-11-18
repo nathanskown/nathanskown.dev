@@ -138,7 +138,18 @@ var STORY = {
     rewindDeadline: "Rewinding to {time}. You have a little time to try something else. (If you're out of options, type “restart”.)",
     rewindRestart: "Starting over.",
     afterEnding: "Type “restart” to play again, “endings” to see which endings you've found, “share” to copy your result, or “quit” to leave.",
-    endingTypes: { good: "a good ending", mixed: "a mixed ending", bad: "a bad ending" }
+    endingTypes: { good: "a good ending", mixed: "a mixed ending", bad: "a bad ending" },
+    // Touch screens (phones, tablets) read these instead of the "Type …" versions above.
+    touch: {
+      askName: "BRIGHTLINE FIBER · ACCOUNT VERIFICATION\nBefore we connect you, please say or enter the first name on the account.\n(Type your first name, or tap SKIP NAME.)",
+      afterIntro: "Somewhere in the next few hours, the fallout will arrive. Until then, the question isn't only where you'll be. It's who will be with you.\n\n(Tap the buttons below, or type. HINT is in the MENU if you're stuck. The game saves automatically.)",
+      choiceTip: "(Tap an answer. Tap anything else to end the conversation.)",
+      afterEnding: "Tap RESTART to play again, ENDINGS to see which endings you've found, or SHARE to copy your result.",
+      notesTip: " (Open MENU → NOTES to see them all.)"
+    },
+    notesTip: " (Type “notes” to see them all.)",
+    // Used when the player skips the name question.
+    defaultName: "Alex"
   },
 
   help: [
@@ -261,6 +272,7 @@ var STORY = {
       },
       actions: [
         {
+          chip: "FILL BATHTUB",
           say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill up bathtub", "fill pots", "fill water", "store water", "fill bathtub with water", "fill sink"],
           if: { notFlag: ["water_off", "bathtub_full"] },
           time: 10,
@@ -269,7 +281,8 @@ var STORY = {
         { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "bathtub_full" }, effects: { text: "It's full. Every pot, too." } },
         { say: ["fill bathtub", "fill tub", "fill bath", "run bath", "fill pots", "fill water", "store water"], if: { flag: "water_off" }, effects: { text: "You open the tap down the hall. A cough of air, a few brown drops. Too late." } },
         {
-          say: ["answer call", "answer the call", "answer", "answer phone", "answer call waiting", "switch over", "click over", "flash", "press flash", "take call", "pick up"],
+          chip: "ANSWER THE CALL",
+          say: ["answer the call", "answer call", "answer", "answer phone", "answer call waiting", "switch over", "click over", "flash", "press flash", "take call", "pick up"],
           if: { flag: "call_waiting", notFlag: ["talked_sister", "landline_dead"], before: "3:40 PM" },
           time: 6,
           effects: { flag: ["talked_sister", "knows_shelter_basics", "knows_get_inside"], text: [
@@ -331,7 +344,10 @@ var STORY = {
       },
       actions: [
         {
-          say: ["drain water heater", "drain heater", "use water heater", "open water heater", "get water from water heater", "drain tank"],
+          chip: "DRAIN WATER HEATER",
+          // Once you know how, the chip shows even without a light: tapping it tells you what's missing.
+          chipIf: { flag: "knows_waterheater", notFlag: "heater_drained" },
+          say: ["drain the water heater", "drain water heater", "drain heater", "use water heater", "open water heater", "get water from water heater", "drain tank"],
           if: { flag: "knows_waterheater", notFlag: "heater_drained", has: "flashlight" },
           time: 20,
           effects: { flag: "heater_drained", text: "Steven's way: you turn the gas valve to OFF, close the cold-water inlet, open a hot tap down the hall so it doesn't vacuum-lock, and crack the drain valve at the bottom. The first gallon is rusty. The rest runs clear into bins, buckets and the recycling tub. Forty gallons. You could kiss the thing." },
@@ -342,6 +358,7 @@ var STORY = {
           ]
         },
         {
+          chip: "SHELTER HERE",
           say: ["shelter here", "shelter", "hunker down", "stay here", "stay in basement", "wait it out", "close door", "seal basement", "shelter in basement", "close basement door", "lock door", "take shelter"],
           if: { any: [{ flag: "bathtub_full" }, { flag: "heater_drained" }, { var: ["water", ">=", 1] }] },
           effects: { ask: {
@@ -517,6 +534,7 @@ var STORY = {
       },
       actions: [
         {
+          chip: "CLOSE DOOR",
           say: ["close door", "close the door", "shut door", "seal door", "seal band room", "seal room", "shelter here", "shelter", "lock door", "stay here", "close steel door"],
           if: { flag: ["dana_convinced", "school_water", "school_sheeting"] },
           effects: { ending: "shelter_in_place" },
@@ -1123,7 +1141,11 @@ var STORY = {
         start: "start",
         nodes: {
           start: {
-            text: "“If you're here to shelter, sign in with the—” He sees you're not carrying a bag. “Never mind. What do you need?”",
+            text: {
+              if: { lacks: ["sheeting", "radio"], var: ["water", "<", 1] },
+              text: "“If you're here to shelter, sign in with the—” He sees you're not carrying a bag. “Never mind. What do you need?”",
+              else: "“If you're here to shelter, sign in with the—” He looks at what you're carrying. “Never mind. What do you need?”"
+            },
             again: "Coach Connor looks up from the clipboard. “What've you got?”",
             choices: [
               { text: "Steven, tell him what you told me.", if: { with: "ruth", notFlag: "dana_convinced" }, next: "ruth" },
@@ -1595,6 +1617,7 @@ var STORY = {
   // ==========================================================================
   uses: [
     {
+      chip: "SIPHON GAS", cmd: "use siphon on impala",
       item: "siphon", on: ["car", "cars", "impala", "abandoned car", "abandoned cars", "gas tank", "tank"], in: "interchange",
       if: { has: "gas_can" }, time: 15,
       effects: { take: "gas_can", give: "gas_can_full", text: "The first three cars have anti-siphon screens in the filler neck. The fourth is the rusted Impala with the missing gas cap, and it gives you five gallons and a mouthful of gasoline you'll taste for a week. Nobody on the overpass tries to stop you. Two people ask if you're done with the pump." },
@@ -1602,10 +1625,12 @@ var STORY = {
     },
     {
       item: "gas_can", on: ["car", "cars", "impala", "abandoned car", "tank"], in: "interchange",
+      chip: "SIPHON GAS", cmd: "use gas can on impala", chipIf: { lacks: "siphon" },
       fail: "You'd need a siphon pump to get the gas out. The hardware store might have one."
     },
     {
       item: "sheeting", on: ["window", "window well", "well"], in: "basement",
+      chip: "SEAL WINDOW WELL", cmd: "use sheeting on window well",
       if: { notFlag: "basement_window_sealed" }, time: 10,
       effects: { take: "sheeting", flag: "basement_window_sealed", text: "You cut the sheeting to size with kitchen scissors and tape the window well shut, edge over edge. Then you pile Christmas bins against the wall beneath it, because Steven would want mass, and the ceramic village is the mass you've got." }
     },
@@ -1637,6 +1662,8 @@ var STORY = {
       { if: { after: "3:00 PM", before: "7:34 PM" }, text: "The sky to the west is clear and blue and completely ordinary. That's where it's going to come from." },
       { if: { after: "7:34 PM" }, text: "Dark. More stars than Novi has seen in fifty years. Nobody looks up for long." }
     ] } },
+    { say: ["call", "text", "call mom", "text mom", "call sister", "text sister", "call my sister", "text my sister", "call dad", "text dad", "call someone", "send text", "text someone"],
+      effects: { text: "No signal. Sixty unsent texts sit in the group chat, each with its little red exclamation point." } },
     { say: ["cry", "scream", "panic", "sit down"], time: 5, effects: { text: "You sit on the curb and let it happen for five minutes. Nobody looks at you twice. Half the people you can see are doing the same thing. Then you get up, because the clock is still running." } }
   ],
 
