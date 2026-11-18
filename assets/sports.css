@@ -119,7 +119,7 @@ body::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:50;bac
 .s-tbl thead th{color:var(--dim);font-size:var(--fs);letter-spacing:calc(.1em*var(--ls,1));text-transform:uppercase;border-bottom:1px solid var(--line)}
 .s-tbl.is-compact th,.s-tbl.is-compact td{padding:3px 6px}
 .s-tbl tr.me td,.s-tbl tr.me th{background:var(--band);color:var(--wh)}
-.s-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.s-scroll{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}
 .s-team{display:inline-flex;align-items:center;gap:8px;min-width:0}
 .s-logo{width:22px;height:22px;object-fit:contain;flex:none}
 .s-res{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;font-weight:600;font-size:var(--fs);flex:none;text-shadow:none}
@@ -278,7 +278,11 @@ text-shadow:0 0 5px rgba(61,242,255,.18)}
 body.has-crawl{padding-bottom:34px}
 @keyframes s-crawl{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.s-crawl-track{animation:none}.s-crawl-win{overflow-x:auto}.sb:hover{transform:none}}
-@media (max-width:760px){.s-crawl{height:38px}.s-crawl-l .x{display:none}body.has-crawl{padding-bottom:38px}.s-strip > div{flex:1 1 calc(50% - 8px);min-width:0}.s-bigscore{font-size:64px}}
+@media (max-width:760px){.s-crawl{height:38px}.s-crawl-l .x{display:none}body.has-crawl{padding-bottom:38px}.s-strip > div{flex:1 1 calc(50% - 8px);min-width:0}.s-bigscore{font-size:64px}
+  .t-pb,.t-card{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}
+  .s-game{flex-wrap:wrap}
+  .s-game .r{min-width:0;max-width:100%;white-space:normal}
+}
 @media print{.s-crawl,.t-crt,body::after{display:none}}
 .t-sub2 .t-sl{white-space:nowrap}
 .s-side-a{display:none}
