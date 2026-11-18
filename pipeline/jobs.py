@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from . import src_market as mk
 from . import src_misc as mi
 from . import src_sec as sec
-from .net import CONFIG, attempt, get, now_iso, num, r, read, record, write
+from .net import CONFIG, STATUS, attempt, get, now_iso, num, r, read, record, write
 
 UNIVERSE = CONFIG["universe"]
 TILES = [("spx", "^GSPC", "S&P 500", "", 2), ("ixic", "^IXIC", "Nasdaq Comp.", "", 2), ("dji", "^DJI", "Dow Jones", "", 2),
@@ -82,17 +82,25 @@ def members():
 
 
 def build_members():
-    out = {"sectors": {}, "names": {}}
+    old = read("members.json", {}) or {}
+    out = {"sectors": dict(old.get("sectors") or {}), "names": dict(old.get("names") or {})}
     for key, page in [("sp500", "List_of_S%26P_500_companies"), ("sp400", "List_of_S%26P_400_companies"),
                       ("sp600", "List_of_S%26P_600_companies")]:
-        rows = attempt(f"index members {key}", mk.index_members, page, default=[]) or []
+        rows = attempt(f"index members {key}", mk.index_members, page, default=None)
+        if not rows:
+            # Wikipedia sometimes answers 429. Keep yesterday's list instead of publishing a blank one.
+            out[key] = list(old.get(key) or [])
+            st = STATUS.get(f"index members {key}")
+            if st is not None and not st.get("ok"):
+                kept = f"kept the last good list ({len(out[key])} names)" if out[key] else "no earlier list to keep"
+                st["note"] = kept
+            continue
         out[key] = [x["sym"] for x in rows]
         for x in rows:
-            out["sectors"].setdefault(x["sym"], x["sector"])
-            out["names"].setdefault(x["sym"], x["name"])
+            out["sectors"][x["sym"]] = x["sector"]
+            out["names"][x["sym"]] = x["name"]
     if not out["sp500"]:
         raise RuntimeError("S&P 500 list empty")
-    old = read("members.json", {}) or {}
     asof, fresh = dict(old.get("russellAsOf") or {}), {}
     for key in ("r1000", "r2000"):  # Russell lists from iShares; keep yesterday's list if today's download fails
         got = attempt(f"index members {key} (iShares)", mk.russell_members, key, default=None)

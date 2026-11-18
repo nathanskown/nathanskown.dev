@@ -22,10 +22,13 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/129.0 Safari/537.36")
 # SEC asks automated clients to identify themselves with a contact address.
 SEC_UA = "nathanskown.dev finance data bot skownclaude@agentmail.to"
+# Wikimedia rate-limits generic browser user agents from cloud hosts (the daily job's S&P 400 fetch came back HTTP 429).
+WIKI_UA = "nathanskown.dev data bot (https://nathanskown.dev; skownclaude@agentmail.to)"
 
 # minimum seconds between requests to the same host (SEC allows 10/s; stay well under)
 PACE = {"sec.gov": 0.15, "data.sec.gov": 0.15, "api.nasdaq.com": 0.4, "query1.finance.yahoo.com": 0.15,
-        "query2.finance.yahoo.com": 0.15, "api.stlouisfed.org": 0.1, "fred.stlouisfed.org": 0.2}
+        "query2.finance.yahoo.com": 0.15, "api.stlouisfed.org": 0.1, "fred.stlouisfed.org": 0.2,
+        "wikipedia.org": 2.0}
 _last = {}
 _LOCK = threading.Lock()
 _dead = {}  # host -> consecutive failed calls; after BREAK the host fails fast for the rest of the run
@@ -54,6 +57,8 @@ def headers_for(url):
     if host.endswith("ishares.com"):  # the holdings file is served to ordinary browser-like requests; anything odd gets the HTML page
         return {"User-Agent": BROWSER_UA, "Accept": "text/csv,text/plain,*/*;q=0.8", "Accept-Language": "en-US,en;q=0.9",
                 "Referer": "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf"}
+    if host.endswith("wikipedia.org"):
+        return {"User-Agent": WIKI_UA, "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.9"}
     return {"User-Agent": BROWSER_UA, "Accept": "*/*", "Accept-Language": "en-US,en;q=0.9"}
 
 
