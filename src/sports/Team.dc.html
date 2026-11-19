@@ -170,10 +170,10 @@
 <div class="t-ph"><h2>Shot and goal trend</h2><span class="dim">{{trendSub}}</span></div>
 <div class="t-pb">
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Window</th><th scope="col">GP</th><th scope="col">Goals for</th><th scope="col">Goals against</th><th scope="col">Shots for</th><th scope="col">Shots against</th><th scope="col">Shot diff.</th></tr></thead>
-<tbody><sc-for list="{{trend}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.gp}}</td><td>{{r.gf}}</td><td>{{r.ga}}</td><td>{{r.sf}}</td><td>{{r.sa}}</td><td style="{{r.sdSt}}">{{r.sd}}</td></tr></sc-for></tbody>
+<thead><tr><th scope="col" class="l">Window</th><th scope="col">GP</th><th scope="col">Goals for</th><th scope="col">Goals against</th><th scope="col">Shots for</th><th scope="col">Shots against</th><th scope="col">Shot diff.</th><th scope="col">Change vs season</th></tr></thead>
+<tbody><sc-for list="{{trend}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.gp}}</td><td>{{r.gf}}</td><td>{{r.ga}}</td><td>{{r.sf}}</td><td>{{r.sa}}</td><td style="{{r.sdSt}}">{{r.sd}}</td><td class="dim">{{r.chg}}</td></tr></sc-for></tbody>
 </table></div>
-<p class="s-note" style="margin: 10px 0 0">Per game, all situations, with the league rank in brackets (1 = best). Short windows are noisy: five games say little.</p>
+<p class="s-note" style="margin: 10px 0 0">Per game, all situations, with the league rank in brackets (1 = best). The last column shows how each window differs from this season (positive goals for and shot difference are good). Short windows are noisy: five games say little.</p>
 </div>
 </section>
 </sc-if>
@@ -445,9 +445,11 @@ class Component extends DCLogic {
     var trend = [], TD = S.trendData;
     if (lg === 'nhl' && TD && TD.teams && t && t.abbr) {
       var NA = { TB: 'TBL', NJ: 'NJD', SJ: 'SJS', LA: 'LAK', UTAH: 'UTA' }, tt = TD.teams[NA[t.abbr] || t.abbr];
-      if (tt) [['season', 'This season'], ['l15', 'Last 15'], ['l10', 'Last 10'], ['l5', 'Last 5']].forEach(function (w) { var x = tt[w[0]]; if (!x) return;
-        trend.push({ label: w[1], gp: x.gp, gf: x.gf.toFixed(2) + ' (' + x.rgf + ')', ga: x.ga.toFixed(2) + ' (' + x.rga + ')', sf: x.sf.toFixed(1) + ' (' + x.rsf + ')', sa: x.sa.toFixed(1) + ' (' + x.rsa + ')',
-          sd: (x.sd > 0 ? '+' : '') + x.sd.toFixed(1) + ' (' + x.rsd + ')', sdSt: x.sd > 0 ? 'color: var(--up)' : x.sd < 0 ? 'color: var(--dn)' : '' }); });
+      if (tt) var base0 = tt.season; [['season', 'This season'], ['last', 'Last season'], ['l30', 'Last 30'], ['l15', 'Last 15'], ['l10', 'Last 10'], ['l5', 'Last 5']].forEach(function (w) { var x = tt[w[0]]; if (!x) return; var rk = function (v) { return v === undefined ? '' : ' (' + v + ')'; };
+        var dd = function (a, b, dp) { var v = a - b; return (v > 0 ? '+' : '') + v.toFixed(dp); };
+        trend.push({ label: w[1], gp: x.gp, gf: x.gf.toFixed(2) + rk(x.rgf), ga: x.ga.toFixed(2) + rk(x.rga), sf: x.sf.toFixed(1) + rk(x.rsf), sa: x.sa.toFixed(1) + rk(x.rsa),
+          chg: (w[0] === 'season' || w[0] === 'last' || !base0) ? '' : 'GF ' + dd(x.gf, base0.gf, 2) + ' · GA ' + dd(x.ga, base0.ga, 2) + ' · SD ' + dd(x.sd, base0.sd, 1),
+          sd: (x.sd > 0 ? '+' : '') + x.sd.toFixed(1) + rk(x.rsd), sdSt: x.sd > 0 ? 'color: var(--up)' : x.sd < 0 ? 'color: var(--dn)' : '' }); });
     }
     return Object.assign(base, {
       hasTrend: trend.length > 0, trend: trend, trendSub: 'Updated ' + (TD && TD.updated ? F.day(TD.updated) : ''),

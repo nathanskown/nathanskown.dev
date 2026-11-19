@@ -117,6 +117,7 @@ body::after{content:"";pointer-events:none;position:fixed;inset:0;z-index:50;bac
 .s-tbl th,.s-tbl td{padding:7px 6px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap}
 .s-tbl th:first-child,.s-tbl td:first-child,.s-tbl .l{text-align:left}
 .s-tbl thead th{color:var(--dim);font-size:var(--fs);letter-spacing:calc(.1em*var(--ls,1));text-transform:uppercase;border-bottom:1px solid var(--line)}
+.s-tbl.is-compact th,.s-tbl.is-compact td{padding:3px 6px}
 .s-tbl tr.me td,.s-tbl tr.me th{background:var(--band);color:var(--wh)}
 .s-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .s-team{display:inline-flex;align-items:center;gap:8px;min-width:0}

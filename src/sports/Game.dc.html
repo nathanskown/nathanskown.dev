@@ -159,11 +159,17 @@
 <section class="t-panel" aria-label="Shots on goal">
 <div class="t-ph"><h2>Shots on goal</h2><span class="dim">{{sg.sub}}</span><button type="button" class="s-tab" onClick="{{sg.csv}}">Download CSV</button></div>
 <div class="t-pb">
+<div class="s-tabs" role="group" aria-label="Table view" style="margin-bottom: 8px; align-items: center">
+<sc-for list="{{sg.modeTabs}}" as="m"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+<sc-for list="{{sg.whyTabs}}" as="m"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+<sc-for list="{{sg.denseTabs}}" as="m"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+<input class="s-input" style="width: 150px; min-height: 36px; font-size: 16px" type="search" placeholder="Filter players" value="{{sg.q}}" onInput="{{sg.onQ}}" aria-label="Filter players by name">
+</div>
 <sc-for list="{{sg.teams}}" as="t" hint-placeholder-count="2">
 <h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}}</h3>
-<div class="s-scroll" tabindex="0"><table class="s-tbl">
-<thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th><th scope="col">Ceiling</th><th scope="col">Anytime goal</th><th scope="col">Ice time</th></tr></thead>
-<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.l1}}</td><td>{{r.l2}}</td><td>{{r.l3}}</td><td>{{r.l4}}</td><td>{{r.l5}}</td><td>{{r.ceil}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
+<div class="s-scroll" tabindex="0"><table class="{{sg.tcls}}">
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">Most likely</th><sc-for list="{{sg.heads}}" as="h"><th scope="col">{{h.t}}</th></sc-for><th scope="col">Ceiling</th><th scope="col">Spread</th><th scope="col">Anytime goal</th><th scope="col">Ice time</th></tr></thead>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span><sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td>{{r.ceil}}</td><td class="dim">{{r.spread}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
 <sc-if value="{{sg.hasG}}" hint-placeholder-val="{{false}}">
@@ -295,6 +301,7 @@ class Component extends DCLogic {
     SD.data('model/' + lg + '.json').then(function (m) { self.setState({ model: m }); }, function () {});
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
     if (['nba', 'nhl', 'ncaab', 'ncaaf'].indexOf(lg) >= 0 && id) SD.data('model/totals_' + lg + '.json').then(function (x) { self.setState({ totals: x }); }, function () {});
+    if (lg === 'nhl') { try { var sxv = localStorage.getItem('nskn-sx'), sdv = localStorage.getItem('nskn-sd'); this.setState({ sx: sxv === 'exact' ? 'exact' : 'atleast', sw: localStorage.getItem('nskn-sw') === 'on' ? 'on' : 'off', sd: sdv === 'compact' ? 'compact' : 'comfortable' }); } catch (e) {} }
     if (lg === 'nhl' && id) SD.data('props/nhl.json').then(function (x) { self.setState({ nhlp: x }); }, function () {});
     if (lg === 'nfl' && id) {
       SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
@@ -493,17 +500,29 @@ class Component extends DCLogic {
         var tailP = function (pm, k) { var t = 0; for (var i = k; i < pm.length; i++) t += pm[i]; return t; };
         var fmtP = function (v) { return v >= 0.995 ? '99%+' : v < 0.005 ? '<1%' : Math.round(v * 100) + '%'; };
         var ceilOf = function (pm) { var c = 0; for (var i = 0; i < pm.length; i++) { c += pm[i]; if (c >= 0.9) return i + (i >= pm.length - 1 ? '+' : ''); } return pm.length - 1 + '+'; };
+        var why = S.sw === 'on', exact = S.sx === 'exact', dense = S.sd === 'compact', qf = (S.sq || '').toLowerCase().trim();
+        var modeOf = function (pm) { var b = 0; for (var i = 1; i < pm.length; i++) if (pm[i] > pm[b]) b = i; return b; };
+        /* spread: how wide the range is for this size of projection (the 10th-90th percentile gap against the middle); terciles over every projection band */
+        var spreadOf = function (pm) { var c = 0, lo = 0, hi = pm.length - 1, mu = 0; for (var i = 0; i < pm.length; i++) mu += i * pm[i]; for (var j = 0; j < pm.length; j++) { c += pm[j]; if (c < 0.1) lo = j + 1; if (c >= 0.9) { hi = j; break; } } return (hi - lo) / Math.max(mu, 0.5); };
+        var sps = NP.pmf.map(spreadOf).sort(function (a, b) { return a - b; }), sp1 = sps[Math.floor(sps.length / 3)], sp2 = sps[Math.floor(sps.length * 2 / 3)];
+        var spreadLbl = function (pm) { var v = spreadOf(pm); return v <= sp1 ? 'Steady' : v <= sp2 ? 'Typical' : 'Streaky'; };
+        var setS = function (k, v) { return function () { var o = {}; o[k] = v; cmp.setState(o); try { localStorage.setItem('nskn-' + k, v); } catch (e) {} }; };
+        var tabBtn = function (label, on, fn) { return { label: label, on: on ? 'true' : 'false', cls: 's-tab' + (on ? ' is-on' : ''), pick: fn }; };
+        var KS = [1, 2, 3, 4, 5];
         var steams = [A, H].map(function (t) {
-          var rs = mineS.filter(function (r) { return r.team === t.abbr; }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, 10);
+          var rs = mineS.filter(function (r) { return r.team === t.abbr && (!qf || r.player.toLowerCase().indexOf(qf) >= 0); }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, qf ? 30 : 10);
           return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = NP.pmf[r.band];
-            return { player: r.player, pos: r.pos, mean: r.mean.toFixed(2), l1: fmtP(tailP(pm, 1)), l2: fmtP(tailP(pm, 2)), l3: fmtP(tailP(pm, 3)), l4: fmtP(tailP(pm, 4)), l5: fmtP(tailP(pm, 5)), ceil: ceilOf(pm), pg: r.pg !== undefined ? fmtP(r.pg) : '—', toi: r.toi.toFixed(0) + ' min' }; }) };
+            return { player: r.player, pos: r.pos, flag: r.flag || '', mean: r.mean.toFixed(2), mode: modeOf(pm), cells: KS.map(function (k) { return { v: fmtP(exact ? pm[k] || 0 : tailP(pm, k)) }; }).concat(why ? [{ v: r.spm !== undefined ? (r.spm * 60).toFixed(1) : '—' }, { v: r.of !== undefined ? (r.of >= 1 ? '+' : '') + ((r.of - 1) * 100).toFixed(0) + '%' : '—' }] : []), ceil: ceilOf(pm), spread: spreadLbl(pm), pg: r.pg !== undefined ? fmtP(r.pg) : '—', toi: r.toi.toFixed(0) + ' min' }; }) };
         }).filter(function (t) { return t.rows.length; });
         var gk = (NP.goalies || []).filter(function (r) { return r.espn === gid; }).map(function (r) { var pm = (NP.gpmf || [])[r.band] || [];
           return { player: r.player, team: r.team, shots: r.shots.toFixed(1), sv: (r.sv * 100).toFixed(1) + '%', mean: r.mean.toFixed(1), s20: pm.length ? fmtP(tailP(pm, 20)) : '—', s25: pm.length ? fmtP(tailP(pm, 25)) : '—', s30: pm.length ? fmtP(tailP(pm, 30)) : '—', s35: pm.length ? fmtP(tailP(pm, 35)) : '—', note: r.note }; });
         var nb2 = NP.backtest || {}, lastY = Object.keys(nb2).sort().pop(), bb = lastY ? nb2[lastY] : null, l3 = bb ? bb.ladder[2] : null;
-        sg = { csv: function () { saveCsv('nhl-shots-' + gid + '.csv', ['player', 'team', 'pos', 'expected_shots', 'expected_goals', 'anytime_goal_chance', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus', 'ice_time_min'],
+        sg = { q: S.sq || '', onQ: function (e) { cmp.setState({ sq: e.target.value }); }, tcls: dense ? 's-tbl is-compact' : 's-tbl', heads: KS.map(function (k) { return { t: exact ? 'Exactly ' + k : k + '+' }; }).concat(why ? [{ t: 'Shots per 60' }, { t: 'Opponent allows' }] : []),
+          whyTabs: [tabBtn('Inputs hidden', !why, setS('sw', 'off')), tabBtn('Show inputs', why, setS('sw', 'on'))],
+          modeTabs: [tabBtn('At least', !exact, setS('sx', 'atleast')), tabBtn('Exactly', exact, setS('sx', 'exact'))], denseTabs: [tabBtn('Comfortable', !dense, setS('sd', 'comfortable')), tabBtn('Compact', dense, setS('sd', 'compact'))],
+          csv: function () { saveCsv('nhl-shots-' + gid + '.csv', ['player', 'team', 'pos', 'expected_shots', 'expected_goals', 'anytime_goal_chance', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus', 'ice_time_min'],
           mineS.map(function (r) { var pm = NP.pmf[r.band]; return [r.player, r.team, r.pos, r.mean, r.gx, r.pg, tailP(pm, 1).toFixed(3), tailP(pm, 2).toFixed(3), tailP(pm, 3).toFixed(3), tailP(pm, 4).toFixed(3), tailP(pm, 5).toFixed(3), r.toi]; })); }, goalies: gk, hasG: gk.length > 0, has: steams.length > 0, sub: mineS[0].locked ? 'Final pre-game numbers' : 'Updated ' + F.day(NP.updated), teams: steams,
-          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Anytime goal is expected shots times his own shooting percentage, turned into a chance the same way. Goalie rows assume the goalie who started the team\u2019s last game (the backup if it is the second game in two nights); starters are not confirmed until close to puck drop. Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
+          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. Most likely is the single most common count. Spread says how wide the range is for a projection this size (steady, typical or streaky). Flags such as a recent absence or a new team come from the box scores. Show inputs adds the player’s own shots per 60 minutes and how many more or fewer shots than average the opponent allows; the rest is his expected ice time and a small home-ice adjustment. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Anytime goal is expected shots times his own shooting percentage, turned into a chance the same way. Goalie rows assume the goalie who started the team\u2019s last game (the backup if it is the second game in two nights); starters are not confirmed until close to puck drop. Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
             + (bb ? ' Tested on ' + lastY + ' using only earlier seasons: ' + Math.round(l3.pred * 100) + '% of players were projected to take 3+ shots and ' + Math.round(l3.act * 100) + '% did.' : '') };
       }
     }
