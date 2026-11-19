@@ -10,6 +10,8 @@
   var screen = $('screen'), out = $('out'), form = $('cmd'), input = $('input'), promptEl = $('prompt');
   var sceneEl = $('scene');
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Phones and tablets: no surprise keyboard, and "Tap …" wording instead of "Type …".
+  function coarse() { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
   var scenes = PleaseHoldScenes.Renderer($('sceneCanvas'), STORY, {
     reduceMotion: reduceMotion,
     onReadout: function (items) { renderReadout(items); }
@@ -115,23 +117,8 @@
     }
     return el;
   }
-  var ABBR = { st: 1, dr: 1, mr: 1, mrs: 1, mt: 1 };
-  function splitSentences(text) {
-    var parts = [];
-    var buf = '';
-    var re = /[^.!?]+[.!?]+["”']?(?:\s+|$)|[^.!?]+$/g;
-    var m;
-    while ((m = re.exec(text))) {
-      buf += m[0];
-      var end = /([A-Za-z]+)\.["”']?\s*$/.exec(buf);
-      if (end && ABBR[end[1].toLowerCase()]) continue;
-      var s = buf.trim();
-      if (s) parts.push(s);
-      buf = '';
-    }
-    if (buf.trim()) parts.push(buf.trim());
-    return parts.length ? parts : [String(text)];
-  }
+  // Lossless sentence split (js/split.js; covered by test/split.test.js).
+  var splitSentences = PleaseHoldSplit.splitSentences;
   function splitBlock(block) {
     var bits = splitSentences(block.text);
     if (bits.length < 2) return [block];
@@ -335,8 +322,8 @@
       $('pageCount').textContent = (pageIndex + 1) + '/' + pages.length;
       setPageBtn($('pageBack'), pageIndex > 0);
       setPageBtn($('pageMore'), hasMore());
-      $('pageMore').setAttribute('aria-label', 'Next page, ' + (pageIndex + 1) + ' of ' + pages.length);
-      $('pageBack').setAttribute('aria-label', 'Previous page, ' + (pageIndex + 1) + ' of ' + pages.length);
+      $('pageMore').setAttribute('aria-label', 'MORE, next page, ' + (pageIndex + 1) + ' of ' + pages.length);
+      $('pageBack').setAttribute('aria-label', 'BACK, previous page, ' + (pageIndex + 1) + ' of ' + pages.length);
     }
     if (typeof game !== 'undefined' && game && game.view) {
       renderTalkChoices(game.view());
@@ -387,7 +374,8 @@
     print: print,
     onExit: function () { refresh(); },
     onFx: function (name) { effect(name); },
-    onNewGame: clearTranscript
+    onNewGame: clearTranscript,
+    touch: coarse
   });
 
   // ------------------------------------------------------------------ effects
@@ -494,7 +482,7 @@
       else if (v.playing && v.visited.indexOf(id) >= 0) cls = 'seen';
       if (cls === 'near') {
         var place = m.replace(/^\[|\]$/g, '');
-        return '<button type="button" class="' + cls + '" data-go="' + esc(near[id]) + '" aria-label="Go ' + esc(near[id]) + ' to ' + esc(place) + ', ' + mins[id] + ' min' + '" title="' + mins[id] + ' min walk">' + m + '</button>';
+        return '<button type="button" class="' + cls + '" data-go="' + esc(near[id]) + '" aria-label="' + esc(place) + ', go ' + esc(near[id]) + ', ' + mins[id] + ' min' + '" title="' + mins[id] + ' min walk">' + m + '</button>';
       }
       return '<span class="' + cls + '">' + m + '</span>';
     });
@@ -534,7 +522,7 @@
       return '<li class="' + n.state + '"><span class="sr-only">' + label + '</span>' + esc(n.text) + due + tail + '</li>';
     }).join('') || '<li class="empty">' + (v && v.playing ? 'Nothing yet. Talk to people.' : '—') + '</li>';
     count.textContent = open.length ? ' ' + open.length : '';
-    $('notesKey').setAttribute('aria-label', 'Notes' + (open.length ? ', ' + open.length + ' open' : ''));
+    $('notesKey').setAttribute('aria-label', '2) NOTES' + (open.length ? ', ' + open.length + ' open' : ''));
     legend.textContent = open.length ? open.length + ' OPEN' : '';
   }
 
@@ -657,14 +645,28 @@
     var box = $('chips');
     box.innerHTML = '';
     box.classList.remove('has-choices');
-    if (!v || !game.isActive()) { box.appendChild(chip('PLAY', 'play', 'alt')); return; }
-    if (v.mode === 'name') return;
+    box.classList.toggle('title-chips', !v || !game.isActive());
+    if (!v || !game.isActive()) {
+      // Title card: a saved game goes straight back in with one tap.
+      var saved = game.savedSummary();
+      if (saved) {
+        box.appendChild(chip('CONTINUE · ' + saved.clock + ', ' + saved.place, 'continue', 'alt big'));
+        box.appendChild(chip('NEW GAME', 'new game', 'big'));
+      } else box.appendChild(chip('PLAY', 'play', 'alt big'));
+      return;
+    }
+    if (v.mode === 'name') {
+      if (v.endingsFound) box.appendChild(chip('SKIP INTRO', 'skip intro', 'alt'));
+      box.appendChild(chip(v.lastName ? 'USE ' + v.lastName.toUpperCase() : 'SKIP NAME', 'skip name'));
+      return;
+    }
     if (!v.playing) { box.appendChild(chip('CONTINUE', '1', 'alt')); box.appendChild(chip('START OVER', '2')); return; }
     if (v.asking) { box.appendChild(chip('YES', 'yes', 'alt')); box.appendChild(chip('NO', 'no')); return; }
     if (v.ended) { ['restart', 'endings', 'share'].forEach(function (c) { box.appendChild(chip(c.toUpperCase(), c, c === 'share' ? 'alt' : '')); }); return; }
     if (v.talking) return; // dialogue answers are the stacked list, or buttons in the page
     var picked = v.picked || {};
     v.exits.forEach(function (x) { box.appendChild(chip(x.label, x.dir, 'go', DIR_SHORT[x.dir] || x.dir, !!picked[v.room + '|' + x.label], x.long ? x.mins + ' min' : '')); });
+    (v.actions || []).forEach(function (a) { box.appendChild(chip(a.label, a.cmd, 'alt act', 'DO')); });
     v.people.forEach(function (p) { box.appendChild(chip(p.name, 'talk to ' + p.name, 'talk', 'TALK', p.picked)); });
     v.items.forEach(function (n) { box.appendChild(chip(n, 'take ' + n, '', 'TAKE', !!picked[v.room + '|' + n])); });
     syncChipHint();
@@ -698,6 +700,7 @@
     var v = game.view();
     var playing = !!v.playing || game.isActive();
     document.body.classList.toggle('playing', playing);
+    document.body.classList.toggle('on-title', !playing);
     promptEl.textContent = game.isActive() ? GAME_PROMPT : SHELL_PROMPT;
     $('clock').textContent = v.playing ? v.clock : '--:-- --';
     $('liveText').textContent = v.playing ? (v.ended ? 'ENDED' : 'LIVE') : (game.isActive() ? 'MENU' : 'IDLE');
@@ -728,7 +731,9 @@
       print('Right now: PLEASE HOLD. Novi, Michigan, the afternoon the bombs fall. Twenty places, six endings, one clock. Type “play”.', 'shell');
     },
     clear: function () { commitPassage([]); },
-    play: function () { game.start(); }
+    play: function () { game.start(); },
+    'continue': function () { game.resume(); },
+    'new game': function () { game.freshGame(); }
   };
 
   function dispatch(line) {
@@ -772,7 +777,8 @@
     batch = null;
     refresh();
     commitPassage(blocks);
-    if (window.innerWidth > 960) input.focus();
+    if (coarse()) { if (document.activeElement === input) input.blur(); }
+    else if (window.innerWidth > 960) input.focus();
   }
 
   function submitInput() {
@@ -796,6 +802,8 @@
       advancePage(1);
       return;
     }
+    // A tap on the story never pops the phone keyboard; the text box is still there to tap.
+    if (coarse()) return;
     if (!String(window.getSelection && window.getSelection())) input.focus();
   });
   $('pageMore').addEventListener('click', function () { advancePage(1); });
@@ -809,6 +817,24 @@
     advancePage(1);
   });
 
+  // Phone Back closes an open panel (NOTES, MAP, INV, MENU) before it leaves the page.
+  // One history entry stands for "a panel is open"; closing by button takes it back off.
+  var panelState = false;
+  function panelOpen() { return document.body.classList.contains('show-side') || document.body.classList.contains('nav-open'); }
+  function syncPanelHistory() {
+    if (panelOpen() && !panelState) {
+      try { window.history.pushState({ ph: 'panel' }, ''); panelState = true; } catch (e) { /* sandboxed */ }
+    } else if (!panelOpen() && panelState) {
+      panelState = false;
+      try { window.history.back(); } catch (e) { /* ignore */ }
+    }
+  }
+  window.addEventListener('popstate', function () {
+    if (!panelState) return;
+    panelState = false;
+    closeSide();
+    setMenu(false);
+  });
   var sideOpener = null;
   function syncSide() {
     $('side').inert = !document.body.classList.contains('show-side');
@@ -821,6 +847,7 @@
     var panel = target && target.closest ? target.closest('.panel') : null;
     if (panel && panel.scrollIntoView) panel.scrollIntoView();
     document.querySelector('.side-close').focus();
+    syncPanelHistory();
   }
   function closeSide() {
     if (!document.body.classList.contains('show-side')) return;
@@ -829,6 +856,7 @@
     syncSide();
     if (sideOpener && sideOpener.focus) sideOpener.focus();
     sideOpener = null;
+    syncPanelHistory();
   }
   function focusables(root) {
     return Array.prototype.filter.call(root.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])'), function (el) {
@@ -840,9 +868,8 @@
     if (!b) return;
     if (b.id === 'sceneToggle') { setMenu(false); return; }
     if (b.dataset.panel) {
-      if (document.body.classList.contains('show-side') && document.body.dataset.side === b.dataset.panel) closeSide();
-      else { document.body.dataset.side = b.dataset.panel; openSide(b, b.dataset.panel); }
-      setMenu(false);
+      if (document.body.classList.contains('show-side') && document.body.dataset.side === b.dataset.panel) { setMenu(false, true); closeSide(); }
+      else { document.body.dataset.side = b.dataset.panel; setMenu(false, true); openSide(b, b.dataset.panel); }
       return;
     }
     setMenu(false);
@@ -863,10 +890,12 @@
   // after the first tap, and then the later headlines never come around.
   tickTrack.addEventListener('focus', function () { if (reduceMotion) pauseTicks(); });
   tickTrack.addEventListener('blur', function () { if (reduceMotion) resumeTicks(); });
-  function setMenu(open) {
+  // quiet: another panel is about to take over, so leave the Back entry where it is.
+  function setMenu(open, quiet) {
     document.body.classList.toggle('nav-open', !!open);
     var b = $('menuToggle');
     if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!quiet) syncPanelHistory();
   }
   $('menuToggle').addEventListener('click', function () { setMenu(!document.body.classList.contains('nav-open')); });
   document.addEventListener('keydown', function (e) {
@@ -974,20 +1003,15 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { scenes.redraw(); relayoutPages(); });
 
   // ------------------------------------------------------------------ boot
-  var boot = [
-    'NSKN LAB v26.11 · WORK IN PROGRESS|READY',
-    'POST · MEMORY CHECK · PHOSPHOR P1|OK',
-    'MOUNT /wip/nuke-survival-story|OK',
-    'LOAD story.js · ' + roomOrder.length + ' LOCATIONS|OK',
-    'LOAD scenes.js · ' + Object.keys(PleaseHoldScenes.rooms).length + ' SCENES|OK',
-    'LINE STATUS · BRIGHTLINE FIBER|ON HOLD'
-  ];
+  // A plain title card: what this is, how long it takes, the content note, and big buttons below.
   refresh();
-  var i = 0;
-  (function next() {
-    if (!booting) return;
-    if (i < boot.length) { print(boot[i++], 'boot'); setTimeout(next, reduceMotion ? 0 : 110); return; }
-    print('Type “help” for commands, or “play” to start PLEASE HOLD.', 'shell');
-    if (window.innerWidth > 960) input.focus();
-  })();
+  batch = [];
+  print('PLEASE HOLD', 'banner');
+  print('A text adventure. Novi, Michigan, the afternoon the bombs fall.', 'lead');
+  print('About 30–60 minutes · ' + Object.keys(STORY.endings).length + ' endings · tap the buttons or type.', 'dim');
+  if (STORY.meta.warning) print(STORY.meta.warning, 'dim');
+  var titleCard = batch;
+  batch = null;
+  layoutPassage(titleCard, 0);
+  if (!coarse() && window.innerWidth > 960) input.focus();
 })();

@@ -488,3 +488,28 @@ body.compact #scene.person .ro-row.solo { font-size: 18px; white-space: nowrap; 
 @media (max-width: 600px) {
   .out { overflow-y: auto; scrollbar-width: thin; }
 }
+
+/* ---- title card: one plain sentence, length and endings, and big buttons */
+.out .ln.ln-lead { color: var(--hi); font-size: 17px; line-height: 1.5; }
+/* The PLEASE HOLD banner at its intended size (".out .ln" was shrinking it to body size). */
+.out .ln.ln-banner { font-size: 44px; line-height: 1; }
+@media (max-width: 600px) { .out .ln.ln-banner { font-size: 38px; } }
+.chips.title-chips { flex-wrap: wrap; gap: 10px; }
+.chip.big { min-height: 56px; padding: 0 22px; font-size: 18px; letter-spacing: .06em; }
+@media (max-width: 600px) {
+  .chips.title-chips { flex-wrap: wrap; overflow-x: visible; }
+  .chip.big { flex: 1 1 100%; justify-content: center; }
+}
+
+/* ---- action buttons (FILL BATHTUB, CLOSE DOOR…): amber like PLAY, with a DO key */
+.chip.act b { color: var(--amber); }
+
+/* Compact (short window or keyboard up): the room or ending readout never eats the story.
+   Talk screens keep their one-line name strip (the #scene.person rules above). */
+body.compact #scene:not(.person) .scene-readout.show,
+body.compact #scene:not(.person) .art-wrap.has-art .scene-readout.show { display: none; }
+body.compact #scene:not(.person) .art-wrap { min-height: 0; }
+/* Phones: the title card is the whole first screen; the scene picture would only repeat it. */
+@media (max-width: 600px) { body.on-title #scene { display: none; } }
+/* Phones: 16px story text. Measured: one visible line fewer at 390x844, 375x667 and 360x740 (within ±1 of #96). */
+@media (max-width: 600px) { .out .ln { font-size: 16px; } }

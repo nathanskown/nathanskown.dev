@@ -83,6 +83,13 @@
     var EKEY = KEY + ':endings';
     var TYPEKEY = KEY + ':endtypes';
     var random = opts.random || Math.random;
+    // Touch screens get "Tap …" wording (story.text.touch) instead of "Type …".
+    var touch = typeof opts.touch === 'function' ? opts.touch : function () { return !!opts.touch; };
+    var NAMEKEY = KEY + ':name';
+    function tx(key) {
+      var t = story.text || {};
+      return touch() && t.touch && t.touch[key] != null ? t.touch[key] : t[key];
+    }
     var DL = story.clock.deadline;
     var DL_EARLY = parseTime(DL.earliest || DL.at), DL_LATE = parseTime(DL.latest || DL.at);
     var EVENTS = arr(story.clock.events).map(function (ev, i) {
@@ -216,9 +223,13 @@
     function partySize() {
       return 1 + S.party.reduce(function (n, id) { return n + (story.people[id].count || 1); }, 0);
     }
-    // People in the party, plus Adam when the ending is his bunker. He never joins the party; he is already down there.
+    // People in the party, plus Adam when the ending is his bunker (he never joins the party; he is already
+    // down there), plus Jeff when you ride north in his truck without having asked him to join you first.
     function shelteredCount() {
-      return partySize() + (S.ended === 'bunker' ? 1 : 0);
+      var n = partySize();
+      if (S.ended === 'bunker') n += 1;
+      if (S.ended === 'up_north' && S.party.indexOf('ray') < 0) n += 1;
+      return n;
     }
 
     // ---- conditions
@@ -340,7 +351,7 @@
       rememberType(id, type);
       var total = Object.keys(story.endings).length;
       out('ENDING: ' + en.title + ' (' + (story.text.endingTypes[type] || type) + '). You have found ' + found.length + ' of ' + total + ' endings.', 'note');
-      say(T(story.text.afterEnding), 'dim');
+      say(T(tx('afterEnding')), 'dim');
     }
 
     // ---- rooms
@@ -595,7 +606,7 @@
         if (S.once[k]) return;
         S.once[k] = 1;
         if (n.id === 'water') return; // the first note is there from the start; the intro covers it
-        var tip = S.once['tip:notes'] ? '' : ' (Type “notes” to see them all.)';
+        var tip = S.once['tip:notes'] ? '' : (tx('notesTip') || '');
         S.once['tip:notes'] = 1;
         out('New note: ' + n.text + tip, 'note');
       });
@@ -624,14 +635,17 @@
       seenThisTalk = {};
       var st = p.talk.start, nid = st;
       if (Array.isArray(st)) { nid = null; for (var i = 0; i < st.length; i++) if (test(st[i]['if'])) { nid = st[i].node; break; } }
-      showNode(pid, nid);
+      showNode(pid, nid, false, true);
       S.once['talked:' + pid] = 1;
     }
-    function showNode(pid, nid, menuOnly) {
+    // fromStart: this node opens the conversation (talk.start may be a list that picks one by condition),
+    // so a return visit shows its `again` line.
+    function showNode(pid, nid, menuOnly, fromStart) {
       var p = story.people[pid], node = p.talk.nodes[nid];
       if (!node) { say('[' + p.name + ' has no line "' + nid + '" in story.js]', 'dim'); convo = null; return; }
       var startId = Array.isArray(p.talk.start) ? null : p.talk.start;
-      var repeat = seenThisTalk[nid] || (S.once['talked:' + pid] && (nid === startId || node.againOnReturn));
+      var isStart = !!fromStart || nid === startId;
+      var repeat = seenThisTalk[nid] || (S.once['talked:' + pid] && (isStart || node.againOnReturn));
       seenThisTalk[nid] = 1;
       if (!menuOnly) {
         say(T(repeat && node.again ? node.again : node.text));
@@ -653,7 +667,7 @@
       choices.forEach(function (x) {
         out(x.n + '. ' + T(x.c.text), 'choice', { id: x.key, picked: isPicked(x.key), spent: !x.open });
       });
-      if (!S.once['tip:choices']) { S.once['tip:choices'] = 1; say(T(story.text.choiceTip), 'dim'); }
+      if (!S.once['tip:choices']) { S.once['tip:choices'] = 1; say(T(tx('choiceTip')), 'dim'); }
     }
     function choose(n) {
       var x = null;
@@ -691,18 +705,22 @@
       }
       S = newState();
       convo = null;
-      if (story.text.askName) { mode = 'name'; say(T(story.text.askName), 'note'); return; }
+      if (story.text.askName) { mode = 'name'; say(T(tx('askName')), 'note'); return; }
       beginStory();
     }
+    function lastName() { var n = load(NAMEKEY); return typeof n === 'string' ? n : ''; }
     function cleanName(raw) {
       var n = String(raw || '').replace(/[^A-Za-z\u00C0-\u024F .'-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24);
       return n ? n.charAt(0).toUpperCase() + n.slice(1) : '';
     }
-    function beginStory() {
+    // skipIntro: same state as the normal start, without the intro text or the opening flash.
+    function beginStory(skipIntro) {
       mode = 'play';
-      fx('flash');
-      say(T(story.intro), 'intro');
-      say(T(story.text.afterIntro), 'dim');
+      if (!skipIntro) {
+        fx('flash');
+        say(T(story.intro), 'intro');
+        say(T(tx('afterIntro')), 'dim');
+      }
       enterRoom(S.room);
       persist();
     }
@@ -731,6 +749,57 @@
       }
       if (saved && saved.v !== story.meta.version) say(T(story.text.saveOutdated), 'dim');
       newGame(true);
+    }
+    function continueSaved() {
+      S = pendingSave;
+      if (!S.picked || typeof S.picked !== 'object') S.picked = {};
+      pendingSave = null;
+      mode = 'play';
+      describe(true);
+    }
+    function validSave() {
+      var saved = load(KEY);
+      return saved && saved.v === story.meta.version && story.rooms[saved.room] && !saved.ended ? saved : null;
+    }
+    // Straight back into a saved game, without the "1. Continue / 2. Start over" menu.
+    function resume() {
+      halt = false;
+      var saved = validSave();
+      if (!saved) { start(); return; }
+      pendingSave = saved;
+      continueSaved();
+    }
+    // A new game even when a save exists (the save is replaced once the story begins).
+    function freshGame() {
+      halt = false;
+      del(KEY);
+      newGame();
+    }
+    // The commands that are worth a button right now: room actions and item uses marked with `chip`
+    // in story.js, shown when they would work (`if`), or when `chipIf` says their failure text is a useful hint.
+    function availableActions() {
+      if (!S || mode !== 'play' || convo || S.ended) return [];
+      var seen = {}, list = [];
+      function add(label, cmd) {
+        if (!label || !cmd || seen[label]) return;
+        seen[label] = 1;
+        list.push({ label: label, cmd: cmd });
+      }
+      function label(x) { return x.chip === true ? String(arr(x.say)[0] || '').toUpperCase() : x.chip; }
+      arr(room().actions).concat(arr(story.actions).filter(function (a) { return !a['in'] || arr(a['in']).indexOf(S.room) >= 0; })).forEach(function (a) {
+        if (!a.chip) return;
+        if (!test(a.chipIf !== undefined ? a.chipIf : a['if'])) return;
+        add(label(a), a.cmd || arr(a.say)[0]);
+      });
+      arr(story.uses).forEach(function (u) {
+        if (!u.chip) return;
+        if (!arr(u.item).some(function (id) { return S.inv.indexOf(id) >= 0; })) return;
+        if (u['in'] && arr(u['in']).indexOf(S.room) < 0) return;
+        if (!test(u.chipIf !== undefined ? u.chipIf : u['if'])) return;
+        var first = arr(u.item).filter(function (id) { return S.inv.indexOf(id) >= 0; })[0];
+        add(label(u), u.cmd || ('use ' + story.items[first].name + (u.on ? ' on ' + arr(u.on)[0] : '')));
+      });
+      return list;
     }
     function exec(l) {
       var m;
@@ -767,6 +836,11 @@
       if (mode === 'off') return;
       if (mode === 'name') {
         if (line === 'quit') { mode = 'off'; say(T(story.text.quit), 'dim'); onExit(); return; }
+        if (line === 'skip name' || line === 'skip intro') {
+          S.vars.name = lastName() || story.text.defaultName || 'Alex';
+          beginStory(line === 'skip intro');
+          return;
+        }
         var n = cleanName(raw);
         if (/^(play|help|look|l|hint|restart|start|continue|yes|no|y|n|inventory|i|quit|q|go|north|south|east|west|up|down|out|in)$/.test(line)) {
           say(T(story.text.nameIsCommand || "That sounds like a command, not a name. Please enter the first name on the account."), 'note');
@@ -774,18 +848,12 @@
         }
         if (!n) { say(T(story.text.askNameAgain || story.text.askName), 'note'); return; }
         S.vars.name = n;
+        save(NAMEKEY, n); // offered back as a one-tap name next time
         beginStory();
         return;
       }
       if (mode === 'menu') {
-        if (line === '1' || line === 'continue') {
-          S = pendingSave;
-          if (!S.picked || typeof S.picked !== 'object') S.picked = {};
-          pendingSave = null;
-          mode = 'play';
-          describe(true);
-          return;
-        }
+        if (line === '1' || line === 'continue') { continueSaved(); return; }
         if (line === '2' || line === 'start over' || line === 'new' || line === 'restart') { del(KEY); newGame(); return; }
         if (line === 'quit') { mode = 'off'; say(T(story.text.quit), 'dim'); onExit(); return; }
         out('Type 1 to continue or 2 to start over.', 'dim');
@@ -822,7 +890,7 @@
         if (/^(restart|play|play again|new|again|start over)$/.test(line)) { del(KEY); newGame(); return; }
         if (line === 'endings') return listEndings();
         if (line === 'quit' || line === 'exit') { mode = 'off'; say(T(story.text.quit), 'dim'); onExit(); return; }
-        say(T(story.text.afterEnding), 'dim');
+        say(T(tx('afterEnding')), 'dim');
         return;
       }
       playLine(line);
@@ -865,7 +933,9 @@
 
     // A snapshot for the on-screen panels (map, status, inventory).
     function view() {
-      if (!S || mode === 'off' || mode === 'menu' || mode === 'name') return { mode: mode, playing: false };
+      if (!S || mode === 'off' || mode === 'menu' || mode === 'name') {
+        return { mode: mode, playing: false, endingsFound: endingsFound().length, lastName: mode === 'name' ? lastName() : '' };
+      }
       var r = room();
       return {
         mode: mode, playing: true, ended: S.ended,
@@ -892,7 +962,8 @@
         endingsFound: endingsFound().length,
         endingsTotal: Object.keys(story.endings).length,
         sheltered: shelteredCount(),
-        notes: noteList()
+        notes: noteList(),
+        actions: availableActions()
       };
     }
 
@@ -902,6 +973,14 @@
       view: view,
       resolve: function (t) { return S ? T(t) : ''; },
       isActive: function () { return mode !== 'off'; },
+      resume: resume,
+      freshGame: freshGame,
+      // The saved game, for a CONTINUE button before anything has started: { clock, place } or null.
+      savedSummary: function () {
+        var saved = validSave();
+        return saved ? { clock: fmtTime(saved.time), place: story.rooms[saved.room].name } : null;
+      },
+      endingsFound: function () { return endingsFound().length; },
       // for tests and tools
       _state: function () { return S; },
       _mode: function () { return mode; }

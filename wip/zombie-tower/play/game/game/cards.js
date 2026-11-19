@@ -1,6 +1,6 @@
 // Builds the 3-card drafts and applies a chosen card to the run.
 
-import { WEAPONS, MAX_LVL, weaponLines, newWeaponWeight } from '../data/weapons.js';
+import { WEAPONS, MAX_LVL, weaponLines, weaponStats, newWeaponWeight } from '../data/weapons.js';
 import { ARMOR, ARMOR_MAX_LVL, armorLines } from '../data/armor.js';
 import { PERKS } from '../data/perks.js';
 import { MODS, MOD_BY_ID, MOD_MAX_LVL, MAX_MODS } from '../data/mods.js';
@@ -67,6 +67,12 @@ function modCandidates(run, floor) {
   return out;
 }
 
+// Damage per second while firing (perks that change fire rate included), before reloads.
+function dps(id, lvl, d) {
+  const s = weaponStats(id, lvl, { fireMul: d.fireMul });
+  return Math.round((s.dmg * s.pellets * (s.burst || 1) * 1000) / s.fireMs);
+}
+
 function describe(card, run) {
   if (card.kind === 'mod') {
     const m = MOD_BY_ID[card.id];
@@ -75,7 +81,13 @@ function describe(card, run) {
   }
   if (card.kind === 'weapon') {
     const w = WEAPONS[card.id];
-    return { ...card, title: w.name, desc: w.desc, icon: `gun_${card.id}`, lines: weaponLines(card.id, card.toLvl) };
+    // Compare with the gun this card replaces or upgrades (else the one in your hands).
+    const d = derived(run);
+    const now = card.upgrade ? run.weapons.find((s) => s && s.id === card.id) : run.weapons[run.activeSlot] || run.weapons.find(Boolean);
+    const lines = weaponLines(card.id, card.toLvl).filter((l) => !l.startsWith('DPS'));
+    if (now) lines.push(`VS YOUR ${WEAPONS[now.id].short}${card.upgrade ? ' L' + now.lvl : ''}: DPS ${dps(now.id, now.lvl, d)} > ${dps(card.id, card.toLvl, d)}`);
+    else lines.push(`DPS ${dps(card.id, card.toLvl, d)}`);
+    return { ...card, title: w.name, desc: w.desc, icon: `gun_${card.id}`, lines };
   }
   if (card.kind === 'armor') {
     const a = ARMOR[card.id];

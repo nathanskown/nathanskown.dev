@@ -1,6 +1,7 @@
 // Between floors: pick 1 of 3 cards (gear after normal floors, perks after bosses).
 
-import { W, H, TEAL, TEAL_HEX, MAX_BUILT_FLOOR, txt, button } from '../config.js';
+import { W, H, TEAL, TEAL_HEX, MAX_BUILT_FLOOR, TOUCH, HINT, LOCKED, txt, button } from '../config.js';
+import { fadeIn, fadeOut } from '../game/motion.js';
 import { gearDraft, perkDraft, needsReplaceChoice, applyCard } from '../game/cards.js';
 import { derived, saveCheckpoint, isElevator, ELEVATOR_PERK_AFTER } from '../state/run.js';
 import { MOD_BY_ID } from '../data/mods.js';
@@ -24,27 +25,33 @@ export class DraftScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.fadeIn(250, 0, 0, 0);
+    fadeIn(this, 250);
     this.add.tileSprite(W / 2, H / 2, W, H, `floor_${themeFor(Math.min(50, this.run.floor + 1))}`).setAlpha(0.25);
     this.add.rectangle(W / 2, H / 2, W, H, 0x0d0b12, 0.7);
 
     const isPerk = this.kind === 'perk';
     const elev = isElevator(this.run);
     const head = isPerk && !elev ? 'BOSS DEFEATED' : elev ? `STOP ${this.run.step + 1} CLEARED` : `FLOOR ${this.run.floor} CLEARED`;
-    txt(this, W / 2, 34, head, 18, isPerk ? '#ff8a2a' : '#ffffff', { ox: 0.5 });
+    txt(this, W / 2, TOUCH ? 12 : 34, head, 18, isPerk ? '#ff8a2a' : '#ffffff', { ox: 0.5 });
     const sub = isPerk ? 'CHOOSE A PERK' : elev ? `PICK ${this.second ? 2 : 1} OF 2` : 'CHOOSE ONE: WEAPON, ARMOR OR MOD';
-    txt(this, W / 2, 64, sub, 10, TEAL_HEX, { ox: 0.5 });
+    txt(this, W / 2, TOUCH ? 38 : 64, sub, 10, TEAL_HEX, { ox: 0.5 });
 
     const nextFloor = elev ? this.run.route[this.run.step + 1] || this.run.floor : this.run.floor + 1;
     const cards = isPerk ? perkDraft(this.run) : gearDraft(this.run, elev ? Math.max(nextFloor, this.run.step * 2 + 2) : nextFloor);
     if (!cards.length) { this.proceed(); return; }
 
-    const cw = 224, ch = 270, gap = 20;
-    const total = cards.length * cw + (cards.length - 1) * gap;
-    cards.forEach((card, i) => {
-      const x = (W - total) / 2 + cw / 2 + i * (cw + gap);
-      this.makeCard(card, x, 96 + ch / 2, cw, ch, i);
-    });
+    if (TOUCH) {
+      // Phones: one card per row, full width, so the text can be 16px.
+      const rh = 114, gap = 6;
+      cards.forEach((card, i) => this.makeRow(card, W / 2, 62 + rh / 2 + i * (rh + gap), W - 24, rh, i));
+    } else {
+      const cw = 224, ch = 270, gap = 20;
+      const total = cards.length * cw + (cards.length - 1) * gap;
+      cards.forEach((card, i) => {
+        const x = (W - total) / 2 + cw / 2 + i * (cw + gap);
+        this.makeCard(card, x, 96 + ch / 2, cw, ch, i);
+      });
+    }
 
     // hotkeys 1-3
     this.input.keyboard.on('keydown', (e) => {
@@ -57,12 +64,16 @@ export class DraftScene extends Phaser.Scene {
     const a = Object.values(this.run.armor).filter(Boolean).map((p) => `${ARMOR[p.id].name} L${p.lvl}`).join(', ') || 'none';
     const mods = (this.run.mods || []).map((m) => `${MOD_BY_ID[m.id].name} L${m.lvl}`).join(', ') || 'none';
     const crew = (this.run.crew || []).map((id) => CREW_BY_ID[id].name).join(', ');
-    txt(this, W / 2, H - 98, `GUNS: ${w}`, 8, '#b9b4c9', { ox: 0.5 });
-    txt(this, W / 2, H - 82, `ARMOR: ${a}`, 8, '#b9b4c9', { ox: 0.5 });
-    txt(this, W / 2, H - 66, `MODS: ${mods}`, 8, '#c77dff', { ox: 0.5 });
-    if (crew) txt(this, W / 2, H - 50, `CREW: ${crew}`, 8, '#ffc27f', { ox: 0.5 });
     const foot = isPerk ? (elev ? 'FULL HEAL AFTER THIS PICK' : 'CHECKPOINT SAVES AFTER THIS PICK · FULL HEAL')
       : elev && !this.second ? 'ONE MORE PICK AFTER THIS' : 'YOU HEAL 25% AFTER PICKING';
+    if (TOUCH) { // phones: the cards fill the screen, so just the note (each card compares against your gear)
+      txt(this, W / 2, H - 22, foot, 8, '#4ade80', { ox: 0.5 });
+      return;
+    }
+    txt(this, W / 2, H - 98, `GUNS: ${w}`, 8, HINT, { ox: 0.5 });
+    txt(this, W / 2, H - 82, `ARMOR: ${a}`, 8, HINT, { ox: 0.5 });
+    txt(this, W / 2, H - 66, `MODS: ${mods}`, 8, '#c77dff', { ox: 0.5 });
+    if (crew) txt(this, W / 2, H - 50, `CREW: ${crew}`, 8, '#ffc27f', { ox: 0.5 });
     txt(this, W / 2, H - 16, foot, 8, '#4ade80', { ox: 0.5 });
   }
 
@@ -77,9 +88,9 @@ export class DraftScene extends Phaser.Scene {
     const icon = this.add.image(0, -h / 2 + 76, card.icon);
     icon.setScale(card.kind === 'weapon' ? 96 / icon.width : 2.4);
     const title = txt(this, 0, -h / 2 + 122, card.title.toUpperCase(), 10, '#ffffff', { ox: 0.5, align: 'center', wrap: w - 20 });
-    const desc = txt(this, 0, -h / 2 + 146, card.desc, 8, '#b9b4c9', { ox: 0.5, align: 'center', wrap: w - 24 });
-    const lines = txt(this, 0, -h / 2 + 196, card.lines.join('\n'), 8, '#ffe066', { ox: 0.5, align: 'center' });
-    const key = txt(this, 0, h / 2 - 16, `[${i + 1}]`, 8, '#6b6580', { ox: 0.5, oy: 0.5 });
+    const desc = txt(this, 0, -h / 2 + 146, card.desc, 8, HINT, { ox: 0.5, align: 'center', wrap: w - 24 });
+    const lines = txt(this, 0, -h / 2 + 196, card.lines.join('\n'), 8, '#ffe066', { ox: 0.5, align: 'center', wrap: w - 12, lineSpacing: 4 });
+    const key = txt(this, 0, h / 2 - 16, `[${i + 1}]`, 8, LOCKED, { ox: 0.5, oy: 0.5 });
     c.add([bg, band, tagT, icon, title, desc, lines, key]);
 
     bg.setInteractive({ useHandCursor: true });
@@ -91,6 +102,33 @@ export class DraftScene extends Phaser.Scene {
     this.tweens.add({ targets: c, alpha: 1, y, delay: 80 * i, duration: 220 });
   }
 
+  // Phones: a full-width row. Icon on the left; name and tag, then what it does, then the numbers.
+  makeRow(card, x, y, w, h, i) {
+    const color = KIND_COLOR[card.kind];
+    const c = this.add.container(x, y);
+    const bg = this.add.rectangle(0, 0, w, h, 0x14111c, 1).setStrokeStyle(3, color);
+    const left = -w / 2;
+    const icon = this.add.image(left + 46, 0, card.icon);
+    icon.setScale(card.kind === 'weapon' ? 72 / icon.width : 2);
+    const tx = left + 96, tw = w - 108;
+    const tag = card.kind === 'perk' ? 'PERK'
+      : `${card.kind.toUpperCase()} · ${card.upgrade ? `UP L${card.toLvl}` : card.toLvl > 1 ? `NEW L${card.toLvl}` : 'NEW'}`;
+    const title = txt(this, tx, -h / 2 + 8, card.title.toUpperCase(), 10, '#ffffff');
+    const tagT = txt(this, w / 2 - 10, -h / 2 + 8, tag, 8, KIND_HEX[card.kind], { ox: 1 });
+    const desc = txt(this, tx, -h / 2 + 32, card.desc, 8, HINT, { wrap: tw, lineSpacing: 4 });
+    const stats = card.lines.join(' · ');
+    const lines = txt(this, tx, -h / 2 + 32 + (desc.height > 24 ? 42 : 22), stats, 8, '#ffe066', { wrap: tw, lineSpacing: 4 });
+    c.add([bg, icon, title, tagT, desc, lines]);
+    // too much text for the row: drop the stat lines down to the card's own comparison line
+    if (lines.y + lines.height > h / 2 - 4 && card.lines.length > 1) lines.setText(card.lines[card.lines.length - 1]);
+    bg.setInteractive({ useHandCursor: true });
+    bg.on('pointerover', () => bg.setFillStyle(0x221c30, 1));
+    bg.on('pointerout', () => bg.setFillStyle(0x14111c, 1));
+    bg.on('pointerdown', () => this.choose(card));
+    c.setAlpha(0);
+    this.tweens.add({ targets: c, alpha: 1, delay: 80 * i, duration: 200 });
+  }
+
   choose(card) {
     if (this.locked) return;
     if (needsReplaceChoice(this.run, card)) { this.showReplace(card); return; }
@@ -100,13 +138,14 @@ export class DraftScene extends Phaser.Scene {
   showReplace(card) {
     const objs = [];
     objs.push(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7).setInteractive());
-    objs.push(this.add.rectangle(W / 2, H / 2, 420, 220, 0x14111c, 1).setStrokeStyle(3, 0xff8a2a));
-    objs.push(txt(this, W / 2, H / 2 - 80, `TAKE ${WEAPONS[card.id].name.toUpperCase()}?`, 10, '#ffffff', { ox: 0.5 }));
-    objs.push(txt(this, W / 2, H / 2 - 58, 'YOUR HANDS ARE FULL. DROP ONE:', 8, '#b9b4c9', { ox: 0.5 }));
+    const T = TOUCH; // phones: taller buttons, bigger panel
+    objs.push(this.add.rectangle(W / 2, H / 2, T ? 600 : 420, T ? 330 : 220, 0x14111c, 1).setStrokeStyle(3, 0xff8a2a));
+    objs.push(txt(this, W / 2, H / 2 - (T ? 146 : 80), `TAKE ${WEAPONS[card.id].name.toUpperCase()}?`, 10, '#ffffff', { ox: 0.5 }));
+    objs.push(txt(this, W / 2, H / 2 - (T ? 118 : 58), 'YOUR HANDS ARE FULL. DROP ONE:', 8, HINT, { ox: 0.5 }));
     this.run.weapons.forEach((s, i) => {
-      objs.push(button(this, W / 2, H / 2 - 14 + i * 50, `DROP ${WEAPONS[s.id].name.toUpperCase()} L${s.lvl}`, () => this.finish(card, i), { w: 360, color: 0xff8a2a, size: 8 }));
+      objs.push(button(this, W / 2, H / 2 + (T ? -56 + i * 66 : -14 + i * 50), `DROP ${WEAPONS[s.id].name.toUpperCase()} L${s.lvl}`, () => this.finish(card, i), { w: 360, color: 0xff8a2a, size: 8 }));
     });
-    objs.push(button(this, W / 2, H / 2 + 82, 'CANCEL', () => { objs.forEach((o) => o.destroy()); this.replacePanel = null; }, { w: 160, color: 0x6b6580, size: 8 }));
+    objs.push(button(this, W / 2, H / 2 + (T ? 120 : 82), 'CANCEL', () => { objs.forEach((o) => o.destroy()); this.replacePanel = null; }, { w: 160, color: 0x6b6580, size: 8 }));
     this.replacePanel = objs;
   }
 
@@ -134,9 +173,8 @@ export class DraftScene extends Phaser.Scene {
     } else {
       run.hp = Math.min(maxHp, run.hp + Math.round(maxHp * 0.25));
     }
-    this.cameras.main.fadeOut(250, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      if (run.floor > MAX_BUILT_FLOOR) this.scene.start('End', { mode: 'zoneClear', run });
+    fadeOut(this, 250, () => {
+      if (run.floor > MAX_BUILT_FLOOR) this.scene.start('End', { mode: 'victory', run });
       else this.scene.start('Game', { run });
     });
   }
@@ -144,14 +182,12 @@ export class DraftScene extends Phaser.Scene {
   proceedElevator() {
     const run = this.run;
     if (this.kind === 'gear' && !this.second) {
-      this.cameras.main.fadeOut(150, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.restart({ run, kind: 'gear', second: true }));
+      fadeOut(this, 150, () => this.scene.restart({ run, kind: 'gear', second: true }));
       return;
     }
     if (this.kind === 'gear' && run.step === ELEVATOR_PERK_AFTER && !run.perkTaken) {
       run.perkTaken = true;
-      this.cameras.main.fadeOut(150, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => this.scene.restart({ run, kind: 'perk' }));
+      fadeOut(this, 150, () => this.scene.restart({ run, kind: 'perk' }));
       return;
     }
     run.step += 1;
@@ -159,7 +195,6 @@ export class DraftScene extends Phaser.Scene {
     const maxHp = derived(run).maxHp;
     if (this.kind === 'perk' || FLOORS[run.floor]?.boss) run.hp = maxHp;
     else run.hp = Math.min(maxHp, run.hp + Math.round(maxHp * 0.25));
-    this.cameras.main.fadeOut(250, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { run }));
+    fadeOut(this, 250, () => this.scene.start('Game', { run }));
   }
 }

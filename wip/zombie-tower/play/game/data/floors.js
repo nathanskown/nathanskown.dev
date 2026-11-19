@@ -410,13 +410,16 @@ export function floorPlan(n) {
   const boss = !!FLOORS[n]?.boss;
   // Zone 1 ramps 12% tougher per floor; after that 7% (tuned from autoplay runs: steeper curves
   // walled players whose gear rolls were average).
-  const hpScale = n <= 10 ? 1 + 0.12 * (n - 1) : 2.08 + 0.07 * (n - 10);
+  const base = n <= 10 ? 1 + 0.12 * (n - 1) : 2.08 + 0.07 * (n - 10);
+  // The first two floors of each zone after the lobby bring new zombie types, so their health is 10%
+  // lower while you learn them (floor 11: 2.15 -> 1.94, floor 12: 2.22 -> 2.00).
+  const hpScale = n > 10 && !boss && (n - 1) % 10 < 2 ? base * 0.9 : base;
   return {
     total: boss ? 6 : n <= 10 ? 10 + n * 4 : Math.min(66, 48 + (n - 10)), // capped: 80-zombie floors were an endurance grind
     maxAlive: boss ? 4 : n <= 10 ? Math.round(7 + n * 1.6) : Math.min(22, Math.round(16 + (n - 10) * 0.25)),
     spawnMs: boss ? 2600 : n <= 10 ? Math.max(320, 800 - n * 45) : 420,
     hpScale,
-    dmgScale: 1 + (hpScale - 1) * (n <= 10 ? 0.4 : 0.32),
+    dmgScale: 1 + (base - 1) * (n <= 10 ? 0.4 : 0.32),
     pick: () => pickEnemy(n),
     minions: ZONE_MINIONS[zoneOf(n).id],
   };

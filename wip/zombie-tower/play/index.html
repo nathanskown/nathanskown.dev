@@ -14,12 +14,106 @@
     body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     #game { width: 100vw; height: 100vh; height: 100dvh; }
     canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    [hidden] { display: none !important; }
+
+    /* Phone held upright: the game needs landscape, so cover it with a "turn your phone" screen. */
+    #turn { display: none; }
+    @media (pointer: coarse) and (orientation: portrait) {
+      #turn {
+        position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 28px; padding: 24px; box-sizing: border-box; background: #0d0b12;
+        color: #e8e2d4; font: 18px/1.7 "Press Start 2P", monospace; text-align: center;
+      }
+    }
+    #turn p { margin: 0; max-width: 20em; }
+    #turn svg { width: 96px; height: 96px; }
+    #turn a, #turn button {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px;
+      font: 14px "Press Start 2P", monospace; color: #3dffc5; background: #14111c; border: 2px solid #3dffc5;
+      text-decoration: none; text-transform: uppercase;
+    }
+    #turn a { color: #b9b4c9; border-color: #6b6580; }
+
+    /* Shove / reload / swap in the black bar right of the game, when it is wide enough (Touch.js). */
+    #pad {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 10; display: flex; flex-direction: column;
+      justify-content: flex-end; gap: 12px; padding: 12px 8px max(16px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+    }
+    #pad button {
+      width: 100%; min-height: 64px; padding: 0; font: 12px "Press Start 2P", monospace; color: #fff;
+      background: rgba(20, 17, 28, .85); border: 2px solid rgba(255, 255, 255, .35); touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #pad button:active { background: rgba(61, 255, 197, .5); }
+    #pad button[data-act="melee"] { min-height: 104px; }
   </style>
+  <!-- import map: written by tools/stamp_assets.py so every game file loads with the same ?v= -->
+  <script type="importmap">
+  {
+    "imports": {
+      "./game/art/manifest.js": "./game/art/manifest.js?v=9f2ace92",
+      "./game/art/monsters.js": "./game/art/monsters.js?v=9f2ace92",
+      "./game/art/pixel.js": "./game/art/pixel.js?v=9f2ace92",
+      "./game/art/placeholders.js": "./game/art/placeholders.js?v=9f2ace92",
+      "./game/art/sheets.js": "./game/art/sheets.js?v=9f2ace92",
+      "./game/art/themes.js": "./game/art/themes.js?v=9f2ace92",
+      "./game/art/tiles.js": "./game/art/tiles.js?v=9f2ace92",
+      "./game/config.js": "./game/config.js?v=9f2ace92",
+      "./game/data/armor.js": "./game/data/armor.js?v=9f2ace92",
+      "./game/data/crew.js": "./game/data/crew.js?v=9f2ace92",
+      "./game/data/enemies.js": "./game/data/enemies.js?v=9f2ace92",
+      "./game/data/floors.js": "./game/data/floors.js?v=9f2ace92",
+      "./game/data/mods.js": "./game/data/mods.js?v=9f2ace92",
+      "./game/data/perks.js": "./game/data/perks.js?v=9f2ace92",
+      "./game/data/weapons.js": "./game/data/weapons.js?v=9f2ace92",
+      "./game/fullscreen.js": "./game/fullscreen.js?v=9f2ace92",
+      "./game/game/Bosses.js": "./game/game/Bosses.js?v=9f2ace92",
+      "./game/game/Doorman.js": "./game/game/Doorman.js?v=9f2ace92",
+      "./game/game/FlowField.js": "./game/game/FlowField.js?v=9f2ace92",
+      "./game/game/Hud.js": "./game/game/Hud.js?v=9f2ace92",
+      "./game/game/Player.js": "./game/game/Player.js?v=9f2ace92",
+      "./game/game/Touch.js": "./game/game/Touch.js?v=9f2ace92",
+      "./game/game/Zombie.js": "./game/game/Zombie.js?v=9f2ace92",
+      "./game/game/aim.js": "./game/game/aim.js?v=9f2ace92",
+      "./game/game/anim.js": "./game/game/anim.js?v=9f2ace92",
+      "./game/game/cards.js": "./game/game/cards.js?v=9f2ace92",
+      "./game/game/decorate.js": "./game/game/decorate.js?v=9f2ace92",
+      "./game/game/motion.js": "./game/game/motion.js?v=9f2ace92",
+      "./game/main.js": "./game/main.js?v=9f2ace92",
+      "./game/scenes/Boot.js": "./game/scenes/Boot.js?v=9f2ace92",
+      "./game/scenes/Draft.js": "./game/scenes/Draft.js?v=9f2ace92",
+      "./game/scenes/End.js": "./game/scenes/End.js?v=9f2ace92",
+      "./game/scenes/Game.js": "./game/scenes/Game.js?v=9f2ace92",
+      "./game/scenes/Menu.js": "./game/scenes/Menu.js?v=9f2ace92",
+      "./game/scenes/Pause.js": "./game/scenes/Pause.js?v=9f2ace92",
+      "./game/scenes/Setup.js": "./game/scenes/Setup.js?v=9f2ace92",
+      "./game/state/meta.js": "./game/state/meta.js?v=9f2ace92",
+      "./game/state/run.js": "./game/state/run.js?v=9f2ace92",
+      "./game/state/settings.js": "./game/state/settings.js?v=9f2ace92"
+    }
+  }
+  </script>  <!-- /import map -->
   <!-- Phaser 3.88.2 game framework, kept in the project (the website only allows its own scripts). -->
-  <script src="vendor/phaser.min.js"></script>
+  <script src="vendor/phaser.min.js?v=9f2ace92"></script>
 </head>
 <body>
   <div id="game"></div>
-  <script type="module" src="game/main.js"></script>
+  <div id="turn" role="dialog" aria-modal="true" aria-labelledby="turnMsg">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#3dffc5" stroke-width="1.5" aria-hidden="true">
+      <rect x="7" y="2" width="10" height="17" rx="1"/><path d="M11 16.5h2"/>
+      <path d="M3 13a9 9 0 0 0 7 8.5"/><path d="M8 19.5l2 2-2 2" transform="translate(0 -2)"/>
+    </svg>
+    <p id="turnMsg">Turn your phone sideways to play Zombie Tower</p>
+    <button type="button" id="fullscreen" hidden>Play full screen</button>
+    <a href="/wip/zombie-tower/">Back to Zombie Tower</a>
+  </div>
+  <div id="pad" hidden>
+    <button type="button" data-act="swap">SWAP</button>
+    <button type="button" data-act="reload">RELOAD</button>
+    <button type="button" data-act="melee">SHOVE</button>
+  </div>
+  <script src="game/fullscreen.js?v=9f2ace92"></script>
+  <script type="module" src="game/main.js?v=9f2ace92"></script>
 </body>
 </html>
