@@ -15,6 +15,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
+from zoneinfo import ZoneInfo
 
 from .common import get, now_iso, read, write
 
@@ -68,7 +69,7 @@ def collect_current(cur, budget=240):
 
 class State:
     def __init__(self):
-        self.P = collections.defaultdict(lambda: {"sog": 0.0, "min": 0.0, "toi": 0.0, "n": 0.0, "g": 0.0, "s": 0.0, "gp": 0, "team": None, "name": None, "pos": "F"})
+        self.P = collections.defaultdict(lambda: {"sog": 0.0, "min": 0.0, "toi": 0.0, "n": 0.0, "g": 0.0, "s": 0.0, "gp": 0, "team": None, "name": None, "pos": "F", "tgp": 0, "moved": False})
         self.TA = collections.defaultdict(lambda: [0.0, 0.0])
         self.SF = collections.defaultdict(lambda: [0.0, 0.0])
         self.G = {}
@@ -91,6 +92,7 @@ class State:
         t0 = self.lgt[p][0] / self.lgt[p][1] if self.lgt[p][1] > 0 else (21.0 if p == "D" else 15.0)
         rate = (st["sog"] + KM * r0) / (st["min"] + KM)
         toi = (st["toi"] + KT * t0) / (st["n"] + KT)
+        self.parts = (rate, of)
         return rate * toi * of * (1.03 if home else 0.97), toi
 
     def gmu(self, pid, mu):
@@ -137,6 +139,9 @@ class State:
                 st["n"] = st["n"] * self.fT + 1.0
                 st["g"] = st["g"] * self.fS + g_; st["s"] = st["s"] * self.fS + sog
                 self.lgs[0] += g_; self.lgs[1] += sog
+                if st["team"] is not None and st["team"] != team:
+                    st["tgp"] = 0; st["moved"] = True
+                st["tgp"] += 1
                 st["gp"] += 1; st["team"] = team; st["name"] = name; st["pos"] = p
                 self.lgp[p][0] += sog; self.lgp[p][1] += sec / 60.0
                 self.lgt[p][0] += sec / 60.0; self.lgt[p][1] += 1
@@ -202,11 +207,10 @@ def _score(items, pos_toi=None):
 
 def _et_day(start_utc):
     """The NHL files games under the local (Eastern) date; ESPN's start time is UTC."""
-    from zoneinfo import ZoneInfo
     return datetime.fromisoformat(start_utc).replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/New_York")).date().isoformat()
 
 
-def _log_and_grade(cur, props, games, pmf):
+def _log_and_grade(cur, props, games, pmf, names=None):
     """Keep each pre-game projection (the last made before the game starts wins) and grade it from the box score once the
     game is final. This is the real, un-back-filled record: data/sports/track/_props_nhl.json."""
     store = read("track/_props_nhl.json") or {}
@@ -218,7 +222,7 @@ def _log_and_grade(cur, props, games, pmf):
             continue
         k = f"{r['espn']}|{r['pid']}"
         if "act" not in log.get(k, {}):
-            log[k] = {"d": _et_day(r["start"]), "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"]}
+            log[k] = {"d": _et_day(r["start"]), "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"], "n": r["player"]}
     byday = collections.defaultdict(list)
     for dt, y, gid, h, a, hs, as_ in games:
         if y == cur:
@@ -240,6 +244,28 @@ def _log_and_grade(cur, props, games, pmf):
     out = _score(g)
     if out:
         out["pending"] = sum(1 for e in log.values() if "act" not in e)
+        # yesterday's board and a 7-day report, from the same graded log
+        graded = [e for e in log.values() if e.get("act") is not None]
+        today_et = datetime.now(ZoneInfo("America/New_York")).date().isoformat()
+        days = sorted({e["d"] for e in graded if e["d"] < today_et})   # full days only: tonight's games are still being played
+        def pit(pm, a):
+            return float(sum(pm[:a]) + 0.5 * pm[a]) if a < len(pm) else 1.0
+        def dayrow(e):
+            pm = pmf[e["b"]]; a = min(e["act"], len(pm) - 1)
+            return {"player": e.get("n") or (names or {}).get(e["pid"]) or "", "team": e["t"], "opp": e["o"], "mean": e["m"], "mode": int(np.argmax(pm)), "act": e["act"],
+                    "pit": round(pit(pm, a), 3), "p90": next((i for i in range(len(pm)) if sum(pm[:i + 1]) >= 0.9), len(pm) - 1)}
+        if days:
+            last = days[-1]
+            ys = sorted((dayrow(e) for e in graded if e["d"] == last), key=lambda r: -r["mean"])
+            out["yesterday"] = {"day": last, "n": len(ys), "rows": [r for r in ys if r["player"]][:40],
+                                "within1": round(float(np.mean([abs(r["act"] - r["mean"]) <= 1 for r in ys])), 3), "mae": round(float(np.mean([abs(r["act"] - r["mean"]) for r in ys])), 2)}
+            wk = []
+            for d in days[-7:]:
+                ge = [e for e in graded if e["d"] == d]
+                sc = _score([(pmf[e["b"]], e["act"]) for e in ge])
+                wk.append({"day": d, "n": len(ge), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in ge])), 2), "bias": round(float(np.mean([e["act"] - e["m"] for e in ge])), 2),
+                           "rps": sc["rps"] if sc else None, "l3": [round(float(np.mean([pmf[e["b"]][3:].sum() for e in ge])), 3), round(float(np.mean([e["act"] >= 3 for e in ge])), 3)]})
+            out["week"] = wk
     return out
 
 
@@ -247,20 +273,27 @@ def _trend(games, cur):
     """Per team: this season and the last 15 / 10 / 5 games, per game: goals for and against, shots for and against, shot
     difference, each with its league rank (1 = best). From the same box scores; shots are shots on goal, all situations."""
     per = collections.defaultdict(list)
-    for dt, y, gid, h, a, hs, as_ in sorted(g for g in games if g[1] == cur):
+    prior = collections.defaultdict(list)
+    for dt, y, gid, h, a, hs, as_ in sorted(g for g in games if g[1] in (cur, cur - 1)):
         sh_h, sh_a = sum(x[4] for x in hs), sum(x[4] for x in as_)
         go_h, go_a = sum(x[5] for x in hs), sum(x[5] for x in as_)
-        per[h].append((go_h, go_a, sh_h, sh_a)); per[a].append((go_a, go_h, sh_a, sh_h))
+        d = per if y == cur else prior
+        d[h].append((go_h, go_a, sh_h, sh_a)); d[a].append((go_a, go_h, sh_a, sh_h))
     out = {}
     for t, g in per.items():
         out[t] = {}
-        for name, n in (("season", None), ("l15", 15), ("l10", 10), ("l5", 5)):
+        for name, n in (("season", None), ("l30", 30), ("l15", 15), ("l10", 10), ("l5", 5)):
             w = g if n is None else g[-n:]
             m = np.mean(np.array(w, float), axis=0)
             out[t][name] = {"gp": len(w), "gf": round(float(m[0]), 2), "ga": round(float(m[1]), 2), "sf": round(float(m[2]), 1), "sa": round(float(m[3]), 1), "sd": round(float(m[2] - m[3]), 1)}
-    for name in ("season", "l15", "l10", "l5"):
+        if prior.get(t):
+            m = np.mean(np.array(prior[t], float), axis=0)
+            out[t]["last"] = {"gp": len(prior[t]), "gf": round(float(m[0]), 2), "ga": round(float(m[1]), 2), "sf": round(float(m[2]), 1), "sa": round(float(m[3]), 1), "sd": round(float(m[2] - m[3]), 1)}
+    for name in ("season", "last", "l30", "l15", "l10", "l5"):
+        if name == "last" and not all("last" in v for v in out.values()):
+            continue
         for k, rev in (("gf", True), ("ga", False), ("sf", True), ("sa", False), ("sd", True)):
-            order = sorted(out, key=lambda t: out[t][name][k], reverse=rev)
+            order = sorted((t for t in out if name in out[t]), key=lambda t: out[t][name][k], reverse=rev)
             for i, t in enumerate(order):
                 out[t][name]["r" + k] = 1 + sum(1 for u in order if (out[u][name][k] > out[t][name][k] if rev else out[u][name][k] < out[t][name][k]))
     write("model/nhl_trend.json", {"season": cur, "updated": now_iso(), "teams": out})
@@ -377,8 +410,21 @@ def job_props():
                 mu, toi = S.mu(pid, st["pos"], opp, home)
                 if toi < 8.0:
                     continue
-                props.append({"pid": pid, "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
-                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"],
+                rec = list(S.recent[team])
+                flag = None
+                if rec and pid not in rec[-1]:
+                    miss = 1
+                    while miss < len(rec) and pid not in rec[-1 - miss]:
+                        miss += 1
+                    flag = "Missed the last %d game%s" % (miss, "" if miss == 1 else "s") if miss < len(rec) or len(rec) < 3 else "Missed the last 3+ games"
+                elif len(rec) > 1 and any(pid not in r_ for r_ in rec[:-1]):
+                    flag = "Back from a short absence"
+                if flag is None and st["moved"] and st["tgp"] <= 10:
+                    flag = "New team (%d games)" % st["tgp"]
+                if flag is None and st["gp"] < 20:
+                    flag = "Small sample (%d games)" % st["gp"]
+                props.append({"pid": pid, **({"flag": flag} if flag else {}), "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
+                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"], "spm": round(float(S.parts[0]), 3), "of": round(float(S.parts[1]), 3),
                               "pg": round(grate[gband(S.gmu(pid, mu))], 3), "gx": round(float(S.gmu(pid, mu)), 2)})
     _trend(games, cur)
     goalies = []
@@ -412,7 +458,7 @@ def job_props():
                 continue
             goalies.append({"pid": pick[0], "player": pick[1], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "shots": round(float(sh), 1), "sv": round(float(sv), 3),
                             "mean": round(float(sh * sv), 1), "band": kband(sh * sv), "note": note, "start": e["d"]})
-    livelog = _log_and_grade(cur, props, games, pmf)
+    livelog = _log_and_grade(cur, props, games, pmf, {pid: v['name'] for pid, v in S.P.items() if v['name']})
     # keep numbers of games that have started for four days so their pages still show them
     prev = read("props/nhl.json") or {}
     since = (datetime.now(timezone.utc) - timedelta(days=4)).strftime("%Y-%m-%dT%H:%M")
