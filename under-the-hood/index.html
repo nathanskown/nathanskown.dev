@@ -98,7 +98,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-
 <h2 id="h-flow">How a number gets to your screen</h2>
 <div class="pb">
 <div class="flow">
-<div class="step"><b>1 · Sources</b><span>Public feeds only: SEC EDGAR, FRED, Yahoo Finance, Nasdaq, Kalshi, ESPN, MLB Stats API, MoneyPuck, nflverse, Deezer, Last.fm.</span></div>
+<div class="step"><b>1 · Sources</b><span>Public feeds only: SEC EDGAR, FRED, Yahoo Finance, Nasdaq, Kalshi, ESPN, MLB Stats API, NHL API, MoneyPuck, nflverse, Deezer, Last.fm.</span></div>
 <div class="step"><b>2 · Scheduled jobs</b><span>GitHub Actions fetch on a timetable: markets hourly in trading hours, sports hourly while games are on, filings daily, 13F quarterly.</span><span class="live" id="flowJobs"></span></div>
 <div class="step"><b>3 · Publishing gate</b><span>Every file is checked before it is saved: prices in sane ranges, odds that add to 100%, records that add up. A failing file is held back.</span><span class="live" id="flowGate"></span></div>
 <div class="step"><b>4 · Edge</b><span>Files are served from Cloudflare's network. A small server answers live requests: any US ticker, live scoreboards, the music leaderboard.</span></div>
@@ -137,6 +137,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 16px 40px;color:var(--dim);font-
 <tr><th scope="row">iShares, Wikipedia</th><td>Index membership lists (S&amp;P 500/400/600, Russell)</td><td>daily</td></tr>
 <tr><th scope="row">ESPN public API</th><td>Scores, schedules, standings, injuries, box scores</td><td>live · hourly</td></tr>
 <tr><th scope="row">MLB Stats API</th><td>Probable starting pitchers and pitching lines</td><td>daily in season</td></tr>
+<tr><th scope="row">NHL API</th><td>NHL skater box scores (shots, goals, ice time) and goalie saves for player projections and their record</td><td>hourly in season</td></tr>
 <tr><th scope="row">MoneyPuck</th><td>NHL expected goals</td><td>daily in season</td></tr>
 <tr><th scope="row">nflverse</th><td>NFL results back to 1999 and closing lines (used only to set the home edge and test the model)</td><td>seasonal</td></tr>
 <tr><th scope="row">Deezer · Last.fm · MusicBrainz</th><td>Song previews, artist catalog and tags, release dates and countries</td><td>on play · weekly</td></tr>

@@ -69,7 +69,7 @@ Terminal style everywhere, including one-off pages like About and Career:
   - Only exception: written editorial (`data/finance/editorial.json`). Hand-typed numbers are allowed there only
     with a source link beside them and the date it was written shown on the page.
 - Approved sources: SEC EDGAR, FRED, Yahoo Finance, U.S. Treasury, Nasdaq, Kalshi, iShares, Wikipedia (index lists),
-  ESPN public API, MLB Stats API, MoneyPuck, nflverse, CollegeFootballData, The Odds API, SportsGameOdds,
+  ESPN public API, MLB Stats API, NHL API (api-web.nhle.com, api.nhle.com), MoneyPuck, nflverse, CollegeFootballData, The Odds API, SportsGameOdds,
   Deezer, Last.fm, MusicBrainz.
 - **New source → stop and ask the owner first.** If approved, it must be free and public, its terms must allow
   automated use, and it gets added to the "Sources and what they feed" table on `under-the-hood/index.html` in
