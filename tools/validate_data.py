@@ -139,6 +139,18 @@ def _fresh(c, ts, label, max_days=7):
     c.ok(age <= max_days, f"{label} is {age:.0f} days old")
 
 
+def avail(d, c):
+    """How often players listed on the injury report played, by status (track/avail.json)."""
+    lgs = d.get("leagues") or {}
+    c.ok(bool(lgs), "availability has no leagues")
+    _fresh(c, d.get("updated"), "availability", 3)
+    for lg, v in lgs.items():
+        for r in v.get("status") or []:
+            c.ok(isinstance(r.get("status"), str) and r["status"], f"{lg}: status label missing")
+            c.ok(finite(r.get("n")) and r["n"] > 0 and finite(r.get("played")) and 0 <= r["played"] <= r["n"], f"{lg} {r.get('status')}: counts out of range")
+            c.ok(finite(r.get("rate")) and 0 <= r["rate"] <= 1, f"{lg} {r.get('status')}: rate out of range")
+
+
 def nhl_trend(d, c):
     """Per-team scoring and shot trends (season and last 15/10/5 games), read by the NHL team pages."""
     teams = d.get("teams") or {}
@@ -252,6 +264,8 @@ def rule_for(rel):
         return fed
     if rel == "sports/model/evolution.json":
         return evolution
+    if rel == "sports/track/avail.json":
+        return avail
     if rel == "sports/model/nhl_trend.json":
         return nhl_trend
     if rel.startswith("sports/model/totals_"):
