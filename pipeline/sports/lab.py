@@ -978,29 +978,40 @@ def job_nhlpp():
 # ---------------------------------------------------------------- NHL ice time by situation (even strength, power play, short-handed)
 def nhl_pptoi(year, budget_s=None):
     """Per game, per skater: even-strength, power-play and short-handed seconds, from the NHL stats REST time-on-ice
-    report (api.nhle.com). Season `year` = the year it ends (2026 = 2025-26). Writes history/nhl_pptoi_{year}.json."""
+    report (api.nhle.com). Season `year` = the year it ends (2026 = 2025-26). The report stops paging at 10,000 rows,
+    so it is read a week at a time; weeks already stored are skipped. Writes history/nhl_pptoi_{year}.json."""
     rel = f"history/nhl_pptoi_{year}.json"
-    store = read(rel) or {"year": year, "source": "NHL API (api.nhle.com) skater time on ice", "g": {}}
-    t0, start, pages = time.time(), 0, 0
-    sid = f"{year - 1}{year}"
-    have = sum(len(v) for v in store["g"].values())
-    start = max(0, have - 500)            # rows come in a stable order; re-read the tail in case the last run stopped mid-page
-    while True:
+    store = read(rel) or {}
+    if store.get("v") != 2:
+        store = {"year": year, "v": 2, "source": "NHL API (api.nhle.com) skater time on ice", "weeks": [], "g": {}}
+    t0, pages = time.time(), 0
+    d0, end = date(year - 1, 10, 1), min(date(year, 6, 30), date.today() - timedelta(days=1))
+    while d0 <= end:
         if budget_s and time.time() - t0 > budget_s:
             break
-        d = get("https://api.nhle.com/stats/rest/en/skater/timeonice",
-                {"isAggregate": "false", "isGame": "true", "limit": "100", "start": str(start),
-                 "sort": '[{"property":"gameId","direction":"ASC"},{"property":"playerId","direction":"ASC"}]',
-                 "cayenneExp": f"seasonId={sid} and gameTypeId=2"})
-        rows = d.get("data") or []
-        for r in rows:
-            g = store["g"].setdefault(str(r.get("gameId")), {})
-            g[str(r.get("playerId"))] = [int(r.get("evTimeOnIce") or 0), int(r.get("ppTimeOnIce") or 0), int(r.get("shTimeOnIce") or 0)]
-        pages += 1
-        start += len(rows)
-        if len(rows) < 100:
-            break
-        if pages % 50 == 0:
+        d1 = min(d0 + timedelta(days=6), end)
+        wk = d0.isoformat()
+        if wk in store["weeks"] and d1 < date.today() - timedelta(days=3):
+            d0 = d1 + timedelta(days=1)
+            continue
+        start = 0
+        while True:
+            d = get("https://api.nhle.com/stats/rest/en/skater/timeonice",
+                    {"isAggregate": "false", "isGame": "true", "limit": "100", "start": str(start),
+                     "sort": '[{"property":"gameId","direction":"ASC"},{"property":"playerId","direction":"ASC"}]',
+                     "cayenneExp": f'gameDate>="{d0.isoformat()}" and gameDate<="{d1.isoformat()}" and gameTypeId=2'})
+            rows = d.get("data") or []
+            for r in rows:
+                g = store["g"].setdefault(str(r.get("gameId")), {})
+                g[str(r.get("playerId"))] = [int(r.get("evTimeOnIce") or 0), int(r.get("ppTimeOnIce") or 0), int(r.get("shTimeOnIce") or 0)]
+            pages += 1
+            start += len(rows)
+            if len(rows) < 100:
+                break
+        if wk not in store["weeks"]:
+            store["weeks"].append(wk)
+        d0 = d1 + timedelta(days=1)
+        if pages % 40 == 0:
             store["updated"] = now_iso(); write(rel, store)
     store["updated"] = now_iso()
     write(rel, store)
