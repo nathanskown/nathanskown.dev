@@ -973,3 +973,49 @@ def job_nhlpp():
         out["boxscoreSkater"] = f"error: {e}"[:300]
     write("lab/_probe/nhl_pp.json", out)
     return {k: (list(v[0].keys()) if isinstance(v, list) and v and isinstance(v[0], dict) else str(v)[:200]) for k, v in out.items()}
+
+
+# ---------------------------------------------------------------- NHL ice time by situation (even strength, power play, short-handed)
+def nhl_pptoi(year, budget_s=None):
+    """Per game, per skater: even-strength, power-play and short-handed seconds, from the NHL stats REST time-on-ice
+    report (api.nhle.com). Season `year` = the year it ends (2026 = 2025-26). Writes history/nhl_pptoi_{year}.json."""
+    rel = f"history/nhl_pptoi_{year}.json"
+    store = read(rel) or {"year": year, "source": "NHL API (api.nhle.com) skater time on ice", "g": {}}
+    t0, start, pages = time.time(), 0, 0
+    sid = f"{year - 1}{year}"
+    have = sum(len(v) for v in store["g"].values())
+    start = max(0, have - 500)            # rows come in a stable order; re-read the tail in case the last run stopped mid-page
+    while True:
+        if budget_s and time.time() - t0 > budget_s:
+            break
+        d = get("https://api.nhle.com/stats/rest/en/skater/timeonice",
+                {"isAggregate": "false", "isGame": "true", "limit": "100", "start": str(start),
+                 "sort": '[{"property":"gameId","direction":"ASC"},{"property":"playerId","direction":"ASC"}]',
+                 "cayenneExp": f"seasonId={sid} and gameTypeId=2"})
+        rows = d.get("data") or []
+        for r in rows:
+            g = store["g"].setdefault(str(r.get("gameId")), {})
+            g[str(r.get("playerId"))] = [int(r.get("evTimeOnIce") or 0), int(r.get("ppTimeOnIce") or 0), int(r.get("shTimeOnIce") or 0)]
+        pages += 1
+        start += len(rows)
+        if len(rows) < 100:
+            break
+        if pages % 50 == 0:
+            store["updated"] = now_iso(); write(rel, store)
+    store["updated"] = now_iso()
+    write(rel, store)
+    return {"games": len(store["g"]), "rows": sum(len(v) for v in store["g"].values()), "pages": pages, "seconds": round(time.time() - t0)}
+
+
+def job_nhlpptoi():
+    years = [int(y) for y in os.environ.get("NHL_YEARS", "").split(",") if y] or [2023, 2024, 2025, 2026, 2027]
+    return {y: nhl_pptoi(y, budget_s=3000) for y in years}
+
+
+def job_nhlpptoi_current():
+    from datetime import date
+    t = date.today()
+    year = t.year + 1 if t.month >= 9 else t.year
+    if t.month in (7, 8):
+        return {"skipped": "offseason"}
+    return nhl_pptoi(year, budget_s=300)

@@ -289,6 +289,23 @@
 <p class="s-note" style="margin: 6px 0 0">{{trk.sg.note}}</p>
 </div>
 </section>
+<sc-if value="{{trk.tm.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="NBA threes made">
+<div class="t-ph"><h2>NBA threes made</h2><span class="dim">{{trk.tm.sub}}</span></div>
+<div class="t-pb">
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Test</th><th scope="col">Player games</th><th scope="col">Range score</th><th scope="col">League-wide baseline</th><th scope="col">Poisson</th><th scope="col">1+</th><th scope="col">2+</th><th scope="col">3+</th><th scope="col">4+</th><th scope="col">5+</th></tr></thead>
+<tbody><sc-for list="{{trk.tm.rows}}" as="r" hint-placeholder-count="3"><tr><th scope="row" class="l">{{r.label}}</th><td>{{r.n}}</td><td>{{r.rps}}</td><td>{{r.base}}</td><td>{{r.pois}}</td><sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><td>{{c}}</td></sc-for></tr></sc-for></tbody>
+</table></div>
+<h3 style="margin: 16px 0 6px; font-size: var(--fs-md)">Calibration of the 2+ chance ({{trk.tm.calLabel}})</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Stated chance of 2+ threes</th><th scope="col">Player games</th><th scope="col">Stated</th><th scope="col">Happened</th><th scope="col">Normal range (95%)</th><th scope="col">Verdict</th></tr></thead>
+<tbody><sc-for list="{{trk.tm.cal}}" as="r" hint-placeholder-count="4"><tr><th scope="row" class="l">{{r.band}}</th><td>{{r.n}}</td><td>{{r.exp}}</td><td>{{r.act}}</td><td class="dim">{{r.rng}}</td><td style="{{r.vst}}">{{r.verdict}}</td></tr></sc-for></tbody>
+</table></div>
+<p class="s-note" style="margin: 6px 0 0">{{trk.tm.note}}</p>
+</div>
+</section>
+</sc-if>
 <sc-if value="{{trk.th.has}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Theory lab">
 <div class="t-ph"><h2>Theory lab: NHL shots</h2><span class="dim">Common beliefs, tested against the model</span></div>
@@ -436,6 +453,7 @@ class Component extends DCLogic {
       SD.data('track/backtest.json').then(function (x) { self.setState({ back: x }); }, function () { self.setState({ back: { err: true } }); });
       SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
       SD.data('props/nhl.json').then(function (x) { self.setState({ nprops: x }); }, function () {});
+      SD.data('props/nba.json').then(function (x) { self.setState({ bprops: x }); }, function () {});
     } else if (key === 'Methodology') ['nfl', 'mlb', 'nhl', 'nba', 'ncaaf', 'ncaab', 'ncaah'].forEach(function (k) { self.loadModel(k); });
     else this.loadLeague(lg);
   }
@@ -602,7 +620,7 @@ class Component extends DCLogic {
         if (n < 20) return { rng: Math.round(lo * 100) + '–' + Math.round(hi * 100) + '%', verdict: 'Too few to judge', st: 'color: var(--dim)' };
         return { rng: Math.round(lo * 100) + '–' + Math.round(hi * 100) + '%', verdict: Math.abs(z) < 2 ? 'Within normal noise' : (z > 0 ? 'Wins more than stated' : 'Wins less than stated') + ' (z ' + (z > 0 ? '+' : '') + z.toFixed(1) + ')', st: Math.abs(z) < 2 ? '' : 'color: #ffb84d' };
       };
-      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '', pp: { has: false }, sg: { has: false, hasGoal: false, hasSave: false }, th: { has: false } };
+      var tr = { title: lg === 'all' ? 'Live record, all leagues' : SD.LEAGUES[lg].label + ' live record', sub: '', none: false, noneText: '', has: false, cards: [], cal: [], note: '', recent: [], pend: [], noRecent: false, noPend: false, recentSub: '', pendSub: '', bt: [], btNone: false, btNoneText: '', btSub: '', pp: { has: false }, sg: { has: false, hasGoal: false, hasSave: false }, th: { has: false }, tm: { has: false } };
       var pickRow = function (k, r, graded) {
         var h = nm(k, r.h), a = nm(k, r.a), fav = r.p >= 0.5 ? h : a, fp = Math.max(r.p, 1 - r.p);
         var row = { game: a.name + ' at ' + h.name + (r.n ? ' (neutral)' : ''), lg: SD.LEAGUES[k].short, href: SD.gameHref ? SD.gameHref(k, r.id) : '#', date: F.day(r.d + ':00Z'), pick: fav.abbr + ' ' + Math.abs(r.m).toFixed(1), prob: pc(fp) };
@@ -676,6 +694,20 @@ class Component extends DCLogic {
           pp.bookNote = 'Gap is how far the chance, after the pull toward 50%, sits from the no-vig chance in the closing price. Units assume a one-unit stake at the closing price; one bad week can move a small total a lot. ' + (v10 && v10.won + v10.lost ? 'Against the opening price, picks where the raw chance was 60% or more (or 40% or less) have gone ' + v10.won + '–' + v10.lost + ' at a flat -110, which is promising but not proven: the sample is one season, and the replay knows which teammates sat, which the opening price did not. ' : '') + 'A record near zero would mean the projections are about as good as the price, which is the realistic bar.';
         }
         tr.pp = pp;
+      }
+      var BX = S.bprops;
+      if (BX && !BX.err && BX.backtest && Object.keys(BX.backtest).length && (lg === 'all' || lg === 'nba')) {
+        var bys = Object.keys(BX.backtest).sort(), cellB = function (l) { return Math.round(l.pred * 100) + '% said, ' + Math.round(l.act * 100) + '% did'; };
+        var tmr = { has: true, sub: 'Updated ' + F.day(BX.updated), rows: [], cal: [] };
+        bys.forEach(function (y) { var b = BX.backtest[y]; tmr.rows.push({ label: 'Season ending ' + y + ' (held out)', n: b.n.toLocaleString(), rps: b.rps, base: b.baselineRps, pois: b.poissonRps, cells: b.ladder.map(cellB) }); });
+        var BL = BX.liveLog;
+        if (BL && BL.n) tmr.rows.push({ label: 'Live: logged before tip, graded after', n: BL.n, rps: BL.rps, base: '—', pois: '—', cells: BL.ladder.map(cellB) });
+        var cs = (BL && BL.calib && BL.calib['2'] && BL.calib['2'].length) ? BL.calib['2'] : BX.backtest[bys[bys.length - 1]].calib['2'];
+        tmr.calLabel = (BL && BL.calib && BL.calib['2'] && BL.calib['2'].length) ? 'live' : 'latest held-out season';
+        tmr.cal = cs.map(function (c) { var cv = calVerdict(c.n, c.exp, c.act); return { band: Math.round(c.lo * 100) + '–' + Math.round(c.hi * 100) + '%', n: c.n, exp: Math.round(c.exp * 100) + '%', act: Math.round(c.act * 100) + '%', rng: cv.rng, verdict: cv.verdict, vst: cv.st }; });
+        var lbB = BX.backtest[bys[bys.length - 1]];
+        tmr.note = 'Range score is the ranked probability score over 0 to 10+ threes (lower is better). The league-wide baseline gives every player the same spread; Poisson is the textbook count around the same projection. In the latest held-out season the average miss was ' + lbB.mae.toFixed(2) + ' threes (bias ' + (lbB.bias > 0 ? '+' : '') + lbB.bias.toFixed(2) + '), ' + lbB.maeA.toFixed(2) + ' attempts, and ' + lbB.maeMin.toFixed(1) + ' minutes. Players who did not play are left out. No betting lines are used.';
+        tr.tm = tmr;
       }
       var NX = S.nprops;
       if (NX && !NX.err && NX.backtest && (lg === 'all' || lg === 'nhl')) {
