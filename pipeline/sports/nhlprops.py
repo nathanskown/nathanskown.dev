@@ -14,6 +14,7 @@ import collections
 import time
 from datetime import datetime, timedelta, timezone
 
+import math
 import numpy as np
 from zoneinfo import ZoneInfo
 
@@ -205,6 +206,95 @@ def _score(items, pos_toi=None):
     return {"n": len(items), "rps": round(r, 4), "ladder": lad}
 
 
+def _poisson(mu):
+    """Poisson chances of 0..K shots, with everything above K folded into K."""
+    k = np.arange(K + 1)
+    lg = k * np.log(max(mu, 1e-6)) - mu - np.array([math.lgamma(i + 1) for i in k])
+    p = np.exp(lg); p[K] += max(0.0, 1 - p.sum())
+    return p
+
+
+THEORIES = [
+    ("b2b", "Second night of a back-to-back", "His team also played yesterday. Theory: tired legs, fewer shots."),
+    ("hot", "Hot hand", "His last five games averaged at least one shot more than his season. Theory: ride the streak."),
+    ("cold", "Cold spell", "His last five games averaged at least one shot fewer than his season. Theory: fade him (or: due to bounce back)."),
+    ("zero", "Shut out last game", "He had zero shots last game. Theory: he bounces back."),
+    ("big", "Coming off a big night", "He had five or more shots last game. Theory: it carries over."),
+    ("road", "On the road", "Away game. Theory: road skaters shoot less than projected, even after the model's home adjustment."),
+]
+
+
+class _Tags:
+    """Situations at game time, from earlier games only: back-to-backs and recent form."""
+
+    def __init__(self):
+        self.last_day = {}
+        self.recent = collections.defaultdict(lambda: collections.deque(maxlen=5))
+        self.seas = collections.defaultdict(lambda: [None, 0, 0])
+
+    def tags(self, pid, team, dt, y, home=None):
+        out = []
+        if team and self.last_day.get(team) == (datetime.fromisoformat(dt[:10]).date() - timedelta(days=1)).isoformat():
+            out.append("b2b")
+        r, se = self.recent[pid], self.seas[pid]
+        if r:
+            if r[-1] == 0:
+                out.append("zero")
+            elif r[-1] >= 5:
+                out.append("big")
+        if len(r) == 5 and se[0] == y and se[2] >= 10:
+            avg, m5 = se[1] / se[2], sum(r) / 5
+            if m5 >= avg + 1:
+                out.append("hot")
+            elif m5 <= avg - 1:
+                out.append("cold")
+        if home == 0:
+            out.append("road")
+        return tuple(out)
+
+    def update(self, h, a, hs, as_, dt, y):
+        for team, sk in ((h, hs), (a, as_)):
+            self.last_day[team] = dt[:10]
+            for pid, name, pos, sec, sog, g_, a_ in sk:
+                if sec <= 0:
+                    continue
+                self.recent[pid].append(sog)
+                se = self.seas[pid]
+                if se[0] != y:
+                    se[:] = [y, 0, 0]
+                se[1] += sog; se[2] += 1
+
+
+def _theories(items):
+    """items = [(tags, pmf, projected, actual)] -> per theory: does the situation beat (or trail) the projection?"""
+    out = []
+    for key, name, desc in THEORIES:
+        g = [(p, m, a) for t, p, m, a in items if key in t]
+        if len(g) < 30:
+            out.append({"key": key, "name": name, "desc": desc, "n": len(g)})
+            continue
+        res = np.array([a - m for p, m, a in g], float)
+        p3 = float(np.mean([p[3:].sum() for p, m, a in g])); a3 = float(np.mean([a >= 3 for p, m, a in g]))
+        out.append({"key": key, "name": name, "desc": desc, "n": len(g), "proj": round(float(np.mean([m for p, m, a in g])), 2), "act": round(float(np.mean([a for p, m, a in g])), 2),
+                    "diff": round(float(res.mean()), 3), "z": round(float(res.mean() / (res.std(ddof=1) / np.sqrt(len(res)))), 2) if res.std() > 0 else 0.0,
+                    "p3": round(p3, 3), "a3": round(a3, 3)})
+    return out
+
+
+SIZE_BINS = [(0, 1), (1, 1.5), (1.5, 2), (2, 2.5), (2.5, 3), (3, 3.5), (3.5, 99)]
+
+
+def _by_size(pairs):
+    """[(projected, actual)] grouped by projection size: does a 3-shot projection average 3 shots?"""
+    out = []
+    for lo, hi in SIZE_BINS:
+        g = [(m, a) for m, a in pairs if lo <= m < hi]
+        if len(g) >= 20:
+            out.append({"lo": lo, "hi": hi, "n": len(g), "proj": round(float(np.mean([m for m, a in g])), 2), "act": round(float(np.mean([a for m, a in g])), 2),
+                        "mae": round(float(np.mean([abs(a - m) for m, a in g])), 2)})
+    return out
+
+
 def _et_day(start_utc):
     """The NHL files games under the local (Eastern) date; ESPN's start time is UTC."""
     return datetime.fromisoformat(start_utc).replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/New_York")).date().isoformat()
@@ -222,7 +312,7 @@ def _log_and_grade(cur, props, games, pmf, names=None):
             continue
         k = f"{r['espn']}|{r['pid']}"
         if "act" not in log.get(k, {}):
-            log[k] = {"d": _et_day(r["start"]), "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"], "n": r["player"]}
+            log[k] = {"d": _et_day(r["start"]), "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"], "n": r["player"], "tg": r.get("tg", [])}
     byday = collections.defaultdict(list)
     for dt, y, gid, h, a, hs, as_ in games:
         if y == cur:
@@ -266,6 +356,17 @@ def _log_and_grade(cur, props, games, pmf, names=None):
                 wk.append({"day": d, "n": len(ge), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in ge])), 2), "bias": round(float(np.mean([e["act"] - e["m"] for e in ge])), 2),
                            "rps": sc["rps"] if sc else None, "l3": [round(float(np.mean([pmf[e["b"]][3:].sum() for e in ge])), 3), round(float(np.mean([e["act"] >= 3 for e in ge])), 3)]})
             out["week"] = wk
+            out["bySize"] = _by_size([(e["m"], e["act"]) for e in graded])
+            # theories tracked forward only: entries logged after tags were added carry "tg"; older ones are left out, not back-filled
+            fw = [e for e in graded if "tg" in e]
+            out["theories"] = {"since": min((e["d"] for e in fw), default=None), "rows": _theories([(tuple(e["tg"]), pmf[e["b"]], e["m"], e["act"]) for e in fw])}
+            wkly = collections.defaultdict(list)
+            for e in graded:
+                d0 = datetime.fromisoformat(e["d"]).date()
+                wkly[(d0 - timedelta(days=d0.weekday())).isoformat()].append(e)
+            out["weeks"] = [{"week": w, "n": len(v), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in v])), 2), "bias": round(float(np.mean([e["act"] - e["m"] for e in v])), 2),
+                             "rps": _score([(pmf[e["b"]], e["act"]) for e in v])["rps"], "poisson": round(float(np.mean([_rps(_poisson(e["m"]), e["act"]) for e in v])), 4)}
+                            for w, v in sorted(wkly.items(), reverse=True)]
     return out
 
 
@@ -315,6 +416,7 @@ def job_props():
         gl.update((read(f"history/nhl_goalies_{y}.json") or {}).get("g") or {})
     S = State()
     rows, grows = [], []
+    TT = _Tags()
     for dt, y, gid, h, a, hs, as_ in games:
         if gid in gl:
             for team, opp, home, gs in ((h, a, 1, gl[gid][3]), (a, h, 0, gl[gid][4])):
@@ -331,7 +433,8 @@ def job_props():
                 if st["gp"] < 5:
                     continue
                 mu, toi = S.mu(pid, "D" if pos == "D" else "F", opp, home)
-                rows.append((y, mu, sog, "D" if pos == "D" else "F", toi, S.gmu(pid, mu), 1 if g_ >= 1 else 0))
+                rows.append((y, mu, sog, "D" if pos == "D" else "F", toi, S.gmu(pid, mu), 1 if g_ >= 1 else 0, TT.tags(pid, h if home else a, dt, y, home)))
+        TT.update(h, a, hs, as_, dt, y)
         S.update(h, a, hs, as_, dt)
         if gid in gl:
             S.gk_update(h, gl[gid][3]); S.gk_update(a, gl[gid][4])
@@ -340,6 +443,7 @@ def job_props():
     band = lambda m: int(np.searchsorted(edges, m, side="right"))
     # held-out check: each of the last two completed seasons scored with tables from the seasons before it
     back = {}
+    th_items = []
     for ty in (cur - 2, cur - 1):
         e2, p2 = _tables(rows, {y for y in range(cur - 3, cur + 1) if y < ty} or {ty})
         te = [(p2[int(np.searchsorted(e2, r[1], side="right"))], r[2]) for r in rows if r[0] == ty]
@@ -352,7 +456,12 @@ def job_props():
         s = _score(te)
         if s:
             s["baselineRps"] = round(float(np.mean(bs)), 4) if bs else None
+            # the textbook alternative: a Poisson count around the same projection (what many prop models use)
+            tst = [r for r in rows if r[0] == ty]
+            s["poissonRps"] = round(float(np.mean([_rps(_poisson(r[1]), r[2]) for r in tst])), 4)
+            s["bySize"] = _by_size([(r[1], r[2]) for r in tst])
             back[str(ty)] = s
+            th_items.extend((r[7], p2[int(np.searchsorted(e2, r[1], side="right"))], r[1], r[2]) for r in tst)
     # this season so far, scored with the tables above (which already include it, so this is the in-sample view; the backtest is the fair test)
     live = _score([(pmf[band(r[1])], r[2]) for r in rows if r[0] == cur])
     # anytime goal and goalie saves: same walk-forward standard
@@ -424,7 +533,7 @@ def job_props():
                 if flag is None and st["gp"] < 20:
                     flag = "Small sample (%d games)" % st["gp"]
                 props.append({"pid": pid, **({"flag": flag} if flag else {}), "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
-                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"], "spm": round(float(S.parts[0]), 3), "of": round(float(S.parts[1]), 3),
+                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"], "spm": round(float(S.parts[0]), 3), "of": round(float(S.parts[1]), 3), "tg": list(TT.tags(pid, team, _et_day(e["d"]), cur, home)),
                               "pg": round(grate[gband(S.gmu(pid, mu))], 3), "gx": round(float(S.gmu(pid, mu)), 2)})
     _trend(games, cur)
     goalies = []
@@ -466,6 +575,6 @@ def job_props():
     props += [dict(r, locked=True) for r in prev.get("props") or [] if r["espn"] not in fresh and since <= (ev.get(r["espn"]) or {}).get("d", "") <= now16]
     props.sort(key=lambda r: (r["espn"], -r["mean"]))
     write("props/nhl.json", {"season": cur, "updated": now_iso(), "props": props, "pmf": [[round(float(x), 4) for x in p] for p in pmf], "kmax": K,
-                             "live": live, "liveLog": livelog, "backtest": back, "goalies": goalies, "gpmf": [[round(float(x), 4) for x in p] for p in kpmf],
+                             "live": live, "liveLog": livelog, "backtest": back, "edges": [round(float(x), 3) for x in edges], "theories": _theories(th_items), "goalies": goalies, "gpmf": [[round(float(x), 4) for x in p] for p in kpmf],
                              "backtestGoals": back_g, "backtestSaves": back_k, "source": "NHL box scores (api-web.nhle.com)"})
     return {"added": added, "rows": len(rows), "props": len(props), "back": back, "live": live}
