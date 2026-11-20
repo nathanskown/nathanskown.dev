@@ -184,6 +184,25 @@
 </div>
 </section>
 </sc-if>
+<sc-if value="{{tm.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Threes made">
+<div class="t-ph"><h2>Threes made</h2><span class="dim">{{tm.sub}}</span><button type="button" class="s-tab" onClick="{{tm.csv}}">Download CSV</button></div>
+<div class="t-pb">
+<div class="s-tabs" role="group" aria-label="Table view" style="margin-bottom: 8px">
+<sc-for list="{{tm.modeTabs}}" as="m"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
+</div>
+<sc-if value="{{tm.hasOuts}}" hint-placeholder-val="{{false}}"><p class="s-note" style="margin: 0 0 8px">Marked out (your what-if, not news): <sc-for list="{{tm.outs}}" as="o"><button type="button" class="s-tab" style="min-height: 44px" onClick="{{o.pick}}">{{o.player}} ({{o.team}}) · put back</button> </sc-for><br>His minutes are shared by his teammates in proportion to their own (at most +25% each) and their projections scale with the extra time. A quick estimate, not a full rerun.</p></sc-if>
+<sc-for list="{{tm.teams}}" as="t" hint-placeholder-count="2">
+<h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}}</h3>
+<div class="s-scroll" tabindex="0"><table class="s-tbl">
+<thead><tr><th scope="col" class="l">Player</th><th scope="col">Minutes</th><th scope="col">Expected attempts</th><th scope="col">Expected makes</th><th scope="col">Most likely</th><sc-for list="{{tm.heads}}" as="h"><th scope="col">{{h.t}}</th></sc-for><th scope="col">What if he sits</th></tr></thead>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}}<sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td class="dim">{{r.min}}</td><td>{{r.a3}}</td><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td><button type="button" class="s-tab" style="min-height: 44px" onClick="{{r.outPick}}" aria-label="Mark {{r.player}} out">Out</button></td></tr></sc-for></tbody>
+</table></div>
+</sc-for>
+<p class="s-note" style="margin: 10px 0 0">{{tm.note}}</p>
+</div>
+</section>
+</sc-if>
 <sc-if value="{{wp.has}}" hint-placeholder-val="{{false}}">
 <section class="t-panel" aria-label="Win probability">
 <div class="t-ph"><h2>Win probability</h2><span class="dim">{{wp.sub}}</span></div>
@@ -303,6 +322,7 @@ class Component extends DCLogic {
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
     if (['nba', 'nhl', 'ncaab', 'ncaaf'].indexOf(lg) >= 0 && id) SD.data('model/totals_' + lg + '.json').then(function (x) { self.setState({ totals: x }); }, function () {});
     if (lg === 'nhl') { try { var sxv = localStorage.getItem('nskn-sx'), sdv = localStorage.getItem('nskn-sd'); this.setState({ sx: sxv === 'exact' ? 'exact' : 'atleast', sw: localStorage.getItem('nskn-sw') === 'on' ? 'on' : 'off', sd: sdv === 'compact' ? 'compact' : 'comfortable' }); } catch (e) {} }
+    if (lg === 'nba' && id) SD.data('props/nba.json').then(function (x) { self.setState({ nbap: x }); }, function () {});
     if (lg === 'nhl' && id) SD.data('props/nhl.json').then(function (x) { self.setState({ nhlp: x }); }, function () {});
     if (lg === 'nfl' && id) {
       SD.data('props/nfl.json').then(function (x) { self.setState({ props: x }); }, function () {});
@@ -494,6 +514,41 @@ class Component extends DCLogic {
     };
     pp.csv = function () { saveCsv('nfl-projections-' + gid + '.csv', ['player', 'team', 'stat', 'projection', 'median', 'p25', 'p75'],
       ((X && X.props) || []).filter(function (r) { return r.espn === gid; }).map(function (r) { return [r.player, r.team, r.market, r.mean, r.median, r.p25, r.p75]; })); };
+    var tm = { has: false }, BP = lg === 'nba' ? S.nbap : null;
+    if (BP && !BP.err && BP.pmf && BP.edges) {
+      var mineT = (BP.props || []).filter(function (r) { return r.espn === gid; });
+      var bOut = S.nbaOut || {}, bOutRows = mineT.filter(function (r) { return bOut[r.pid]; });
+      var bBand = function (m) { var i = 0; while (i < BP.edges.length && m >= BP.edges[i]) i++; return i; };
+      var freedT = {}, poolT = {};
+      mineT.forEach(function (r) { if (bOut[r.pid]) freedT[r.team] = (freedT[r.team] || 0) + r.min; else poolT[r.team] = (poolT[r.team] || 0) + r.min; });
+      mineT = mineT.filter(function (r) { return !bOut[r.pid]; }).map(function (r) {
+        var f = freedT[r.team]; if (!f || !poolT[r.team]) return r;
+        var sc = Math.min(1.25, (r.min + f * r.min / poolT[r.team]) / r.min);
+        return Object.assign({}, r, { min: r.min * sc, a3: r.a3 * sc, mean: r.mean * sc, band: bBand(r.mean * sc), moved: sc - 1 });
+      });
+      var setOutT = function (pid, on) { return function () { var o = Object.assign({}, cmp.state.nbaOut || {}); if (on) o[pid] = 1; else delete o[pid]; cmp.setState({ nbaOut: o }); }; };
+      if (mineT.length || bOutRows.length) {
+        var tailT = function (pm, k) { var t = 0; for (var i = k; i < pm.length; i++) t += pm[i]; return t; };
+        var exT = S.sx === 'exact', KT = [1, 2, 3, 4, 5];
+        var pctT = function (p) { return p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
+        var modeT = function (pm) { var b = 0; for (var i = 1; i < pm.length; i++) if (pm[i] > pm[b]) b = i; return b; };
+        var tabT = function (label, on, v) { return { label: label, on: on ? 'true' : 'false', cls: 's-tab' + (on ? ' is-on' : ''), pick: function () { cmp.setState({ sx: v }); try { localStorage.setItem('nskn-sx', v); } catch (e) {} } }; };
+        tm = { has: true, sub: 'House model · updated ' + F.day(BP.updated),
+          modeTabs: [tabT('At least', !exT, 'atleast'), tabT('Exactly', exT, 'exact')],
+          heads: KT.map(function (k) { return { t: exT ? 'Exactly ' + k : k + '+' }; }),
+          outs: bOutRows.map(function (r) { return { player: r.player, team: r.team, pick: setOutT(r.pid, false) }; }), hasOuts: bOutRows.length > 0,
+          teams: [A, H].map(function (t) {
+            var rs = mineT.filter(function (r) { return r.team === t.abbr; }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, 10);
+            return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = BP.pmf[r.band];
+              var fl = (r.status ? r.status + ' on the injury report, projected as if he plays' : '') + (r.moved ? (r.status ? ' · ' : '') + '+' + Math.round(r.moved * 100) + '% minutes with teammates out' : '');
+              return { player: r.player, flag: fl, min: r.min.toFixed(0), a3: r.a3.toFixed(1), mean: r.mean.toFixed(2), mode: modeT(pm), outPick: setOutT(r.pid, true),
+                cells: KT.map(function (k) { return { v: pctT(exT ? pm[k] || 0 : tailT(pm, k)) }; }) }; }) };
+          }).filter(function (t) { return t.rows.length; }),
+          csv: function () { saveCsv('nba-threes-' + gid + '.csv', ['player', 'team', 'minutes', 'expected_3pa', 'expected_3pm', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus'],
+            mineT.map(function (r) { var pm = BP.pmf[r.band]; return [r.player, r.team, r.min.toFixed(1), r.a3.toFixed(2), r.mean.toFixed(2), tailT(pm, 1).toFixed(3), tailT(pm, 2).toFixed(3), tailT(pm, 3).toFixed(3), tailT(pm, 4).toFixed(3), tailT(pm, 5).toFixed(3)]; })); },
+          note: 'Expected makes = projected minutes × his three-point attempts per minute × how many threes this opponent allows × his make rate, each pulled toward the league when his sample is small. Minutes are scaled so the players expected to dress add up to 240, and anyone ruled out or doubtful is left off. The chances (1+ to 5+, or exactly) come from how players with similar projections actually finished in past seasons. No betting lines are used. See the Track record page for how these have held up.' };
+      }
+    }
     var sg = { has: false }, NP = lg === 'nhl' ? S.nhlp : null;
     if (NP && !NP.err && NP.pmf) {
       var mineS = (NP.props || []).filter(function (r) { return r.espn === gid; });
@@ -543,7 +598,7 @@ class Component extends DCLogic {
       }
     }
     return Object.assign(base, {
-      picker: false, ok: true, pp: pp, sg: sg, tot: tot, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
+      picker: false, ok: true, pp: pp, sg: sg, tm: tm, tot: tot, statusTag: g.state === 'in' ? 'LIVE · AUTO-REFRESH' : (g.done ? 'FINAL' : 'PREVIEW'), g: vals,
       bandStyle: 'background: linear-gradient(100deg, ' + acolor + 'aa 0%, ' + acolor + '33 32%, rgba(3,7,12,.4) 50%, ' + color + '33 68%, ' + color + 'aa 100%), linear-gradient(180deg, transparent 40%, #03070c 100%), #03070c;',
       heads: heads, lineRows: lineRows, hasLines: heads.length > 0, noLines: !heads.length, noLinesText: pre ? 'Line score fills in once the game starts.' : 'No period scores in the feed.',
       proj: proj, wp: wp, shareMsg: S.shareMsg || '',

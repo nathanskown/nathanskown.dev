@@ -139,6 +139,19 @@ def _fresh(c, ts, label, max_days=7):
     c.ok(age <= max_days, f"{label} is {age:.0f} days old")
 
 
+def nba_props(d, c):
+    """NBA threes-made projections (props/nba.json): chances sum to 1, projections are sane numbers."""
+    pmf = d.get("pmf") or []
+    c.ok(len(pmf) >= 5, "nba props: too few projection bands")
+    c.ok(all(abs(sum(r) - 1) < 0.01 and min(r) >= 0 for r in pmf), "nba props: a band's chances do not sum to 1")
+    e = d.get("edges") or []
+    c.ok(all(e[i] <= e[i + 1] for i in range(len(e) - 1)), "nba props: band edges out of order")
+    _fresh(c, d.get("updated"), "nba props", 3)
+    for r in d.get("props") or []:
+        c.ok(all(finite(r.get(k)) for k in ("mean", "a3", "min")) and 0 <= r["mean"] <= 12 and 0 <= r["min"] <= 48 and 0 <= r.get("band", -1) < len(pmf),
+             f"nba props: bad row for {r.get('player')}")
+
+
 def avail(d, c):
     """How often players listed on the injury report played, by status (track/avail.json)."""
     lgs = d.get("leagues") or {}
@@ -264,6 +277,8 @@ def rule_for(rel):
         return fed
     if rel == "sports/model/evolution.json":
         return evolution
+    if rel == "sports/props/nba.json":
+        return nba_props
     if rel == "sports/track/avail.json":
         return avail
     if rel == "sports/model/nhl_trend.json":
