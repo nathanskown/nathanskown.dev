@@ -149,7 +149,7 @@ class _Tables(HTMLParser):
 
 def index_members(page):
     """Wikipedia constituents table -> [{sym, name, sector}] (sym in Yahoo form)."""
-    html = get(f"https://en.wikipedia.org/wiki/{page}", kind="text")
+    html = get(f"https://en.wikipedia.org/wiki/{page}", kind="text", tries=6)
     p = _Tables()
     p.feed(html)
     for t in p.tables:
