@@ -948,3 +948,28 @@ def job_cfbdportal():
     store["updated"] = now_iso()
     write("history/cfbd_portal.json", store)
     return out
+
+
+# ---------------------------------------------------------------- NHL power-play time probe
+def job_nhlpp():
+    """What the NHL API offers for power-play ice time per player per game: the stats REST time-on-ice report for one
+    date, and one gamecenter box score's skater keys. Saved under lab/_probe for a look before anything is built."""
+    out = {}
+    try:
+        d = get("https://api.nhle.com/stats/rest/en/skater/timeonice",
+                {"isAggregate": "false", "isGame": "true", "limit": "5", "start": "0",
+                 "cayenneExp": 'gameDate<="2025-11-15" and gameDate>="2025-11-15" and gameTypeId=2'})
+        out["timeonice"] = _trim(d)
+    except Exception as e:
+        out["timeonice"] = f"error: {e}"[:300]
+    try:
+        sch = get("https://api-web.nhle.com/v1/score/2025-11-15")
+        gid = (sch.get("games") or [{}])[0].get("id")
+        b = get(f"https://api-web.nhle.com/v1/gamecenter/{gid}/boxscore")
+        sk = ((b.get("playerByGameStats") or {}).get("homeTeam") or {}).get("forwards") or []
+        out["boxscoreSkater"] = sk[:2]
+        out["gid"] = gid
+    except Exception as e:
+        out["boxscoreSkater"] = f"error: {e}"[:300]
+    write("lab/_probe/nhl_pp.json", out)
+    return {k: (list(v[0].keys()) if isinstance(v, list) and v and isinstance(v[0], dict) else str(v)[:200]) for k, v in out.items()}
