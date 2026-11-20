@@ -368,7 +368,7 @@ def _log_and_grade(cur, props, games, pmf):
                 pm = np.array(pm); a = min(a, K)
                 return float(pm[:a].sum() + 0.5 * pm[a])
             ys = sorted([e for e in graded if e["d"] == last], key=lambda e: -e["m"])
-            s["yesterday"] = {"day": last, "n": len(ys), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in ys])), 2),
+            s["yesterday"] = {"day": last, "n": len(ys), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in ys])), 2), "within1": round(float(np.mean([abs(e["act"] - e["m"]) <= 1 for e in ys])), 3),
                               "rows": [{"player": e["n"], "team": e["t"], "opp": e["o"], "mean": e["m"], "mode": int(np.argmax(pmf[e["b"]])), "act": e["act"], "pit": round(pit(pmf[e["b"]], e["act"]), 3)} for e in ys[:40]]}
         s["calib"] = {str(k): _calib([(np.array(pmf[e["b"]]), e["act"]) for e in graded], k) for k in (1, 2, 3)}
     return s or {"n": 0, "pending": len(log)}

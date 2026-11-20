@@ -137,6 +137,15 @@
 </div>
 
 <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<sc-if value="{{mc.has}}" hint-placeholder-val="{{false}}">
+<section class="t-panel" aria-label="Last night's model check">
+<div class="t-ph"><h2>Last night’s model check</h2><a class="dim" href="/sports/track-record/">Track record →</a></div>
+<div class="t-pb">
+<sc-for list="{{mc.rows}}" as="r" hint-placeholder-count="2"><div class="s-game" style="padding: 6px 0; display: block"><b>{{r.title}}</b><div class="dim" style="font-size: var(--fs-sm)">{{r.line}}</div><div style="font-size: var(--fs-sm)">{{r.best}}</div></div></sc-for>
+<p class="s-note" style="margin: 8px 0 0">Projections logged before each game, graded from box scores. No betting lines are used.</p>
+</div>
+</section>
+</sc-if>
 <section class="t-panel" aria-label="House ratings">
 <div class="t-ph"><h2>{{power.title}}</h2><a class="dim" href="{{power.allHref}}">All teams →</a></div>
 <div class="t-pb">
@@ -180,6 +189,7 @@ class Component extends DCLogic {
     if (!Array.isArray(follows)) follows = [];
     this.setState({ lg: lg, follows: follows });
     SD.data('teams.json').then(function (x) { self.setState({ index: x }); }, function () {});
+    ['nhl', 'nba'].forEach(function (k) { SD.data('props/' + k + '.json').then(function (x) { var o = Object.assign({}, self.state.mprops); o[k] = x; self.setState({ mprops: o }); }, function () {}); });
     this.refresh();
     follows.forEach(function (f) { self.loadFollow(f); });
   }
@@ -375,10 +385,20 @@ class Component extends DCLogic {
       nextK: day !== 0 ? 'SLATE' : (nx ? 'NEXT UP' : (lv ? 'NOW PLAYING' : 'NEXT UP')),
       next: day !== 0 ? (day < 0 ? 'Yesterday’s results' : 'Tomorrow’s schedule') : nx ? SD.LEAGUES[nx.lg].short + ' ' + nx.e.away.abbr + ' @ ' + nx.e.home.abbr : lv ? SD.LEAGUES[lv.lg].short + ' ' + lv.e.away.abbr + ' ' + lv.e.away.score + '–' + lv.e.home.score + ' ' + lv.e.home.abbr : (S.loaded ? 'Nothing else today' : 'Loading…'),
       nextWhen: day === 0 && nx ? F.day(nx.e.start) + ' · ' + F.time(nx.e.start) + ' ' + window.TZL : (day === 0 && lv ? lv.e.detail : '') };
+    var mc = { has: false, rows: [] };
+    [['nhl', 'NHL shots on goal', 'shots'], ['nba', 'NBA threes made', 'threes']].forEach(function (x) {
+      var P = (S.mprops || {})[x[0]], Y = P && P.liveLog && P.liveLog.yesterday;
+      if (!Y || !Y.rows || !Y.rows.length) return;
+      var w1 = Y.within1 !== undefined ? Y.within1 : Y.rows.filter(function (r) { return Math.abs(r.act - r.mean) <= 1; }).length / Y.rows.length;
+      var best = Y.rows.slice().sort(function (a, b) { return b.pit - a.pit; })[0];
+      mc.rows.push({ title: x[1] + ' · ' + F.day(Y.day + 'T12:00:00Z'), line: Y.n + ' players graded · average miss ' + Y.mae.toFixed(2) + ' ' + x[2] + ' · within one of the projection ' + Math.round(w1 * 100) + '%',
+        best: best ? 'Biggest night against his projection: ' + best.player + ' (' + best.team + '), ' + best.act + ' ' + x[2] + ' vs ' + best.mean.toFixed(1) + ' projected' : '' });
+    });
+    mc.has = mc.rows.length > 0;
     var dl = new Date(Date.now() + day * 86400000).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     return {
       favs: favs, followHint: this.hint(idx), q: S.q, onQ: function (e) { self.setState({ q: e.target.value }); }, results: results, hasResults: results.length > 0, noMatch: q.length >= 2 && !results.length && !!S.index,
-      strip: strip, mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse,
+      strip: strip, mine: mine, hasFollows: mine.length > 0, noFollows: !mine.length, chips: chips, days: days, boards: boards, power: power, browse: browse, mc: mc,
       dayLine: dl + ' · All times ' + window.TZL + (liveN ? ' · ' + liveN + ' live now' : ''),
       statusTag: !S.loaded ? 'LOADING…' : (liveN ? 'LIVE · AUTO-REFRESH' : 'LIVE DATA')
     };
