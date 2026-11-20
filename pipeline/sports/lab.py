@@ -111,6 +111,7 @@ def _mins(v):
 
 BASKET = ("nba", "ncaab")
 BOX_LEN = 17          # basketball rows: id, name, MIN, PTS, +/-, starter, FGM, FGA, FTM, FTA, OREB, DREB, AST, STL, BLK, TO, PF
+BOX_LEN_NBA = 19      # NBA rows add 3PM, 3PA at the end (for the threes-made projections); older rows are re-fetched once
 
 
 def _pair(x):
@@ -128,7 +129,8 @@ def _complete(lg, row):
         if not pl:
             return False
         if lg in BASKET:
-            return all(len(r) >= BOX_LEN for rows in pl.values() for r in rows)
+            need = BOX_LEN_NBA if lg == "nba" else BOX_LEN
+            return all(len(r) >= need for rows in pl.values() for r in rows)
         if lg in FOOTBALL:
             return "ts" in row and (lg != "ncaaf" or "px" in row)
     return True
@@ -183,8 +185,12 @@ def _players(lg, summ):
                 elif lg in BASKET:
                     if st:
                         fg, ft = _pair(_stat(labels, st, "FG")), _pair(_stat(labels, st, "FT"))
-                        rows.append([at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "MIN")), _num(_stat(labels, st, "PTS")), _num(_stat(labels, st, "+/-")), 1 if a.get("starter") else 0,
-                                     fg[0], fg[1], ft[0], ft[1]] + [_num(_stat(labels, st, k)) for k in ("OREB", "DREB", "AST", "STL", "BLK", "TO", "PF")])
+                        row = [at.get("id"), at.get("displayName"), _mins(_stat(labels, st, "MIN")), _num(_stat(labels, st, "PTS")), _num(_stat(labels, st, "+/-")), 1 if a.get("starter") else 0,
+                               fg[0], fg[1], ft[0], ft[1]] + [_num(_stat(labels, st, k)) for k in ("OREB", "DREB", "AST", "STL", "BLK", "TO", "PF")]
+                        if lg == "nba":
+                            tp = _pair(_stat(labels, st, "3PT"))
+                            row += [tp[0] if tp[0] is not None else 0.0, tp[1] if tp[1] is not None else 0.0]
+                        rows.append(row)
         out[tid] = rows
     return out
 
