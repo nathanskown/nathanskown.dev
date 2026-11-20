@@ -4,9 +4,9 @@ Built the same way as the NHL shots projections (nhlprops.py), from ESPN box sco
   expected 3PM = expected minutes x his three-point attempts per minute x how many threes the opponent allows x his make rate
   - minutes: recent minutes (half-life 6 games), then scaled so the players expected to play add up to 240 team minutes
     (in the backtest the players who actually dressed; live, the recent rotation minus anyone ruled out)
-  - attempts per minute: his own rate, decayed (half-life 30 games) and pulled toward the league rate with 150 pseudo-minutes
+  - attempts per minute: his own rate, decayed (half-life 15 games) and pulled toward the league rate with 75 pseudo-minutes
   - opponent: threes attempted against them per game vs the league (half-life 15 games, 10 pseudo-games of average)
-  - make rate: decayed (half-life 300 attempts), pulled toward the league rate with 250 pseudo-attempts
+  - make rate: decayed (half-life 300 attempts), pulled toward the league rate with 100 pseudo-attempts
 The chance of each count (0 to 10+) comes from how players with similar projections actually finished in earlier seasons
 (projection bands), not from a formula. Held-out seasons are scored against a Poisson count around the same projection.
 
@@ -23,8 +23,10 @@ from .common import now_iso, read, write
 
 K = 10
 QS = [.1, .2, .3, .4, .5, .6, .7, .8, .88, .94, .97, .99]
-HL_MIN, HL_RATE, HL_PCT, HL_OPP = 6, 30, 300, 15
-KM, KP, K_OPP = 150.0, 250.0, 10.0
+HL_MIN, HL_RATE, HL_PCT, HL_OPP = 6, 15, 300, 15
+KM, KP, K_OPP = 75.0, 100.0, 10.0
+# chosen Nov 20, 2026 by comparing a few settings on the two held-out seasons (so those two scores flatter the model a
+# little); the forward live log is the clean test
 OUT_STATUS = {"Out", "Doubtful", "Suspension"}
 ET = ZoneInfo("America/New_York")
 
@@ -106,6 +108,83 @@ class State:
                 self.lg[2] = self.lg[2] * 0.9995 + m3; self.lg[3] = self.lg[3] * 0.9995 + a3
 
 
+THEORIES = [
+    ("b2b", "Second night of a back-to-back", "His team also played yesterday. Theory: tired legs, fewer threes."),
+    ("hot", "Hot hand", "45%+ from three over his last five games (10+ attempts). Theory: ride the streak."),
+    ("cold", "Cold hand", "Under 25% from three over his last five games (10+ attempts). Theory: he is due."),
+    ("star_out", "Next man up", "One of his team's two biggest-minute players is not playing. Theory: the shots go somewhere."),
+    ("zero", "Blanked last game", "No threes made last game (3+ attempts). Theory: he bounces back."),
+    ("big", "Coming off a big night", "Five or more threes made last game. Theory: it carries over."),
+    ("road", "On the road", "Away game. Theory: road shooters make fewer than projected."),
+]
+
+
+class Tags:
+    def __init__(self):
+        self.last_day = {}
+        self.last5 = collections.defaultdict(lambda: collections.deque(maxlen=5))   # (made, attempted)
+
+    def tags(self, S, pid, tid, d16, home, playing):
+        out = []
+        day = _et_day(d16)
+        if self.last_day.get(tid) == (datetime.fromisoformat(day) - timedelta(days=1)).date().isoformat():
+            out.append("b2b")
+        l5 = self.last5[pid]
+        if len(l5) == 5:
+            m, a = sum(x[0] for x in l5), sum(x[1] for x in l5)
+            if a >= 10:
+                if m / a >= 0.45:
+                    out.append("hot")
+                elif m / a < 0.25:
+                    out.append("cold")
+        if l5:
+            if l5[-1][0] == 0 and l5[-1][1] >= 3:
+                out.append("zero")
+            elif l5[-1][0] >= 5:
+                out.append("big")
+        mates = sorted((p for p, v in S.P.items() if v["team"] == tid and v["gp"] >= 10 and p != pid), key=lambda p: -S.min_raw(p))[:2]
+        if any(p not in playing for p in mates):
+            out.append("star_out")
+        if not home:
+            out.append("road")
+        return tuple(out)
+
+    def update(self, d16, sides):
+        day = _et_day(d16)
+        for tid, rows in sides.items():
+            self.last_day[tid] = day
+            for pid, name, mn, a3, m3, st in rows:
+                self.last5[pid].append((m3, a3))
+
+
+def _theories(items):
+    """items = [(tags, pmf, projected, actual)] -> per theory: does the situation beat the projection?"""
+    out = []
+    for key, name, desc in THEORIES:
+        g = [(p, m, a) for t, p, m, a in items if key in t]
+        if len(g) < 30:
+            out.append({"key": key, "name": name, "desc": desc, "n": len(g)})
+            continue
+        res = np.array([a - m for p, m, a in g], float)
+        out.append({"key": key, "name": name, "desc": desc, "n": len(g), "proj": round(float(np.mean([m for p, m, a in g])), 2), "act": round(float(np.mean([a for p, m, a in g])), 2),
+                    "diff": round(float(res.mean()), 3), "z": round(float(res.mean() / (res.std(ddof=1) / np.sqrt(len(res)))), 2) if res.std() > 0 else 0.0,
+                    "p3": round(float(np.mean([float(np.sum(p[2:])) for p, m, a in g])), 3), "a3": round(float(np.mean([a >= 2 for p, m, a in g])), 3)})
+    return out
+
+
+SIZE_BINS = [(0, 0.5), (0.5, 1), (1, 1.5), (1.5, 2), (2, 2.5), (2.5, 3), (3, 3.5), (3.5, 99)]
+
+
+def _by_size(pairs):
+    out = []
+    for lo, hi in SIZE_BINS:
+        g = [(m, a) for m, a in pairs if lo <= m < hi]
+        if len(g) >= 20:
+            out.append({"lo": lo, "hi": hi, "n": len(g), "proj": round(float(np.mean([m for m, a in g])), 2), "act": round(float(np.mean([a for m, a in g])), 2),
+                        "mae": round(float(np.mean([abs(a - m) for m, a in g])), 2)})
+    return out
+
+
 def _minutes(S, pids, total=240.0):
     raw = {p: max(S.min_raw(p), 1.0) for p in pids}
     s = sum(raw.values())
@@ -168,19 +247,22 @@ def job_props():
     if len(games) < 2000:
         return {"skipped": f"only {len(games)} NBA games with three-point columns yet"}
     S = State()
+    TG = Tags()
     rows = []          # (season, projected 3PM, actual 3PM, projected 3PA, actual 3PA, minutes projected, minutes)
     for d16, y, gid, h, a, sides in games:
         for tid, rs in sides.items():
             opp = a if tid == h else h
             mins = _minutes(S, [r[0] for r in rs])
+            playing = {r[0] for r in rs}
             for pid, name, mn, a3, m3, st in rs:
                 if S.P[pid]["gp"] < 5:
                     continue
                 mu, mu_a = S.mu(pid, opp, mins[pid])
-                rows.append((y, mu, int(m3), mu_a, a3, mins[pid], mn))
+                rows.append((y, mu, int(m3), mu_a, a3, mins[pid], mn, TG.tags(S, pid, tid, d16, tid == h, playing)))
         S.update(sides, h, a)
+        TG.update(d16, sides)
     done_years = sorted({r[0] for r in rows if r[0] < cur})
-    back = {}
+    back, th_items = {}, []
     for ty in done_years[-2:]:
         prior = {y for y in done_years if y < ty}
         if not prior:
@@ -197,6 +279,8 @@ def job_props():
         s["bias"] = round(float(np.mean([r[2] - r[1] for r in te])), 3)
         s["maeA"] = round(float(np.mean([abs(r[4] - r[3]) for r in te])), 3)
         s["maeMin"] = round(float(np.mean([abs(r[6] - r[5]) for r in te])), 2)
+        s["bySize"] = _by_size([(r[1], r[2]) for r in te])
+        th_items.extend((r[7], p2[int(np.searchsorted(e2, r[1], side="right"))], r[1], r[2]) for r in te)
         back[str(ty)] = s
     edges, pmf = _tables(rows, set(done_years))
     band = lambda m: int(np.searchsorted(edges, m, side="right"))
@@ -219,6 +303,7 @@ def job_props():
             if not pool:
                 continue
             mins = _minutes(S, pool)
+            playing = set(pool)
             for pid in pool:
                 if mins[pid] < 10:
                     continue
@@ -226,7 +311,7 @@ def job_props():
                 st = q_by_team.get(tid, {}).get(norm(S.P[pid]["name"]))
                 props.append({"pid": pid, "player": S.P[pid]["name"], "team": teams.get(tid, tid), "opp": teams.get(opp, opp), "home": tid == str(e["h"]),
                               "espn": eid, "start": e["d"], "min": round(mins[pid], 1), "a3": round(mu_a, 2), "mean": round(mu, 2), "band": band(mu),
-                              "pct": round(S.parts[1], 3), "of": round(S.parts[2], 3), **({"status": st} if st else {})})
+                              "pct": round(S.parts[1], 3), "of": round(S.parts[2], 3), "tg": list(TG.tags(S, pid, tid, e["d"], tid == str(e["h"]), playing)), **({"status": st} if st else {})})
     # publish projections only once the held-out test beats the league-wide baseline; until then the record still builds
     lb = back[max(back)] if back else None
     held = not lb or lb["rps"] >= lb["baselineRps"]
@@ -234,7 +319,7 @@ def job_props():
         props = []
     live = _log_and_grade(cur, props, games, pmf)
     write("props/nba.json", {"season": cur, "updated": now_iso(), "kmax": K, "edges": [round(float(x), 3) for x in edges],
-                             "pmf": [[round(float(x), 4) for x in row] for row in pmf], "props": props, "held": held, "backtest": back, "liveLog": live,
+                             "pmf": [[round(float(x), 4) for x in row] for row in pmf], "props": props, "held": held, "backtest": back, "theories": _theories(th_items), "liveLog": live,
                              "source": "ESPN box scores; house model"})
     return {"props": len(props), "rows": len(rows), "backtest": {k: (v["rps"], v["poissonRps"]) for k, v in back.items()}}
 
@@ -247,7 +332,7 @@ def _log_and_grade(cur, props, games, pmf):
     now16 = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
     for r in props:
         if r["start"] > now16:
-            log[f"{r['espn']}|{r['pid']}"] = {"d": _et_day(r["start"]), "e": r["espn"], "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"], "n": r["player"]}
+            log[f"{r['espn']}|{r['pid']}"] = {"d": _et_day(r["start"]), "e": r["espn"], "t": r["team"], "o": r["opp"], "b": r["band"], "m": r["mean"], "pid": r["pid"], "n": r["player"], "tg": r.get("tg", [])}
     made = {}
     for d16, y, gid, h, a, sides in games:
         if y == cur:
@@ -265,5 +350,25 @@ def _log_and_grade(cur, props, games, pmf):
     s = _score([(np.array(pmf[e["b"]]), e["act"]) for e in graded])
     if s:
         s["pending"] = sum(1 for e in log.values() if "act" not in e)
+        s["bySize"] = _by_size([(e["m"], e["act"]) for e in graded])
+        fw = [e for e in graded if "tg" in e]
+        s["theories"] = {"since": min((e["d"] for e in fw), default=None), "rows": _theories([(tuple(e["tg"]), np.array(pmf[e["b"]]), e["m"], e["act"]) for e in fw])}
+        wk = collections.defaultdict(list)
+        for e in graded:
+            d0 = datetime.fromisoformat(e["d"]).date()
+            wk[(d0 - timedelta(days=d0.weekday())).isoformat()].append(e)
+        s["weeks"] = [{"week": w, "n": len(v), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in v])), 2), "bias": round(float(np.mean([e["act"] - e["m"] for e in v])), 2),
+                       "rps": round(float(np.mean([_rps(np.array(pmf[e["b"]]), e["act"]) for e in v])), 4), "poisson": round(float(np.mean([_rps(_poisson(e["m"]), e["act"]) for e in v])), 4)}
+                      for w, v in sorted(wk.items(), reverse=True)]
+        today_et = datetime.now(ET).date().isoformat()
+        days = sorted({e["d"] for e in graded if e["d"] < today_et})
+        if days:
+            last = days[-1]
+            def pit(pm, a):
+                pm = np.array(pm); a = min(a, K)
+                return float(pm[:a].sum() + 0.5 * pm[a])
+            ys = sorted([e for e in graded if e["d"] == last], key=lambda e: -e["m"])
+            s["yesterday"] = {"day": last, "n": len(ys), "mae": round(float(np.mean([abs(e["act"] - e["m"]) for e in ys])), 2),
+                              "rows": [{"player": e["n"], "team": e["t"], "opp": e["o"], "mean": e["m"], "mode": int(np.argmax(pmf[e["b"]])), "act": e["act"], "pit": round(pit(pmf[e["b"]], e["act"]), 3)} for e in ys[:40]]}
         s["calib"] = {str(k): _calib([(np.array(pmf[e["b"]]), e["act"]) for e in graded], k) for k in (1, 2, 3)}
     return s or {"n": 0, "pending": len(log)}

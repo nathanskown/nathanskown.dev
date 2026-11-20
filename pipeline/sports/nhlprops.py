@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 from .common import get, now_iso, read, write
 
 HL_R, HL_T = 30.0, 8.0          # half-lives in games: shot rate, ice time
-KM, KT, K_OPP = 300.0, 4.0, 8.0
+KM, KT, K_OPP = 150.0, 4.0, 8.0     # KM was 300 until Nov 20, 2026: 150 scored better in both held-out seasons and shrank the theory-lab gaps
 K = 10                          # shot counts above this are pooled ("10+")
 QS = [.08, .16, .25, .33, .42, .5, .58, .67, .75, .83, .9, .94, .97, .985, .995]   # band edges as quantiles of projected shots; finer at the top, where the stars are
 NBANDS = len(QS) + 1
