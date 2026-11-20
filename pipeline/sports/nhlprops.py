@@ -417,6 +417,10 @@ def job_props():
     S = State()
     rows, grows = [], []
     TT = _Tags()
+    ppg = {}
+    for y in range(cur - 3, cur + 1):
+        ppg.update((read(f"history/nhl_pptoi_{y}.json") or {}).get("g") or {})
+    PPS = collections.defaultdict(lambda: [0.0, 0.0])          # recent power-play seconds per game (half-life 5 games): display only
     for dt, y, gid, h, a, hs, as_ in games:
         if gid in gl:
             for team, opp, home, gs in ((h, a, 1, gl[gid][3]), (a, h, 0, gl[gid][4])):
@@ -435,6 +439,13 @@ def job_props():
                 mu, toi = S.mu(pid, "D" if pos == "D" else "F", opp, home)
                 rows.append((y, mu, sog, "D" if pos == "D" else "F", toi, S.gmu(pid, mu), 1 if g_ >= 1 else 0, TT.tags(pid, h if home else a, dt, y, home)))
         TT.update(h, a, hs, as_, dt, y)
+        pg_ = ppg.get(str(gid))
+        if pg_:
+            for sk in (hs, as_):
+                for pid, name, pos, sec, sog, g_, a_ in sk:
+                    v = pg_.get(str(pid))
+                    if sec > 0 and v:
+                        q = PPS[pid]; q[0] = q[0] * 0.87 + v[1]; q[1] = q[1] * 0.87 + 1
         S.update(h, a, hs, as_, dt)
         if gid in gl:
             S.gk_update(h, gl[gid][3]); S.gk_update(a, gl[gid][4])
@@ -533,7 +544,7 @@ def job_props():
                 if flag is None and st["gp"] < 20:
                     flag = "Small sample (%d games)" % st["gp"]
                 props.append({"pid": pid, **({"flag": flag} if flag else {}), "player": nm, "pos": st["pos"], "team": team_e, "opp": opp_e, "home": bool(home), "espn": eid, "mean": round(float(mu), 2),
-                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"], "spm": round(float(S.parts[0]), 3), "of": round(float(S.parts[1]), 3), "tg": list(TT.tags(pid, team, _et_day(e["d"]), cur, home)),
+                              "band": band(mu), "toi": round(float(toi), 1), "start": e["d"], "spm": round(float(S.parts[0]), 3), "of": round(float(S.parts[1]), 3), "tg": list(TT.tags(pid, team, _et_day(e["d"]), cur, home)), **({"pp": round(PPS[pid][0] / PPS[pid][1] / 60, 1)} if PPS[pid][1] else {}),
                               "pg": round(grate[gband(S.gmu(pid, mu))], 3), "gx": round(float(S.gmu(pid, mu)), 2)})
     _trend(games, cur)
     goalies = []

@@ -166,11 +166,20 @@
 <input class="s-input" style="width: 150px; min-height: 36px; font-size: 16px" type="search" placeholder="Filter players" value="{{sg.q}}" onInput="{{sg.onQ}}" aria-label="Filter players by name">
 </div>
 <sc-if value="{{sg.hasOuts}}" hint-placeholder-val="{{false}}"><p class="s-note" style="margin: 0 0 8px">Marked out (your what-if, not news): <sc-for list="{{sg.outs}}" as="o"><button type="button" class="s-tab" style="min-height: 44px" onClick="{{o.pick}}">{{o.player}} ({{o.team}}) · put back</button> </sc-for><br>His ice time is shared by teammates at his position in proportion to their minutes (at most +30% each) and their chances are repriced. A quick estimate, not a full rerun.</p></sc-if>
+<sc-if value="{{sg.dist.has}}" hint-placeholder-val="{{false}}">
+<div class="s-card" style="margin: 0 0 10px; padding: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap"><b>{{sg.dist.title}}</b><button type="button" class="s-tab" style="min-height: 44px" onClick="{{sg.dist.close}}">Close</button></div>
+<svg viewBox="0 0 400 150" role="img" aria-label="{{sg.dist.aria}}" style="width: 100%; max-width: 560px; height: auto; display: block; margin-top: 6px">
+<sc-for list="{{sg.dist.bars}}" as="b"><rect x="{{b.x}}" y="{{b.y}}" width="{{b.w}}" height="{{b.h}}" fill="{{b.fill}}"></rect><text x="{{b.cx}}" y="{{b.ty}}" text-anchor="middle" fill="currentColor" font-size="13">{{b.p}}</text><text x="{{b.cx}}" y="146" text-anchor="middle" fill="currentColor" font-size="13">{{b.k}}</text></sc-for>
+</svg>
+<p class="s-note" style="margin: 4px 0 0">{{sg.dist.note}}</p>
+</div>
+</sc-if>
 <sc-for list="{{sg.teams}}" as="t" hint-placeholder-count="2">
 <h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}}</h3>
 <div class="s-scroll" tabindex="0"><table class="{{sg.tcls}}">
 <thead><tr><th scope="col" class="l">Player</th><th scope="col">Expected shots</th><th scope="col">Most likely</th><sc-for list="{{sg.heads}}" as="h"><th scope="col">{{h.t}}</th></sc-for><th scope="col">Ceiling</th><th scope="col">Spread</th><th scope="col">Anytime goal</th><th scope="col">Ice time</th><th scope="col">What if he sits</th></tr></thead>
-<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}} <span class="dim">{{r.pos}}</span><sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td>{{r.ceil}}</td><td class="dim">{{r.spread}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td><td><button type="button" class="s-tab" style="min-height: 44px" onClick="{{r.outPick}}" aria-label="Mark {{r.player}} out">{{r.outLbl}}</button></td></tr></sc-for></tbody>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><button type="button" class="s-linkbtn" onClick="{{r.showDist}}" aria-label="Show {{r.player}}'s full range">{{r.player}}</button> <span class="dim">{{r.pos}}</span><sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td>{{r.ceil}}</td><td class="dim">{{r.spread}}</td><td>{{r.pg}}</td><td class="dim">{{r.toi}}</td><td><button type="button" class="s-tab" style="min-height: 44px" onClick="{{r.outPick}}" aria-label="Mark {{r.player}} out">{{r.outLbl}}</button></td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
 <sc-if value="{{sg.hasG}}" hint-placeholder-val="{{false}}">
@@ -192,11 +201,20 @@
 <sc-for list="{{tm.modeTabs}}" as="m"><button type="button" class="{{m.cls}}" aria-pressed="{{m.on}}" onClick="{{m.pick}}">{{m.label}}</button></sc-for>
 </div>
 <sc-if value="{{tm.hasOuts}}" hint-placeholder-val="{{false}}"><p class="s-note" style="margin: 0 0 8px">Marked out (your what-if, not news): <sc-for list="{{tm.outs}}" as="o"><button type="button" class="s-tab" style="min-height: 44px" onClick="{{o.pick}}">{{o.player}} ({{o.team}}) · put back</button> </sc-for><br>His minutes are shared by his teammates in proportion to their own (at most +25% each) and their projections scale with the extra time. A quick estimate, not a full rerun.</p></sc-if>
+<sc-if value="{{tm.dist.has}}" hint-placeholder-val="{{false}}">
+<div class="s-card" style="margin: 0 0 10px; padding: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap"><b>{{tm.dist.title}}</b><button type="button" class="s-tab" style="min-height: 44px" onClick="{{tm.dist.close}}">Close</button></div>
+<svg viewBox="0 0 400 150" role="img" aria-label="{{tm.dist.aria}}" style="width: 100%; max-width: 560px; height: auto; display: block; margin-top: 6px">
+<sc-for list="{{tm.dist.bars}}" as="b"><rect x="{{b.x}}" y="{{b.y}}" width="{{b.w}}" height="{{b.h}}" fill="{{b.fill}}"></rect><text x="{{b.cx}}" y="{{b.ty}}" text-anchor="middle" fill="currentColor" font-size="13">{{b.p}}</text><text x="{{b.cx}}" y="146" text-anchor="middle" fill="currentColor" font-size="13">{{b.k}}</text></sc-for>
+</svg>
+<p class="s-note" style="margin: 4px 0 0">{{tm.dist.note}}</p>
+</div>
+</sc-if>
 <sc-for list="{{tm.teams}}" as="t" hint-placeholder-count="2">
 <h3 style="margin: 14px 0 6px; font-size: var(--fs); letter-spacing: calc(.08em*var(--ls,1))">{{t.abbr}}</h3>
 <div class="s-scroll" tabindex="0"><table class="s-tbl">
 <thead><tr><th scope="col" class="l">Player</th><th scope="col">Minutes</th><th scope="col">Expected attempts</th><th scope="col">Expected makes</th><th scope="col">Most likely</th><sc-for list="{{tm.heads}}" as="h"><th scope="col">{{h.t}}</th></sc-for><th scope="col">What if he sits</th></tr></thead>
-<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l">{{r.player}}<sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td class="dim">{{r.min}}</td><td>{{r.a3}}</td><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td><button type="button" class="s-tab" style="min-height: 44px" onClick="{{r.outPick}}" aria-label="Mark {{r.player}} out">Out</button></td></tr></sc-for></tbody>
+<tbody><sc-for list="{{t.rows}}" as="r" hint-placeholder-count="6"><tr><th scope="row" class="l"><button type="button" class="s-linkbtn" onClick="{{r.showDist}}" aria-label="Show {{r.player}}'s full range">{{r.player}}</button><sc-if value="{{r.flag}}" hint-placeholder-val="{{false}}"><span class="dim" style="display: block; font-size: var(--fs-sm); font-weight: 400">{{r.flag}}</span></sc-if></th><td class="dim">{{r.min}}</td><td>{{r.a3}}</td><td style="color: var(--wh); font-weight: 600">{{r.mean}}</td><td>{{r.mode}}</td><sc-for list="{{r.cells}}" as="c"><td>{{c.v}}</td></sc-for><td><button type="button" class="s-tab" style="min-height: 44px" onClick="{{r.outPick}}" aria-label="Mark {{r.player}} out">Out</button></td></tr></sc-for></tbody>
 </table></div>
 </sc-for>
 <p class="s-note" style="margin: 10px 0 0">{{tm.note}}</p>
@@ -514,6 +532,16 @@ class Component extends DCLogic {
     };
     pp.csv = function () { saveCsv('nfl-projections-' + gid + '.csv', ['player', 'team', 'stat', 'projection', 'median', 'p25', 'p75'],
       ((X && X.props) || []).filter(function (r) { return r.espn === gid; }).map(function (r) { return [r.player, r.team, r.market, r.mean, r.median, r.p25, r.p75]; })); };
+    /* one player's full range as bars: chance of exactly 0, 1, 2 ... with the top count pooled */
+    var distOf = function (key, name, pm, unit, top) {
+      if (!S.dist || S.dist !== key || !pm) return { has: false };
+      var ps = []; for (var i = 0; i < top; i++) ps.push(pm[i] || 0);
+      var rest = 0; for (var j = top; j < pm.length; j++) rest += pm[j]; ps.push(rest);
+      var mx = Math.max.apply(null, ps) || 1, w = 400 / ps.length;
+      return { has: true, title: name + ': chance of each ' + unit + ' count', aria: name + ' ' + unit + ' distribution', close: function () { cmp.setState({ dist: null }); },
+        bars: ps.map(function (p, k) { var h = Math.round(p / mx * 100); return { x: (k * w + 4).toFixed(1), w: (w - 8).toFixed(1), y: 120 - h, h: h, cx: (k * w + w / 2).toFixed(1), ty: 120 - h - 4, fill: '#3df2ff', p: p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%', k: k === top ? top + '+' : String(k) }; }),
+        note: 'From how players with similar projections finished in past seasons. Each bar is the chance of exactly that many; the last bar pools everything from ' + top + ' up.' };
+    };
     var tm = { has: false }, BP = lg === 'nba' ? S.nbap : null;
     if (BP && !BP.err && BP.pmf && BP.edges) {
       var mineT = (BP.props || []).filter(function (r) { return r.espn === gid; });
@@ -533,7 +561,8 @@ class Component extends DCLogic {
         var pctT = function (p) { return p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%'; };
         var modeT = function (pm) { var b = 0; for (var i = 1; i < pm.length; i++) if (pm[i] > pm[b]) b = i; return b; };
         var tabT = function (label, on, v) { return { label: label, on: on ? 'true' : 'false', cls: 's-tab' + (on ? ' is-on' : ''), pick: function () { cmp.setState({ sx: v }); try { localStorage.setItem('nskn-sx', v); } catch (e) {} } }; };
-        tm = { has: true, sub: 'House model · updated ' + F.day(BP.updated),
+        var dRow = mineT.filter(function (r) { return S.dist === 'nba:' + r.pid; })[0];
+        tm = { dist: dRow ? distOf('nba:' + dRow.pid, dRow.player, BP.pmf[dRow.band], 'threes-made', 7) : { has: false }, has: true, sub: 'House model · updated ' + F.day(BP.updated),
           modeTabs: [tabT('At least', !exT, 'atleast'), tabT('Exactly', exT, 'exact')],
           heads: KT.map(function (k) { return { t: exT ? 'Exactly ' + k : k + '+' }; }),
           outs: bOutRows.map(function (r) { return { player: r.player, team: r.team, pick: setOutT(r.pid, false) }; }), hasOuts: bOutRows.length > 0,
@@ -541,7 +570,7 @@ class Component extends DCLogic {
             var rs = mineT.filter(function (r) { return r.team === t.abbr; }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, 10);
             return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = BP.pmf[r.band];
               var fl = (r.status ? r.status + ' on the injury report, projected as if he plays' : '') + (r.moved ? (r.status ? ' · ' : '') + '+' + Math.round(r.moved * 100) + '% minutes with teammates out' : '');
-              return { player: r.player, flag: fl, min: r.min.toFixed(0), a3: r.a3.toFixed(1), mean: r.mean.toFixed(2), mode: modeT(pm), outPick: setOutT(r.pid, true),
+              return { showDist: function () { cmp.setState({ dist: 'nba:' + r.pid }); }, player: r.player, flag: fl, min: r.min.toFixed(0), a3: r.a3.toFixed(1), mean: r.mean.toFixed(2), mode: modeT(pm), outPick: setOutT(r.pid, true),
                 cells: KT.map(function (k) { return { v: pctT(exT ? pm[k] || 0 : tailT(pm, k)) }; }) }; }) };
           }).filter(function (t) { return t.rows.length; }),
           csv: function () { saveCsv('nba-threes-' + gid + '.csv', ['player', 'team', 'minutes', 'expected_3pa', 'expected_3pm', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus'],
@@ -583,17 +612,18 @@ class Component extends DCLogic {
         var steams = [A, H].map(function (t) {
           var rs = mineS.filter(function (r) { return r.team === t.abbr && (!qf || r.player.toLowerCase().indexOf(qf) >= 0); }).sort(function (a, b) { return b.mean - a.mean; }).slice(0, qf ? 30 : 10);
           return { abbr: t.abbr || '', rows: rs.map(function (r) { var pm = NP.pmf[r.band];
-            return { outLbl: 'Out', outPick: setOut(r.pid, true), player: r.player, pos: r.pos, flag: (r.moved ? '+' + Math.round(r.moved * 100) + '% ice time with teammates out' + (r.flag ? ' · ' : '') : '') + (r.flag || ''), mean: r.mean.toFixed(2), mode: modeOf(pm), cells: KS.map(function (k) { return { v: fmtP(exact ? pm[k] || 0 : tailP(pm, k)) }; }).concat(why ? [{ v: r.spm !== undefined ? (r.spm * 60).toFixed(1) : '—' }, { v: r.of !== undefined ? (r.of >= 1 ? '+' : '') + ((r.of - 1) * 100).toFixed(0) + '%' : '—' }] : []), ceil: ceilOf(pm), spread: spreadLbl(pm), pg: r.pg !== undefined ? fmtP(r.pg) : '—', toi: r.toi.toFixed(0) + ' min' }; }) };
+            return { showDist: function () { cmp.setState({ dist: 'nhl:' + r.pid }); }, outLbl: 'Out', outPick: setOut(r.pid, true), player: r.player, pos: r.pos, flag: (r.moved ? '+' + Math.round(r.moved * 100) + '% ice time with teammates out' + (r.flag ? ' · ' : '') : '') + (r.flag || ''), mean: r.mean.toFixed(2), mode: modeOf(pm), cells: KS.map(function (k) { return { v: fmtP(exact ? pm[k] || 0 : tailP(pm, k)) }; }).concat(why ? [{ v: r.spm !== undefined ? (r.spm * 60).toFixed(1) : '—' }, { v: r.of !== undefined ? (r.of >= 1 ? '+' : '') + ((r.of - 1) * 100).toFixed(0) + '%' : '—' }, { v: r.pp !== undefined ? r.pp.toFixed(1) + ' min' : '—' }] : []), ceil: ceilOf(pm), spread: spreadLbl(pm), pg: r.pg !== undefined ? fmtP(r.pg) : '—', toi: r.toi.toFixed(0) + ' min' }; }) };
         }).filter(function (t) { return t.rows.length; });
         var gk = (NP.goalies || []).filter(function (r) { return r.espn === gid; }).map(function (r) { var pm = (NP.gpmf || [])[r.band] || [];
           return { player: r.player, team: r.team, shots: r.shots.toFixed(1), sv: (r.sv * 100).toFixed(1) + '%', mean: r.mean.toFixed(1), s20: pm.length ? fmtP(tailP(pm, 20)) : '—', s25: pm.length ? fmtP(tailP(pm, 25)) : '—', s30: pm.length ? fmtP(tailP(pm, 30)) : '—', s35: pm.length ? fmtP(tailP(pm, 35)) : '—', note: r.note }; });
         var nb2 = NP.backtest || {}, lastY = Object.keys(nb2).sort().pop(), bb = lastY ? nb2[lastY] : null, l3 = bb ? bb.ladder[2] : null;
-        sg = { outs: outRows.map(function (r) { return { player: r.player, team: r.team, pick: setOut(r.pid, false) }; }), hasOuts: outRows.length > 0, canOut: !!NP.edges, q: S.sq || '', onQ: function (e) { cmp.setState({ sq: e.target.value }); }, tcls: dense ? 's-tbl is-compact' : 's-tbl', heads: KS.map(function (k) { return { t: exact ? 'Exactly ' + k : k + '+' }; }).concat(why ? [{ t: 'Shots per 60' }, { t: 'Opponent allows' }] : []),
+        var dRowS = mineS.filter(function (r) { return S.dist === 'nhl:' + r.pid; })[0];
+        sg = { dist: dRowS ? distOf('nhl:' + dRowS.pid, dRowS.player, NP.pmf[dRowS.band], 'shot', 7) : { has: false }, outs: outRows.map(function (r) { return { player: r.player, team: r.team, pick: setOut(r.pid, false) }; }), hasOuts: outRows.length > 0, canOut: !!NP.edges, q: S.sq || '', onQ: function (e) { cmp.setState({ sq: e.target.value }); }, tcls: dense ? 's-tbl is-compact' : 's-tbl', heads: KS.map(function (k) { return { t: exact ? 'Exactly ' + k : k + '+' }; }).concat(why ? [{ t: 'Shots per 60' }, { t: 'Opponent allows' }, { t: 'Power-play time' }] : []),
           whyTabs: [tabBtn('Inputs hidden', !why, setS('sw', 'off')), tabBtn('Show inputs', why, setS('sw', 'on'))],
           modeTabs: [tabBtn('At least', !exact, setS('sx', 'atleast')), tabBtn('Exactly', exact, setS('sx', 'exact'))], denseTabs: [tabBtn('Comfortable', !dense, setS('sd', 'comfortable')), tabBtn('Compact', dense, setS('sd', 'compact'))],
           csv: function () { saveCsv('nhl-shots-' + gid + '.csv', ['player', 'team', 'pos', 'expected_shots', 'expected_goals', 'anytime_goal_chance', 'p_1plus', 'p_2plus', 'p_3plus', 'p_4plus', 'p_5plus', 'ice_time_min'],
           mineS.map(function (r) { var pm = NP.pmf[r.band]; return [r.player, r.team, r.pos, r.mean, r.gx, r.pg, tailP(pm, 1).toFixed(3), tailP(pm, 2).toFixed(3), tailP(pm, 3).toFixed(3), tailP(pm, 4).toFixed(3), tailP(pm, 5).toFixed(3), r.toi]; })); }, goalies: gk, hasG: gk.length > 0, has: steams.length > 0, sub: mineS[0].locked ? 'Final pre-game numbers' : 'Updated ' + F.day(NP.updated), teams: steams,
-          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. Most likely is the single most common count. Spread says how wide the range is for a projection this size (steady, typical or streaky). Flags such as a recent absence or a new team come from the box scores. Show inputs adds the player’s own shots per 60 minutes and how many more or fewer shots than average the opponent allows; the rest is his expected ice time and a small home-ice adjustment. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Anytime goal is expected shots times his own shooting percentage, turned into a chance the same way. Goalie rows assume the goalie who started the team\u2019s last game (the backup if it is the second game in two nights); starters are not confirmed until close to puck drop. Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
+          note: 'Expected shots on goal = the player\u2019s shots per minute times his expected ice time, adjusted for how many shots the opponent allows, with recent games weighted most. Most likely is the single most common count. Spread says how wide the range is for a projection this size (steady, typical or streaky). Flags such as a recent absence or a new team come from the box scores. Show inputs adds the player’s own shots per 60 minutes, how many more or fewer shots than average the opponent allows, and his recent power-play minutes per game (NHL API; shown for context, not a model input); the rest is his expected ice time and a small home-ice adjustment. The 1+ to 5+ columns are how often players with projections this size really took at least that many shots in the last three seasons; Ceiling is the 90th percentile (one night in ten ends above it). Anytime goal is expected shots times his own shooting percentage, turned into a chance the same way. Goalie rows assume the goalie who started the team\u2019s last game (the backup if it is the second game in two nights); starters are not confirmed until close to puck drop. Players listed as out or doubtful are left off. Lineup changes, power-play units and scratches that happen after the report are not known here.'
             + (bb ? ' Tested on ' + lastY + ' using only earlier seasons: ' + Math.round(l3.pred * 100) + '% of players were projected to take 3+ shots and ' + Math.round(l3.act * 100) + '% did.' : '') };
       }
     }
