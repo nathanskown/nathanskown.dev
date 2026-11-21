@@ -348,7 +348,7 @@ class Component extends DCLogic {
           };
           cards.push({ title: '', rows: [row(e.away), row(e.home)],
             status: pre ? (e.tbd ? 'Time TBD' : F.time(e.start) + ' ' + window.TZL) : e.detail, sub: pre ? [day !== 0 || !sameDay(e.start) ? F.day(e.start) : '', e.tv].filter(Boolean).join(' · ') : '',
-            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol) + (e.href ? ' is-go' : ''), href: e.href, go: function (ev) { if (!e.href || (ev && ev.target && ev.target.closest && ev.target.closest('a, button'))) return; location.href = e.href; }, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: 'Game page: ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
+            stStyle: stStyle(e.state), pill: pill(e.state), cls: cardCls(e.state, fol) + (e.href ? ' is-go' : ''), href: e.href, go: function (ev) { if (!e.href || (ev && ev.target && ev.target.closest && ev.target.closest('a, button'))) return; location.href = e.href; }, cta: pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box'), aria: (pre ? 'Preview' : (e.state === 'in' ? 'Live' : 'Box')) + ' → ' + e.away.name + ' at ' + e.home.name, note: note, house: house,
             live: e.state === 'in', st: e.state, start: e.start, fol: fol });
         });
       }
