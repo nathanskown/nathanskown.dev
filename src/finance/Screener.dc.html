@@ -203,7 +203,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <div class="t-ph"><h2>Matches</h2>
 <span style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
 <label class="dim" style="display: flex; align-items: center; gap: 6px">Sort <select class="sel" style="min-height: 32px" onChange="{{onSort}}" aria-label="Sort by"><sc-for list="{{sortOpts}}" as="o" hint-placeholder-count="8"><option value="{{o.v}}" selected="{{o.sel}}">{{o.t}}</option></sc-for></select></label>
-<button type="button" class="t-chipbtn" onClick="{{flipDir}}" aria-label="Reverse sort direction">{{dirLabel}}</button>
+<button type="button" class="t-chipbtn" onClick="{{flipDir}}" aria-label="{{dirAria}}">{{dirLabel}}</button>
 <button type="button" class="t-chipbtn" onClick="{{exportCsv}}">EXPORT CSV</button>
 </span></div>
 <div class="t-pb" style="padding-top: 8px">
@@ -214,7 +214,7 @@ position:relative;min-height:100vh;background:#050403;color:var(--a);font-family
 <table style="width: 100%; min-width: 980px; font-size: var(--fs)">
 <caption class="sr">Stocks matching the screen</caption>
 <thead><tr>
-<th scope="col" style="text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid #3D2C13; white-space: nowrap"><button type="button" class="thbtn" onClick="{{symSort}}" aria-label="Sort by ticker">Ticker</button></th>
+<th scope="col" style="text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid #3D2C13; white-space: nowrap"><button type="button" class="thbtn" onClick="{{symSort}}" aria-label="Ticker. Sort by ticker">Ticker</button></th>
 <sc-for list="{{cols}}" as="c" hint-placeholder-count="12">
 <th scope="col" style="{{c.style}}"><button type="button" class="thbtn" onClick="{{c.sort}}" aria-label="{{c.aria}}">{{c.label}}{{c.arrow}}</button></th>
 </sc-for>
@@ -350,7 +350,8 @@ class Component extends DCLogic {
     if (colIds.indexOf(sm.id) < 0 && sm.id !== 'sym') colIds.push(sm.id);
     var cols = colIds.map(function (id) {
       var m = byId[id];
-      return { label: m.short || m.label, arrow: st.sortId === id ? (dir > 0 ? ' ▲' : ' ▼') : '', aria: 'Sort by ' + m.label,
+      var lab = m.short || m.label, arrow = st.sortId === id ? (dir > 0 ? ' ▲' : ' ▼') : '';
+      return { label: lab, arrow: arrow, aria: lab + arrow + '. Sort by ' + m.label,
                style: 'text-align: ' + (id === 'sector' ? 'left' : 'right') + '; padding: 8px 8px; border-bottom: 1px solid #3D2C13; white-space: nowrap',
                sort: function () { if (st.sortId === id) setState({ dir: -dir }); else setState({ sortId: id, dir: (id === 'sector' ? 1 : -1) }); } };
     });
@@ -432,7 +433,7 @@ class Component extends DCLogic {
       toggleDials: function () { self.setState({ dialsOpen: !st.dialsOpen }); }, metricQ: st.metricQ || '', onMetricQ: function (e) { self.setState({ metricQ: e.target.value }); },
       symSort: function () { if (st.sortId === 'sym') setState({ dir: -dir }); else setState({ sortId: 'sym', dir: 1 }); },
       sortOpts: sortOpts, onSort: function (e) { setState({ sortId: e.target.value }); },
-      dirLabel: dir > 0 ? 'LOW → HIGH' : 'HIGH → LOW', flipDir: function () { setState({ dir: -dir }); },
+      dirLabel: dir > 0 ? 'LOW → HIGH' : 'HIGH → LOW', dirAria: (dir > 0 ? 'LOW → HIGH' : 'HIGH → LOW') + ', reverse sort direction', flipDir: function () { setState({ dir: -dir }); },
       resultLine: D ? pass.length.toLocaleString('en-US') + ' of ' + uniCount.toLocaleString('en-US') + ' stocks match' + (active.length ? ' ' + active.length + ' dial' + (active.length === 1 ? '' : 's') : '') + ' · showing ' + shown.length.toLocaleString('en-US') + ', sorted by ' + sm.label : '',
       hasExcluded: !!missIds.length,
       excludedLine: missIds.length ? 'Left out for missing data: ' + missIds.map(function (k) { return byId[k].label + ' (' + missing[k].toLocaleString('en-US') + ')'; }).join(', ') + '. These stocks might pass if the data existed.' : '',
