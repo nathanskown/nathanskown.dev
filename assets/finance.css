@@ -360,7 +360,15 @@ body.has-tape{padding-bottom:34px}
 .t .s-tabs{display:flex;flex-wrap:wrap;gap:4px}
 .t .s-tabs .t-tab{min-height:36px;padding:0 12px}
 /* wide tables scroll inside their panel instead of the page (IR view, calendar) */
-.t .s-scroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+.t .s-scroll{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}
+/* Phones: a wide table or chart scrolls inside its panel. Text stays the larger size. */
+@media (max-width:760px){
+  .t-pb,.t-card{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}
+  .t .f-heat{min-width:0}
+  .t .f-heat > span:first-child{min-width:0;flex:1 1 auto}
+  .t .f-heat > span:last-child{flex:none;white-space:nowrap}
+  .t [style*="min-width: 260px"]{min-width:0;max-width:100%;overflow-x:auto}
+}
 /* nav: numbered tabs, divider, dimmer reference group */
 .t-fbar .t-fsep{flex:0 0 3px;align-self:stretch;margin-left:12px;background:rgba(0,0,0,.55)}
 .t .t-fkey.t-fref{font-weight:400;font-size:max(var(--fs-xs),.92em);color:rgba(0,0,0,.72);border-left:1px dashed rgba(0,0,0,.35)}

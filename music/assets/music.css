@@ -385,6 +385,10 @@ button.ghost:hover:not(:disabled){border-style:solid}
 .dc-board table.lb td,.dc-board table.lb th{padding:6px 8px}
 .dc-board table.lb tbody tr:first-child td{color:#fff}
 table.lb th.n{text-align:right}
+@media (max-width:760px){
+  .mx .panel{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}
+  .mx .panel table{max-width:100%}
+}
 
 /* small text gets a light glow (sharper); headlines keep the full one */
 :where(h1,.mx-h1){text-shadow:0 0 6px var(--glow)}
