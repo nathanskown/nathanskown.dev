@@ -256,6 +256,13 @@ def injuries(d, c):
     c.ok(isinstance(d.get("teams"), dict), "injury file has no teams")
 
 
+def members(d, c):
+    # A short list means the Wikipedia download failed and blanked the file. Hold it back so the last good list stays published.
+    for key, lo, hi in (("sp500", 480, 530), ("sp400", 350, 450), ("sp600", 560, 650)):
+        n = len(d.get(key) or [])
+        c.ok(lo <= n <= hi, f"{key} has {n} names, expected {lo}-{hi}")
+
+
 RATING_MODELS = {f"sports/model/{lg}.json" for lg in ("nfl", "nba", "nhl", "mlb", "ncaab", "ncaaf", "ncaah")}  # add a new league's model here
 TUNING_FILES = {f"sports/model/{n}.json" for n in ("ctx", "elo", "qb", "ret", "cfbret")}
 
@@ -263,6 +270,8 @@ TUNING_FILES = {f"sports/model/{n}.json" for n in ("ctx", "elo", "qb", "ret", "c
 def rule_for(rel):
     if rel == "finance/dashboard.json":
         return dashboard
+    if rel == "finance/members.json":
+        return members
     if rel.startswith("finance/quotes/") and not rel.endswith("/index.json"):
         return quote
     if rel == "finance/macro.json":
